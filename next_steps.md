@@ -892,28 +892,82 @@ Before adding any dependency, ask:
 
 ---
 
+## Final Recommendation
+
+After presenting both options, here's my actual recommendation for your use case (multi-app, public API, AI-friendly):
+
+### The Stack
+
+| Layer | Choice | Why |
+|-------|--------|-----|
+| **Contracts** | TypeSpec | You need public API → need OpenAPI docs. TypeSpec generates them natively. |
+| **API** | Fastify | Multi-app at scale needs mature ecosystem. 7+ years battle-tested. |
+| **Database** | Drizzle | Unanimous. SQL-like, no magic, AI understands it perfectly. |
+| **Web UI** | shadcn/ui | Unanimous. Copy-paste, code in your repo, AI can read/modify. |
+| **Mobile UI** | React Native Reusables | Same philosophy as shadcn/ui. AI can read the code. Build what's missing. |
+| **Styling** | Tailwind + NativeWind | Same classes on web and mobile. Explicit, no CSS file jumping. |
+| **Auth** | Better Auth | Self-hosted, API keys for public API, full control. |
+| **Data Fetching** | TanStack Query | Explicit cache keys, typed, works on web and mobile. |
+| **Forms** | React Hook Form + Zod | Shared validation schemas across all platforms. |
+
+### Why These Choices
+
+```
+Your Requirements          →  My Choice
+─────────────────────────────────────────────────────
+Public API needed          →  TypeSpec (native OpenAPI)
+Multiple apps at scale     →  Fastify (proven ecosystem)
+AI agent friendly          →  Copy-paste UI (shadcn + RN Reusables)
+Self-hosted auth           →  Better Auth
+Cross-platform validation  →  Zod schemas in contracts package
+```
+
+### The Hard Call: Mobile UI
+
+I chose **React Native Reusables** over Gluestack because:
+
+1. **AI Principle #5**: Copy-paste > npm install
+2. **Consistency**: Same pattern as shadcn/ui on web
+3. **Visibility**: Code lives in `packages/ui-native/`, AI can read it
+4. **Flexibility**: Build missing components with AI assistance
+
+**Tradeoff acknowledged**: Gluestack has more components out of the box. But with AI, you can build what's missing faster than you can fight opaque libraries.
+
+### When to Deviate
+
+| If you... | Then consider... |
+|-----------|------------------|
+| Deploy to Cloudflare/Edge | Switch API to Hono |
+| Only have TypeScript consumers | Switch contracts to Zod + ts-rest |
+| Need fastest launch | Switch auth to Clerk |
+| Need complete mobile UI NOW | Switch to Gluestack v2 |
+
+---
+
 ## Summary
 
-**This document presents two valid paths:**
+**Final stack:**
 
-| Aspect | Option A (Conservative) | Option B (Modern) |
-|--------|------------------------|-------------------|
-| Contracts | TypeSpec | Zod + ts-rest |
-| API | Fastify | Hono |
-| Risk level | Lower | Higher |
-| AI training data | Less (TypeSpec) | More (Zod) |
-| Edge deployment | No | Yes |
-| OpenAPI | Native | Extra tooling |
-
-**Shared across both:**
-- Drizzle ORM (database)
-- Better Auth (authentication)
-- shadcn/ui (web components)
-- Tailwind CSS (styling)
-- TanStack Query (data fetching)
-- Next.js 15 (web framework)
-- Expo (mobile framework)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     RECOMMENDED STACK                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Contracts:    TypeSpec → OpenAPI + TypeScript + Zod        │
+│  API:          Fastify (Node.js)                            │
+│  Database:     Drizzle + PostgreSQL                         │
+│  Auth:         Better Auth (self-hosted)                    │
+│                                                              │
+│  Web:          Next.js 15 + shadcn/ui + Tailwind            │
+│  Mobile:       Expo + React Native Reusables + NativeWind   │
+│                                                              │
+│  Data:         TanStack Query (web + mobile)                │
+│  Forms:        React Hook Form + Zod                        │
+│  Validation:   Zod (shared across all platforms)            │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
 
 **The key insight:** What makes code AI-friendly also makes it human-friendly—explicit code, strong types, predictable patterns, and minimal magic.
 
-Choose based on YOUR constraints, not hype.
+This is my genuine recommendation, not a hedge.
