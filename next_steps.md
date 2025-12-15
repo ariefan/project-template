@@ -780,11 +780,22 @@ project-template/
 │   ├── utils/                      # Shared utilities
 │   │   └── ...
 │   │
-│   ├── eslint-config/              # Shared ESLint
+│   ├── eslint-config/              # Shared ESLint (or remove if using Biome)
 │   └── typescript-config/          # Shared TSConfig
 │
-├── turbo.json
-├── pnpm-workspace.yaml
+├── templates/                      # PlopJS templates
+│   ├── api/                        # API app template
+│   ├── web/                        # Web app template
+│   ├── mobile/                     # Mobile app template
+│   ├── component.tsx.hbs           # Component template
+│   └── route.ts.hbs                # API route template
+│
+├── turbo.json                      # Turborepo config
+├── pnpm-workspace.yaml             # Workspace definition
+├── plopfile.js                     # Code generators
+├── biome.json                      # Linting & formatting
+├── lefthook.yml                    # Git hooks
+├── Caddyfile                       # Reverse proxy (optional)
 └── package.json
 ```
 
@@ -856,6 +867,338 @@ project-template/
 
 ---
 
+## Developer Tooling
+
+### Code Generation: PlopJS
+
+**[PlopJS](https://plopjs.com)** - Micro-generator for consistent scaffolding
+
+```bash
+pnpm add -Dw plop
+```
+
+```javascript
+// plopfile.js
+export default function (plop) {
+  // Generate new API app
+  plop.setGenerator('api', {
+    description: 'Create a new API app',
+    prompts: [
+      { type: 'input', name: 'name', message: 'API name (e.g., "public", "admin")?' },
+    ],
+    actions: [
+      {
+        type: 'addMany',
+        destination: 'apps/api-{{dashCase name}}',
+        templateFiles: 'templates/api/**/*',
+        base: 'templates/api',
+      },
+    ],
+  })
+
+  // Generate new web app
+  plop.setGenerator('web', {
+    description: 'Create a new Next.js web app',
+    prompts: [
+      { type: 'input', name: 'name', message: 'Web app name (e.g., "main", "admin")?' },
+    ],
+    actions: [
+      {
+        type: 'addMany',
+        destination: 'apps/web-{{dashCase name}}',
+        templateFiles: 'templates/web/**/*',
+        base: 'templates/web',
+      },
+    ],
+  })
+
+  // Generate new mobile app
+  plop.setGenerator('mobile', {
+    description: 'Create a new Expo mobile app',
+    prompts: [
+      { type: 'input', name: 'name', message: 'Mobile app name (e.g., "customer", "driver")?' },
+    ],
+    actions: [
+      {
+        type: 'addMany',
+        destination: 'apps/mobile-{{dashCase name}}',
+        templateFiles: 'templates/mobile/**/*',
+        base: 'templates/mobile',
+      },
+    ],
+  })
+
+  // Generate UI component
+  plop.setGenerator('component', {
+    description: 'Create a new UI component',
+    prompts: [
+      { type: 'list', name: 'package', choices: ['ui', 'ui-native'], message: 'Which package?' },
+      { type: 'input', name: 'name', message: 'Component name?' },
+    ],
+    actions: [
+      {
+        type: 'add',
+        path: 'packages/{{package}}/src/components/{{dashCase name}}.tsx',
+        templateFile: 'templates/component.tsx.hbs',
+      },
+    ],
+  })
+
+  // Generate API route
+  plop.setGenerator('route', {
+    description: 'Create a new API route',
+    prompts: [
+      { type: 'input', name: 'app', message: 'Which API app (e.g., "public", "admin")?' },
+      { type: 'input', name: 'name', message: 'Route name (e.g., "users", "products")?' },
+    ],
+    actions: [
+      {
+        type: 'add',
+        path: 'apps/api-{{dashCase app}}/src/routes/{{dashCase name}}.ts',
+        templateFile: 'templates/route.ts.hbs',
+      },
+    ],
+  })
+}
+```
+
+**Usage:**
+```bash
+pnpm plop api          # Create new API app
+pnpm plop web          # Create new web app
+pnpm plop mobile       # Create new mobile app
+pnpm plop component    # Create new UI component
+pnpm plop route        # Create new API route
+```
+
+**Why AI-friendly:**
+- Templates are explicit Handlebars (AI understands)
+- Enforces consistent patterns across apps
+- AI can modify templates to change generated code
+
+### Linting & Formatting: Biome
+
+**[Biome](https://biomejs.dev)** - Fast linter + formatter (replaces ESLint + Prettier)
+
+```bash
+pnpm add -Dw @biomejs/biome
+```
+
+```json
+// biome.json
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "warn",
+        "useConst": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "es5"
+    }
+  },
+  "files": {
+    "ignore": [
+      "node_modules",
+      ".next",
+      ".expo",
+      "dist",
+      "build",
+      "*.gen.ts"
+    ]
+  }
+}
+```
+
+**Scripts:**
+```json
+// package.json
+{
+  "scripts": {
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
+    "typecheck": "turbo typecheck"
+  }
+}
+```
+
+**Why Biome over ESLint + Prettier:**
+
+| Aspect | ESLint + Prettier | Biome |
+|--------|-------------------|-------|
+| Speed | ~10s on large projects | ~100ms |
+| Config | 2-5 config files | 1 file |
+| Plugins | Need many plugins | Built-in rules |
+| AI-friendly | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+
+### Type Checking: TypeScript Strict
+
+```json
+// packages/typescript-config/base.json
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "forceConsistentCasingInFileNames": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "target": "ES2022",
+    "lib": ["ES2022"]
+  }
+}
+```
+
+**Turbo typecheck:**
+```json
+// turbo.json
+{
+  "tasks": {
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": []
+    },
+    "lint": {
+      "outputs": []
+    },
+    "build": {
+      "dependsOn": ["^build", "typecheck"],
+      "outputs": [".next/**", "dist/**"]
+    }
+  }
+}
+```
+
+### Reverse Proxy: Caddy (Optional)
+
+**[Caddy](https://caddyserver.com)** - Modern web server with auto HTTPS
+
+**When to use:**
+- Production deployment (auto SSL)
+- Local development with HTTPS
+- Unified entry point for multiple apps
+
+**For production:**
+```caddyfile
+# Caddyfile
+{
+  email admin@example.com
+}
+
+api.example.com {
+  reverse_proxy api-public:3001
+}
+
+app.example.com {
+  reverse_proxy web-main:3000
+}
+
+admin.example.com {
+  reverse_proxy web-admin:3002
+}
+```
+
+**For local development (optional):**
+```caddyfile
+# Caddyfile.dev
+{
+  local_certs
+}
+
+localhost {
+  handle_path /api/* {
+    reverse_proxy localhost:3001
+  }
+  handle_path /admin/* {
+    reverse_proxy localhost:3002
+  }
+  handle {
+    reverse_proxy localhost:3000
+  }
+}
+```
+
+**When NOT to use Caddy:**
+- Simple development (Turborepo handles multiple ports fine)
+- Deploying to Vercel/Cloudflare (they handle SSL)
+- Don't need unified local entry point
+
+### Git Hooks: Lefthook
+
+**[Lefthook](https://github.com/evilmartians/lefthook)** - Fast Git hooks manager
+
+```bash
+pnpm add -Dw lefthook
+```
+
+```yaml
+# lefthook.yml
+pre-commit:
+  parallel: true
+  commands:
+    typecheck:
+      glob: "*.{ts,tsx}"
+      run: pnpm typecheck
+    lint:
+      glob: "*.{ts,tsx,js,jsx,json}"
+      run: pnpm biome check --write {staged_files}
+      stage_fixed: true
+
+pre-push:
+  commands:
+    test:
+      run: pnpm test
+```
+
+**Why Lefthook over Husky:**
+- Faster (written in Go)
+- Parallel execution
+- Simpler config (YAML)
+- No need for lint-staged (built-in)
+
+---
+
 ## Quick Reference
 
 ### Package Versions
@@ -875,6 +1218,14 @@ project-template/
     "nativewind": "^4.x",
     "react-hook-form": "^7.x",
     "@hookform/resolvers": "^3.x"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.x",
+    "plop": "^4.x",
+    "lefthook": "^1.x",
+    "turbo": "^2.x",
+    "typescript": "^5.7.x",
+    "vitest": "^2.x"
   }
 }
 ```
@@ -909,6 +1260,11 @@ After presenting both options, here's my actual recommendation for your use case
 | **Auth** | Better Auth | Self-hosted, API keys for public API, full control. |
 | **Data Fetching** | TanStack Query | Explicit cache keys, typed, works on web and mobile. |
 | **Forms** | React Hook Form + Zod | Shared validation schemas across all platforms. |
+| **Linting/Formatting** | Biome | Single tool, 100x faster than ESLint+Prettier, simple config. |
+| **Type Checking** | TypeScript strict | Maximum type safety, AI understands types. |
+| **Code Generation** | PlopJS | Consistent scaffolding, templates AI can read/modify. |
+| **Git Hooks** | Lefthook | Fast, parallel, simple YAML config. |
+| **Reverse Proxy** | Caddy (production) | Auto HTTPS, simple Caddyfile. Optional for dev. |
 
 ### Why These Choices
 
@@ -964,6 +1320,13 @@ I chose **React Native Reusables** over Gluestack because:
 │  Data:         TanStack Query (web + mobile)                │
 │  Forms:        React Hook Form + Zod                        │
 │  Validation:   Zod (shared across all platforms)            │
+│                                                              │
+│  ─────────────────────────────────────────────────────────  │
+│                                                              │
+│  Tooling:      Biome (lint/format) + TypeScript strict      │
+│  Scaffolding:  PlopJS (code generation)                     │
+│  Git Hooks:    Lefthook (pre-commit, pre-push)              │
+│  Proxy:        Caddy (production, optional for dev)         │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
