@@ -1,16 +1,50 @@
 # Next Steps: Contract-Based Monorepo Architecture
 
-This document outlines the recommended approach for evolving this repository into a **contract-based monorepo** containing multiple API, Web, and Mobile applications with shared contracts ensuring type safety across all platforms.
+This document outlines the recommended approach for evolving this repository into a **contract-based monorepo** containing multiple API, Web, and Mobile applications.
 
 ## Table of Contents
 
-1. [Architecture Overview](#architecture-overview)
-2. [Why Contract-Based Development](#why-contract-based-development)
-3. [Recommended Tech Stack](#recommended-tech-stack)
-4. [Authentication Strategy](#authentication-strategy)
-5. [Project Structure](#project-structure)
-6. [Implementation Roadmap](#implementation-roadmap)
-7. [AI Agent Compatibility Notes](#ai-agent-compatibility-notes)
+1. [AI-Friendliness Criteria](#ai-friendliness-criteria)
+2. [Architecture Overview](#architecture-overview)
+3. [Tech Stack Options](#tech-stack-options)
+4. [UI Components](#ui-components)
+5. [Authentication Strategy](#authentication-strategy)
+6. [Project Structure](#project-structure)
+7. [Implementation Roadmap](#implementation-roadmap)
+
+---
+
+## AI-Friendliness Criteria
+
+Before diving into tech choices, here's what makes a technology **AI-agent friendly**:
+
+### The 7 Principles
+
+| Principle | Description | Example |
+|-----------|-------------|---------|
+| **1. Explicit over Implicit** | Code that shows what it does, no hidden behavior | Drizzle SQL vs Prisma abstraction |
+| **2. Types Everywhere** | Strong TypeScript types AI can inspect | Zod schemas with inference |
+| **3. Predictable Patterns** | Consistent file structure and conventions | File-based routing |
+| **4. Minimal Abstraction** | Few layers between code and execution | Direct SQL vs ORM magic |
+| **5. Copy-Paste over Config** | Code you own vs opaque dependencies | shadcn/ui vs Chakra UI |
+| **6. Composition over Inheritance** | Small pieces that combine | React hooks vs class components |
+| **7. Good Documentation** | More docs = more AI training data | Popular libraries win |
+
+### How This Affects Choices
+
+```
+AI-Friendly Spectrum:
+
+MORE AI-FRIENDLY                                    LESS AI-FRIENDLY
+←───────────────────────────────────────────────────────────────────→
+
+Drizzle (SQL-like)                                  Prisma (DSL)
+Fastify (explicit)                                  NestJS (decorators)
+Zod (TypeScript)                                    JSON Schema (separate)
+shadcn/ui (copy-paste)                              MUI (opaque library)
+Tailwind (utilities)                                CSS-in-JS (runtime)
+Expo Router (file-based)                            React Navigation (config)
+```
 
 ---
 
@@ -26,119 +60,96 @@ This document outlines the recommended approach for evolving this repository int
 │  ├─────────────────────────────────────────────────────────────────────────┤ │
 │  │                                                                         │ │
 │  │  APIs                        Web Apps                Mobile Apps        │ │
-│  │  ─────────────────────────   ─────────────────────   ────────────────── │ │
-│  │  ┌──────────────────────┐    ┌──────────────────┐    ┌───────────────┐  │ │
-│  │  │ apps/api-public      │    │ apps/web-main    │    │ apps/mobile-  │  │ │
-│  │  │ (Public API)         │    │ (Main Website)   │    │ customer      │  │ │
-│  │  │ - Fastify            │    │ - Next.js        │    │ - Expo        │  │ │
-│  │  │ - OpenAPI docs       │    │                  │    │               │  │ │
-│  │  └──────────────────────┘    └──────────────────┘    └───────────────┘  │ │
-│  │  ┌──────────────────────┐    ┌──────────────────┐    ┌───────────────┐  │ │
-│  │  │ apps/api-internal    │    │ apps/web-admin   │    │ apps/mobile-  │  │ │
-│  │  │ (Internal Services)  │    │ (Admin Panel)    │    │ admin         │  │ │
-│  │  │ - Fastify            │    │ - Next.js        │    │ - Expo        │  │ │
-│  │  └──────────────────────┘    └──────────────────┘    └───────────────┘  │ │
-│  │  ┌──────────────────────┐    ┌──────────────────┐                       │ │
-│  │  │ apps/api-admin       │    │ apps/web-docs    │                       │ │
-│  │  │ (Admin API)          │    │ (API Docs Portal)│                       │ │
-│  │  │ - Fastify            │    │ - Next.js/Astro  │                       │ │
-│  │  └──────────────────────┘    └──────────────────┘                       │ │
+│  │  ───────────────────────     ───────────────────     ────────────────── │ │
+│  │  ┌────────────────────┐      ┌─────────────────┐     ┌───────────────┐  │ │
+│  │  │ apps/api-public    │      │ apps/web-main   │     │ apps/mobile-  │  │ │
+│  │  │ (Public API)       │      │ (Main Website)  │     │ customer      │  │ │
+│  │  └────────────────────┘      └─────────────────┘     └───────────────┘  │ │
+│  │  ┌────────────────────┐      ┌─────────────────┐     ┌───────────────┐  │ │
+│  │  │ apps/api-internal  │      │ apps/web-admin  │     │ apps/mobile-  │  │ │
+│  │  │ (Internal API)     │      │ (Admin Panel)   │     │ admin         │  │ │
+│  │  └────────────────────┘      └─────────────────┘     └───────────────┘  │ │
 │  └─────────────────────────────────────────────────────────────────────────┘ │
-│                                    │                                         │
-│                                    ▼                                         │
+│                                      │                                       │
+│                                      ▼                                       │
 │  ┌─────────────────────────────────────────────────────────────────────────┐ │
-│  │                     packages/contracts (TypeSpec)                       │ │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌───────────────┐   │ │
-│  │  │ public-api/ │  │internal-api/│  │  admin-api/ │  │    shared/    │   │ │
-│  │  │   *.tsp     │  │    *.tsp    │  │    *.tsp    │  │ models, enums │   │ │
-│  │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └───────────────┘   │ │
-│  │         │                │                │                              │ │
-│  │         ▼                ▼                ▼                              │ │
-│  │  ┌─────────────────────────────────────────────────────────────────┐    │ │
-│  │  │                    Generated Outputs                            │    │ │
-│  │  │  • OpenAPI specs (for docs & external clients)                  │    │ │
-│  │  │  • TypeScript types (for internal apps)                         │    │ │
-│  │  │  • Zod schemas (for runtime validation)                         │    │ │
-│  │  │  • API clients (typed fetch wrappers)                           │    │ │
-│  │  └─────────────────────────────────────────────────────────────────┘    │ │
+│  │                       SHARED PACKAGES                                   │ │
+│  │                                                                         │ │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │ │
+│  │  │ contracts   │ │     db      │ │     ui      │ │  ui-native  │       │ │
+│  │  │ (API specs) │ │  (Drizzle)  │ │ (shadcn/ui) │ │ (RN comps)  │       │ │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘       │ │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                       │ │
+│  │  │    auth     │ │    utils    │ │   config    │                       │ │
+│  │  │(Better Auth)│ │  (shared)   │ │ (ts/eslint) │                       │ │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘                       │ │
 │  └─────────────────────────────────────────────────────────────────────────┘ │
-│                                    │                                         │
-│         ┌──────────────────────────┼──────────────────────────┐              │
-│         ▼                          ▼                          ▼              │
-│  ┌─────────────┐           ┌─────────────┐           ┌─────────────┐        │
-│  │packages/db  │           │packages/ui  │           │packages/auth│        │
-│  │ (Drizzle)   │           │ (shadcn/ui) │           │(Better Auth)│        │
-│  └─────────────┘           └─────────────┘           └─────────────┘        │
-│                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Why Contract-Based Development
+## Tech Stack Options
 
-### Benefits for Multi-App Architecture
+I'm presenting **two valid paths**. Neither is wrong—choose based on your constraints.
 
-1. **Single Source of Truth**: TypeSpec definitions generate everything - docs, types, validators
-2. **Public API Ready**: OpenAPI specs auto-generated for external developers
-3. **Independent Scaling**: Each API can be deployed separately
-4. **Cross-Platform Consistency**: Same contracts for web, mobile, and external consumers
-5. **API Versioning**: TypeSpec has built-in versioning support
+### Option A: Conservative Stack (Battle-Tested)
 
-### Benefits for AI Coding Agents
+Best for: Risk-averse teams, enterprise, proven production needs
 
-1. **Explicit Contracts**: AI can read TypeSpec and understand exact API shape
-2. **Generated Code**: Less hand-written boilerplate = fewer inconsistencies
-3. **Compile-Time Safety**: TypeScript catches mismatches immediately
-4. **Predictable Patterns**: Consistent structure across all apps
+| Layer | Technology | AI-Friendly? | Notes |
+|-------|------------|--------------|-------|
+| **Contracts** | TypeSpec | ⭐⭐⭐ | DSL to learn, but generates everything |
+| **API** | Fastify | ⭐⭐⭐⭐ | 7+ years, huge ecosystem, more examples |
+| **Database** | Drizzle | ⭐⭐⭐⭐⭐ | SQL-like, explicit, no magic |
+| **Web** | Next.js 15 | ⭐⭐⭐⭐⭐ | Massive training data, predictable |
+| **Mobile** | Expo | ⭐⭐⭐⭐ | Managed RN, file-based routing |
+| **Web UI** | shadcn/ui | ⭐⭐⭐⭐⭐ | Copy-paste, fully visible code |
+| **Mobile UI** | Gluestack UI v2 | ⭐⭐⭐⭐ | Accessible, well-documented |
+| **Styling** | Tailwind CSS | ⭐⭐⭐⭐⭐ | Explicit utilities, no runtime |
+| **Auth** | Better Auth | ⭐⭐⭐⭐ | TypeScript-native, self-hosted |
+| **Data Fetching** | TanStack Query | ⭐⭐⭐⭐⭐ | Explicit cache keys, typed |
 
-### Benefits for Teams
+### Option B: Modern Stack (Cutting-Edge)
 
-1. **Parallel Development**: Teams work against contracts, not implementations
-2. **External Developer Experience**: Professional API documentation out of the box
-3. **Breaking Change Detection**: TypeSpec compiler catches incompatibilities
-4. **Language Agnostic**: Generate clients for any language your consumers need
+Best for: Smaller teams, edge deployment, latest DX
 
----
+| Layer | Technology | AI-Friendly? | Notes |
+|-------|------------|--------------|-------|
+| **Contracts** | Zod + ts-rest | ⭐⭐⭐⭐⭐ | Pure TypeScript, more examples |
+| **API** | Hono | ⭐⭐⭐⭐ | Newer but clean, edge-native |
+| **Database** | Drizzle | ⭐⭐⭐⭐⭐ | Same as Option A |
+| **Web** | Next.js 15 | ⭐⭐⭐⭐⭐ | Same as Option A |
+| **Mobile** | Expo | ⭐⭐⭐⭐ | Same as Option A |
+| **Web UI** | shadcn/ui | ⭐⭐⭐⭐⭐ | Same as Option A |
+| **Mobile UI** | React Native Reusables | ⭐⭐⭐⭐ | shadcn/ui patterns for RN |
+| **Styling** | Tailwind + NativeWind | ⭐⭐⭐⭐⭐ | Same classes web & mobile |
+| **Auth** | Better Auth | ⭐⭐⭐⭐ | Same as Option A |
+| **Data Fetching** | TanStack Query | ⭐⭐⭐⭐⭐ | Same as Option A |
 
-## Recommended Tech Stack
+### Decision Guide
 
-### Decision Matrix: Honest Tradeoffs
+| Your Situation | Recommendation |
+|----------------|----------------|
+| Need public API with OpenAPI docs | **Option A** (TypeSpec) |
+| External devs need Python/Go/Java SDKs | **Option A** (TypeSpec) |
+| Deploying to Cloudflare Workers/Edge | **Option B** (Hono) |
+| Small team, move fast | **Option B** (simpler) |
+| Enterprise, risk-averse | **Option A** (proven) |
+| Only TypeScript consumers | **Option B** (Zod) |
+| Want maximum AI training data | **Option B** (more examples) |
 
-| Choice | Selected | Alternative | Why Selected | When to Use Alternative |
-|--------|----------|-------------|--------------|------------------------|
-| **Contracts** | TypeSpec | Zod + ts-rest | Public APIs need OpenAPI, multi-app needs governance | Small team, single API, TypeScript-only consumers |
-| **API Framework** | Fastify | Hono | More mature, better ecosystem, production-proven | Edge deployments, Cloudflare Workers, Bun |
-| **Auth** | Better Auth | Clerk, Auth.js | Self-hosted, full control, TypeScript-native | Clerk for fastest setup, Auth.js for existing Next.js |
+### Detailed Comparison
 
-### Core Technologies
+#### Contracts: TypeSpec vs Zod + ts-rest
 
-| Layer | Technology | Why |
-|-------|------------|-----|
-| **Package Manager** | pnpm | Workspace protocol, strict dependencies, fast |
-| **Build System** | Turborepo | Task caching, dependency graph, parallel builds |
-| **Language** | TypeScript (strict) | Type safety across all apps |
-| **Runtime** | Node.js 20+ | LTS, stable, well-documented |
-
-### Contracts: TypeSpec
-
-**[TypeSpec](https://typespec.io)** - Microsoft's API description language
-
+**TypeSpec** (Option A):
 ```typespec
-// packages/contracts/public-api/main.tsp
+// packages/contracts/public-api/users.tsp
 import "@typespec/http";
-import "@typespec/openapi3";
 
 using TypeSpec.Http;
 
-@service({
-  title: "Public API",
-  version: "1.0.0",
-})
-@server("https://api.example.com", "Production")
-namespace PublicAPI;
-
-// Shared model (can import from ../shared/)
 model User {
   id: string;
   email: string;
@@ -146,296 +157,459 @@ model User {
   createdAt: utcDateTime;
 }
 
-model CreateUserRequest {
-  email: string;
-  name: string;
-  password: string;
-}
-
-model ErrorResponse {
-  error: string;
-  code: string;
-  details?: Record<string>;
-}
-
 @route("/users")
-@tag("Users")
 namespace Users {
-  @post
-  @summary("Create a new user")
-  op create(@body body: CreateUserRequest): {
-    @statusCode statusCode: 201;
-    @body body: User;
-  } | {
-    @statusCode statusCode: 400;
-    @body body: ErrorResponse;
-  };
-
-  @get
-  @summary("List users")
-  op list(
-    @query limit?: int32 = 20,
-    @query offset?: int32 = 0,
-  ): {
-    @statusCode statusCode: 200;
-    @body body: {
-      data: User[];
-      total: int32;
-    };
-  };
-
-  @get
-  @route("/{id}")
-  @summary("Get user by ID")
-  op get(@path id: string): {
-    @statusCode statusCode: 200;
-    @body body: User;
-  } | {
-    @statusCode statusCode: 404;
-    @body body: ErrorResponse;
-  };
+  @post op create(@body body: CreateUserRequest): User;
+  @get op list(@query limit?: int32 = 20): User[];
+  @get @route("/{id}") op get(@path id: string): User | NotFoundError;
 }
 ```
 
-**Why TypeSpec over Zod + ts-rest:**
+Pros:
+- Generates OpenAPI automatically
+- Multi-language client generation
+- API versioning built-in
+- Breaking change detection
 
-| Aspect | TypeSpec | Zod + ts-rest |
-|--------|----------|---------------|
-| OpenAPI generation | ✅ Native, automatic | ⚠️ Requires extra tooling |
-| Multi-language clients | ✅ Generate for any language | ❌ TypeScript only |
-| API governance | ✅ Linting, breaking change detection | ⚠️ Manual |
-| Learning curve | ⚠️ New DSL to learn | ✅ Just TypeScript |
-| AI training data | ⚠️ Less common | ✅ More examples |
-| Runtime validation | ⚠️ Generate Zod from TypeSpec | ✅ Native |
+Cons:
+- New DSL to learn
+- Compilation step
+- Less AI training data
 
-**TypeSpec compilation outputs:**
+**Zod + ts-rest** (Option B):
+```typescript
+// packages/contracts/src/users.ts
+import { z } from 'zod'
+import { initContract } from '@ts-rest/core'
 
-```bash
-# Compile TypeSpec to multiple outputs
-tsp compile packages/contracts/public-api
+export const userSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string().min(1),
+  createdAt: z.coerce.date(),
+})
 
-# Generates:
-# - openapi.yaml          → For Swagger UI, external docs
-# - types.ts              → TypeScript interfaces
-# - schemas.ts            → Zod schemas (via emitter)
-# - client.ts             → Type-safe fetch client
+export type User = z.infer<typeof userSchema>
+
+const c = initContract()
+
+export const usersContract = c.router({
+  create: {
+    method: 'POST',
+    path: '/users',
+    body: z.object({ email: z.string().email(), name: z.string() }),
+    responses: { 201: userSchema },
+  },
+  list: {
+    method: 'GET',
+    path: '/users',
+    query: z.object({ limit: z.number().default(20) }),
+    responses: { 200: z.array(userSchema) },
+  },
+})
 ```
 
-### Backend: Fastify
+Pros:
+- Pure TypeScript (no new syntax)
+- More AI training data
+- Runtime validation included
+- Simpler mental model
 
-**[Fastify](https://fastify.dev)** - Fast, low overhead web framework
+Cons:
+- OpenAPI requires extra tooling
+- TypeScript-only clients
+- Manual versioning
 
+#### API Framework: Fastify vs Hono
+
+**Fastify** (Option A):
 ```typescript
 // apps/api-public/src/routes/users.ts
 import { FastifyPluginAsync } from 'fastify'
-import { Type } from '@sinclair/typebox'
-import { db } from '@workspace/db'
-import { users } from '@workspace/db/schema'
-// Generated from TypeSpec
-import { CreateUserRequest, User, ErrorResponse } from '@workspace/contracts/public-api'
+import { UserSchema, CreateUserSchema } from '@workspace/contracts'
 
 const usersRoutes: FastifyPluginAsync = async (fastify) => {
-  // POST /users
-  fastify.post<{
-    Body: CreateUserRequest
-    Reply: User | ErrorResponse
-  }>('/users', {
-    schema: {
-      body: CreateUserRequestSchema,      // Generated from TypeSpec
-      response: {
-        201: UserSchema,
-        400: ErrorResponseSchema,
+  fastify.post<{ Body: CreateUser; Reply: User }>(
+    '/users',
+    {
+      schema: {
+        body: CreateUserSchema,
+        response: { 201: UserSchema },
       },
     },
-  }, async (request, reply) => {
-    const { email, name, password } = request.body
-
-    // Check if user exists
-    const existing = await db.query.users.findFirst({
-      where: eq(users.email, email),
-    })
-
-    if (existing) {
-      return reply.status(400).send({
-        error: 'User already exists',
-        code: 'USER_EXISTS',
-      })
+    async (request, reply) => {
+      const user = await createUser(request.body)
+      return reply.status(201).send(user)
     }
-
-    const [user] = await db.insert(users).values({
-      email,
-      name,
-      passwordHash: await hash(password),
-    }).returning()
-
-    return reply.status(201).send(user)
-  })
-
-  // GET /users
-  fastify.get<{
-    Querystring: { limit?: number; offset?: number }
-    Reply: { data: User[]; total: number }
-  }>('/users', {
-    schema: {
-      querystring: Type.Object({
-        limit: Type.Optional(Type.Integer({ default: 20, minimum: 1, maximum: 100 })),
-        offset: Type.Optional(Type.Integer({ default: 0, minimum: 0 })),
-      }),
-      response: {
-        200: Type.Object({
-          data: Type.Array(UserSchema),
-          total: Type.Integer(),
-        }),
-      },
-    },
-  }, async (request) => {
-    const { limit = 20, offset = 0 } = request.query
-
-    const [data, countResult] = await Promise.all([
-      db.select().from(users).limit(limit).offset(offset),
-      db.select({ count: count() }).from(users),
-    ])
-
-    return { data, total: countResult[0].count }
-  })
+  )
 }
-
-export default usersRoutes
 ```
 
-**Why Fastify over Hono:**
+Pros:
+- 7+ years production use
+- Netflix, Microsoft use it
+- Huge plugin ecosystem
+- Pino logging (best in class)
 
-| Aspect | Fastify | Hono |
-|--------|---------|------|
-| **Production maturity** | ✅ 7+ years, Netflix/Microsoft use it | ⚠️ ~3 years, newer |
-| **Plugin ecosystem** | ✅ Huge (auth, rate limit, cache) | ⚠️ Growing |
-| **Logging** | ✅ Pino (best in class) | ⚠️ Basic |
-| **Validation** | ✅ JSON Schema native | ⚠️ Via middleware |
-| **Documentation** | ✅ Extensive | ✅ Good |
-| **AI training data** | ✅ More examples | ⚠️ Less |
-| **Edge runtime** | ❌ Node.js only | ✅ Cloudflare, Deno, Bun |
-| **Bundle size** | ⚠️ Larger | ✅ Tiny |
+Cons:
+- Node.js only
+- Larger bundle
+- More boilerplate
 
-**When to use Hono instead:**
-- Deploying to Cloudflare Workers or Vercel Edge
-- Using Bun or Deno runtime
-- Need minimal bundle size
-- Building serverless functions
+**Hono** (Option B):
+```typescript
+// apps/api-public/src/routes/users.ts
+import { Hono } from 'hono'
+import { zValidator } from '@hono/zod-validator'
+import { createUserSchema, userSchema } from '@workspace/contracts'
 
-### Database: Drizzle ORM
+const app = new Hono()
 
-**[Drizzle ORM](https://orm.drizzle.team)** - TypeScript ORM with SQL-like syntax
+app.post('/users', zValidator('json', createUserSchema), async (c) => {
+  const data = c.req.valid('json')
+  const user = await createUser(data)
+  return c.json(user, 201)
+})
+```
+
+Pros:
+- Works on edge (Cloudflare, Vercel, Deno, Bun)
+- Tiny bundle (~14kb)
+- Clean, minimal API
+- Web-standard Request/Response
+
+Cons:
+- ~3 years old (newer)
+- Smaller ecosystem
+- Less production data
+- Basic logging
+
+---
+
+## UI Components
+
+### Why UI Choice Matters for AI
+
+| Factor | AI Impact |
+|--------|-----------|
+| **Copy-paste components** | AI can read and modify the actual code |
+| **Opaque library components** | AI must guess internals, can't customize easily |
+| **Utility CSS (Tailwind)** | AI sees styles inline, no file jumping |
+| **CSS-in-JS / CSS Modules** | AI must trace across files |
+| **Typed props** | AI knows exactly what's accepted |
+| **Good docs/examples** | More training data = better suggestions |
+
+### Web UI: shadcn/ui (Recommended)
+
+**[shadcn/ui](https://ui.shadcn.com)** is the most AI-friendly choice:
+
+```bash
+# Add components to your project (copies code, not npm install)
+pnpm dlx shadcn@latest add button card input form
+```
 
 ```typescript
-// packages/db/src/schema/users.ts
-import { pgTable, uuid, varchar, timestamp, boolean } from 'drizzle-orm/pg-core'
+// packages/ui/src/components/button.tsx
+// This is YOUR code - you own it, AI can read/modify it
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
 
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  name: varchar('name', { length: 100 }).notNull(),
-  passwordHash: varchar('password_hash', { length: 255 }),
-  emailVerified: boolean('email_verified').default(false),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+```
+
+**Why AI loves shadcn/ui:**
+- Code is in YOUR repo (not node_modules)
+- Tailwind classes visible inline
+- TypeScript props fully typed
+- Small, focused components
+- Built on accessible Radix primitives
+
+**Key components to add:**
+```bash
+# Essential components
+pnpm dlx shadcn@latest add button input label card
+pnpm dlx shadcn@latest add form select checkbox radio-group
+pnpm dlx shadcn@latest add dialog sheet dropdown-menu
+pnpm dlx shadcn@latest add table tabs avatar badge
+pnpm dlx shadcn@latest add toast sonner
+pnpm dlx shadcn@latest add skeleton spinner
+```
+
+### Web UI Alternatives Comparison
+
+| Library | AI-Friendly | Customizable | Bundle | Verdict |
+|---------|-------------|--------------|--------|---------|
+| **shadcn/ui** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 0kb (your code) | **Best choice** |
+| **Radix UI** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Small | Good (shadcn uses this) |
+| **Headless UI** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | Small | Good alternative |
+| **Ark UI** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Small | Good, from Chakra team |
+| **Chakra UI** | ⭐⭐⭐ | ⭐⭐⭐ | Medium | Opaque, runtime styles |
+| **MUI** | ⭐⭐ | ⭐⭐ | Large | Complex, Material-locked |
+| **Ant Design** | ⭐⭐ | ⭐⭐ | Large | Heavy, enterprise-focused |
+
+### Mobile UI: Two Options
+
+#### Option A: Gluestack UI v2 (More Complete)
+
+**[Gluestack UI](https://gluestack.io)** - Accessible, production-ready
+
+```bash
+npx gluestack-ui init
+npx gluestack-ui add button input card
+```
+
+```typescript
+// apps/mobile-customer/components/login-form.tsx
+import { VStack, Button, Input, Text } from '@gluestack-ui/themed'
+
+export function LoginForm() {
+  return (
+    <VStack space="md" className="p-4">
+      <Input>
+        <InputField placeholder="Email" keyboardType="email-address" />
+      </Input>
+      <Input>
+        <InputField placeholder="Password" secureTextEntry />
+      </Input>
+      <Button onPress={handleLogin}>
+        <ButtonText>Sign In</ButtonText>
+      </Button>
+    </VStack>
+  )
+}
+```
+
+Pros:
+- More complete component set
+- Good accessibility
+- Well-documented
+- NativeWind v4 compatible
+
+Cons:
+- More opinionated
+- Slightly larger bundle
+
+#### Option B: React Native Reusables (shadcn-like)
+
+**[React Native Reusables](https://rnr-docs.vercel.app)** - shadcn/ui philosophy for RN
+
+```bash
+npx @react-native-reusables/cli add button input card
+```
+
+```typescript
+// apps/mobile-customer/components/login-form.tsx
+import { View } from 'react-native'
+import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Text } from '~/components/ui/text'
+
+export function LoginForm() {
+  return (
+    <View className="p-4 gap-4">
+      <Input placeholder="Email" keyboardType="email-address" />
+      <Input placeholder="Password" secureTextEntry />
+      <Button onPress={handleLogin}>
+        <Text>Sign In</Text>
+      </Button>
+    </View>
+  )
+}
+```
+
+Pros:
+- Same philosophy as shadcn/ui (copy-paste)
+- Full code ownership
+- NativeWind styling
+- Familiar patterns from web
+
+Cons:
+- Newer project
+- Smaller component set
+- You build more yourself
+
+### Mobile UI Comparison
+
+| Library | AI-Friendly | Copy-Paste | Components | NativeWind |
+|---------|-------------|------------|------------|------------|
+| **RN Reusables** | ⭐⭐⭐⭐⭐ | ✅ | Growing | ✅ Native |
+| **Gluestack v2** | ⭐⭐⭐⭐ | ❌ | Complete | ✅ Compatible |
+| **Tamagui** | ⭐⭐⭐ | ❌ | Complete | ❌ Own system |
+| **RN Paper** | ⭐⭐⭐ | ❌ | Complete | ❌ Material |
+| **NativeBase** | ⭐⭐ | ❌ | Complete | ❌ Own system |
+
+### Styling: Tailwind CSS + NativeWind
+
+**Same classes on web and mobile:**
+
+```typescript
+// Web (Next.js)
+<button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+  Click me
+</button>
+
+// Mobile (Expo + NativeWind)
+<Pressable className="bg-blue-500 px-4 py-2 rounded-lg">
+  <Text className="text-white">Click me</Text>
+</Pressable>
+```
+
+**Why Tailwind is AI-friendly:**
+1. Styles are visible in the same file
+2. No CSS file jumping
+3. Predictable utility names
+4. Excellent documentation
+5. AI has massive training data
+
+**Configuration:**
+```javascript
+// tailwind.config.js (shared)
+module.exports = {
+  content: [
+    './apps/web-*/**/*.{ts,tsx}',
+    './apps/mobile-*/**/*.{ts,tsx}',
+    './packages/ui/**/*.{ts,tsx}',
+    './packages/ui-native/**/*.{ts,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Your design tokens
+        brand: {
+          50: '#f0f9ff',
+          500: '#3b82f6',
+          900: '#1e3a8a',
+        },
+      },
+    },
+  },
+}
+```
+
+### Forms: React Hook Form + Zod
+
+**Shared validation between web and mobile:**
+
+```typescript
+// packages/contracts/src/schemas/auth.ts
+import { z } from 'zod'
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
-// Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  sessions: many(sessions),
-  accounts: many(accounts), // OAuth accounts
-}))
+export type LoginInput = z.infer<typeof loginSchema>
 ```
 
-**Why Drizzle over Prisma:**
-
-| Aspect | Drizzle | Prisma |
-|--------|---------|--------|
-| **SQL visibility** | ✅ What you write = what runs | ❌ Abstracted |
-| **Bundle size** | ✅ ~50kb | ❌ ~2MB+ engine |
-| **Cold starts** | ✅ Fast | ❌ Slow (engine init) |
-| **Migrations** | ✅ SQL files, reviewable | ⚠️ Prisma format |
-| **Learning curve** | ✅ Know SQL = know Drizzle | ⚠️ Prisma DSL |
-| **Edge compatible** | ✅ Yes | ⚠️ Limited |
-
-### Frontend Web: Next.js 15
-
-**[Next.js](https://nextjs.org)** with App Router
-
 ```typescript
-// apps/web-main/app/users/page.tsx
-import { Suspense } from 'react'
-import { UserList } from './user-list'
-import { UserListSkeleton } from './user-list-skeleton'
-
-export default function UsersPage() {
-  return (
-    <div className="container py-8">
-      <h1 className="text-2xl font-bold mb-6">Users</h1>
-      <Suspense fallback={<UserListSkeleton />}>
-        <UserList />
-      </Suspense>
-    </div>
-  )
-}
-
-// apps/web-main/app/users/user-list.tsx
+// apps/web-main/app/auth/login/page.tsx
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@workspace/contracts/public-api/client'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { loginSchema, LoginInput } from '@workspace/contracts'
+import { Button } from '@workspace/ui/components/button'
+import { Input } from '@workspace/ui/components/input'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@workspace/ui/components/form'
 
-export function UserList() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => apiClient.users.list({ limit: 20 }),
+export default function LoginPage() {
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
   })
 
-  if (error) return <div>Error loading users</div>
-  if (isLoading) return <UserListSkeleton />
+  const onSubmit = async (data: LoginInput) => {
+    // Type-safe data
+  }
 
   return (
-    <ul className="space-y-2">
-      {data.data.map((user) => (
-        <li key={user.id} className="p-4 border rounded">
-          <p className="font-medium">{user.name}</p>
-          <p className="text-sm text-muted-foreground">{user.email}</p>
-        </li>
-      ))}
-    </ul>
-  )
-}
-```
-
-### Frontend Mobile: Expo
-
-**[Expo](https://expo.dev)** with Expo Router
-
-```typescript
-// apps/mobile-customer/app/(tabs)/users.tsx
-import { View, FlatList, Text } from 'react-native'
-import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@workspace/contracts/public-api/client'
-
-export default function UsersScreen() {
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => apiClient.users.list({ limit: 20 }),
-  })
-
-  return (
-    <FlatList
-      data={data?.data ?? []}
-      refreshing={isLoading}
-      onRefresh={refetch}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <View className="p-4 border-b border-border">
-          <Text className="font-medium">{item.name}</Text>
-          <Text className="text-sm text-muted-foreground">{item.email}</Text>
-        </View>
-      )}
-    />
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="email@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Sign In</Button>
+      </form>
+    </Form>
   )
 }
 ```
@@ -446,76 +620,54 @@ export default function UsersScreen() {
 
 ### Recommended: Better Auth
 
-**[Better Auth](https://better-auth.com)** - TypeScript-native authentication
+**[Better Auth](https://better-auth.com)** - Self-hosted, TypeScript-native
 
 **Why Better Auth:**
 
-| Aspect | Better Auth | Clerk | Auth.js | Lucia |
-|--------|-------------|-------|---------|-------|
-| **Self-hosted** | ✅ | ❌ Managed | ✅ | ✅ |
-| **Cost** | Free | $$$$ at scale | Free | Free |
-| **TypeScript** | ✅ Native | ✅ Good | ⚠️ Okay | ✅ Native |
-| **Database control** | ✅ Full | ❌ Their DB | ✅ Full | ✅ Full |
-| **Social OAuth** | ✅ | ✅ | ✅ | ⚠️ Manual |
-| **Email/Password** | ✅ | ✅ | ⚠️ Limited | ✅ |
-| **2FA/MFA** | ✅ | ✅ | ❌ | ⚠️ Manual |
-| **API Keys** | ✅ | ✅ | ❌ | ❌ |
-| **Organizations** | ✅ | ✅ | ❌ | ❌ |
-| **Setup complexity** | Medium | Easy | Medium | Hard |
+| Feature | Better Auth | Clerk | Auth.js | Lucia |
+|---------|-------------|-------|---------|-------|
+| Self-hosted | ✅ | ❌ | ✅ | ✅ |
+| Cost | Free | $$$$ | Free | Free |
+| TypeScript | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Email/Password | ✅ | ✅ | ⚠️ | ✅ |
+| OAuth | ✅ | ✅ | ✅ | Manual |
+| API Keys | ✅ | ✅ | ❌ | ❌ |
+| Organizations | ✅ | ✅ | ❌ | ❌ |
+| 2FA/MFA | ✅ | ✅ | ❌ | Manual |
+| AI-Friendly | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 
 ### Auth Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────┐
 │                    Authentication Flow                          │
-├─────────────────────────────────────────────────────────────────┤
+├────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐       │
-│  │  Web Apps   │     │ Mobile Apps │     │ Public API  │       │
-│  │  (Session)  │     │   (Token)   │     │ (API Keys)  │       │
-│  └──────┬──────┘     └──────┬──────┘     └──────┬──────┘       │
-│         │                   │                   │               │
-│         └───────────────────┼───────────────────┘               │
-│                             ▼                                   │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                 packages/auth (Better Auth)              │   │
-│  │                                                          │   │
-│  │  • Email/Password     • OAuth (Google, GitHub, etc.)    │   │
-│  │  • Magic Links        • API Key Management               │   │
-│  │  • 2FA/TOTP          • Session Management                │   │
-│  │  • Organizations     • Role-Based Access Control         │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                             │                                   │
-│                             ▼                                   │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              packages/db (Auth Tables)                   │   │
-│  │                                                          │   │
-│  │  • users            • sessions        • accounts        │   │
-│  │  • api_keys         • organizations   • memberships     │   │
-│  └─────────────────────────────────────────────────────────┘   │
+│  Web Apps ──────► Session (Cookie)                             │
 │                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+│  Mobile Apps ───► Bearer Token                                 │
+│                                                                 │
+│  Public API ────► API Key (X-API-Key header)                   │
+│                                                                 │
+│         All routes through: packages/auth (Better Auth)        │
+│                              ↓                                  │
+│                        packages/db                              │
+│                   (users, sessions, api_keys)                   │
+└────────────────────────────────────────────────────────────────┘
 ```
 
-### Auth Implementation
+### Implementation
 
 ```typescript
 // packages/auth/src/index.ts
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { db } from '@workspace/db'
-import { users, sessions, accounts } from '@workspace/db/schema'
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: 'pg',
-    schema: { users, sessions, accounts },
-  }),
+  database: drizzleAdapter(db, { provider: 'pg' }),
 
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: true,
-  },
+  emailAndPassword: { enabled: true },
 
   socialProviders: {
     google: {
@@ -529,29 +681,15 @@ export const auth = betterAuth({
   },
 
   // For public API
-  apiKeys: {
-    enabled: true,
-    prefix: 'pk_', // public key prefix
-  },
+  apiKeys: { enabled: true },
 
-  // For multi-tenant apps
-  organizations: {
-    enabled: true,
-    roles: ['owner', 'admin', 'member'],
-  },
-
-  // 2FA
-  twoFactor: {
-    enabled: true,
-    issuer: 'YourApp',
-  },
+  // For multi-tenant
+  organizations: { enabled: true },
 })
-
-export type Auth = typeof auth
 ```
 
 ```typescript
-// packages/auth/src/client.ts (for web/mobile)
+// packages/auth/src/client.ts
 import { createAuthClient } from 'better-auth/client'
 
 export const authClient = createAuthClient({
@@ -559,160 +697,15 @@ export const authClient = createAuthClient({
 })
 ```
 
-```typescript
-// apps/api-public/src/middleware/auth.ts
-import { FastifyPluginAsync } from 'fastify'
-import { auth } from '@workspace/auth'
-
-export const authMiddleware: FastifyPluginAsync = async (fastify) => {
-  fastify.decorateRequest('user', null)
-  fastify.decorateRequest('session', null)
-
-  fastify.addHook('onRequest', async (request, reply) => {
-    // Check for API key first (public API)
-    const apiKey = request.headers['x-api-key']
-    if (apiKey) {
-      const result = await auth.api.validateApiKey(apiKey)
-      if (result) {
-        request.user = result.user
-        request.apiKey = result.apiKey
-        return
-      }
-    }
-
-    // Check for session (web apps)
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    })
-
-    if (session) {
-      request.user = session.user
-      request.session = session.session
-    }
-  })
-}
-
-// Protected route example
-fastify.get('/me', {
-  preHandler: [requireAuth], // Custom guard
-}, async (request) => {
-  return request.user
-})
-```
-
-```typescript
-// apps/web-main/app/auth/login/page.tsx
-'use client'
-
-import { useState } from 'react'
-import { authClient } from '@workspace/auth/client'
-import { Button } from '@workspace/ui/components/button'
-import { Input } from '@workspace/ui/components/input'
-
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    const { data, error } = await authClient.signIn.email({
-      email,
-      password,
-    })
-
-    if (error) {
-      // Handle error
-    } else {
-      // Redirect to dashboard
-    }
-
-    setLoading(false)
-  }
-
-  return (
-    <form onSubmit={handleLogin} className="space-y-4">
-      <Input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <Input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <Button type="submit" disabled={loading}>
-        {loading ? 'Signing in...' : 'Sign In'}
-      </Button>
-
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => authClient.signIn.social({ provider: 'google' })}
-        >
-          Google
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => authClient.signIn.social({ provider: 'github' })}
-        >
-          GitHub
-        </Button>
-      </div>
-    </form>
-  )
-}
-```
-
-### Public API Authentication
-
-For external developers consuming your public API:
-
-```typescript
-// API Key management endpoint
-// apps/api-public/src/routes/api-keys.ts
-
-fastify.post('/api-keys', {
-  preHandler: [requireAuth],
-}, async (request) => {
-  const apiKey = await auth.api.createApiKey({
-    userId: request.user.id,
-    name: request.body.name,
-    expiresAt: request.body.expiresAt, // Optional
-    scopes: request.body.scopes, // ['read:users', 'write:users']
-  })
-
-  // Only show the full key once!
-  return {
-    id: apiKey.id,
-    key: apiKey.key, // pk_live_xxxxx - only shown once
-    name: apiKey.name,
-    createdAt: apiKey.createdAt,
-  }
-})
-```
-
-External developers use:
-```bash
-curl -H "X-API-Key: pk_live_xxxxx" https://api.example.com/users
-```
-
 ### When to Use Alternatives
 
-| Scenario | Recommendation |
-|----------|----------------|
-| **Fastest time to market** | Clerk - managed, works out of box |
-| **Existing Next.js app** | Auth.js - tight integration |
-| **Just need sessions** | Lucia - lightweight, flexible |
-| **Enterprise SSO (SAML)** | WorkOS or Clerk |
-| **Full control, self-hosted** | Better Auth ✅ |
+| Situation | Recommendation |
+|-----------|----------------|
+| Fastest launch | **Clerk** - managed, works immediately |
+| Existing Next.js | **Auth.js** - tight integration |
+| Maximum control | **Better Auth** - own your data |
+| Just sessions | **Lucia** - lightweight |
+| Enterprise SSO | **WorkOS** or **Clerk** |
 
 ---
 
@@ -721,395 +714,206 @@ curl -H "X-API-Key: pk_live_xxxxx" https://api.example.com/users
 ```
 project-template/
 ├── apps/
-│   │
-│   │  # ===== API APPLICATIONS =====
-│   ├── api-public/                 # Public API (external developers)
+│   ├── api-public/                 # Public API
 │   │   ├── src/
-│   │   │   ├── routes/
-│   │   │   │   ├── users.ts
-│   │   │   │   ├── products.ts
-│   │   │   │   └── webhooks.ts
-│   │   │   ├── middleware/
-│   │   │   │   ├── auth.ts         # API key + session auth
-│   │   │   │   ├── rate-limit.ts
-│   │   │   │   └── logging.ts
-│   │   │   ├── plugins/
-│   │   │   │   └── swagger.ts      # OpenAPI UI
+│   │   │   ├── routes/             # Route handlers
+│   │   │   ├── middleware/         # Auth, rate-limit, logging
 │   │   │   └── index.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   ├── api-internal/               # Internal services API
-│   │   ├── src/
-│   │   │   ├── routes/
-│   │   │   ├── middleware/
-│   │   │   ├── jobs/               # Background jobs
-│   │   │   └── index.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   ├── api-admin/                  # Admin-only API
-│   │   ├── src/
-│   │   │   ├── routes/
-│   │   │   ├── middleware/
-│   │   │   │   └── admin-only.ts   # Role check
-│   │   │   └── index.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   │  # ===== WEB APPLICATIONS =====
-│   ├── web-main/                   # Main customer website
-│   │   ├── app/
-│   │   │   ├── (marketing)/        # Public pages
-│   │   │   ├── (dashboard)/        # Authenticated pages
-│   │   │   ├── auth/               # Auth pages
-│   │   │   └── layout.tsx
-│   │   ├── components/
-│   │   ├── lib/
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   ├── web-admin/                  # Admin dashboard
-│   │   ├── app/
-│   │   ├── components/
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   ├── web-docs/                   # API documentation portal
-│   │   ├── app/                    # Or use Astro/Mintlify
-│   │   ├── content/                # MDX documentation
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   │  # ===== MOBILE APPLICATIONS =====
-│   ├── mobile-customer/            # Customer mobile app
-│   │   ├── app/                    # Expo Router
-│   │   │   ├── (tabs)/
-│   │   │   ├── auth/
-│   │   │   └── _layout.tsx
-│   │   ├── components/
-│   │   ├── lib/
-│   │   ├── app.json
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   └── mobile-admin/               # Admin mobile app (if needed)
-│       ├── app/
-│       ├── components/
-│       ├── package.json
-│       └── tsconfig.json
-│
-├── packages/
-│   │
-│   │  # ===== CONTRACTS (TypeSpec) =====
-│   ├── contracts/
-│   │   ├── public-api/             # Public API contracts
-│   │   │   ├── main.tsp
-│   │   │   ├── users.tsp
-│   │   │   ├── products.tsp
-│   │   │   └── tspconfig.yaml
-│   │   ├── internal-api/           # Internal API contracts
-│   │   │   ├── main.tsp
-│   │   │   └── tspconfig.yaml
-│   │   ├── admin-api/              # Admin API contracts
-│   │   │   ├── main.tsp
-│   │   │   └── tspconfig.yaml
-│   │   ├── shared/                 # Shared models across APIs
-│   │   │   ├── models.tsp
-│   │   │   └── enums.tsp
-│   │   ├── generated/              # Generated outputs
-│   │   │   ├── public-api/
-│   │   │   │   ├── openapi.yaml
-│   │   │   │   ├── types.ts
-│   │   │   │   ├── schemas.ts      # Zod schemas
-│   │   │   │   └── client.ts       # API client
-│   │   │   ├── internal-api/
-│   │   │   └── admin-api/
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   │  # ===== DATABASE =====
-│   ├── db/
-│   │   ├── src/
-│   │   │   ├── schema/
-│   │   │   │   ├── users.ts
-│   │   │   │   ├── products.ts
-│   │   │   │   ├── auth.ts         # Auth tables
-│   │   │   │   └── index.ts
-│   │   │   ├── migrations/
-│   │   │   ├── seed.ts
-│   │   │   └── index.ts            # DB client
-│   │   ├── drizzle.config.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   │  # ===== AUTHENTICATION =====
-│   ├── auth/
-│   │   ├── src/
-│   │   │   ├── index.ts            # Better Auth config
-│   │   │   ├── client.ts           # Client for web/mobile
-│   │   │   └── middleware.ts       # Fastify middleware
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   │  # ===== UI COMPONENTS =====
-│   ├── ui/                         # Web UI (shadcn/ui)
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   │   ├── button.tsx
-│   │   │   │   ├── input.tsx
-│   │   │   │   ├── card.tsx
-│   │   │   │   └── ...
-│   │   │   ├── hooks/
-│   │   │   └── lib/
-│   │   │       └── utils.ts        # cn() helper
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   ├── ui-native/                  # Mobile UI (NativeWind)
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   │   ├── button.tsx
-│   │   │   │   ├── input.tsx
-│   │   │   │   └── ...
-│   │   │   └── lib/
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   │  # ===== SHARED UTILITIES =====
-│   ├── utils/
-│   │   ├── src/
-│   │   │   ├── date.ts
-│   │   │   ├── string.ts
-│   │   │   ├── validation.ts
-│   │   │   └── index.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   │
-│   │  # ===== CONFIG PACKAGES =====
-│   ├── eslint-config/
-│   │   ├── base.js
-│   │   ├── next.js
-│   │   ├── react-native.js
 │   │   └── package.json
 │   │
-│   └── typescript-config/
-│       ├── base.json
-│       ├── nextjs.json
-│       ├── react-native.json
-│       └── package.json
+│   ├── api-internal/               # Internal API
+│   │   └── ...
+│   │
+│   ├── web-main/                   # Main website
+│   │   ├── app/                    # Next.js App Router
+│   │   │   ├── (marketing)/        # Public pages
+│   │   │   ├── (dashboard)/        # Auth-required pages
+│   │   │   └── auth/               # Login, register, etc.
+│   │   ├── components/             # App-specific components
+│   │   └── package.json
+│   │
+│   ├── web-admin/                  # Admin dashboard
+│   │   └── ...
+│   │
+│   ├── mobile-customer/            # Customer mobile app
+│   │   ├── app/                    # Expo Router
+│   │   ├── components/
+│   │   └── package.json
+│   │
+│   └── mobile-admin/               # Admin mobile app
+│       └── ...
 │
-├── tooling/
-│   └── scripts/
-│       ├── generate-contracts.ts   # TypeSpec compilation
-│       └── db-migrate.ts
+├── packages/
+│   ├── contracts/                  # API contracts
+│   │   ├── src/
+│   │   │   ├── schemas/            # Zod schemas (shared)
+│   │   │   ├── api/                # API route contracts
+│   │   │   └── index.ts
+│   │   └── package.json
+│   │
+│   ├── db/                         # Database
+│   │   ├── src/
+│   │   │   ├── schema/             # Drizzle tables
+│   │   │   ├── migrations/
+│   │   │   └── index.ts            # DB client
+│   │   └── package.json
+│   │
+│   ├── auth/                       # Authentication
+│   │   ├── src/
+│   │   │   ├── index.ts            # Server config
+│   │   │   └── client.ts           # Client for web/mobile
+│   │   └── package.json
+│   │
+│   ├── ui/                         # Web UI (shadcn/ui)
+│   │   ├── src/
+│   │   │   ├── components/         # Button, Input, Card, etc.
+│   │   │   ├── hooks/
+│   │   │   └── lib/utils.ts        # cn() helper
+│   │   └── package.json
+│   │
+│   ├── ui-native/                  # Mobile UI
+│   │   ├── src/
+│   │   │   ├── components/         # RN components
+│   │   │   └── lib/
+│   │   └── package.json
+│   │
+│   ├── utils/                      # Shared utilities
+│   │   └── ...
+│   │
+│   ├── eslint-config/              # Shared ESLint
+│   └── typescript-config/          # Shared TSConfig
 │
 ├── turbo.json
 ├── pnpm-workspace.yaml
-├── package.json
-└── .github/
-    └── workflows/
-        ├── ci.yml                  # Test, lint, typecheck
-        ├── deploy-api.yml          # Deploy APIs
-        ├── deploy-web.yml          # Deploy web apps
-        └── eas-build.yml           # Mobile builds
+└── package.json
 ```
 
 ---
 
 ## Implementation Roadmap
 
-### Phase 1: Foundation
+### Phase 1: Foundation (Week 1-2)
 
-1. **Set up TypeSpec contracts**
-   - Install TypeSpec CLI and VS Code extension
-   - Define shared models in `packages/contracts/shared/`
-   - Create public API contract in `packages/contracts/public-api/`
-   - Configure TypeSpec to generate TypeScript + Zod + OpenAPI
+1. **Set up contracts package**
+   - Choose TypeSpec (Option A) or Zod+ts-rest (Option B)
+   - Define core schemas (User, etc.)
+   - Set up code generation if using TypeSpec
 
 2. **Set up database**
-   - Configure Drizzle with PostgreSQL
-   - Define core schemas (users, etc.)
-   - Set up migrations workflow
+   - Configure Drizzle + PostgreSQL
+   - Define schemas
+   - Set up migrations
 
 3. **Set up authentication**
    - Install Better Auth
-   - Configure email/password + OAuth providers
-   - Set up API key management for public API
-   - Create auth middleware for Fastify
+   - Configure providers
+   - Set up API key management
 
 4. **Create first API**
-   - Set up `apps/api-public` with Fastify
-   - Implement routes using generated types from TypeSpec
-   - Add Swagger UI for API documentation
-   - Deploy to staging
+   - Set up Fastify (Option A) or Hono (Option B)
+   - Implement auth routes
+   - Add OpenAPI docs
 
-### Phase 2: Web Applications
+### Phase 2: Web (Week 3-4)
 
-5. **Update main web app**
-   - Configure TanStack Query
-   - Integrate generated API client from TypeSpec
-   - Implement auth flows (login, register, OAuth)
-   - Build core pages
+5. **Set up UI package**
+   - Install shadcn/ui components
+   - Configure Tailwind
+   - Create shared components
 
-6. **Create admin web app**
-   - Set up `apps/web-admin`
-   - Implement admin-only routes
-   - Role-based access control
+6. **Build web-main**
+   - Auth pages (login, register)
+   - Dashboard layout
+   - Core features
 
-7. **Create docs portal**
-   - Set up `apps/web-docs` (or use Mintlify/ReadMe)
-   - Import OpenAPI spec from TypeSpec
-   - Add getting started guides
+7. **Build web-admin** (if needed)
+   - Admin-only features
+   - Role-based access
 
-### Phase 3: Mobile Applications
+### Phase 3: Mobile (Week 5-6)
 
-8. **Create customer mobile app**
-   - Initialize Expo project
-   - Set up Expo Router
+8. **Set up mobile UI package**
+   - Choose Gluestack or RN Reusables
    - Configure NativeWind
-   - Implement auth flows
-   - Share TanStack Query setup with web
+   - Port shared components
 
-9. **Create admin mobile app** (if needed)
-   - Similar setup to customer app
-   - Admin-specific features
+9. **Build mobile-customer**
+   - Auth flows
+   - Core features
+   - Push notifications
 
-### Phase 4: Additional APIs & Polish
+### Phase 4: Polish (Week 7-8)
 
-10. **Create internal API**
-    - Set up `apps/api-internal`
-    - Background jobs, webhooks, etc.
+10. **Testing**
+    - Unit tests (Vitest)
+    - E2E tests (Playwright)
+    - Mobile tests
 
-11. **Create admin API**
-    - Set up `apps/api-admin`
-    - Admin-only endpoints
-
-12. **Testing & CI/CD**
-    - Vitest for unit tests
-    - Playwright for E2E
-    - GitHub Actions workflows
+11. **CI/CD**
+    - GitHub Actions
+    - Preview deployments
     - EAS Build for mobile
 
 ---
 
-## AI Agent Compatibility Notes
+## Quick Reference
 
-### TypeSpec vs Zod: AI Perspective
-
-**TypeSpec advantages for AI:**
-- Declarative, high-level API design
-- Clear structure for complex APIs
-- Generates multiple outputs from single source
-
-**TypeSpec challenges for AI:**
-- Less training data (newer)
-- DSL syntax differs from TypeScript
-- Compilation step adds indirection
-
-**Mitigation:**
-- Keep TypeSpec files simple and well-commented
-- Generated TypeScript is what AI will work with most
-- AI can still understand TypeSpec after seeing examples
-
-### Fastify Patterns AI Understands Well
-
-```typescript
-// Pattern: Route with full type safety
-// AI can trace: schema → handler → response
-
-fastify.post<{
-  Body: CreateUserRequest    // Input type
-  Reply: User | ErrorResponse // Output type
-}>('/users', {
-  schema: {
-    body: CreateUserRequestSchema,
-    response: {
-      201: UserSchema,
-      400: ErrorResponseSchema,
-    },
-  },
-}, async (request, reply) => {
-  // request.body is fully typed
-  // return type is enforced
-})
-```
-
-### File Organization for AI Navigation
-
-```
-Good: Flat, explicit files
-├── routes/
-│   ├── users.ts        # All user routes
-│   ├── products.ts     # All product routes
-│   └── orders.ts       # All order routes
-
-Bad: Deep nesting
-├── routes/
-│   ├── users/
-│   │   ├── index.ts
-│   │   ├── create.ts
-│   │   ├── update.ts
-│   │   └── delete.ts
-```
-
-### Anti-Patterns to Avoid
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| `any` types | AI loses context | Proper types from contracts |
-| Barrel files (`index.ts` re-exports) | Circular deps, hard to trace | Direct imports |
-| Magic strings | No autocomplete | Generated enums from TypeSpec |
-| Runtime type checking only | Errors too late | TypeSpec + generated Zod |
-| Shared mutable state | Race conditions | Request-scoped data |
-
----
-
-## Quick Reference: Package Versions
+### Package Versions
 
 ```json
 {
   "dependencies": {
-    "@typespec/compiler": "^0.62.x",
-    "@typespec/http": "^0.62.x",
-    "@typespec/openapi3": "^0.62.x",
     "fastify": "^5.x",
-    "@fastify/swagger": "^9.x",
-    "@fastify/swagger-ui": "^5.x",
+    "hono": "^4.x",
     "drizzle-orm": "^0.36.x",
-    "better-auth": "^1.x",
     "zod": "^3.24.x",
+    "@ts-rest/core": "^3.x",
+    "better-auth": "^1.x",
     "@tanstack/react-query": "^5.x",
     "next": "^15.x",
     "expo": "~52.x",
-    "expo-router": "~4.x",
-    "nativewind": "^4.x"
-  },
-  "devDependencies": {
-    "drizzle-kit": "^0.30.x",
-    "turbo": "^2.x",
-    "vitest": "^2.x",
-    "typescript": "^5.7.x"
+    "nativewind": "^4.x",
+    "react-hook-form": "^7.x",
+    "@hookform/resolvers": "^3.x"
   }
 }
 ```
+
+### AI-Friendly Checklist
+
+Before adding any dependency, ask:
+
+- [ ] Can AI read the source code? (copy-paste > npm install)
+- [ ] Are types explicit? (TypeScript > JavaScript)
+- [ ] Is behavior predictable? (explicit > magic)
+- [ ] Is it well-documented? (more docs = better AI)
+- [ ] Does it have examples? (more examples = better AI)
+- [ ] Is it composable? (small pieces > monolith)
 
 ---
 
 ## Summary
 
-This architecture prioritizes:
+**This document presents two valid paths:**
 
-1. **Public API Ready**: TypeSpec generates OpenAPI for external developers
-2. **Multi-App Scale**: Clear separation of APIs, web apps, and mobile apps
-3. **Type Safety**: Contracts flow from TypeSpec → TypeScript → all apps
-4. **Authentication**: Better Auth provides full control with modern features
-5. **AI Readability**: Explicit patterns, strong types, predictable structure
+| Aspect | Option A (Conservative) | Option B (Modern) |
+|--------|------------------------|-------------------|
+| Contracts | TypeSpec | Zod + ts-rest |
+| API | Fastify | Hono |
+| Risk level | Lower | Higher |
+| AI training data | Less (TypeSpec) | More (Zod) |
+| Edge deployment | No | Yes |
+| OpenAPI | Native | Extra tooling |
 
-**Key decisions:**
-- **TypeSpec** over Zod+ts-rest for public API documentation needs
-- **Fastify** over Hono for production maturity and ecosystem
-- **Better Auth** over Clerk for self-hosted control and cost
-- **Drizzle** over Prisma for SQL transparency and edge compatibility
+**Shared across both:**
+- Drizzle ORM (database)
+- Better Auth (authentication)
+- shadcn/ui (web components)
+- Tailwind CSS (styling)
+- TanStack Query (data fetching)
+- Next.js 15 (web framework)
+- Expo (mobile framework)
 
-The architecture is designed to scale from startup to enterprise while remaining maintainable and AI-agent friendly.
+**The key insight:** What makes code AI-friendly also makes it human-friendly—explicit code, strong types, predictable patterns, and minimal magic.
+
+Choose based on YOUR constraints, not hype.
