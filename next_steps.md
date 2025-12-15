@@ -1110,14 +1110,90 @@ pnpm add -Dw @biomejs/biome
 }
 ```
 
-### Reverse Proxy: Caddy (Optional)
+### Reverse Proxy: Caddy
 
 **[Caddy](https://caddyserver.com)** - Modern web server with auto HTTPS
 
-**When to use:**
-- Production deployment (auto SSL)
-- Local development with HTTPS
-- Unified entry point for multiple apps
+**Required for features needing HTTPS:**
+
+| Feature | Needs Secure Context | Works on localhost? |
+|---------|---------------------|---------------------|
+| WebRTC (video calls) | ✅ Yes | ✅ Yes |
+| Clipboard API | ✅ Yes | ✅ Yes |
+| OAuth/SSO | ⚠️ Often | ⚠️ Some providers |
+| Mobile testing | ✅ Yes | ❌ No (need real HTTPS) |
+| Service Workers | ✅ Yes | ✅ Yes |
+
+**When Caddy is REQUIRED:**
+- Video/audio calls (WebRTC)
+- Copy to clipboard functionality
+- Testing on mobile devices (phone → dev machine)
+- OAuth providers that require HTTPS
+- Custom local domains (`dev.app.local`)
+
+**For local development (recommended):**
+```caddyfile
+# Caddyfile.dev
+{
+  # Generate local certificates automatically
+  local_certs
+}
+
+# Single domain with path routing
+localhost {
+  # API routes
+  handle_path /api/* {
+    reverse_proxy localhost:3001
+  }
+
+  # Admin routes
+  handle_path /admin/* {
+    reverse_proxy localhost:3002
+  }
+
+  # Main app (catch-all)
+  handle {
+    reverse_proxy localhost:3000
+  }
+}
+
+# Or use subdomains (requires /etc/hosts entries)
+# api.localhost {
+#   reverse_proxy localhost:3001
+# }
+```
+
+**For mobile device testing:**
+```caddyfile
+# Caddyfile.dev
+{
+  local_certs
+}
+
+# Use your machine's local IP
+# Add to phone: Settings → Wi-Fi → HTTP Proxy → your-ip:443
+192.168.1.100 {
+  handle_path /api/* {
+    reverse_proxy localhost:3001
+  }
+  handle {
+    reverse_proxy localhost:3000
+  }
+}
+```
+
+**Setup:**
+```bash
+# Install Caddy
+brew install caddy  # macOS
+# or: https://caddyserver.com/docs/install
+
+# Trust local certificates (one-time)
+caddy trust
+
+# Run in development
+caddy run --config Caddyfile.dev
+```
 
 **For production:**
 ```caddyfile
@@ -1137,32 +1213,24 @@ app.example.com {
 admin.example.com {
   reverse_proxy web-admin:3002
 }
-```
 
-**For local development (optional):**
-```caddyfile
-# Caddyfile.dev
-{
-  local_certs
-}
+# WebSocket support for video calls
+meet.example.com {
+  reverse_proxy web-meet:3003
 
-localhost {
-  handle_path /api/* {
-    reverse_proxy localhost:3001
+  # WebSocket upgrade
+  @websockets {
+    header Connection *Upgrade*
+    header Upgrade websocket
   }
-  handle_path /admin/* {
-    reverse_proxy localhost:3002
-  }
-  handle {
-    reverse_proxy localhost:3000
-  }
+  reverse_proxy @websockets web-meet:3003
 }
 ```
 
 **When NOT to use Caddy:**
-- Simple development (Turborepo handles multiple ports fine)
 - Deploying to Vercel/Cloudflare (they handle SSL)
-- Don't need unified local entry point
+- Simple apps without HTTPS-required features
+- CI/CD testing (use localhost)
 
 ### Git Hooks: Lefthook
 
@@ -1264,7 +1332,7 @@ After presenting both options, here's my actual recommendation for your use case
 | **Type Checking** | TypeScript strict | Maximum type safety, AI understands types. |
 | **Code Generation** | PlopJS | Consistent scaffolding, templates AI can read/modify. |
 | **Git Hooks** | Lefthook | Fast, parallel, simple YAML config. |
-| **Reverse Proxy** | Caddy (production) | Auto HTTPS, simple Caddyfile. Optional for dev. |
+| **Reverse Proxy** | Caddy | Required for WebRTC/clipboard. Auto HTTPS in dev & prod. |
 
 ### Why These Choices
 
@@ -1326,7 +1394,7 @@ I chose **React Native Reusables** over Gluestack because:
 │  Tooling:      Biome (lint/format) + TypeScript strict      │
 │  Scaffolding:  PlopJS (code generation)                     │
 │  Git Hooks:    Lefthook (pre-commit, pre-push)              │
-│  Proxy:        Caddy (production, optional for dev)         │
+│  Proxy:        Caddy (dev + prod, required for WebRTC)      │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
