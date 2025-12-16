@@ -73,7 +73,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  apps/mobile-customer:
+  apps/mobile:
     dependencies:
       '@expo/vector-icons':
         specifier: ^15.0.3

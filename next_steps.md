@@ -407,7 +407,7 @@ npx gluestack-ui add button input card
 ```
 
 ```typescript
-// apps/mobile-customer/components/login-form.tsx
+// apps/mobile/components/login-form.tsx
 import { VStack, Button, Input, Text } from '@gluestack-ui/themed'
 
 export function LoginForm() {
@@ -446,7 +446,7 @@ npx @react-native-reusables/cli add button input card
 ```
 
 ```typescript
-// apps/mobile-customer/components/login-form.tsx
+// apps/mobile/components/login-form.tsx
 import { View } from 'react-native'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -735,7 +735,7 @@ project-template/
 │   ├── web-admin/                  # Admin dashboard
 │   │   └── ...
 │   │
-│   ├── mobile-customer/            # Customer mobile app
+│   ├── mobile/            # Customer mobile app
 │   │   ├── app/                    # Expo Router
 │   │   ├── components/
 │   │   └── package.json
@@ -848,7 +848,7 @@ project-template/
    - Configure NativeWind
    - Port shared components
 
-9. **Build mobile-customer**
+9. **Build mobile**
    - Auth flows
    - Core features
    - Push notifications

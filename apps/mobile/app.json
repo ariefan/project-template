@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mobile-customer",
-    "slug": "mobile-customer",
+    "name": "mobile",
+    "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobilecustomer",
+    "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {

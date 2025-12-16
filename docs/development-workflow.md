@@ -518,10 +518,10 @@ export default function ProductsPage() {
 }
 ```
 
-#### Step 5: Implement UI - Mobile (apps/mobile-customer)
+#### Step 5: Implement UI - Mobile (apps/mobile)
 
 ```typescript
-// apps/mobile-customer/hooks/useProducts.ts
+// apps/mobile/hooks/useProducts.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Product, CreateProduct } from '@workspace/contracts'
 
@@ -557,7 +557,7 @@ export function useCreateProduct() {
 ```
 
 ```typescript
-// apps/mobile-customer/app/(tabs)/products.tsx
+// apps/mobile/app/(tabs)/products.tsx
 import { View, Text, FlatList } from 'react-native'
 import { useProducts } from '@/hooks/useProducts'
 
