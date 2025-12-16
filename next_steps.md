@@ -987,7 +987,7 @@ pnpm add -Dw @biomejs/biome
 ```json
 // biome.json
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.0/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -1269,31 +1269,39 @@ pre-push:
 
 ## Quick Reference
 
-### Package Versions
+### Package Versions (December 2025)
 
 ```json
 {
   "dependencies": {
+    "next": "^16.x",
+    "expo": "~54.x",
+    "expo-router": "~4.x",
+    "react": "^19.x",
+    "react-native": "~0.81.x",
     "fastify": "^5.x",
     "hono": "^4.x",
     "drizzle-orm": "^0.45.x",
-    "zod": "^4.x",
+    "zod": "^3.24.x",
     "@ts-rest/core": "^3.x",
     "better-auth": "^1.x",
     "@tanstack/react-query": "^5.x",
-    "next": "^16.x",
-    "expo": "~54.x",
+    "tailwindcss": "^4.x",
     "nativewind": "^4.x",
     "react-hook-form": "^7.x",
     "@hookform/resolvers": "^3.x"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.x",
+    "@typespec/compiler": "^0.65.x",
+    "@typespec/http": "^0.65.x",
+    "@typespec/openapi3": "^0.65.x",
+    "drizzle-kit": "^0.30.x",
     "plop": "^4.x",
     "lefthook": "^2.x",
     "turbo": "^2.x",
-    "typescript": "^5.9.x",
-    "vitest": "^2.x"
+    "typescript": "^5.x",
+    "vitest": "^3.x"
   }
 }
 ```
@@ -1320,7 +1328,9 @@ After presenting both options, here's my actual recommendation for your use case
 | Layer | Choice | Why |
 |-------|--------|-----|
 | **Contracts** | TypeSpec | You need public API → need OpenAPI docs. TypeSpec generates them natively. |
-| **API** | Fastify | Multi-app at scale needs mature ecosystem. 7+ years battle-tested. |
+| **API Framework** | Fastify | Multi-app at scale needs mature ecosystem. 7+ years battle-tested. |
+| **Web Framework** | Next.js 16 | File-based routing, React Server Components, massive AI training data. |
+| **Mobile Framework** | Expo SDK 54 | Managed React Native, file-based routing (Expo Router), OTA updates. |
 | **Database** | Drizzle | Unanimous. SQL-like, no magic, AI understands it perfectly. |
 | **Web** | Next.js 16 | App Router, RSC, massive AI training data, best DX. |
 | **Mobile** | Expo SDK 54 | Managed RN, file-based routing, OTA updates, best mobile DX. |
@@ -1331,7 +1341,7 @@ After presenting both options, here's my actual recommendation for your use case
 | **Data Fetching** | TanStack Query | Explicit cache keys, typed, works on web and mobile. |
 | **Forms** | React Hook Form + Zod | Shared validation schemas across all platforms. |
 | **Linting/Formatting** | Biome | Single tool, 100x faster than ESLint+Prettier, simple config. |
-| **Type Checking** | TypeScript strict | Maximum type safety, AI understands types. |
+| **Type Checking** | TypeScript 5.7 | Maximum type safety, AI understands types. |
 | **Code Generation** | PlopJS | Consistent scaffolding, templates AI can read/modify. |
 | **Git Hooks** | Lefthook | Fast, parallel, simple YAML config. |
 | **Reverse Proxy** | Caddy | Required for WebRTC/clipboard. Auto HTTPS in dev & prod. |
@@ -1384,8 +1394,8 @@ I chose **React Native Reusables** over Gluestack because:
 │  Database:     Drizzle + PostgreSQL                         │
 │  Auth:         Better Auth (self-hosted)                    │
 │                                                              │
-│  Web:          Next.js 16 + shadcn/ui + Tailwind            │
-│  Mobile:       Expo SDK 54 + RN Reusables + NativeWind      │
+│  Web:          Next.js 16 + shadcn/ui + Tailwind v4         │
+│  Mobile:       Expo 54 + React Native Reusables + NativeWind│
 │                                                              │
 │  Data:         TanStack Query (web + mobile)                │
 │  Forms:        React Hook Form + Zod                        │
