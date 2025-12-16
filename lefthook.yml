@@ -1,0 +1,16 @@
+# https://github.com/evilmartians/lefthook
+
+pre-commit:
+  parallel: true
+  commands:
+    ultracite:
+      glob: "**/*.{js,jsx,ts,tsx,json,jsonc,css}"
+      run: pnpm ultracite fix {staged_files}
+      stage_fixed: true
+    typecheck:
+      run: pnpm typecheck
+
+pre-push:
+  commands:
+    check:
+      run: pnpm check

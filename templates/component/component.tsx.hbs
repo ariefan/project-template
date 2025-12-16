@@ -1,0 +1,49 @@
+import * as React from "react"
+{{#if hasVariants}}
+import { cva, type VariantProps } from "class-variance-authority"
+{{/if}}
+import { cn } from "../lib/utils"
+
+{{#if hasVariants}}
+const {{camelCase name}}Variants = cva(
+  "inline-flex items-center justify-center",
+  {
+    variants: {
+      variant: {
+        default: "",
+        secondary: "",
+      },
+      size: {
+        default: "",
+        sm: "",
+        lg: "",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface {{pascalCase name}}Props
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof {{camelCase name}}Variants> {}
+
+function {{pascalCase name}}({ className, variant, size, ...props }: {{pascalCase name}}Props) {
+  return (
+    <div
+      className={cn({{camelCase name}}Variants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
+{{else}}
+export interface {{pascalCase name}}Props extends React.HTMLAttributes<HTMLDivElement> {}
+
+function {{pascalCase name}}({ className, ...props }: {{pascalCase name}}Props) {
+  return <div className={cn(className)} {...props} />
+}
+{{/if}}
+
+export { {{pascalCase name}} }

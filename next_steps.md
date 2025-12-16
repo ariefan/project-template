@@ -102,8 +102,8 @@ Best for: Risk-averse teams, enterprise, proven production needs
 | **Contracts** | TypeSpec | ⭐⭐⭐ | DSL to learn, but generates everything |
 | **API** | Fastify | ⭐⭐⭐⭐ | 7+ years, huge ecosystem, more examples |
 | **Database** | Drizzle | ⭐⭐⭐⭐⭐ | SQL-like, explicit, no magic |
-| **Web** | Next.js 15 | ⭐⭐⭐⭐⭐ | Massive training data, predictable |
-| **Mobile** | Expo | ⭐⭐⭐⭐ | Managed RN, file-based routing |
+| **Web** | Next.js 16 | ⭐⭐⭐⭐⭐ | Massive training data, predictable |
+| **Mobile** | Expo SDK 54 | ⭐⭐⭐⭐ | Managed RN, file-based routing |
 | **Web UI** | shadcn/ui | ⭐⭐⭐⭐⭐ | Copy-paste, fully visible code |
 | **Mobile UI** | Gluestack UI v2 | ⭐⭐⭐⭐ | Accessible, well-documented |
 | **Styling** | Tailwind CSS | ⭐⭐⭐⭐⭐ | Explicit utilities, no runtime |
@@ -119,8 +119,8 @@ Best for: Smaller teams, edge deployment, latest DX
 | **Contracts** | Zod + ts-rest | ⭐⭐⭐⭐⭐ | Pure TypeScript, more examples |
 | **API** | Hono | ⭐⭐⭐⭐ | Newer but clean, edge-native |
 | **Database** | Drizzle | ⭐⭐⭐⭐⭐ | Same as Option A |
-| **Web** | Next.js 15 | ⭐⭐⭐⭐⭐ | Same as Option A |
-| **Mobile** | Expo | ⭐⭐⭐⭐ | Same as Option A |
+| **Web** | Next.js 16 | ⭐⭐⭐⭐⭐ | Same as Option A |
+| **Mobile** | Expo SDK 54 | ⭐⭐⭐⭐ | Same as Option A |
 | **Web UI** | shadcn/ui | ⭐⭐⭐⭐⭐ | Same as Option A |
 | **Mobile UI** | React Native Reusables | ⭐⭐⭐⭐ | shadcn/ui patterns for RN |
 | **Styling** | Tailwind + NativeWind | ⭐⭐⭐⭐⭐ | Same classes web & mobile |
@@ -1276,23 +1276,23 @@ pre-push:
   "dependencies": {
     "fastify": "^5.x",
     "hono": "^4.x",
-    "drizzle-orm": "^0.36.x",
-    "zod": "^3.24.x",
+    "drizzle-orm": "^0.45.x",
+    "zod": "^4.x",
     "@ts-rest/core": "^3.x",
     "better-auth": "^1.x",
     "@tanstack/react-query": "^5.x",
-    "next": "^15.x",
-    "expo": "~52.x",
+    "next": "^16.x",
+    "expo": "~54.x",
     "nativewind": "^4.x",
     "react-hook-form": "^7.x",
     "@hookform/resolvers": "^3.x"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.x",
+    "@biomejs/biome": "^2.x",
     "plop": "^4.x",
-    "lefthook": "^1.x",
+    "lefthook": "^2.x",
     "turbo": "^2.x",
-    "typescript": "^5.7.x",
+    "typescript": "^5.9.x",
     "vitest": "^2.x"
   }
 }
@@ -1322,6 +1322,8 @@ After presenting both options, here's my actual recommendation for your use case
 | **Contracts** | TypeSpec | You need public API → need OpenAPI docs. TypeSpec generates them natively. |
 | **API** | Fastify | Multi-app at scale needs mature ecosystem. 7+ years battle-tested. |
 | **Database** | Drizzle | Unanimous. SQL-like, no magic, AI understands it perfectly. |
+| **Web** | Next.js 16 | App Router, RSC, massive AI training data, best DX. |
+| **Mobile** | Expo SDK 54 | Managed RN, file-based routing, OTA updates, best mobile DX. |
 | **Web UI** | shadcn/ui | Unanimous. Copy-paste, code in your repo, AI can read/modify. |
 | **Mobile UI** | React Native Reusables | Same philosophy as shadcn/ui. AI can read the code. Build what's missing. |
 | **Styling** | Tailwind + NativeWind | Same classes on web and mobile. Explicit, no CSS file jumping. |
@@ -1382,8 +1384,8 @@ I chose **React Native Reusables** over Gluestack because:
 │  Database:     Drizzle + PostgreSQL                         │
 │  Auth:         Better Auth (self-hosted)                    │
 │                                                              │
-│  Web:          Next.js 15 + shadcn/ui + Tailwind            │
-│  Mobile:       Expo + React Native Reusables + NativeWind   │
+│  Web:          Next.js 16 + shadcn/ui + Tailwind            │
+│  Mobile:       Expo SDK 54 + RN Reusables + NativeWind      │
 │                                                              │
 │  Data:         TanStack Query (web + mobile)                │
 │  Forms:        React Hook Form + Zod                        │
