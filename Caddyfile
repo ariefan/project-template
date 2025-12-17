@@ -1,0 +1,31 @@
+# Local development reverse proxy with HTTPS
+# Run with: caddy run
+# Or: caddy start (background)
+
+{
+	# Development mode - use local CA
+	local_certs
+}
+
+# Main development domain
+localhost {
+	# Web app (Next.js)
+	reverse_proxy /api/* localhost:3001
+	reverse_proxy localhost:3000
+}
+
+# Alternative: separate subdomains
+# Uncomment if you prefer subdomain-based routing
+
+# api.localhost {
+# 	reverse_proxy localhost:3001
+# }
+
+# web.localhost {
+# 	reverse_proxy localhost:3000
+# }
+
+# mobile.localhost {
+# 	# Expo dev server
+# 	reverse_proxy localhost:8081
+# }

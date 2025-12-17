@@ -1,4 +1,78 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"]
+  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "files": {
+    "includes": [
+      "!.next",
+      "!.expo",
+      "!.turbo",
+      "!dist",
+      "!tsp-output",
+      "!coverage",
+      "!**/__tests__"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "performance": {
+        // Radix UI / shadcn/ui requires namespace imports
+        "noNamespaceImport": "off",
+        // Monorepo packages use barrel files for exports
+        "noBarrelFile": "off"
+      },
+      "style": {
+        // Expo/RN files use special naming (+html.tsx, _layout.tsx)
+        "useFilenamingConvention": "off"
+      },
+      "suspicious": {
+        // Tailwind CSS @tailwind, @apply, @layer directives
+        "noUnknownAtRules": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Relaxed rules for shadcn/ui generated components
+      "includes": ["packages/ui/src/components/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useFocusableInteractive": "off",
+            "noNoninteractiveElementInteractions": "off",
+            "useKeyWithClickEvents": "off",
+            "useAriaPropsForRole": "off",
+            "noRedundantRoles": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off"
+          },
+          "correctness": {
+            "noNestedComponentDefinitions": "off",
+            "useExhaustiveDependencies": "off"
+          },
+          "nursery": {
+            "noShadow": "off",
+            "noLeakedRender": "off"
+          },
+          "style": {
+            "useBlockStatements": "off",
+            "noNestedTernary": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off",
+            "noDocumentCookie": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          }
+        }
+      }
+    }
+  ],
+  "css": {
+    "linter": {
+      "enabled": false
+    }
+  }
 }

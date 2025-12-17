@@ -6,12 +6,18 @@
   "scripts": {
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "compile": "tsp compile ./spec",
+    "watch": "tsp compile ./spec --watch"
   },
   "dependencies": {
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@typespec/compiler": "^1.7.1",
+    "@typespec/http": "^1.7.0",
+    "@typespec/openapi3": "^1.7.0",
+    "@typespec/rest": "^0.77.0",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
   },
