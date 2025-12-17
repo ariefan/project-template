@@ -11,8 +11,8 @@
   },
   "aliases": {
     "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
+    "utils": "@workspace/ui-mobile/lib/utils",
+    "ui": "@workspace/ui-mobile/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   }
