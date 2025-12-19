@@ -70,7 +70,7 @@ Access tokens include tenant-scoped permissions:
 {
   "sub": "usr_123",
   "email": "user@example.com",
-  "tenant_id": "org_abc",
+  "tenantId": "org_abc",
   "roles": ["admin", "billing_manager"],
   "permissions": [
     "users:read",
@@ -83,7 +83,7 @@ Access tokens include tenant-scoped permissions:
 }
 ```
 
-**Note:** `tenant_id` and permissions are specific to the current active tenant.
+**Note:** `tenantId` and permissions are specific to the current active tenant.
 
 ## User Permissions Model
 
@@ -91,19 +91,19 @@ Access tokens include tenant-scoped permissions:
 
 ```typescript
 interface UserTenantRole {
-  user_id: string;         // usr_123
-  tenant_id: string;       // org_abc
-  role_id: string;         // role_admin
-  created_at: Date;
-  created_by: string;
+  userId: string;         // usr_123
+  tenantId: string;       // org_abc
+  roleId: string;         // role_admin
+  createdAt: Date;
+  createdBy: string;
 }
 
 interface Role {
   id: string;              // role_admin
   name: string;            // "Admin"
   permissions: string[];   // ["users:*", "invoices:*"]
-  tenant_id: string;       // org_abc (tenant-scoped)
-  is_system_role: boolean; // true for predefined roles
+  tenantId: string;        // org_abc (tenant-scoped)
+  isSystemRole: boolean;   // true for predefined roles
 }
 
 interface Permission {
@@ -115,15 +115,15 @@ interface Permission {
 ### User Permissions Response
 
 ```http
-GET /v1/orgs/{org_id}/users/usr_123/permissions HTTP/1.1
+GET /v1/orgs/{orgId}/users/usr_123/permissions HTTP/1.1
 ```
 
 **Response:**
 ```json
 {
   "data": {
-    "user_id": "usr_123",
-    "tenant_id": "org_abc",
+    "userId": "usr_123",
+    "tenantId": "org_abc",
     "roles": [
       {
         "id": "role_admin",
@@ -136,7 +136,7 @@ GET /v1/orgs/{org_id}/users/usr_123/permissions HTTP/1.1
         "permissions": ["invoices:*", "payments:*"]
       }
     ],
-    "effective_permissions": [
+    "effectivePermissions": [
       "users:read",
       "users:write",
       "users:delete",
@@ -169,7 +169,7 @@ GET /v1/orgs/{org_id}/users/usr_123/permissions HTTP/1.1
 Tenants can create custom roles:
 
 ```http
-POST /v1/orgs/{org_id}/roles HTTP/1.1
+POST /v1/orgs/{orgId}/roles HTTP/1.1
 Content-Type: application/json
 
 {
@@ -188,7 +188,7 @@ Content-Type: application/json
 {
   "data": {
     "id": "role_cs_abc",
-    "tenant_id": "org_abc",
+    "tenantId": "org_abc",
     "name": "Customer Support",
     "permissions": [
       "users:read",
@@ -196,8 +196,8 @@ Content-Type: application/json
       "customers:read",
       "customers:write"
     ],
-    "is_system_role": false,
-    "created_at": "2024-01-15T10:00:00Z"
+    "isSystemRole": false,
+    "createdAt": "2024-01-15T10:00:00Z"
   }
 }
 ```
@@ -207,11 +207,11 @@ Content-Type: application/json
 ### Assign Role to User
 
 ```http
-POST /v1/orgs/{org_id}/users/usr_456/roles HTTP/1.1
+POST /v1/orgs/{orgId}/users/usr_456/roles HTTP/1.1
 Content-Type: application/json
 
 {
-  "role_id": "role_admin"
+  "roleId": "role_admin"
 }
 ```
 
@@ -219,11 +219,11 @@ Content-Type: application/json
 ```json
 {
   "data": {
-    "user_id": "usr_456",
-    "tenant_id": "org_abc",
-    "role_id": "role_admin",
-    "assigned_at": "2024-01-15T10:30:00Z",
-    "assigned_by": "usr_123"
+    "userId": "usr_456",
+    "tenantId": "org_abc",
+    "roleId": "role_admin",
+    "assignedAt": "2024-01-15T10:30:00Z",
+    "assignedBy": "usr_123"
   }
 }
 ```
@@ -231,7 +231,7 @@ Content-Type: application/json
 ### Remove Role from User
 
 ```http
-DELETE /v1/orgs/{org_id}/users/usr_456/roles/role_admin HTTP/1.1
+DELETE /v1/orgs/{orgId}/users/usr_456/roles/role_admin HTTP/1.1
 ```
 
 **Response:**
@@ -250,18 +250,18 @@ GET /v1/users/usr_123/tenant-roles HTTP/1.1
 {
   "data": [
     {
-      "tenant_id": "org_abc",
-      "tenant_name": "Acme Corp",
+      "tenantId": "org_abc",
+      "tenantName": "Acme Corp",
       "roles": ["admin", "billing_manager"]
     },
     {
-      "tenant_id": "org_xyz",
-      "tenant_name": "XYZ Inc",
+      "tenantId": "org_xyz",
+      "tenantName": "XYZ Inc",
       "roles": ["member"]
     },
     {
-      "tenant_id": "org_def",
-      "tenant_name": "DEF LLC",
+      "tenantId": "org_def",
+      "tenantName": "DEF LLC",
       "roles": ["viewer"]
     }
   ]
@@ -274,8 +274,8 @@ GET /v1/users/usr_123/tenant-roles HTTP/1.1
 
 ```typescript
 interface AuthContext {
-  user_id: string;
-  tenant_id: string;
+  userId: string;
+  tenantId: string;
   permissions: string[];
 }
 
@@ -284,7 +284,7 @@ function requirePermission(...requiredPerms: string[]) {
     const user: AuthContext = req.user;
 
     // Verify tenant context matches URL
-    if (req.params.org_id !== user.tenant_id) {
+    if (req.params.orgId !== user.tenantId) {
       return res.status(403).json({
         error: {
           code: 'forbidden',
@@ -305,11 +305,11 @@ function requirePermission(...requiredPerms: string[]) {
           message: 'Insufficient permissions',
           details: [
             {
-              code: 'insufficient_permissions',
+              code: 'insufficientPermissions',
               message: `Required: ${requiredPerms.join(', ')}`,
               metadata: {
-                required_permissions: requiredPerms,
-                user_permissions: user.permissions,
+                requiredPermissions: requiredPerms,
+                userPermissions: user.permissions,
               },
             },
           ],
@@ -347,7 +347,7 @@ function matchesPermission(userPerm: string, requiredPerm: string): boolean {
 ```typescript
 // Single permission
 app.get(
-  '/v1/orgs/:org_id/users',
+  '/v1/orgs/:orgId/users',
   authenticate,
   requirePermission('users:read'),
   listUsers
@@ -355,7 +355,7 @@ app.get(
 
 // Multiple permissions (AND)
 app.post(
-  '/v1/orgs/:org_id/users',
+  '/v1/orgs/:orgId/users',
   authenticate,
   requirePermission('users:write'),
   createUser
@@ -363,7 +363,7 @@ app.post(
 
 // Admin-only
 app.delete(
-  '/v1/orgs/:org_id/settings',
+  '/v1/orgs/:orgId/settings',
   authenticate,
   requirePermission('settings:admin'),
   deleteSettings
@@ -381,11 +381,11 @@ app.delete(
     "message": "Permission denied",
     "details": [
       {
-        "code": "insufficient_permissions",
+        "code": "insufficientPermissions",
         "message": "This action requires 'users:write' permission",
         "metadata": {
-          "required_permission": "users:write",
-          "user_permissions": ["users:read", "invoices:read"]
+          "requiredPermission": "users:write",
+          "userPermissions": ["users:read", "invoices:read"]
         }
       }
     ]
@@ -402,11 +402,11 @@ app.delete(
     "message": "Access denied to this tenant",
     "details": [
       {
-        "code": "tenant_mismatch",
+        "code": "tenantMismatch",
         "message": "You do not have access to org_xyz",
         "metadata": {
-          "requested_tenant": "org_xyz",
-          "user_tenant": "org_abc"
+          "requestedTenant": "org_xyz",
+          "userTenant": "org_abc"
         }
       }
     ]
@@ -423,10 +423,10 @@ app.delete(
     "message": "Not a member of this organization",
     "details": [
       {
-        "code": "not_a_member",
+        "code": "notAMember",
         "message": "User is not a member of org_xyz",
         "metadata": {
-          "tenant_id": "org_xyz"
+          "tenantId": "org_xyz"
         }
       }
     ]
@@ -443,7 +443,7 @@ POST /v1/users/usr_123/switch-tenant HTTP/1.1
 Content-Type: application/json
 
 {
-  "tenant_id": "org_xyz"
+  "tenantId": "org_xyz"
 }
 ```
 
@@ -451,17 +451,17 @@ Content-Type: application/json
 ```json
 {
   "data": {
-    "tenant_id": "org_xyz",
-    "tenant_name": "XYZ Inc",
+    "tenantId": "org_xyz",
+    "tenantName": "XYZ Inc",
     "roles": ["member"],
     "permissions": ["users:read", "projects:*"],
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
 
 **New token includes:**
-- Updated `tenant_id`
+- Updated `tenantId`
 - Roles for the new tenant
 - Permissions for the new tenant
 
@@ -531,7 +531,7 @@ function getEffectivePermissions(userRoles: string[], allRoles: Role[]) {
    - Review permissions regularly
 
 2. **Tenant Isolation**
-   - Always validate tenant_id from token matches URL
+   - Always validate tenantId from token matches URL
    - Never allow cross-tenant data access
    - Audit cross-tenant operations
 

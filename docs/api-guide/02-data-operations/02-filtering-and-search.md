@@ -7,8 +7,8 @@
 Use query parameters for exact field matches:
 
 ```
-GET /v1/orgs/{org_id}/users?status=active&role=admin
-GET /v1/orgs/{org_id}/invoices?status=paid&amount=1000
+GET /v1/orgs/{orgId}/users?status=active&role=admin
+GET /v1/orgs/{orgId}/invoices?status=paid&amount=1000
 ```
 
 ## Filter Operators
@@ -17,22 +17,22 @@ Add suffix to field name for non-equality comparisons:
 
 | Operator | Suffix | Example | SQL |
 |----------|--------|---------|-----|
-| Equals | (none) or `_eq` | `status=active` | `status = 'active'` |
-| Not equals | `_ne` | `status_ne=inactive` | `status != 'inactive'` |
-| Greater than | `_gt` | `amount_gt=100` | `amount > 100` |
-| Greater/equal | `_gte` | `amount_gte=100` | `amount >= 100` |
-| Less than | `_lt` | `amount_lt=1000` | `amount < 1000` |
-| Less/equal | `_lte` | `amount_lte=1000` | `amount <= 1000` |
-| In list | `_in` | `status_in=active,pending` | `status IN ('active','pending')` |
-| Contains | `_contains` | `name_contains=john` | `name ILIKE '%john%'` |
-| Starts with | `_startswith` | `email_startswith=admin` | `email ILIKE 'admin%'` |
-| Ends with | `_endswith` | `email_endswith=@acme.com` | `email ILIKE '%@acme.com'` |
+| Equals | (none) or `Eq` | `status=active` | `status = 'active'` |
+| Not equals | `Ne` | `statusNe=inactive` | `status != 'inactive'` |
+| Greater than | `Gt` | `amountGt=100` | `amount > 100` |
+| Greater/equal | `Gte` | `amountGte=100` | `amount >= 100` |
+| Less than | `Lt` | `amountLt=1000` | `amount < 1000` |
+| Less/equal | `Lte` | `amountLte=1000` | `amount <= 1000` |
+| In list | `In` | `statusIn=active,pending` | `status IN ('active','pending')` |
+| Contains | `Contains` | `nameContains=john` | `name ILIKE '%john%'` |
+| Starts with | `StartsWith` | `emailStartsWith=admin` | `email ILIKE 'admin%'` |
+| Ends with | `EndsWith` | `emailEndsWith=@acme.com` | `email ILIKE '%@acme.com'` |
 
 **Examples:**
 ```
-GET /users?status_in=active,pending&created_after=2024-01-01
-GET /products?name_contains=laptop&price_lte=1000
-GET /orders?email_endswith=@company.com&amount_gte=500
+GET /users?statusIn=active,pending&createdAfter=2024-01-01
+GET /products?nameContains=laptop&priceLte=1000
+GET /orders?emailEndsWith=@company.com&amountGte=500
 ```
 
 ## Date Filtering
@@ -40,9 +40,9 @@ GET /orders?email_endswith=@company.com&amount_gte=500
 Use ISO 8601 format:
 
 ```
-GET /invoices?created_after=2024-01-01T00:00:00Z
-GET /invoices?created_before=2024-01-31T23:59:59Z
-GET /users?last_login_after=2024-01-01&last_login_before=2024-02-01
+GET /invoices?createdAfter=2024-01-01T00:00:00Z
+GET /invoices?createdBefore=2024-01-31T23:59:59Z
+GET /users?lastLoginAfter=2024-01-01&lastLoginBefore=2024-02-01
 ```
 
 ## Full-Text Search
@@ -61,7 +61,7 @@ GET /products?q=laptop+dell+15inch
     {
       "id": "prd_123",
       "name": "Dell Laptop 15inch",
-      "search_score": 0.95
+      "searchScore": 0.95
     }
   ]
 }
@@ -77,14 +77,14 @@ function buildFilters(query: any, tenantId: string) {
   if (query.status) filters.status = query.status;
 
   // Comparison operators
-  if (query.amount_gte) filters.amount_gte = parseFloat(query.amount_gte);
-  if (query.amount_lte) filters.amount_lte = parseFloat(query.amount_lte);
+  if (query.amountGte) filters.amountGte = parseFloat(query.amountGte);
+  if (query.amountLte) filters.amountLte = parseFloat(query.amountLte);
 
   // Date filtering
-  if (query.created_after) filters.created_after = new Date(query.created_after);
+  if (query.createdAfter) filters.createdAfter = new Date(query.createdAfter);
 
   // In operator
-  if (query.status_in) filters.status_in = query.status_in.split(',');
+  if (query.statusIn) filters.statusIn = query.statusIn.split(',');
 
   return filters;
 }

@@ -5,12 +5,12 @@
 ## Webhook Configuration
 
 ```
-POST /v1/orgs/{org_id}/webhooks
+POST /v1/orgs/{orgId}/webhooks
 {
   "url": "https://customer.com/webhooks/handler",
   "events": ["user.created", "user.updated", "invoice.paid"],
   "secret": "whsec_abc123xyz",
-  "is_active": true
+  "isActive": true
 }
 ```
 
@@ -26,14 +26,14 @@ Content-Type: application/json
 {
   "id": "wh_evt_abc123",
   "type": "user.created",
-  "created_at": "2024-01-15T10:30:00.000Z",
+  "createdAt": "2024-01-15T10:30:00.000Z",
   "data": {
     "id": "usr_456",
     "email": "newuser@example.com"
   },
   "metadata": {
-    "tenant_id": "org_xyz789",
-    "api_version": "v1"
+    "tenantId": "org_xyz789",
+    "apiVersion": "v1"
   }
 }
 ```

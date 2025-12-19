@@ -37,7 +37,7 @@ Will you have > 100,000 records AND concurrent writes?
 
 **Request:**
 ```
-GET /v1/orgs/{org_id}/users?page=2&page_size=50
+GET /v1/orgs/{orgId}/users?page=2&pageSize=50
 ```
 
 **Response:**
@@ -46,16 +46,16 @@ GET /v1/orgs/{org_id}/users?page=2&page_size=50
   "data": [...],
   "pagination": {
     "page": 2,
-    "page_size": 50,
-    "total_pages": 10,
-    "total_count": 487,
-    "has_next": true,
-    "has_previous": true,
+    "pageSize": 50,
+    "totalPages": 10,
+    "totalCount": 487,
+    "hasNext": true,
+    "hasPrevious": true,
     "links": {
-      "first": "/v1/orgs/{org_id}/users?page=1&page_size=50",
-      "previous": "/v1/orgs/{org_id}/users?page=1&page_size=50",
-      "next": "/v1/orgs/{org_id}/users?page=3&page_size=50",
-      "last": "/v1/orgs/{org_id}/users?page=10&page_size=50"
+      "first": "/v1/orgs/{orgId}/users?page=1&pageSize=50",
+      "previous": "/v1/orgs/{orgId}/users?page=1&pageSize=50",
+      "next": "/v1/orgs/{orgId}/users?page=3&pageSize=50",
+      "last": "/v1/orgs/{orgId}/users?page=10&pageSize=50"
     }
   }
 }
@@ -66,7 +66,7 @@ GET /v1/orgs/{org_id}/users?page=2&page_size=50
 SELECT * FROM users
 WHERE tenant_id = 'org_abc123'
 ORDER BY created_at DESC
-LIMIT 50 OFFSET 50;  -- page=2, page_size=50
+LIMIT 50 OFFSET 50;  -- page=2, pageSize=50
 ```
 
 ## Cursor-Based Pagination
@@ -75,7 +75,7 @@ LIMIT 50 OFFSET 50;  -- page=2, page_size=50
 
 **Request:**
 ```
-GET /v1/orgs/{org_id}/events?cursor=evt_xyz789&limit=100
+GET /v1/orgs/{orgId}/events?cursor=evt_xyz789&limit=100
 ```
 
 **Response:**
@@ -84,9 +84,9 @@ GET /v1/orgs/{org_id}/events?cursor=evt_xyz789&limit=100
   "data": [...],
   "pagination": {
     "limit": 100,
-    "has_next": true,
-    "next_cursor": "evt_abc123",
-    "previous_cursor": "evt_def456"
+    "hasNext": true,
+    "nextCursor": "evt_abc123",
+    "previousCursor": "evt_def456"
   }
 }
 ```
@@ -112,22 +112,22 @@ async function listWithCursor(tenantId: string, options: CursorPagination) {
   const query = db('events')
     .where('tenant_id', tenantId)
     .orderBy('id', 'desc')
-    .limit(limit + 1);  // Fetch one extra to check has_next
+    .limit(limit + 1);  // Fetch one extra to check hasNext
 
   if (options.cursor) {
     query.where('id', '<', options.cursor);
   }
 
   const results = await query;
-  const has_next = results.length > limit;
-  const data = has_next ? results.slice(0, limit) : results;
+  const hasNext = results.length > limit;
+  const data = hasNext ? results.slice(0, limit) : results;
 
   return {
     data,
     pagination: {
       limit,
-      has_next,
-      next_cursor: has_next ? data[data.length - 1].id : null,
+      hasNext,
+      nextCursor: hasNext ? data[data.length - 1].id : null,
     },
   };
 }
@@ -139,7 +139,7 @@ async function listWithCursor(tenantId: string, options: CursorPagination) {
 
 **Request:**
 ```
-GET /v1/orgs/{org_id}/products?offset=100&limit=50
+GET /v1/orgs/{orgId}/products?offset=100&limit=50
 ```
 
 **Response:**
@@ -149,8 +149,8 @@ GET /v1/orgs/{org_id}/products?offset=100&limit=50
   "pagination": {
     "offset": 100,
     "limit": 50,
-    "total_count": 1523,
-    "has_next": true
+    "totalCount": 1523,
+    "hasNext": true
   }
 }
 ```
@@ -168,13 +168,13 @@ LIMIT 50 OFFSET 100;
 | Parameter | Default | Maximum |
 |-----------|---------|---------|
 | page | 1 | - |
-| page_size | 50 | 100 |
+| pageSize | 50 | 100 |
 | limit | 50 | 100 |
 | offset | 0 | - |
 
 **Enforce maximum:**
 ```typescript
-const pageSize = Math.min(req.query.page_size || 50, 100);
+const pageSize = Math.min(req.query.pageSize || 50, 100);
 ```
 
 **Warning when capped:**
@@ -182,13 +182,13 @@ const pageSize = Math.min(req.query.page_size || 50, 100);
 {
   "data": [...],
   "pagination": {
-    "page_size": 100,
-    "requested_page_size": 500
+    "pageSize": 100,
+    "requestedPageSize": 500
   },
   "warnings": [
     {
-      "code": "page_size_capped",
-      "message": "Requested page_size of 500 exceeds maximum of 100"
+      "code": "pageSizeCapped",
+      "message": "Requested pageSize of 500 exceeds maximum of 100"
     }
   ]
 }
@@ -205,10 +205,10 @@ CREATE INDEX idx_events_tenant_id ON events(tenant_id, id DESC);
 **Avoid COUNT(*) for large tables:**
 ```typescript
 // Instead of exact count
-const total_count = await db('users').where('tenant_id', tenantId).count();
+const totalCount = await db('users').where('tenant_id', tenantId).count();
 
 // Use estimated count or omit
-const has_next = results.length > limit;
+const hasNext = results.length > limit;
 ```
 
 ## See Also

@@ -23,7 +23,7 @@
 ### List Resources (GET Collection)
 
 ```http
-GET /v1/orgs/{org_id}/users HTTP/1.1
+GET /v1/orgs/{orgId}/users HTTP/1.1
 ```
 
 **Response: 200 OK**
@@ -43,9 +43,9 @@ GET /v1/orgs/{org_id}/users HTTP/1.1
   ],
   "pagination": {
     "page": 1,
-    "page_size": 50,
-    "total_count": 127,
-    "has_next": true
+    "pageSize": 50,
+    "totalCount": 127,
+    "hasNext": true
   }
 }
 ```
@@ -53,7 +53,7 @@ GET /v1/orgs/{org_id}/users HTTP/1.1
 ### Create Resource (POST Collection)
 
 ```http
-POST /v1/orgs/{org_id}/users HTTP/1.1
+POST /v1/orgs/{orgId}/users HTTP/1.1
 Content-Type: application/json
 
 {
@@ -66,7 +66,7 @@ Content-Type: application/json
 **Response: 201 Created**
 ```http
 HTTP/1.1 201 Created
-Location: /v1/orgs/{org_id}/users/usr_abc123
+Location: /v1/orgs/{orgId}/users/usr_abc123
 ```
 
 ```json
@@ -76,7 +76,7 @@ Location: /v1/orgs/{org_id}/users/usr_abc123
     "email": "newuser@example.com",
     "name": "John Doe",
     "role": "member",
-    "created_at": "2024-01-15T10:30:00.000Z"
+    "createdAt": "2024-01-15T10:30:00.000Z"
   }
 }
 ```
@@ -84,7 +84,7 @@ Location: /v1/orgs/{org_id}/users/usr_abc123
 ### Get Single Resource (GET Item)
 
 ```http
-GET /v1/orgs/{org_id}/users/usr_abc123 HTTP/1.1
+GET /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
 ```
 
 **Response: 200 OK**
@@ -95,8 +95,8 @@ GET /v1/orgs/{org_id}/users/usr_abc123 HTTP/1.1
     "email": "user@example.com",
     "name": "John Doe",
     "role": "member",
-    "created_at": "2024-01-15T10:30:00.000Z",
-    "updated_at": "2024-01-16T14:20:00.000Z"
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-16T14:20:00.000Z"
   }
 }
 ```
@@ -106,14 +106,14 @@ GET /v1/orgs/{org_id}/users/usr_abc123 HTTP/1.1
 Replace **all** fields of the resource.
 
 ```http
-PUT /v1/orgs/{org_id}/users/usr_abc123 HTTP/1.1
+PUT /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
 Content-Type: application/json
 
 {
   "email": "newemail@example.com",
   "name": "John Smith",
   "role": "admin",
-  "is_active": true
+  "isActive": true
 }
 ```
 
@@ -125,8 +125,8 @@ Content-Type: application/json
     "email": "newemail@example.com",
     "name": "John Smith",
     "role": "admin",
-    "is_active": true,
-    "updated_at": "2024-01-16T15:00:00.000Z"
+    "isActive": true,
+    "updatedAt": "2024-01-16T15:00:00.000Z"
   }
 }
 ```
@@ -138,7 +138,7 @@ Content-Type: application/json
 Update **only** specified fields.
 
 ```http
-PATCH /v1/orgs/{org_id}/users/usr_abc123 HTTP/1.1
+PATCH /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
 Content-Type: application/json
 
 {
@@ -154,8 +154,8 @@ Content-Type: application/json
     "email": "user@example.com",
     "name": "John Smith",
     "role": "member",
-    "is_active": true,
-    "updated_at": "2024-01-16T15:00:00.000Z"
+    "isActive": true,
+    "updatedAt": "2024-01-16T15:00:00.000Z"
   }
 }
 ```
@@ -165,7 +165,7 @@ Content-Type: application/json
 ### Delete Resource (DELETE)
 
 ```http
-DELETE /v1/orgs/{org_id}/users/usr_abc123 HTTP/1.1
+DELETE /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
 ```
 
 **Response Rules (No Ambiguity):**
@@ -181,9 +181,9 @@ Is it a soft delete?
 {
   "data": {
     "id": "usr_abc123",
-    "deleted_at": "2024-01-16T16:00:00.000Z",
-    "deleted_by": "usr_admin123",
-    "can_restore": true
+    "deletedAt": "2024-01-16T16:00:00.000Z",
+    "deletedBy": "usr_admin123",
+    "canRestore": true
   }
 }
 ```
@@ -214,12 +214,12 @@ POST /{resource}/{id}/actions/{action-name}
 
 **Send Invoice:**
 ```http
-POST /v1/orgs/{org_id}/invoices/inv_123/actions/send HTTP/1.1
+POST /v1/orgs/{orgId}/invoices/inv_123/actions/send HTTP/1.1
 Content-Type: application/json
 
 {
-  "recipient_email": "customer@example.com",
-  "send_at": "2024-01-20T09:00:00.000Z"
+  "recipientEmail": "customer@example.com",
+  "sendAt": "2024-01-20T09:00:00.000Z"
 }
 ```
 
@@ -227,8 +227,8 @@ Content-Type: application/json
 ```json
 {
   "data": {
-    "invoice_id": "inv_123",
-    "sent_at": "2024-01-16T16:00:00.000Z",
+    "invoiceId": "inv_123",
+    "sentAt": "2024-01-16T16:00:00.000Z",
     "recipient": "customer@example.com",
     "status": "sent"
   }
@@ -237,7 +237,7 @@ Content-Type: application/json
 
 **Reset Password:**
 ```http
-POST /v1/orgs/{org_id}/users/usr_123/actions/reset-password HTTP/1.1
+POST /v1/orgs/{orgId}/users/usr_123/actions/reset-password HTTP/1.1
 Content-Type: application/json
 
 {
@@ -247,7 +247,7 @@ Content-Type: application/json
 
 **Cancel Order:**
 ```http
-POST /v1/orgs/{org_id}/orders/ord_789/actions/cancel HTTP/1.1
+POST /v1/orgs/{orgId}/orders/ord_789/actions/cancel HTTP/1.1
 Content-Type: application/json
 
 {
@@ -258,13 +258,13 @@ Content-Type: application/json
 
 **Generate Report:**
 ```http
-POST /v1/orgs/{org_id}/reports/actions/generate HTTP/1.1
+POST /v1/orgs/{orgId}/reports/actions/generate HTTP/1.1
 Content-Type: application/json
 
 {
-  "report_type": "financial",
-  "start_date": "2024-01-01",
-  "end_date": "2024-01-31",
+  "reportType": "financial",
+  "startDate": "2024-01-01",
+  "endDate": "2024-01-31",
   "format": "pdf"
 }
 ```
@@ -272,9 +272,9 @@ Content-Type: application/json
 **Response: 202 Accepted** (async operation)
 ```json
 {
-  "job_id": "job_abc123",
+  "jobId": "job_abc123",
   "status": "pending",
-  "status_url": "/v1/orgs/{org_id}/jobs/job_abc123"
+  "statusUrl": "/v1/orgs/{orgId}/jobs/job_abc123"
 }
 ```
 
@@ -284,22 +284,22 @@ Use `/batch` for multiple operations.
 
 **Batch Create:**
 ```http
-POST /v1/orgs/{org_id}/users/batch
+POST /v1/orgs/{orgId}/users/batch
 ```
 
 **Batch Update:**
 ```http
-PATCH /v1/orgs/{org_id}/users/batch
+PATCH /v1/orgs/{orgId}/users/batch
 ```
 
 **Batch Delete:**
 ```http
-DELETE /v1/orgs/{org_id}/users/batch
+DELETE /v1/orgs/{orgId}/users/batch
 ```
 
 **Batch Soft Delete:**
 ```http
-POST /v1/orgs/{org_id}/users/batch/soft-delete
+POST /v1/orgs/{orgId}/users/batch/soft-delete
 ```
 
 See [Batch Operations](../05-advanced-operations/) for details.
@@ -386,9 +386,9 @@ See [Batch Operations](../05-advanced-operations/) for details.
 **GET, PUT, DELETE** - Multiple requests = same result
 
 ```http
-DELETE /v1/orgs/{org_id}/users/usr_123
-DELETE /v1/orgs/{org_id}/users/usr_123  ← Same result
-DELETE /v1/orgs/{org_id}/users/usr_123  ← Same result
+DELETE /v1/orgs/{orgId}/users/usr_123
+DELETE /v1/orgs/{orgId}/users/usr_123  ← Same result
+DELETE /v1/orgs/{orgId}/users/usr_123  ← Same result
 ```
 
 First request: 200 OK (deleted)
@@ -399,9 +399,9 @@ Subsequent requests: 404 Not Found (already deleted)
 **POST, PATCH** - Multiple requests = different results
 
 ```http
-POST /v1/orgs/{org_id}/users
-POST /v1/orgs/{org_id}/users  ← Creates another user
-POST /v1/orgs/{org_id}/users  ← Creates another user
+POST /v1/orgs/{orgId}/users
+POST /v1/orgs/{orgId}/users  ← Creates another user
+POST /v1/orgs/{orgId}/users  ← Creates another user
 ```
 
 **Solution:** Use [Idempotency Keys](../06-quality/02-idempotency.md)

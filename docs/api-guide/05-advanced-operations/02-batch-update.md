@@ -5,7 +5,7 @@
 ## Endpoint
 
 ```
-PATCH /v1/orgs/{org_id}/{resource}/batch
+PATCH /v1/orgs/{orgId}/{resource}/batch
 ```
 
 ## Request (By IDs)
@@ -24,8 +24,8 @@ PATCH /v1/orgs/{org_id}/{resource}/batch
   ],
   "options": {
     "atomic": false,
-    "return_records": true,
-    "track_changes": true
+    "returnRecords": true,
+    "trackChanges": true
   }
 }
 ```
@@ -36,10 +36,10 @@ PATCH /v1/orgs/{org_id}/{resource}/batch
 {
   "filter": {
     "role": "member",
-    "is_active": true
+    "isActive": true
   },
   "updates": {
-    "role": "verified_member"
+    "role": "verifiedMember"
   }
 }
 ```
@@ -55,7 +55,7 @@ PATCH /v1/orgs/{org_id}/{resource}/batch
       "data": {
         "id": "usr_abc123",
         "role": "admin",
-        "updated_at": "2024-01-15T10:30:00.000Z"
+        "updatedAt": "2024-01-15T10:30:00.000Z"
       },
       "changes": {
         "role": {

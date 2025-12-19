@@ -22,7 +22,7 @@ Content-Type: application/json; charset=utf-8
 ### Basic Request
 
 ```http
-POST /v1/orgs/{org_id}/users HTTP/1.1
+POST /v1/orgs/{orgId}/users HTTP/1.1
 Host: api.example.com
 Authorization: Bearer {token}
 Content-Type: application/json
@@ -30,8 +30,8 @@ Idempotency-Key: idem_abc123xyz
 
 {
   "email": "user@example.com",
-  "first_name": "John",
-  "last_name": "Doe",
+  "firstName": "John",
+  "lastName": "Doe",
   "role": "member"
 }
 ```
@@ -56,15 +56,15 @@ Idempotency-Key: idem_abc123xyz
   "data": {
     "id": "usr_abc123",
     "email": "user@example.com",
-    "first_name": "John",
-    "last_name": "Doe",
+    "firstName": "John",
+    "lastName": "Doe",
     "role": "member",
-    "is_active": true,
-    "created_at": "2024-01-15T10:30:00.000Z",
-    "updated_at": "2024-01-16T14:20:00.000Z"
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-16T14:20:00.000Z"
   },
   "meta": {
-    "request_id": "req_xyz789",
+    "requestId": "req_xyz789",
     "timestamp": "2024-01-16T14:20:00.000Z"
   }
 }
@@ -88,20 +88,20 @@ Idempotency-Key: idem_abc123xyz
   ],
   "pagination": {
     "page": 1,
-    "page_size": 50,
-    "total_pages": 10,
-    "total_count": 487,
-    "has_next": true,
-    "has_previous": false,
+    "pageSize": 50,
+    "totalPages": 10,
+    "totalCount": 487,
+    "hasNext": true,
+    "hasPrevious": false,
     "links": {
-      "first": "/v1/orgs/{org_id}/users?page=1",
+      "first": "/v1/orgs/{orgId}/users?page=1",
       "previous": null,
-      "next": "/v1/orgs/{org_id}/users?page=2",
-      "last": "/v1/orgs/{org_id}/users?page=10"
+      "next": "/v1/orgs/{orgId}/users?page=2",
+      "last": "/v1/orgs/{orgId}/users?page=10"
     }
   },
   "meta": {
-    "request_id": "req_xyz789",
+    "requestId": "req_xyz789",
     "timestamp": "2024-01-16T14:20:00.000Z"
   }
 }
@@ -117,17 +117,17 @@ Idempotency-Key: idem_abc123xyz
   },
   "warnings": [
     {
-      "code": "endpoint_deprecated",
+      "code": "endpointDeprecated",
       "message": "This endpoint version will be sunset on 2025-12-31",
-      "documentation_url": "https://docs.example.com/migrations/v1-to-v2"
+      "documentationUrl": "https://docs.example.com/migrations/v1-to-v2"
     },
     {
-      "code": "page_size_capped",
-      "message": "Requested page_size of 500 exceeds maximum of 100"
+      "code": "pageSizeCapped",
+      "message": "Requested pageSize of 500 exceeds maximum of 100"
     }
   ],
   "meta": {
-    "request_id": "req_xyz789",
+    "requestId": "req_xyz789",
     "timestamp": "2024-01-16T14:20:00.000Z"
   }
 }
@@ -135,17 +135,17 @@ Idempotency-Key: idem_abc123xyz
 
 ## Field Naming
 
-### Use snake_case
+### Use camelCase
 
 **Correct:**
 ```json
 {
-  "user_id": "usr_123",
-  "first_name": "John",
-  "last_name": "Doe",
-  "email_address": "john@example.com",
-  "is_active": true,
-  "created_at": "2024-01-15T10:30:00.000Z"
+  "userId": "usr_123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "emailAddress": "john@example.com",
+  "isActive": true,
+  "createdAt": "2024-01-15T10:30:00.000Z"
 }
 ```
 
@@ -178,7 +178,7 @@ Idempotency-Key: idem_abc123xyz
   "age": 30,
   "price": 99.99,
   "quantity": 5,
-  "tax_rate": 0.08
+  "taxRate": 0.08
 }
 ```
 
@@ -192,7 +192,7 @@ Idempotency-Key: idem_abc123xyz
 {
   "amount": 1999,
   "currency": "USD",
-  "formatted_amount": "$19.99"
+  "formattedAmount": "$19.99"
 }
 ```
 
@@ -202,18 +202,18 @@ Use lowercase `true` or `false`.
 
 ```json
 {
-  "is_active": true,
-  "is_verified": false,
-  "has_subscription": true,
-  "can_edit": false
+  "isActive": true,
+  "isVerified": false,
+  "hasSubscription": true,
+  "canEdit": false
 }
 ```
 
 **Prefix with:**
-- `is_` for state: `is_active`, `is_deleted`
-- `has_` for possession: `has_subscription`, `has_payment_method`
-- `can_` for ability: `can_edit`, `can_delete`
-- `should_` for intention: `should_notify`, `should_send_email`
+- `is` for state: `isActive`, `isDeleted`
+- `has` for possession: `hasSubscription`, `hasPaymentMethod`
+- `can` for ability: `canEdit`, `canDelete`
+- `should` for intention: `shouldNotify`, `shouldSendEmail`
 
 ### Date and Time
 
@@ -221,10 +221,10 @@ Use lowercase `true` or `false`.
 
 ```json
 {
-  "created_at": "2024-01-15T10:30:00.000Z",
-  "updated_at": "2024-01-16T14:45:30.500Z",
-  "deleted_at": null,
-  "scheduled_for": "2024-02-01T09:00:00.000Z"
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-01-16T14:45:30.500Z",
+  "deletedAt": null,
+  "scheduledFor": "2024-02-01T09:00:00.000Z"
 }
 ```
 
@@ -233,9 +233,9 @@ Use lowercase `true` or `false`.
 **Examples:**
 ```json
 {
-  "date_only": "2024-01-15",
-  "datetime_utc": "2024-01-15T10:30:00.000Z",
-  "datetime_with_ms": "2024-01-15T10:30:00.123Z"
+  "dateOnly": "2024-01-15",
+  "datetimeUtc": "2024-01-15T10:30:00.000Z",
+  "datetimeWithMs": "2024-01-15T10:30:00.123Z"
 }
 ```
 
@@ -244,8 +244,8 @@ Use lowercase `true` or `false`.
 ```json
 {
   "tags": ["engineering", "backend", "api"],
-  "user_ids": ["usr_123", "usr_456", "usr_789"],
-  "metadata_list": [
+  "userIds": ["usr_123", "usr_456", "usr_789"],
+  "metadataList": [
     {"key": "color", "value": "blue"},
     {"key": "size", "value": "large"}
   ]
@@ -272,12 +272,12 @@ Use lowercase `true` or `false`.
     "street": "123 Main St",
     "city": "San Francisco",
     "state": "CA",
-    "postal_code": "94105",
+    "postalCode": "94105",
     "country": "US"
   },
   "metadata": {
-    "custom_field_1": "value1",
-    "custom_field_2": "value2"
+    "customField1": "value1",
+    "customField2": "value2"
   }
 }
 ```
@@ -293,8 +293,8 @@ Use lowercase `true` or `false`.
 {
   "email": "user@example.com",
   "phone": null,
-  "middle_name": null,
-  "deleted_at": null
+  "middleName": null,
+  "deletedAt": null
 }
 ```
 
@@ -359,11 +359,11 @@ See [Pagination](../02-data-operations/01-pagination.md) for details.
 {
   "pagination": {
     "page": 1,
-    "page_size": 50,
-    "total_pages": 10,
-    "total_count": 487,
-    "has_next": true,
-    "has_previous": false
+    "pageSize": 50,
+    "totalPages": 10,
+    "totalCount": 487,
+    "hasNext": true,
+    "hasPrevious": false
   }
 }
 ```
@@ -373,20 +373,20 @@ See [Pagination](../02-data-operations/01-pagination.md) for details.
 ```json
 {
   "meta": {
-    "request_id": "req_xyz789",
+    "requestId": "req_xyz789",
     "timestamp": "2024-01-16T14:20:00.000Z",
-    "api_version": "v1",
-    "tenant_id": "org_abc123"
+    "apiVersion": "v1",
+    "tenantId": "org_abc123"
   }
 }
 ```
 
 **Common meta fields:**
-- `request_id` - Unique request identifier
+- `requestId` - Unique request identifier
 - `timestamp` - Response timestamp
-- `api_version` - API version used
-- `tenant_id` - Tenant context
-- `duration_ms` - Processing time
+- `apiVersion` - API version used
+- `tenantId` - Tenant context
+- `durationMs` - Processing time
 
 ## Status Codes and Bodies
 
@@ -407,7 +407,7 @@ See [Pagination](../02-data-operations/01-pagination.md) for details.
 **With Location header and body:**
 ```http
 HTTP/1.1 201 Created
-Location: /v1/orgs/{org_id}/users/usr_abc123
+Location: /v1/orgs/{orgId}/users/usr_abc123
 ```
 
 ```json
@@ -415,7 +415,7 @@ Location: /v1/orgs/{org_id}/users/usr_abc123
   "data": {
     "id": "usr_abc123",
     "email": "user@example.com",
-    "created_at": "2024-01-15T10:30:00.000Z"
+    "createdAt": "2024-01-15T10:30:00.000Z"
   }
 }
 ```
@@ -432,10 +432,10 @@ HTTP/1.1 204 No Content
 **Async operation:**
 ```json
 {
-  "job_id": "job_abc123",
+  "jobId": "job_abc123",
   "status": "pending",
-  "status_url": "/v1/orgs/{org_id}/jobs/job_abc123",
-  "estimated_completion": "2024-01-15T10:35:00.000Z"
+  "statusUrl": "/v1/orgs/{orgId}/jobs/job_abc123",
+  "estimatedCompletion": "2024-01-15T10:35:00.000Z"
 }
 ```
 
@@ -446,16 +446,16 @@ See [Error Handling](../04-error-handling/01-error-structure.md) for details.
 ```json
 {
   "error": {
-    "code": "validation_error",
+    "code": "validationError",
     "message": "The request data is invalid",
     "details": [
       {
         "field": "email",
-        "code": "invalid_format",
+        "code": "invalidFormat",
         "message": "Email address is not valid"
       }
     ],
-    "request_id": "req_xyz789"
+    "requestId": "req_xyz789"
   }
 }
 ```
@@ -511,26 +511,26 @@ Cache-Control: private, max-age=300
   "data": {
     "id": "usr_abc456",
     "email": "user@example.com",
-    "first_name": "John",
-    "last_name": "Doe",
+    "firstName": "John",
+    "lastName": "Doe",
     "role": "member",
-    "is_active": true,
-    "created_at": "2024-01-15T10:30:00.000Z",
-    "updated_at": "2024-01-16T14:20:00.000Z",
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-16T14:20:00.000Z",
     "addresses": [
       {
         "id": "addr_123",
         "street": "123 Main St",
         "city": "San Francisco",
         "state": "CA",
-        "postal_code": "94105"
+        "postalCode": "94105"
       }
     ]
   },
   "meta": {
-    "request_id": "req_xyz789",
+    "requestId": "req_xyz789",
     "timestamp": "2024-01-16T14:20:00.000Z",
-    "tenant_id": "org_123"
+    "tenantId": "org_123"
   }
 }
 ```
@@ -547,8 +547,8 @@ Idempotency-Key: idem_create_user_001
 
 {
   "email": "newuser@example.com",
-  "first_name": "Jane",
-  "last_name": "Smith",
+  "firstName": "Jane",
+  "lastName": "Smith",
   "role": "admin"
 }
 ```
@@ -566,15 +566,15 @@ X-Request-ID: req_abc123
   "data": {
     "id": "usr_def789",
     "email": "newuser@example.com",
-    "first_name": "Jane",
-    "last_name": "Smith",
+    "firstName": "Jane",
+    "lastName": "Smith",
     "role": "admin",
-    "is_active": true,
-    "created_at": "2024-01-16T15:00:00.000Z",
-    "updated_at": "2024-01-16T15:00:00.000Z"
+    "isActive": true,
+    "createdAt": "2024-01-16T15:00:00.000Z",
+    "updatedAt": "2024-01-16T15:00:00.000Z"
   },
   "meta": {
-    "request_id": "req_abc123",
+    "requestId": "req_abc123",
     "timestamp": "2024-01-16T15:00:00.000Z"
   }
 }

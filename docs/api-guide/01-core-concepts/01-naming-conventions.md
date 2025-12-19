@@ -2,6 +2,16 @@
 
 **Related**: [HTTP Methods](./02-http-methods.md) · [Multitenancy](./05-multitenancy.md)
 
+## JSON Field Naming: camelCase
+
+**This API uses camelCase for all JSON field names**, following the convention of modern JavaScript/TypeScript APIs (Google, Microsoft, Meta, Twitter, Salesforce).
+
+**Why camelCase?**
+- Native to JavaScript/TypeScript - no conversion needed
+- Preferred by frontend/mobile developers
+- Industry standard for modern web APIs
+- Cleaner for JSON-heavy applications
+
 ## URL Structure
 
 ```
@@ -85,35 +95,35 @@ Represent **hierarchical relationships** naturally in the URL.
 
 ## Query Parameters
 
-Use **snake_case** for all query parameters.
+Use **camelCase** for all query parameters.
 
 **Common Parameters:**
 
 **Pagination:**
 ```
-?page=2&page_size=50
+?page=2&pageSize=50
 ?cursor=usr_xyz789&limit=100
 ?offset=100&limit=50
 ```
 
 **Sorting:**
 ```
-?order_by=-created_at
-?order_by=-price,name
+?orderBy=-createdAt
+?orderBy=-price,name
 ```
 
 **Filtering:**
 ```
 ?status=active&role=admin
-?created_after=2024-01-01T00:00:00Z
-?price_gte=100&price_lte=500
+?createdAfter=2024-01-01T00:00:00Z
+?priceGte=100&priceLte=500
 ```
 
 **Field Selection:**
 ```
 ?fields=id,email,name
-?include=addresses,payment_methods
-?expand=organization,created_by
+?include=addresses,paymentMethods
+?expand=organization,createdBy
 ```
 
 **Search:**
@@ -124,27 +134,27 @@ Use **snake_case** for all query parameters.
 
 **Examples:**
 ```
-GET /users?page=2&page_size=50&order_by=-created_at
-GET /invoices?status=paid&created_after=2024-01-01&include=line_items
-GET /products?search=laptop&category_id=cat_123&min_price=500&max_price=1000
+GET /users?page=2&pageSize=50&orderBy=-createdAt
+GET /invoices?status=paid&createdAfter=2024-01-01&include=lineItems
+GET /products?search=laptop&categoryId=cat_123&minPrice=500&maxPrice=1000
 ```
 
 ## Field Names (JSON)
 
-Use **snake_case** for all JSON field names.
+Use **camelCase** for all JSON field names.
 
 **Correct:**
 ```json
 {
-  "user_id": "usr_123",
-  "first_name": "John",
-  "last_name": "Doe",
-  "email_address": "john@example.com",
-  "created_at": "2024-01-15T10:30:00.000Z",
-  "is_active": true,
+  "userId": "usr_123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "emailAddress": "john@example.com",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "isActive": true,
   "metadata": {
-    "last_login_ip": "192.168.1.1",
-    "login_count": 42
+    "lastLoginIp": "192.168.1.1",
+    "loginCount": 42
   }
 }
 ```
@@ -152,28 +162,28 @@ Use **snake_case** for all JSON field names.
 **Incorrect:**
 ```json
 {
-  "userId": "usr_123",           ❌ camelCase
+  "user_id": "usr_123",          ❌ snake_case
   "FirstName": "John",           ❌ PascalCase
   "email-address": "john@...",   ❌ kebab-case
-  "created_at": "2024-01-15"     ❌ Wrong date format
+  "created_at": "2024-01-15"     ❌ Wrong date format (also snake_case)
 }
 ```
 
 ## Boolean Fields
 
-Prefix with `is_`, `has_`, `can_`, or `should_` for clarity.
+Prefix with `is`, `has`, `can`, or `should` for clarity (using camelCase).
 
 **Examples:**
 ```json
 {
-  "is_active": true,
-  "is_verified": false,
-  "has_subscription": true,
-  "has_payment_method": false,
-  "can_edit": true,
-  "can_delete": false,
-  "should_notify": true,
-  "should_send_email": false
+  "isActive": true,
+  "isVerified": false,
+  "hasSubscription": true,
+  "hasPaymentMethod": false,
+  "canEdit": true,
+  "canDelete": false,
+  "shouldNotify": true,
+  "shouldSendEmail": false
 }
 ```
 
@@ -186,17 +196,17 @@ Use **ISO 8601 format** with UTC timezone.
 **Examples:**
 ```json
 {
-  "created_at": "2024-01-15T10:30:00.000Z",
-  "updated_at": "2024-01-16T14:45:30.500Z",
-  "deleted_at": null,
-  "scheduled_for": "2024-02-01T09:00:00.000Z"
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-01-16T14:45:30.500Z",
+  "deletedAt": null,
+  "scheduledFor": "2024-02-01T09:00:00.000Z"
 }
 ```
 
 **Suffix conventions:**
-- `_at` for timestamps: `created_at`, `updated_at`, `deleted_at`
-- `_date` for date-only: `birth_date`, `start_date`, `end_date`
-- `_on` for legacy compatibility (avoid in new APIs)
+- `At` suffix for timestamps: `createdAt`, `updatedAt`, `deletedAt`
+- `Date` suffix for date-only: `birthDate`, `startDate`, `endDate`
+- `On` suffix for legacy compatibility (avoid in new APIs)
 
 ## Forbidden Patterns
 
@@ -288,7 +298,7 @@ GET    /v1/orgs/org_abc/users/usr_123
 PATCH  /v1/orgs/org_abc/users/usr_123
 DELETE /v1/orgs/org_abc/users/usr_123
 
-GET    /v1/orgs/org_abc/invoices?status=paid&sort_by=created_at
+GET    /v1/orgs/org_abc/invoices?status=paid&orderBy=createdAt
 POST   /v1/orgs/org_abc/invoices/inv_456/actions/send
 GET    /v1/orgs/org_abc/users/usr_123/payment-methods
 
@@ -304,14 +314,14 @@ POST   /v1/orgs/org_abc/users/usr_123/restore
   "data": {
     "id": "usr_abc123",
     "email": "john@example.com",
-    "first_name": "John",
-    "last_name": "Doe",
-    "is_active": true,
-    "created_at": "2024-01-15T10:30:00.000Z",
-    "updated_at": "2024-01-16T14:20:00.000Z",
+    "firstName": "John",
+    "lastName": "Doe",
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-16T14:20:00.000Z",
     "metadata": {
-      "last_login_at": "2024-01-16T09:00:00.000Z",
-      "login_count": 42
+      "lastLoginAt": "2024-01-16T09:00:00.000Z",
+      "loginCount": 42
     }
   }
 }

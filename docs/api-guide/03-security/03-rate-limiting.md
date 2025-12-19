@@ -32,13 +32,13 @@ Retry-After: 300
 ```json
 {
   "error": {
-    "code": "rate_limit_exceeded",
+    "code": "rateLimitExceeded",
     "message": "Rate limit exceeded. Please retry after 300 seconds",
     "details": [
       {
         "limit": 1000,
         "window": "1 hour",
-        "reset_at": "2024-01-15T11:00:00Z"
+        "resetAt": "2024-01-15T11:00:00Z"
       }
     ]
   }

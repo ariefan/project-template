@@ -2,13 +2,13 @@
 
 **Related**: [Filtering](./02-filtering-and-search.md) · [Pagination](./01-pagination.md)
 
-## Standard: order_by Parameter
+## Standard: orderBy Parameter
 
-Use `order_by` with optional `-` prefix for descending order:
+Use `orderBy` with optional `-` prefix for descending order:
 
 ```
-GET /users?order_by=-created_at
-GET /products?order_by=price
+GET /users?orderBy=-createdAt
+GET /products?orderBy=price
 ```
 
 **Sort direction:**
@@ -17,10 +17,10 @@ GET /products?order_by=price
 
 **Examples:**
 ```
-GET /users?order_by=-created_at        # Newest first
-GET /products?order_by=price           # Cheapest first
-GET /invoices?order_by=-amount         # Highest amount first
-GET /customers?order_by=name           # Alphabetical A-Z
+GET /users?orderBy=-createdAt        # Newest first
+GET /products?orderBy=price           # Cheapest first
+GET /invoices?orderBy=-amount         # Highest amount first
+GET /customers?orderBy=name           # Alphabetical A-Z
 ```
 
 ## Multiple Sort Fields
@@ -28,17 +28,17 @@ GET /customers?order_by=name           # Alphabetical A-Z
 Comma-separate fields for multi-level sorting:
 
 ```
-GET /users?order_by=-created_at,name,email
-GET /products?order_by=-priority,price
-GET /tasks?order_by=-is_urgent,due_date,name
+GET /users?orderBy=-createdAt,name,email
+GET /products?orderBy=-priority,price
+GET /tasks?orderBy=-isUrgent,dueDate,name
 ```
 
 **SQL equivalent:**
 ```sql
--- order_by=-created_at,name,email
-ORDER BY created_at DESC, name ASC, email ASC
+-- orderBy=-createdAt,name,email
+ORDER BY createdAt DESC, name ASC, email ASC
 
--- order_by=-priority,price
+-- orderBy=-priority,price
 ORDER BY priority DESC, price ASC
 ```
 
@@ -52,23 +52,23 @@ ORDER BY priority DESC, price ASC
 
 | Resource | Common Sorts |
 |----------|--------------|
-| Users | `created_at`, `name`, `email`, `last_login_at` |
-| Invoices | `created_at`, `amount`, `due_date`, `status` |
-| Products | `name`, `price`, `created_at`, `popularity` |
-| Orders | `created_at`, `amount`, `status` |
+| Users | `createdAt`, `name`, `email`, `lastLoginAt` |
+| Invoices | `createdAt`, `amount`, `dueDate`, `status` |
+| Products | `name`, `price`, `createdAt`, `popularity` |
+| Orders | `createdAt`, `amount`, `status` |
 
 ## Default Sorting
 
 **Recommended defaults:**
-- Lists: `order_by=-created_at` (newest first)
-- Names: `order_by=name` (alphabetical)
-- Amounts: `order_by=-amount` (highest first)
+- Lists: `orderBy=-createdAt` (newest first)
+- Names: `orderBy=name` (alphabetical)
+- Amounts: `orderBy=-amount` (highest first)
 
 **Always document the default** in API responses or documentation.
 
 ## Implementation
 
-**Parse order_by parameter:**
+**Parse orderBy parameter:**
 ```typescript
 function parseOrderBy(orderBy: string) {
   return orderBy.split(',').map(field => {
@@ -79,8 +79,8 @@ function parseOrderBy(orderBy: string) {
 }
 
 // Usage
-const sorts = parseOrderBy('-created_at,name');
-// [{field: 'created_at', direction: 'desc'}, {field: 'name', direction: 'asc'}]
+const sorts = parseOrderBy('-createdAt,name');
+// [{field: 'createdAt', direction: 'desc'}, {field: 'name', direction: 'asc'}]
 ```
 
 **SQL generation:**
@@ -92,8 +92,8 @@ function buildOrderBy(orderBy: string) {
     .join(', ');
 }
 
-// buildOrderBy('-created_at,name')
-// → "created_at DESC, name ASC"
+// buildOrderBy('-createdAt,name')
+// → "createdAt DESC, name ASC"
 ```
 
 ## Alternative Pattern (Legacy)
@@ -101,10 +101,10 @@ function buildOrderBy(orderBy: string) {
 Some APIs use separate parameters:
 
 ```
-GET /users?sort_by=created_at&sort_direction=desc
+GET /users?sortBy=createdAt&sortDirection=desc
 ```
 
-**Not recommended** - verbose and requires two parameters for single-field sorting. Use `order_by` instead for:
+**Not recommended** - verbose and requires two parameters for single-field sorting. Use `orderBy` instead for:
 - Brevity (one parameter vs two)
 - Multi-field support
 - REST convention alignment

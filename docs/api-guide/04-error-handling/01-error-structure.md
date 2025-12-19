@@ -7,22 +7,22 @@
 ```json
 {
   "error": {
-    "code": "validation_error",
+    "code": "validationError",
     "message": "The request data is invalid",
     "details": [
       {
         "field": "email",
-        "code": "invalid_format",
+        "code": "invalidFormat",
         "message": "Email address is not valid"
       },
       {
         "field": "age",
-        "code": "out_of_range",
+        "code": "outOfRange",
         "message": "Age must be between 18 and 120"
       }
     ],
-    "request_id": "req_xyz789",
-    "documentation_url": "https://docs.example.com/errors/validation_error"
+    "requestId": "req_xyz789",
+    "documentationUrl": "https://docs.example.com/errors/validationError"
   }
 }
 ```
@@ -34,8 +34,8 @@
 | code | Yes | Machine-readable error code |
 | message | Yes | Human-readable error message |
 | details | Optional | Array of detailed error information |
-| request_id | Yes | Request identifier for debugging |
-| documentation_url | Optional | Link to error documentation |
+| requestId | Yes | Request identifier for debugging |
+| documentationUrl | Optional | Link to error documentation |
 
 ## HTTP Status Codes
 
@@ -46,10 +46,10 @@ See [Error Codes](./02-error-codes.md) for the complete mapping of HTTP status c
 ```json
 {
   "field": "email",
-  "code": "already_exists",
+  "code": "alreadyExists",
   "message": "An account with this email already exists",
   "metadata": {
-    "existing_user_id": "usr_456"
+    "existingUserId": "usr_456"
   }
 }
 ```

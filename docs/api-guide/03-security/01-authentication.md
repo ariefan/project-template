@@ -17,7 +17,7 @@ All requests must include a valid access token in the `Authorization` header.
 **For:** User authentication, session management
 
 ```http
-GET /v1/orgs/{org_id}/users HTTP/1.1
+GET /v1/orgs/{orgId}/users HTTP/1.1
 Authorization: Bearer {access_token}
 ```
 
@@ -32,7 +32,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 **For:** Service-to-service communication, automation, long-lived access
 
 ```http
-GET /v1/orgs/{org_id}/users HTTP/1.1
+GET /v1/orgs/{orgId}/users HTTP/1.1
 X-API-Key: key_abc123xyz789
 ```
 
@@ -44,7 +44,7 @@ The API expects **JWT tokens** with the following claims:
 {
   "sub": "usr_123",
   "email": "user@example.com",
-  "tenant_id": "org_abc",
+  "tenantId": "org_abc",
   "roles": ["admin"],
   "permissions": ["users:read", "users:write"],
   "iat": 1642348800,
@@ -63,10 +63,10 @@ The API expects **JWT tokens** with the following claims:
 **Optional Claims:**
 | Claim | Type | Description |
 |-------|------|-------------|
-| `tenant_id` | string | Current active tenant |
+| `tenantId` | string | Current active tenant |
 | `roles` | string[] | User roles (tenant-scoped) |
 | `permissions` | string[] | Granular permissions |
-| `session_id` | string | Session identifier |
+| `sessionId` | string | Session identifier |
 
 ## Token Lifecycle
 
@@ -82,10 +82,10 @@ Access tokens typically expire after **15-60 minutes**. When a token expires, th
     "message": "Access token has expired",
     "details": [
       {
-        "code": "token_expired",
+        "code": "tokenExpired",
         "message": "Access token expired at 2024-01-15T10:30:00Z",
         "metadata": {
-          "expired_at": "2024-01-15T10:30:00Z"
+          "expiredAt": "2024-01-15T10:30:00Z"
         }
       }
     ]
@@ -130,11 +130,11 @@ Tokens can be revoked when:
     "message": "Access token has been revoked",
     "details": [
       {
-        "code": "token_revoked",
+        "code": "tokenRevoked",
         "message": "This session has been terminated",
         "metadata": {
-          "revoked_at": "2024-01-15T11:00:00Z",
-          "reason": "user_logout"
+          "revokedAt": "2024-01-15T11:00:00Z",
+          "reason": "userLogout"
         }
       }
     ]
@@ -147,9 +147,9 @@ Tokens can be revoked when:
 | Status | Error Code | Description | Client Action |
 |--------|------------|-------------|---------------|
 | 401 | `unauthorized` | No token provided | Redirect to login |
-| 401 | `token_expired` | Token has expired | Refresh token |
-| 401 | `token_invalid` | Malformed or invalid token | Re-authenticate |
-| 401 | `token_revoked` | Token revoked | Re-authenticate |
+| 401 | `tokenExpired` | Token has expired | Refresh token |
+| 401 | `tokenInvalid` | Malformed or invalid token | Re-authenticate |
+| 401 | `tokenRevoked` | Token revoked | Re-authenticate |
 | 403 | `forbidden` | Valid token, insufficient permissions | Show error (see [Authorization](./02-authorization.md)) |
 
 **Example error responses:**
@@ -162,7 +162,7 @@ Tokens can be revoked when:
     "message": "Authentication required",
     "details": [
       {
-        "code": "missing_token",
+        "code": "missingToken",
         "message": "No Authorization header provided"
       }
     ]
@@ -178,7 +178,7 @@ Tokens can be revoked when:
     "message": "Invalid access token",
     "details": [
       {
-        "code": "token_invalid",
+        "code": "tokenInvalid",
         "message": "Token signature verification failed"
       }
     ]
@@ -226,14 +226,14 @@ For service accounts and automation:
 ### Creating API Keys
 
 ```http
-POST /v1/orgs/{org_id}/api-keys HTTP/1.1
+POST /v1/orgs/{orgId}/api-keys HTTP/1.1
 Authorization: Bearer {admin_token}
 Content-Type: application/json
 
 {
   "name": "CI/CD Pipeline",
   "permissions": ["deployments:write", "logs:read"],
-  "expires_at": "2025-01-15T00:00:00Z"
+  "expiresAt": "2025-01-15T00:00:00Z"
 }
 ```
 
@@ -245,8 +245,8 @@ Content-Type: application/json
     "name": "CI/CD Pipeline",
     "key": "key_abc123xyz789_secret",
     "permissions": ["deployments:write", "logs:read"],
-    "created_at": "2024-01-15T10:00:00Z",
-    "expires_at": "2025-01-15T00:00:00Z"
+    "createdAt": "2024-01-15T10:00:00Z",
+    "expiresAt": "2025-01-15T00:00:00Z"
   }
 }
 ```
@@ -260,7 +260,7 @@ Content-Type: application/json
 ### Using API Keys
 
 ```http
-GET /v1/orgs/{org_id}/deployments HTTP/1.1
+GET /v1/orgs/{orgId}/deployments HTTP/1.1
 X-API-Key: key_abc123xyz789_secret
 ```
 

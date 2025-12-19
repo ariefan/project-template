@@ -7,7 +7,7 @@ This document defines the standards, conventions, and best practices for maintai
 Before publishing or updating any API documentation, ensure:
 
 - [ ] Follows standard document structure
-- [ ] Uses canonical conventions (order_by, has_next, etc.)
+- [ ] Uses canonical conventions (orderBy, hasNext, etc.)
 - [ ] Includes implementation examples
 - [ ] Has 3-5 cross-references
 - [ ] No duplicated content
@@ -99,8 +99,8 @@ Use ONLY these standardized patterns throughout documentation:
 
 **✅ PRIMARY:**
 ```
-GET /users?order_by=-created_at
-GET /products?order_by=-price,name
+GET /users?orderBy=-createdAt
+GET /products?orderBy=-price,name
 ```
 
 **❌ AVOID:**
@@ -108,7 +108,7 @@ GET /products?order_by=-price,name
 GET /users?sort_by=created_at&sort_direction=desc  # Legacy pattern
 ```
 
-**Rule:** Always use `order_by` with `-` prefix for descending. Support multi-field with comma separation.
+**Rule:** Always use `orderBy` with `-` prefix for descending. Support multi-field with comma separation.
 
 ### Pagination
 
@@ -116,8 +116,8 @@ GET /users?sort_by=created_at&sort_direction=desc  # Legacy pattern
 ```json
 {
   "pagination": {
-    "has_next": true,
-    "has_previous": false
+    "hasNext": true,
+    "hasPrevious": false
   }
 }
 ```
@@ -131,13 +131,13 @@ GET /users?sort_by=created_at&sort_direction=desc  # Legacy pattern
 }
 ```
 
-**Rule:** Use `has_next` and `has_previous` (not `has_more`).
+**Rule:** Use `hasNext` and `hasPrevious` (not `has_more`).
 
 ### DELETE Responses
 
 **✅ Decision Tree:**
 ```
-Soft delete with metadata → 200 OK + {deleted_at, can_restore}
+Soft delete with metadata → 200 OK + {deletedAt, canRestore}
 Soft delete without metadata → 204 No Content
 Hard delete → 204 No Content
 ```
@@ -207,22 +207,22 @@ inv_def456
 
 | Context | Term to Use | Example |
 |---------|-------------|---------|
-| URL paths | `org_id` | `/v1/orgs/{org_id}/users` |
-| Path parameters | `org_id` | `req.params.org_id` |
-| Database columns | `tenant_id` | `WHERE tenant_id = ?` |
+| URL paths | `orgId` | `/v1/orgs/{orgId}/users` |
+| Path parameters | `orgId` | `req.params.orgId` |
+| Database columns | `tenantId` | `WHERE tenantId = ?` |
 | TypeScript variables | `tenantId` | `const tenantId = ...` |
 | Documentation prose | "organization" or "tenant" | "User belongs to organization" |
 
 **Implementation pattern:**
 ```typescript
 // URL route
-app.get('/v1/orgs/:org_id/users', async (req, res) => {
-  // Extract from URL (org_id)
-  const tenantId = req.params.org_id;
+app.get('/v1/orgs/:orgId/users', async (req, res) => {
+  // Extract from URL (orgId)
+  const tenantId = req.params.orgId;
 
-  // Query database (tenant_id)
+  // Query database (tenantId)
   const users = await db('users')
-    .where('tenant_id', tenantId)
+    .where('tenantId', tenantId)
     .select('*');
 
   res.json({ data: users });
@@ -230,16 +230,16 @@ app.get('/v1/orgs/:org_id/users', async (req, res) => {
 ```
 
 **AI Instruction:**
-- URLs: Always use `/orgs/{org_id}`
-- Database queries: Always use `tenant_id` column
+- URLs: Always use `/orgs/{orgId}`
+- Database queries: Always use `tenantId` column
 - Code variables: Always use `tenantId` (camelCase)
 - NEVER mix these terms within the same context
 
 ### Date/Time Fields
 
 **Suffix Conventions:**
-- `_at` → Timestamp (ISO 8601): `created_at`, `updated_at`, `deleted_at`
-- `_date` → Date only: `birth_date`, `start_date`, `due_date`
+- `At` → Timestamp (ISO 8601): `createdAt`, `updatedAt`, `deletedAt`
+- `Date` → Date only: `birthDate`, `startDate`, `dueDate`
 
 **Format:** ISO 8601 with timezone: `2024-01-15T10:30:00.000Z`
 
@@ -308,10 +308,10 @@ You can sort results using the order_by parameter.
 ```markdown
 ## Sorting
 
-You can sort results using the order_by parameter:
+You can sort results using the orderBy parameter:
 
 \```
-GET /users?order_by=-created_at
+GET /users?orderBy=-createdAt
 \```
 
 ### Implementation
@@ -384,7 +384,7 @@ Dataset size?
 **✅ GOOD:**
 ```markdown
 \```http
-POST /v1/orgs/{org_id}/users HTTP/1.1
+POST /v1/orgs/{orgId}/users HTTP/1.1
 Content-Type: application/json
 
 {
@@ -400,7 +400,7 @@ Content-Type: application/json
     "id": "usr_abc123",
     "email": "user@example.com",
     "name": "John Doe",
-    "created_at": "2024-01-15T10:30:00.000Z"
+    "createdAt": "2024-01-15T10:30:00.000Z"
   }
 }
 \```
@@ -418,15 +418,15 @@ To maximize AI code generation quality:
 ```markdown
 ## Standard Pattern
 
-Use `order_by` with `-` prefix for descending:
+Use `orderBy` with `-` prefix for descending:
 
 \```
-order_by=-created_at     # Descending
-order_by=name            # Ascending
-order_by=-price,name     # Multi-field
+orderBy=-createdAt     # Descending
+orderBy=name           # Ascending
+orderBy=-price,name    # Multi-field
 \```
 
-**AI Instruction:** Always generate `order_by` syntax by default.
+**AI Instruction:** Always generate `orderBy` syntax by default.
 ```
 
 **Rule:** Add "AI Instruction" notes for canonical patterns.
@@ -464,7 +464,7 @@ Use tables for comparison and reference:
 | HTTP Code | Error Code | Description | Client Action |
 |-----------|------------|-------------|---------------|
 | 401 | unauthorized | No token | Redirect to login |
-| 401 | token_expired | Token expired | Refresh token |
+| 401 | tokenExpired | Token expired | Refresh token |
 ```
 
 **Rule:** Use tables for structured, comparable data.
@@ -536,7 +536,7 @@ Before committing documentation changes:
 - [ ] No grammatical errors
 - [ ] No broken links
 - [ ] All code examples tested
-- [ ] All placeholders explained (`{org_id}`, `{user_id}`)
+- [ ] All placeholders explained (`{orgId}`, `{userId}`)
 - [ ] Consistent voice (imperative, active)
 
 ### Technical Accuracy
@@ -549,7 +549,7 @@ Before committing documentation changes:
 
 ### Consistency
 
-- [ ] Uses canonical conventions (order_by, has_next, etc.)
+- [ ] Uses canonical conventions (orderBy, hasNext, etc.)
 - [ ] ID format consistent (`usr_`, `org_`, etc.)
 - [ ] Date format ISO 8601
 - [ ] Error structure matches standard
@@ -584,9 +584,9 @@ Use either:
 
 **GOOD:**
 ```markdown
-Use `order_by` (recommended):
+Use `orderBy` (recommended):
 \```
-GET /users?order_by=-created_at
+GET /users?orderBy=-createdAt
 \```
 
 Alternative (legacy): `sort_by + sort_direction`
@@ -598,7 +598,7 @@ Alternative (legacy): `sort_by + sort_direction`
 ```markdown
 ## Pagination
 
-Use `page` and `page_size` parameters.
+Use `page` and `pageSize` parameters.
 ```
 
 **GOOD:**
@@ -606,14 +606,14 @@ Use `page` and `page_size` parameters.
 ## Pagination
 
 \```
-GET /users?page=2&page_size=50
+GET /users?page=2&pageSize=50
 \```
 
 ### Implementation
 
 \```typescript
 const page = parseInt(req.query.page) || 1;
-const pageSize = Math.min(parseInt(req.query.page_size) || 50, 100);
+const pageSize = Math.min(parseInt(req.query.pageSize) || 50, 100);
 const offset = (page - 1) * pageSize;
 
 const users = await db('users')
@@ -645,7 +645,7 @@ Returns 403 if forbidden.
     "message": "Permission denied",
     "details": [
       {
-        "code": "insufficient_permissions",
+        "code": "insufficientPermissions",
         "message": "Required permission: users:write",
         "metadata": {
           "required": "users:write",

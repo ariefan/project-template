@@ -36,10 +36,10 @@ GET /v1/migration/status
 {
   "version": "v1",
   "status": "deprecated",
-  "sunset_date": "2024-12-31T23:59:59Z",
-  "days_until_sunset": 45,
-  "replacement_version": "v2",
-  "migration_guide_url": "https://docs.example.com/migrations/v1-to-v2"
+  "sunsetDate": "2024-12-31T23:59:59Z",
+  "daysUntilSunset": 45,
+  "replacementVersion": "v2",
+  "migrationGuideUrl": "https://docs.example.com/migrations/v1-to-v2"
 }
 ```
 

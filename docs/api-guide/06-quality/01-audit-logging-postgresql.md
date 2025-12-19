@@ -434,7 +434,7 @@ SELECT audit.log_event(
     "email": "newuser@example.com",
     "name": "New User",
     "role": "member",
-    "created_at": "2024-01-15T10:30:00Z"
+    "createdAt": "2024-01-15T10:30:00Z"
   }'::JSONB,
   p_request_id := 'req_def456'
 );
@@ -445,7 +445,7 @@ SELECT audit.log_event(
 ```sql
 -- Admin viewed user's payment methods
 SELECT audit.log_event(
-  p_event_type := 'payment_methods.viewed',
+  p_event_type := 'paymentMethods.viewed',
   p_tenant_id := 'org_xyz789',
   p_actor_type := 'user',
   p_actor_id := 'usr_admin123',
@@ -453,11 +453,11 @@ SELECT audit.log_event(
   p_actor_ip_address := '192.168.1.100'::INET,
   p_resource_type := 'user',
   p_resource_id := 'usr_456',
-  p_endpoint := '/v1/orgs/org_xyz789/users/usr_456?include=payment_methods',
+  p_endpoint := '/v1/orgs/org_xyz789/users/usr_456?include=paymentMethods',
   p_http_method := 'GET',
   p_metadata := '{
-    "included_relations": ["payment_methods"],
-    "payment_method_count": 2
+    "includedRelations": ["paymentMethods"],
+    "paymentMethodCount": 2
   }'::JSONB,
   p_request_id := 'req_ghi789'
 );
@@ -596,7 +596,7 @@ SELECT
   timestamp,
   actor_email,
   actor_ip_address,
-  metadata->>'failure_reason' AS reason
+  metadata->>'failureReason' AS reason
 FROM audit.logs
 WHERE tenant_id = 'org_xyz789'
   AND event_type = 'auth.login_failed'

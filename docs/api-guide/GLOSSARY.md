@@ -132,7 +132,7 @@ A compact, self-contained token format for securely transmitting information bet
 {
   "sub": "usr_123",
   "email": "user@example.com",
-  "tenant_id": "org_abc",
+  "tenantId": "org_abc",
   "exp": 1642352400
 }
 ```
@@ -149,7 +149,7 @@ A compact, self-contained token format for securely transmitting information bet
 An architecture where a single application instance serves multiple isolated customers (tenants). Each tenant's data is isolated from others.
 
 **Isolation strategies:**
-- Path-based: `/v1/orgs/{org_id}/users`
+- Path-based: `/v1/orgs/{orgId}/users`
 - Subdomain-based: `acme.api.example.com`
 - Header-based: `X-Tenant-ID: org_abc`
 

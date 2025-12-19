@@ -178,18 +178,18 @@ schema: tenant_org_ghi789
 - ❌ Still overhead per tenant
 - ❌ Complex query routing
 
-**Shared Tables with tenant_id (Recommended)**
+**Shared Tables with tenantId (Recommended)**
 ```sql
 CREATE TABLE users (
   id VARCHAR(255) PRIMARY KEY,
-  tenant_id VARCHAR(255) NOT NULL,
+  tenantId VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
   name VARCHAR(255),
   created_at TIMESTAMP DEFAULT NOW(),
-  CONSTRAINT unique_email_per_tenant UNIQUE (tenant_id, email)
+  CONSTRAINT unique_email_per_tenant UNIQUE (tenantId, email)
 );
 
-CREATE INDEX idx_users_tenant ON users(tenant_id);
+CREATE INDEX idx_users_tenant ON users(tenantId);
 ```
 
 **Advantages:**
@@ -205,12 +205,12 @@ CREATE INDEX idx_users_tenant ON users(tenant_id);
 
 ### Query Filtering
 
-**Always filter by tenant_id:**
+**Always filter by tenantId:**
 
 ```sql
 -- ✅ Correct
 SELECT * FROM users
-WHERE tenant_id = 'org_abc123'
+WHERE tenantId = 'org_abc123'
   AND email = 'user@example.com';
 
 -- ❌ WRONG - Missing tenant filter
@@ -260,7 +260,7 @@ app.use('/v1/orgs/:org_id', tenantMiddleware);
 // Knex.js example
 function forTenant(tenantId: string) {
   return function(queryBuilder) {
-    queryBuilder.where('tenant_id', tenantId);
+    queryBuilder.where('tenantId', tenantId);
   };
 }
 
@@ -281,9 +281,9 @@ Include tenant information in responses:
     "email": "user@example.com"
   },
   "meta": {
-    "request_id": "req_xyz789",
-    "tenant_id": "org_abc123",
-    "tenant_name": "Acme Corp"
+    "requestId": "req_xyz789",
+    "tenantId": "org_abc123",
+    "tenantName": "Acme Corp"
   }
 }
 ```
@@ -321,14 +321,14 @@ GET /v1/orgs/org_abc/available-templates
       "id": "tpl_global_001",
       "name": "Invoice Template",
       "scope": "global",
-      "is_custom": false
+      "isCustom": false
     },
     {
       "id": "tpl_org_abc_001",
       "name": "Custom Invoice",
       "scope": "tenant",
-      "is_custom": true,
-      "tenant_id": "org_abc123"
+      "isCustom": true,
+      "tenantId": "org_abc123"
     }
   ]
 }
@@ -345,13 +345,13 @@ GET /v1/orgs/org_abc/available-templates
     "email": "user@example.com",
     "tenants": [
       {
-        "tenant_id": "org_abc123",
-        "tenant_name": "Acme Corp",
+        "tenantId": "org_abc123",
+        "tenantName": "Acme Corp",
         "role": "admin"
       },
       {
-        "tenant_id": "org_def456",
-        "tenant_name": "Beta Inc",
+        "tenantId": "org_def456",
+        "tenantName": "Beta Inc",
         "role": "member"
       }
     ]
@@ -364,7 +364,7 @@ GET /v1/orgs/org_abc/available-templates
 ```
 POST /v1/users/usr_123/actions/switch-tenant
 {
-  "tenant_id": "org_def456"
+  "tenantId": "org_def456"
 }
 ```
 
@@ -372,9 +372,9 @@ POST /v1/users/usr_123/actions/switch-tenant
 ```json
 {
   "data": {
-    "user_id": "usr_123",
-    "active_tenant_id": "org_def456",
-    "active_tenant_name": "Beta Inc",
+    "userId": "usr_123",
+    "activeTenantId": "org_def456",
+    "activeTenantName": "Beta Inc",
     "role": "member",
     "permissions": ["users:read", "projects:read"]
   }
@@ -405,7 +405,7 @@ async function validateTenant(tenantId: string, userId: string) {
 
   // 2. Check user has access
   const membership = await db('tenant_memberships')
-    .where({ tenant_id: tenantId, user_id: userId, is_active: true })
+    .where({ tenantId: tenantId, user_id: userId, is_active: true })
     .first();
 
   if (!membership) {
@@ -427,7 +427,7 @@ GET /v1/orgs/org_abc123/users
 **SQL:**
 ```sql
 SELECT * FROM users
-WHERE tenant_id = 'org_abc123'
+WHERE tenantId = 'org_abc123'
   AND deleted_at IS NULL
 ORDER BY created_at DESC;
 ```
@@ -444,11 +444,11 @@ POST /v1/orgs/org_abc123/users
 
 **SQL:**
 ```sql
-INSERT INTO users (id, tenant_id, email, name, created_at)
+INSERT INTO users (id, tenantId, email, name, created_at)
 VALUES ('usr_xyz789', 'org_abc123', 'user@example.com', 'John Doe', NOW());
 ```
 
-**Always set tenant_id from URL, never from request body.**
+**Always set tenantId from URL, never from request body.**
 
 ### Update Resource
 
@@ -464,7 +464,7 @@ PATCH /v1/orgs/org_abc123/users/usr_xyz789
 UPDATE users
 SET name = 'Jane Doe', updated_at = NOW()
 WHERE id = 'usr_xyz789'
-  AND tenant_id = 'org_abc123';  -- Prevent cross-tenant updates
+  AND tenantId = 'org_abc123';  -- Prevent cross-tenant updates
 ```
 
 ### Delete Resource
@@ -478,7 +478,7 @@ DELETE /v1/orgs/org_abc123/users/usr_xyz789
 UPDATE users
 SET deleted_at = NOW(), deleted_by = 'usr_admin_123'
 WHERE id = 'usr_xyz789'
-  AND tenant_id = 'org_abc123';  -- Prevent cross-tenant deletes
+  AND tenantId = 'org_abc123';  -- Prevent cross-tenant deletes
 ```
 
 ## Audit Logging
@@ -487,10 +487,10 @@ Track all operations with tenant context:
 
 ```json
 {
-  "event_id": "evt_abc123",
-  "event_type": "user.created",
-  "tenant_id": "org_abc123",
-  "tenant_name": "Acme Corp",
+  "eventId": "evt_abc123",
+  "eventType": "user.created",
+  "tenantId": "org_abc123",
+  "tenantName": "Acme Corp",
   "actor": {
     "type": "user",
     "id": "usr_123",
@@ -513,15 +513,15 @@ See [Audit Logging](../06-quality/01-audit-logging.md) for details.
 ```typescript
 // ❌ WRONG - Client controls tenant
 app.post('/users', async (req, res) => {
-  const { tenant_id, email, name } = req.body;
-  await createUser({ tenant_id, email, name });
+  const { tenantId, email, name } = req.body;
+  await createUser({ tenantId, email, name });
 });
 
 // ✅ CORRECT - Server controls tenant
 app.post('/orgs/:org_id/users', async (req, res) => {
-  const tenant_id = req.params.org_id;  // From URL
+  const tenantId = req.params.org_id;  // From URL
   const { email, name } = req.body;
-  await createUser({ tenant_id, email, name });
+  await createUser({ tenantId, email, name });
 });
 ```
 
@@ -531,7 +531,7 @@ app.post('/orgs/:org_id/users', async (req, res) => {
 // Verify resource belongs to tenant
 async function getUser(userId: string, tenantId: string) {
   const user = await db('users')
-    .where({ id: userId, tenant_id: tenantId })
+    .where({ id: userId, tenantId: tenantId })
     .first();
 
   if (!user) {
@@ -546,9 +546,9 @@ async function getUser(userId: string, tenantId: string) {
 
 ```sql
 -- Performance indexes
-CREATE INDEX idx_users_tenant ON users(tenant_id);
-CREATE INDEX idx_users_tenant_email ON users(tenant_id, email);
-CREATE INDEX idx_users_tenant_created ON users(tenant_id, created_at DESC);
+CREATE INDEX idx_users_tenant ON users(tenantId);
+CREATE INDEX idx_users_tenant_email ON users(tenantId, email);
+CREATE INDEX idx_users_tenant_created ON users(tenantId, created_at DESC);
 ```
 
 ### 4. Cache with Tenant Key
@@ -563,7 +563,7 @@ const user = await cache.get(cacheKey);
 
 ```typescript
 logger.info('User created', {
-  tenant_id: tenantId,
+  tenantId: tenantId,
   user_id: userId,
   actor_id: actorId,
   request_id: requestId
@@ -588,11 +588,11 @@ Content-Type: application/json
 
 **Server processing:**
 ```typescript
-1. Extract tenant_id from URL: "org_abc123"
+1. Extract tenantId from URL: "org_abc123"
 2. Verify tenant exists and is active
 3. Verify user has access to org_abc123
-4. Create user with tenant_id = "org_abc123"
-5. Log audit event with tenant_id
+4. Create user with tenantId = "org_abc123"
+5. Log audit event with tenantId
 6. Return response with tenant context
 ```
 
@@ -603,11 +603,11 @@ Content-Type: application/json
     "id": "usr_xyz789",
     "email": "newuser@example.com",
     "name": "John Doe",
-    "created_at": "2024-01-15T10:30:00.000Z"
+    "createdAt": "2024-01-15T10:30:00.000Z"
   },
   "meta": {
-    "tenant_id": "org_abc123",
-    "tenant_name": "Acme Corp"
+    "tenantId": "org_abc123",
+    "tenantName": "Acme Corp"
   }
 }
 ```

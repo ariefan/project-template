@@ -5,7 +5,7 @@
 ## Endpoint
 
 ```
-POST /v1/orgs/{org_id}/{resource}/batch
+POST /v1/orgs/{orgId}/{resource}/batch
 ```
 
 ## Request Format
@@ -26,8 +26,8 @@ POST /v1/orgs/{org_id}/{resource}/batch
   ],
   "options": {
     "atomic": false,
-    "return_records": true,
-    "skip_duplicates": false
+    "returnRecords": true,
+    "skipDuplicates": false
   }
 }
 ```
@@ -37,9 +37,9 @@ POST /v1/orgs/{org_id}/{resource}/batch
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | atomic | boolean | false | All items succeed or all fail |
-| return_records | boolean | true | Return created records in response |
-| skip_duplicates | boolean | false | Skip items that already exist |
-| validate_only | boolean | false | Validate without creating |
+| returnRecords | boolean | true | Return created records in response |
+| skipDuplicates | boolean | false | Skip items that already exist |
+| validateOnly | boolean | false | Validate without creating |
 
 ## Response Format
 
@@ -52,14 +52,14 @@ POST /v1/orgs/{org_id}/{resource}/batch
       "data": {
         "id": "usr_abc123",
         "email": "user1@example.com",
-        "created_at": "2024-01-15T10:30:00.000Z"
+        "createdAt": "2024-01-15T10:30:00.000Z"
       }
     },
     {
       "index": 1,
       "status": "error",
       "error": {
-        "code": "validation_error",
+        "code": "validationError",
         "message": "Email already exists"
       },
       "input": {
@@ -74,8 +74,8 @@ POST /v1/orgs/{org_id}/{resource}/batch
     "skipped": 0
   },
   "meta": {
-    "request_id": "req_batch_123",
-    "duration_ms": 234
+    "requestId": "req_batch_123",
+    "durationMs": 234
   }
 }
 ```
@@ -87,7 +87,7 @@ When `atomic: true`, all items rollback if any fails:
 ```json
 {
   "error": {
-    "code": "batch_validation_failed",
+    "code": "batchValidationFailed",
     "message": "Batch operation failed. All items rolled back"
   },
   "summary": {

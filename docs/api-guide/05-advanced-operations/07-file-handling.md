@@ -74,7 +74,7 @@ Client → API (get presigned URL) → Client → S3 directly → API (confirm)
 ### Upload Endpoint
 
 ```http
-POST /v1/orgs/{org_id}/files
+POST /v1/orgs/{orgId}/files
 Content-Type: multipart/form-data
 Authorization: Bearer {token}
 
@@ -98,15 +98,15 @@ Content-Disposition: form-data; name="metadata"
     "id": "file_abc123",
     "filename": "report.pdf",
     "size": 2457600,
-    "mime_type": "application/pdf",
-    "storage_path": "orgs/org_abc123/files/file_abc123.pdf",
+    "mimeType": "application/pdf",
+    "storagePath": "orgs/org_abc123/files/file_abc123.pdf",
     "url": "https://cdn.example.com/files/file_abc123.pdf?signature=...",
     "metadata": {
       "description": "Q4 Financial Report"
     },
-    "uploaded_by": "usr_xyz789",
-    "uploaded_at": "2024-01-15T10:30:00.000Z",
-    "virus_scan_status": "pending",
+    "uploadedBy": "usr_xyz789",
+    "uploadedAt": "2024-01-15T10:30:00.000Z",
+    "virusScanStatus": "pending",
     "access": "private"
   }
 }
@@ -149,13 +149,13 @@ const detectedType = await fileTypeFromBuffer(buffer);
 ### Step 1: Request Upload URL
 
 ```http
-POST /v1/orgs/{org_id}/files/uploads
+POST /v1/orgs/{orgId}/files/uploads
 Content-Type: application/json
 Authorization: Bearer {token}
 
 {
   "filename": "report.pdf",
-  "content_type": "application/pdf",
+  "contentType": "application/pdf",
   "size": 2457600,
   "metadata": {
     "description": "Q4 Financial Report"
@@ -168,14 +168,14 @@ Authorization: Bearer {token}
 ```json
 {
   "data": {
-    "upload_id": "upl_xyz789",
-    "presigned_url": "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=...",
+    "uploadId": "upl_xyz789",
+    "presignedUrl": "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=...",
     "method": "PUT",
     "headers": {
       "Content-Type": "application/pdf"
     },
-    "expires_at": "2024-01-15T11:00:00.000Z",
-    "max_size": 10485760
+    "expiresAt": "2024-01-15T11:00:00.000Z",
+    "maxSize": 10485760
   }
 }
 ```
@@ -206,7 +206,7 @@ if (response.ok) {
 ### Step 3: Confirm Upload
 
 ```http
-POST /v1/orgs/{org_id}/files/uploads/{upload_id}/confirm
+POST /v1/orgs/{orgId}/files/uploads/{uploadId}/confirm
 Content-Type: application/json
 Authorization: Bearer {token}
 
@@ -221,12 +221,12 @@ Authorization: Bearer {token}
     "id": "file_abc123",
     "filename": "report.pdf",
     "size": 2457600,
-    "mime_type": "application/pdf",
-    "storage_path": "orgs/org_abc123/files/file_abc123.pdf",
+    "mimeType": "application/pdf",
+    "storagePath": "orgs/org_abc123/files/file_abc123.pdf",
     "url": "https://cdn.example.com/files/file_abc123.pdf?signature=...",
-    "uploaded_by": "usr_xyz789",
-    "uploaded_at": "2024-01-15T10:30:00.000Z",
-    "virus_scan_status": "pending",
+    "uploadedBy": "usr_xyz789",
+    "uploadedAt": "2024-01-15T10:30:00.000Z",
+    "virusScanStatus": "pending",
     "access": "private"
   }
 }
@@ -247,7 +247,7 @@ Authorization: Bearer {token}
 **Use signed URLs with expiration:**
 
 ```http
-GET /v1/orgs/{org_id}/files/{file_id}/download
+GET /v1/orgs/{orgId}/files/{fileId}/download
 Authorization: Bearer {token}
 ```
 
@@ -268,7 +268,7 @@ Location: https://cdn.example.com/files/file_abc123.pdf?signature=...&expires=12
 For truly public files (marketing materials):
 
 ```http
-GET /v1/public/files/{file_id}
+GET /v1/public/files/{fileId}
 ```
 
 **Response:** Direct file or permanent CDN URL.
@@ -281,7 +281,7 @@ GET /v1/public/files/{file_id}
 
 **Storage path pattern:**
 ```
-{bucket}/orgs/{org_id}/files/{file_id}.{ext}
+{bucket}/orgs/{orgId}/files/{fileId}.{ext}
 ```
 
 **Example:**
@@ -483,17 +483,17 @@ for (const size of sizes) {
 ```json
 {
   "error": {
-    "code": "file_too_large",
+    "code": "fileTooLarge",
     "message": "File exceeds maximum size of 10 MB",
     "details": [
       {
         "field": "file",
-        "code": "file_too_large",
+        "code": "fileTooLarge",
         "message": "File size 15728640 bytes exceeds maximum 10485760 bytes",
         "metadata": {
-          "file_size": 15728640,
-          "max_size": 10485760,
-          "max_size_human": "10 MB"
+          "fileSize": 15728640,
+          "maxSize": 10485760,
+          "maxSizeHuman": "10 MB"
         }
       }
     ]
@@ -506,16 +506,16 @@ for (const size of sizes) {
 ```json
 {
   "error": {
-    "code": "invalid_file_type",
+    "code": "invalidFileType",
     "message": "File type not allowed",
     "details": [
       {
         "field": "file",
-        "code": "invalid_file_type",
+        "code": "invalidFileType",
         "message": "File type 'application/x-executable' is not allowed",
         "metadata": {
-          "detected_type": "application/x-executable",
-          "allowed_types": [
+          "detectedType": "application/x-executable",
+          "allowedTypes": [
             "image/jpeg",
             "image/png",
             "application/pdf"
@@ -532,12 +532,12 @@ for (const size of sizes) {
 ```json
 {
   "error": {
-    "code": "virus_detected",
+    "code": "virusDetected",
     "message": "File contains malware",
     "details": [
       {
         "field": "file",
-        "code": "virus_detected",
+        "code": "virusDetected",
         "message": "Virus detected: Eicar-Test-Signature"
       }
     ]
@@ -550,7 +550,7 @@ for (const size of sizes) {
 ## List Files
 
 ```http
-GET /v1/orgs/{org_id}/files?page=1&page_size=50&order_by=-created_at
+GET /v1/orgs/{orgId}/files?page=1&pageSize=50&orderBy=-createdAt
 Authorization: Bearer {token}
 ```
 
@@ -563,19 +563,19 @@ Authorization: Bearer {token}
       "id": "file_abc123",
       "filename": "report.pdf",
       "size": 2457600,
-      "mime_type": "application/pdf",
-      "uploaded_by": "usr_xyz789",
-      "uploaded_at": "2024-01-15T10:30:00.000Z",
-      "virus_scan_status": "clean"
+      "mimeType": "application/pdf",
+      "uploadedBy": "usr_xyz789",
+      "uploadedAt": "2024-01-15T10:30:00.000Z",
+      "virusScanStatus": "clean"
     }
   ],
-  "meta": {
+  "pagination": {
     "page": 1,
-    "page_size": 50,
-    "total_items": 247,
-    "total_pages": 5,
-    "has_next": true,
-    "has_previous": false
+    "pageSize": 50,
+    "totalCount": 247,
+    "totalPages": 5,
+    "hasNext": true,
+    "hasPrevious": false
   }
 }
 ```
@@ -585,7 +585,7 @@ Authorization: Bearer {token}
 ## Delete File
 
 ```http
-DELETE /v1/orgs/{org_id}/files/{file_id}
+DELETE /v1/orgs/{orgId}/files/{fileId}
 Authorization: Bearer {token}
 ```
 
@@ -595,8 +595,8 @@ Authorization: Bearer {token}
 {
   "data": {
     "id": "file_abc123",
-    "deleted_at": "2024-01-15T16:00:00Z",
-    "deleted_by": "usr_admin123"
+    "deletedAt": "2024-01-15T16:00:00Z",
+    "deletedBy": "usr_admin123"
   }
 }
 ```

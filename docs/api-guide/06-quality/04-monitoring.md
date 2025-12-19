@@ -35,11 +35,11 @@ X-Span-ID: span_def456uvw
   "level": "info",
   "message": "User created",
   "context": {
-    "request_id": "req_abc123",
-    "tenant_id": "org_def456",
-    "user_id": "usr_123",
+    "requestId": "req_abc123",
+    "tenantId": "org_def456",
+    "userId": "usr_123",
     "endpoint": "/v1/orgs/org_def456/users",
-    "duration_ms": 234
+    "durationMs": 234
   }
 }
 ```

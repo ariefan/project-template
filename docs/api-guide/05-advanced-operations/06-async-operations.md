@@ -6,22 +6,22 @@
 
 **Request:**
 ```
-POST /v1/orgs/{org_id}/reports/generate
+POST /v1/orgs/{orgId}/reports/generate
 {
-  "report_type": "financial",
-  "start_date": "2024-01-01",
-  "end_date": "2024-01-31"
+  "reportType": "financial",
+  "startDate": "2024-01-01",
+  "endDate": "2024-01-31"
 }
 ```
 
 **Response: 202 Accepted**
 ```json
 {
-  "job_id": "job_abc123",
+  "jobId": "job_abc123",
   "status": "pending",
-  "created_at": "2024-01-15T10:30:00.000Z",
-  "estimated_completion": "2024-01-15T10:35:00.000Z",
-  "status_url": "/v1/orgs/{org_id}/jobs/job_abc123"
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "estimatedCompletion": "2024-01-15T10:35:00.000Z",
+  "statusUrl": "/v1/orgs/{orgId}/jobs/job_abc123"
 }
 ```
 
@@ -29,21 +29,21 @@ POST /v1/orgs/{org_id}/reports/generate
 
 **Request:**
 ```
-GET /v1/orgs/{org_id}/jobs/job_abc123
+GET /v1/orgs/{orgId}/jobs/job_abc123
 ```
 
 **Response:**
 ```json
 {
-  "job_id": "job_abc123",
+  "jobId": "job_abc123",
   "status": "processing",
   "progress": 45,
-  "created_at": "2024-01-15T10:30:00.000Z",
-  "started_at": "2024-01-15T10:30:15.000Z",
-  "updated_at": "2024-01-15T10:32:00.000Z",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "startedAt": "2024-01-15T10:30:15.000Z",
+  "updatedAt": "2024-01-15T10:32:00.000Z",
   "metadata": {
-    "records_processed": 4500,
-    "total_records": 10000
+    "recordsProcessed": 4500,
+    "totalRecords": 10000
   }
 }
 ```

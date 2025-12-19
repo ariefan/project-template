@@ -30,11 +30,11 @@ Link: <https://docs.example.com/migrations/v1-to-v2>; rel="deprecation"
   "data": {...},
   "warnings": [
     {
-      "code": "endpoint_deprecated",
+      "code": "endpointDeprecated",
       "message": "This endpoint will be sunset on 2024-12-31",
-      "sunset_date": "2024-12-31T23:59:59Z",
+      "sunsetDate": "2024-12-31T23:59:59Z",
       "alternative": "Use GET /v2/users instead",
-      "documentation_url": "https://docs.example.com/migrations/v1-to-v2"
+      "documentationUrl": "https://docs.example.com/migrations/v1-to-v2"
     }
   ]
 }

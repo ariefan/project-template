@@ -21,7 +21,7 @@ CREATE INDEX idx_users_not_deleted ON users(tenant_id) WHERE deleted_at IS NULL;
 
 **Endpoint:**
 ```
-DELETE /v1/orgs/{org_id}/users/{user_id}
+DELETE /v1/orgs/{orgId}/users/{userId}
 ```
 
 **Request:**
@@ -29,7 +29,7 @@ DELETE /v1/orgs/{org_id}/users/{user_id}
 {
   "reason": "User requested account deletion",
   "metadata": {
-    "ticket_id": "TKT-12345"
+    "ticketId": "TKT-12345"
   }
 }
 ```
@@ -40,11 +40,11 @@ DELETE /v1/orgs/{org_id}/users/{user_id}
   "data": {
     "id": "usr_abc123",
     "email": "user@example.com",
-    "deleted_at": "2024-01-15T10:30:00.000Z",
-    "deleted_by": "usr_admin_456",
-    "deletion_reason": "User requested account deletion",
-    "can_restore": true,
-    "restore_until": "2024-02-14T10:30:00.000Z"
+    "deletedAt": "2024-01-15T10:30:00.000Z",
+    "deletedBy": "usr_admin_456",
+    "deletionReason": "User requested account deletion",
+    "canRestore": true,
+    "restoreUntil": "2024-02-14T10:30:00.000Z"
   }
 }
 ```
@@ -53,7 +53,7 @@ DELETE /v1/orgs/{org_id}/users/{user_id}
 
 **Endpoint:**
 ```
-POST /v1/orgs/{org_id}/users/batch/soft-delete
+POST /v1/orgs/{orgId}/users/batch/soft-delete
 ```
 
 **Request:**
@@ -63,7 +63,7 @@ POST /v1/orgs/{org_id}/users/batch/soft-delete
   "reason": "Bulk cleanup of inactive accounts",
   "options": {
     "atomic": false,
-    "permanent_after_days": 30
+    "permanentAfterDays": 30
   }
 }
 ```
@@ -123,7 +123,7 @@ const activeUsers = await db('users')
 
 **Endpoint:**
 ```
-GET /v1/orgs/{org_id}/users/deleted
+GET /v1/orgs/{orgId}/users/deleted
 ```
 
 **Response:**
@@ -133,10 +133,10 @@ GET /v1/orgs/{org_id}/users/deleted
     {
       "id": "usr_abc123",
       "email": "user@example.com",
-      "deleted_at": "2024-01-15T10:30:00.000Z",
-      "deleted_by": "usr_admin_456",
-      "can_restore": true,
-      "restore_until": "2024-02-14T10:30:00.000Z"
+      "deletedAt": "2024-01-15T10:30:00.000Z",
+      "deletedBy": "usr_admin_456",
+      "canRestore": true,
+      "restoreUntil": "2024-02-14T10:30:00.000Z"
     }
   ]
 }

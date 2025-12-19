@@ -5,13 +5,13 @@
 ## Endpoint
 
 ```
-DELETE /v1/orgs/{org_id}/{resource}/batch
+DELETE /v1/orgs/{orgId}/{resource}/batch
 ```
 
 OR
 
 ```
-POST /v1/orgs/{org_id}/{resource}/batch/soft-delete
+POST /v1/orgs/{orgId}/{resource}/batch/soft-delete
 ```
 
 ## Request
@@ -22,7 +22,7 @@ POST /v1/orgs/{org_id}/{resource}/batch/soft-delete
   "options": {
     "atomic": false,
     "force": false,
-    "return_deleted": true
+    "returnDeleted": true
   }
 }
 ```
@@ -37,7 +37,7 @@ POST /v1/orgs/{org_id}/{resource}/batch/soft-delete
       "status": "success",
       "data": {
         "id": "usr_abc123",
-        "deleted_at": "2024-01-15T10:30:00.000Z"
+        "deletedAt": "2024-01-15T10:30:00.000Z"
       }
     },
     {

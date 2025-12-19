@@ -136,9 +136,9 @@ Link: <https://docs.example.com/migrations/v1-to-v2>; rel="deprecation"
     {
       "code": "endpoint_deprecated",
       "message": "This endpoint version will be sunset on 2024-12-31",
-      "sunset_date": "2024-12-31T23:59:59Z",
+      "sunsetDate": "2024-12-31T23:59:59Z",
       "alternative": "Use GET /v2/users instead",
-      "documentation_url": "https://docs.example.com/migrations/v1-to-v2"
+      "documentationUrl": "https://docs.example.com/migrations/v1-to-v2"
     }
   ]
 }
@@ -204,16 +204,16 @@ Create **new version** for breaking changes:
 ```json
 {
   "id": "usr_123",
-  "first_name": "John",
-  "last_name": "Doe",
-  "created_at": "2024-01-15T10:30:00.000Z"
+  "firstName": "John",
+  "lastName": "Doe",
+  "createdAt": "2024-01-15T10:30:00.000Z"
 }
 ```
 
 **Changes:**
 - `userId` → `id` (renamed)
-- `fullName` → `first_name` + `last_name` (split)
-- `createdDate` → `created_at` (renamed + format change)
+- `fullName` → `firstName` + `lastName` (split)
+- `createdDate` → `createdAt` (renamed + format change)
 
 ## Version Discovery
 
@@ -227,22 +227,22 @@ GET /v1/version
 **Response:**
 ```json
 {
-  "current_version": "v2",
-  "supported_versions": ["v1", "v2"],
-  "deprecated_versions": ["v1"],
-  "latest_version": "v2",
+  "currentVersion": "v2",
+  "supportedVersions": ["v1", "v2"],
+  "deprecatedVersions": ["v1"],
+  "latestVersion": "v2",
   "versions": [
     {
       "version": "v1",
       "status": "deprecated",
-      "sunset_date": "2024-12-31T23:59:59Z",
-      "documentation_url": "https://docs.example.com/v1"
+      "sunsetDate": "2024-12-31T23:59:59Z",
+      "documentationUrl": "https://docs.example.com/v1"
     },
     {
       "version": "v2",
       "status": "stable",
-      "released_date": "2024-01-01T00:00:00Z",
-      "documentation_url": "https://docs.example.com/v2"
+      "releasedDate": "2024-01-01T00:00:00Z",
+      "documentationUrl": "https://docs.example.com/v2"
     }
   ]
 }
@@ -296,16 +296,16 @@ GET /v1/migration/status
 {
   "version": "v1",
   "status": "deprecated",
-  "sunset_date": "2024-12-31T23:59:59Z",
-  "days_until_sunset": 45,
-  "replacement_version": "v2",
-  "migration_guide_url": "https://docs.example.com/migrations/v1-to-v2",
-  "breaking_changes": [
+  "sunsetDate": "2024-12-31T23:59:59Z",
+  "daysUntilSunset": 45,
+  "replacementVersion": "v2",
+  "migrationGuideUrl": "https://docs.example.com/migrations/v1-to-v2",
+  "breakingChanges": [
     "User ID format changed from numeric to prefixed string",
-    "Full name split into first_name and last_name",
+    "Full name split into firstName and lastName",
     "Date format changed to ISO 8601"
   ],
-  "migration_checklist": [
+  "migrationChecklist": [
     "Update user ID parsing to handle usr_ prefix",
     "Split full name into first and last name fields",
     "Update date parsing to ISO 8601 format"
@@ -367,7 +367,7 @@ X-API-Deprecated: false
 {
   "data": [...],
   "meta": {
-    "api_version": "v2"
+    "apiVersion": "v2"
   }
 }
 ```
@@ -396,13 +396,13 @@ Link: <https://docs.example.com/migrations/v1-to-v2>; rel="deprecation"
     {
       "code": "version_deprecated",
       "message": "API version v1 is deprecated and will be sunset on 2024-12-31",
-      "sunset_date": "2024-12-31T23:59:59Z",
-      "replacement_version": "v2",
-      "migration_url": "https://docs.example.com/migrations/v1-to-v2"
+      "sunsetDate": "2024-12-31T23:59:59Z",
+      "replacementVersion": "v2",
+      "migrationUrl": "https://docs.example.com/migrations/v1-to-v2"
     }
   ],
   "meta": {
-    "api_version": "v1"
+    "apiVersion": "v1"
   }
 }
 ```
@@ -424,9 +424,9 @@ HTTP/1.1 410 Gone
   "error": {
     "code": "version_retired",
     "message": "API version v0 has been retired",
-    "retired_date": "2023-12-31T23:59:59Z",
-    "replacement_version": "v2",
-    "migration_url": "https://docs.example.com/migrations/v0-to-v2"
+    "retiredDate": "2023-12-31T23:59:59Z",
+    "replacementVersion": "v2",
+    "migrationUrl": "https://docs.example.com/migrations/v0-to-v2"
   }
 }
 ```

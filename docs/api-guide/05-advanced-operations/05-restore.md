@@ -6,7 +6,7 @@
 
 **Endpoint:**
 ```
-POST /v1/orgs/{org_id}/users/{user_id}/restore
+POST /v1/orgs/{orgId}/users/{userId}/restore
 ```
 
 **Request:**
@@ -14,7 +14,7 @@ POST /v1/orgs/{org_id}/users/{user_id}/restore
 {
   "reason": "User account restored per support request",
   "metadata": {
-    "ticket_id": "TKT-12346"
+    "ticketId": "TKT-12346"
   }
 }
 ```
@@ -25,10 +25,10 @@ POST /v1/orgs/{org_id}/users/{user_id}/restore
   "data": {
     "id": "usr_abc123",
     "email": "user@example.com",
-    "deleted_at": null,
-    "restored_at": "2024-01-16T14:20:00.000Z",
-    "restored_by": "usr_admin_456",
-    "was_deleted_at": "2024-01-15T10:30:00.000Z"
+    "deletedAt": null,
+    "restoredAt": "2024-01-16T14:20:00.000Z",
+    "restoredBy": "usr_admin_456",
+    "wasDeletedAt": "2024-01-15T10:30:00.000Z"
   }
 }
 ```
@@ -37,7 +37,7 @@ POST /v1/orgs/{org_id}/users/{user_id}/restore
 
 **Endpoint:**
 ```
-POST /v1/orgs/{org_id}/users/batch/restore
+POST /v1/orgs/{orgId}/users/batch/restore
 ```
 
 **Request:**
@@ -47,7 +47,7 @@ POST /v1/orgs/{org_id}/users/batch/restore
   "reason": "Accidental bulk deletion - restoring affected accounts",
   "options": {
     "atomic": false,
-    "skip_not_deleted": true
+    "skipNotDeleted": true
   }
 }
 ```
@@ -61,14 +61,14 @@ POST /v1/orgs/{org_id}/users/batch/restore
       "status": "success",
       "data": {
         "id": "usr_abc123",
-        "restored_at": "2024-01-16T14:20:00.000Z"
+        "restoredAt": "2024-01-16T14:20:00.000Z"
       }
     },
     {
       "index": 1,
       "status": "error",
       "error": {
-        "code": "restore_expired",
+        "code": "restoreExpired",
         "message": "Restore window has expired"
       }
     }

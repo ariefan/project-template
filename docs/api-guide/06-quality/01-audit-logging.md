@@ -46,7 +46,7 @@ X-Request-ID: req_7k3m9x2p4b
 ```json
 {
   "meta": {
-    "request_id": "req_7k3m9x2p4b"
+    "requestId": "req_7k3m9x2p4b"
   }
 }
 ```
@@ -55,15 +55,15 @@ X-Request-ID: req_7k3m9x2p4b
 
 ```json
 {
-  "event_id": "evt_abc123",
-  "event_type": "user.updated",
+  "eventId": "evt_abc123",
+  "eventType": "user.updated",
   "timestamp": "2024-01-15T10:30:00.000Z",
-  "tenant_id": "org_xyz789",
+  "tenantId": "org_xyz789",
   "actor": {
     "type": "user",
     "id": "usr_123",
     "email": "admin@example.com",
-    "ip_address": "192.168.1.1"
+    "ipAddress": "192.168.1.1"
   },
   "resource": {
     "type": "user",
@@ -78,8 +78,8 @@ X-Request-ID: req_7k3m9x2p4b
     }
   },
   "metadata": {
-    "request_id": "req_7k3m9x2p4b",
-    "session_id": "ses_def456"
+    "requestId": "req_7k3m9x2p4b",
+    "sessionId": "ses_def456"
   }
 }
 ```
@@ -125,19 +125,19 @@ Use consistent naming:
 
 ```json
 {
-  "resource_before": {
+  "resourceBefore": {
     "id": "usr_456",
     "email": "user@example.com",
     "name": "John Doe",
     "role": "member",
-    "created_at": "2024-01-01T00:00:00Z"
+    "createdAt": "2024-01-01T00:00:00Z"
   },
-  "resource_after": {
+  "resourceAfter": {
     "id": "usr_456",
     "email": "user@example.com",
     "name": "John Doe",
     "role": "admin",
-    "created_at": "2024-01-01T00:00:00Z"
+    "createdAt": "2024-01-01T00:00:00Z"
   }
 }
 ```
@@ -188,7 +188,7 @@ Use consistent naming:
 ### Data Operations (ALWAYS)
 
 **CREATE:**
-- ✅ Store full `resource_after` snapshot
+- ✅ Store full `resourceAfter` snapshot
 - ✅ Include who created it
 
 **UPDATE:**
@@ -197,7 +197,7 @@ Use consistent naming:
 - ✅ Include who made the change
 
 **DELETE:**
-- ✅ Store full `resource_before` snapshot
+- ✅ Store full `resourceBefore` snapshot
 - ✅ Include who deleted it
 - ✅ Link to soft delete if applicable
 
@@ -281,9 +281,9 @@ Each audit event contains hash of previous event:
 ```
 Event 1 (hash: A)
   ↓
-Event 2 (hash: B, previous_hash: A)
+Event 2 (hash: B, previousHash: A)
   ↓
-Event 3 (hash: C, previous_hash: B)
+Event 3 (hash: C, previousHash: B)
 ```
 
 **Benefits:**
@@ -320,11 +320,11 @@ For systems with **>1M events/day:**
 
 **Fast queries:**
 ```sql
--- Good: Uses index on (tenant_id, timestamp)
-WHERE tenant_id = 'org_123' AND timestamp > NOW() - INTERVAL '24 hours'
+-- Good: Uses index on (tenantId, timestamp)
+WHERE tenantId = 'org_123' AND timestamp > NOW() - INTERVAL '24 hours'
 
 -- Bad: Full table scan
-WHERE actor_email LIKE '%@example.com%'
+WHERE actorEmail LIKE '%@example.com%'
 ```
 
 ---

@@ -27,9 +27,9 @@ GET /invoices?fields=id,number,amount,status
     "address": "123 Main St",
     "city": "New York",
     "country": "US",
-    "created_at": "2024-01-15T10:00:00Z",
-    "updated_at": "2024-01-16T14:00:00Z",
-    "last_login_at": "2024-01-20T09:00:00Z"
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-16T14:00:00Z",
+    "lastLoginAt": "2024-01-20T09:00:00Z"
   }
 }
 ```
@@ -50,7 +50,7 @@ GET /invoices?fields=id,number,amount,status
 Select nested fields using dot notation:
 
 ```
-GET /users/usr_123?fields=id,name,profile.bio,profile.avatar_url
+GET /users/usr_123?fields=id,name,profile.bio,profile.avatarUrl
 GET /orders/ord_456?fields=id,status,customer.name,customer.email
 ```
 
@@ -62,7 +62,7 @@ GET /orders/ord_456?fields=id,status,customer.name,customer.email
     "name": "John Doe",
     "profile": {
       "bio": "Software engineer",
-      "avatar_url": "https://cdn.example.com/avatars/usr_123.jpg"
+      "avatarUrl": "https://cdn.example.com/avatars/usr_123.jpg"
     }
   }
 }
@@ -73,9 +73,9 @@ GET /orders/ord_456?fields=id,status,customer.name,customer.email
 **Standard parameter:** `include`
 
 ```
-GET /users/usr_123?include=addresses,payment_methods
-GET /invoices/inv_456?include=line_items,customer
-GET /orders/ord_789?include=customer,items,shipping_address
+GET /users/usr_123?include=addresses,paymentMethods
+GET /invoices/inv_456?include=lineItems,customer
+GET /orders/ord_789?include=customer,items,shippingAddress
 ```
 
 **AI Instruction:** Always use `include` parameter for loading related resources. Some legacy APIs use `expand` - this is deprecated.
@@ -116,7 +116,7 @@ You can combine sparse fieldsets with related resource loading:
 
 ```
 GET /users/usr_123?fields=id,name,email&include=addresses
-GET /invoices/inv_789?fields=id,number,amount&include=line_items,customer
+GET /invoices/inv_789?fields=id,number,amount&include=lineItems,customer
 ```
 
 **Response:**
@@ -211,7 +211,7 @@ async function listUsers(tenantId: string, options: ListUsersOptions) {
     : undefined;
 
   return prisma.user.findMany({
-    where: { tenant_id: tenantId },
+    where: { tenantId },
     select,
     include,
   });
@@ -220,7 +220,7 @@ async function listUsers(tenantId: string, options: ListUsersOptions) {
 // Example usage
 const users = await listUsers('org_abc', {
   fields: 'id,email,name',
-  include: 'addresses,payment_methods',
+  include: 'addresses,paymentMethods',
 });
 ```
 
@@ -250,14 +250,14 @@ function parseNestedFields(fields: string): object {
 }
 
 // Example
-const select = parseNestedFields('id,name,profile.bio,profile.avatar_url');
+const select = parseNestedFields('id,name,profile.bio,profile.avatarUrl');
 // {
 //   id: true,
 //   name: true,
 //   profile: {
 //     select: {
 //       bio: true,
-//       avatar_url: true
+//       avatarUrl: true
 //     }
 //   }
 // }
@@ -292,7 +292,7 @@ const users = await db('users')
 
 // Or use ORM includes
 const users = await prisma.user.findMany({
-  where: { tenant_id: tenantId },
+  where: { tenantId },
   include: { addresses: true },
 });
 ```
@@ -375,12 +375,12 @@ app.get('/users', (req, res) => {
 
 ```typescript
 // ❌ ATTACK: Client requests too many relations
-GET /users?include=addresses,payment_methods,sessions,orders,invoices,subscriptions
+GET /users?include=addresses,paymentMethods,sessions,orders,invoices,subscriptions
 
 // Response: 400 Bad Request
 {
   "error": {
-    "code": "validation_error",
+    "code": "validationError",
     "message": "Maximum 3 relations allowed per request. Requested: 6"
   }
 }
@@ -391,13 +391,13 @@ GET /users?include=organization.teams.members.addresses
 // Response: 400 Bad Request
 {
   "error": {
-    "code": "validation_error",
+    "code": "validationError",
     "message": "Include depth exceeds maximum of 2. Relation 'organization.teams.members.addresses' has depth 4"
   }
 }
 
 // ✅ SAFE: Within limits
-GET /users?include=addresses,payment_methods
+GET /users?include=addresses,paymentMethods
 ```
 
 **Why These Limits:**
@@ -414,15 +414,15 @@ GET /users?include=addresses,payment_methods
 const include = {
   addresses: {
     take: 10,  // Max 10 addresses per user
-    orderBy: { created_at: 'desc' }
+    orderBy: { createdAt: 'desc' }
   },
-  payment_methods: {
+  paymentMethods: {
     take: 5    // Max 5 payment methods
   }
 };
 
 const users = await prisma.user.findMany({
-  where: { tenant_id: tenantId },
+  where: { tenantId },
   include,
   take: 50  // Max 50 users
 });
@@ -444,7 +444,7 @@ const users = await prisma.user.findMany({
 Mobile clients typically request minimal fields:
 
 ```
-GET /posts?fields=id,title,author.name,created_at&include=author
+GET /posts?fields=id,title,author.name,createdAt&include=author
 ```
 
 **Full desktop response:** 2.5 KB
@@ -490,16 +490,16 @@ function validateFields(fields: string, validFields: string[]): void {
 ```json
 {
   "error": {
-    "code": "validation_error",
+    "code": "validationError",
     "message": "Invalid field selection",
     "details": [
       {
         "field": "fields",
-        "code": "invalid_field",
+        "code": "invalidField",
         "message": "Field 'password' is not selectable",
         "metadata": {
-          "invalid_fields": ["password"],
-          "available_fields": ["id", "email", "name", "created_at"]
+          "invalidFields": ["password"],
+          "availableFields": ["id", "email", "name", "createdAt"]
         }
       }
     ]
@@ -511,15 +511,15 @@ function validateFields(fields: string, validFields: string[]): void {
 ```json
 {
   "error": {
-    "code": "validation_error",
+    "code": "validationError",
     "message": "Invalid include parameter",
     "details": [
       {
         "field": "include",
-        "code": "invalid_relation",
+        "code": "invalidRelation",
         "message": "Relation 'orders' does not exist on User",
         "metadata": {
-          "available_relations": ["addresses", "payment_methods", "sessions"]
+          "availableRelations": ["addresses", "paymentMethods", "sessions"]
         }
       }
     ]

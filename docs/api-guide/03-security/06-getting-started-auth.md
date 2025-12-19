@@ -447,7 +447,7 @@ curl -X POST http://localhost:3000/auth/register \
     "email": "user@example.com",
     "password": "securepassword123",
     "name": "John Doe",
-    "tenant_id": "org_abc123"
+    "tenantId": "org_abc123"
   }'
 ```
 
@@ -459,11 +459,11 @@ curl -X POST http://localhost:3000/auth/register \
       "id": "usr_xyz789",
       "email": "user@example.com",
       "name": "John Doe",
-      "created_at": "2024-01-20T10:00:00Z"
+      "createdAt": "2024-01-20T10:00:00Z"
     },
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expires_in": 900
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expiresIn": 900
   }
 }
 ```
@@ -492,7 +492,7 @@ curl http://localhost:3000/v1/orgs/org_abc123/users \
 curl -X POST http://localhost:3000/auth/refresh \
   -H "Content-Type: application/json" \
   -d '{
-    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }'
 ```
 
