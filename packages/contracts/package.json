@@ -6,12 +6,8 @@
   "scripts": {
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "typecheck": "tsc --noEmit",
-    "compile": "tsp compile ./spec",
+    "build": "tsp compile ./spec",
     "watch": "tsp compile ./spec --watch"
-  },
-  "dependencies": {
-    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@typespec/compiler": "^1.7.1",
@@ -22,8 +18,7 @@
     "typescript": "^5.9.3"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./schemas": "./src/schemas/index.ts",
-    "./schemas/*": "./src/schemas/*.ts"
+    "./openapi": "./tsp-output/openapi/openapi.yaml",
+    "./openapi.json": "./tsp-output/openapi/openapi.json"
   }
 }

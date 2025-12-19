@@ -1,0 +1,9 @@
+# Build artifacts
+*.tsbuildinfo
+dist/
+
+# Dependencies
+node_modules/
+
+# Note: tsp-output/ is COMMITTED to git
+# Apps need the generated OpenAPI spec
