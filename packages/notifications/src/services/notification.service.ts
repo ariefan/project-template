@@ -1,0 +1,396 @@
+import {
+  db,
+  eq,
+  inArray,
+  type Notification,
+  notifications,
+  users,
+} from "@workspace/db";
+import { nanoid } from "nanoid";
+import type { ProviderRegistry } from "../providers/types";
+import type { NotificationQueue } from "../queue/types";
+import { isValidTemplateId, renderTemplate } from "../templates";
+import type {
+  EmailPayload,
+  PushPayload,
+  SendBulkRequest,
+  SendNotificationRequest,
+  SendResult,
+  SmsPayload,
+  TelegramPayload,
+  WhatsAppPayload,
+} from "../types";
+import {
+  createPreferenceService,
+  type PreferenceService,
+} from "./preference.service";
+
+export type NotificationService = {
+  send(request: SendNotificationRequest): Promise<SendResult>;
+  sendBulk(
+    request: SendBulkRequest
+  ): Promise<{ queued: number; skipped: number }>;
+  getHistory(
+    userId: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<Notification[]>;
+  getById(id: string): Promise<Notification | null>;
+};
+
+export type NotificationServiceDeps = {
+  providers: ProviderRegistry;
+  queue?: NotificationQueue;
+  preferenceService?: PreferenceService;
+};
+
+type AnyPayload =
+  | EmailPayload
+  | SmsPayload
+  | WhatsAppPayload
+  | TelegramPayload
+  | PushPayload;
+
+function extractBodyFromPayload(payload: AnyPayload): string {
+  if ("body" in payload) {
+    return payload.body;
+  }
+  if ("text" in payload) {
+    return payload.text;
+  }
+  return "";
+}
+
+export function createNotificationService(
+  deps: NotificationServiceDeps
+): NotificationService {
+  const preferenceService = deps.preferenceService ?? createPreferenceService();
+
+  function buildPayloadFromRequest(
+    request: SendNotificationRequest
+  ): AnyPayload {
+    switch (request.channel) {
+      case "email":
+        return {
+          to: request.recipient.email ?? "",
+          subject: request.subject ?? "",
+          body: request.body ?? "",
+          html: request.bodyHtml,
+        } satisfies EmailPayload;
+
+      case "sms":
+        return {
+          to: request.recipient.phone ?? "",
+          body: request.body ?? "",
+        } satisfies SmsPayload;
+
+      case "whatsapp":
+        return {
+          to: request.recipient.phone ?? "",
+          body: request.body ?? "",
+        } satisfies WhatsAppPayload;
+
+      case "telegram":
+        return {
+          chatId: request.recipient.telegramId ?? "",
+          text: request.body ?? "",
+        } satisfies TelegramPayload;
+
+      case "push":
+        return {
+          deviceToken: request.recipient.deviceToken ?? "",
+          title: request.subject ?? "",
+          body: request.body ?? "",
+        } satisfies PushPayload;
+
+      default:
+        throw new Error(`Unknown channel: ${request.channel}`);
+    }
+  }
+
+  async function buildPayload(
+    request: SendNotificationRequest
+  ): Promise<AnyPayload> {
+    if (request.templateId && isValidTemplateId(request.templateId)) {
+      const rendered = await renderTemplate(
+        request.templateId,
+        request.templateData as Record<string, unknown>
+      );
+
+      if (request.channel === "email") {
+        return {
+          to: request.recipient.email ?? "",
+          subject: rendered.subject,
+          body: rendered.text,
+          html: rendered.html,
+        } satisfies EmailPayload;
+      }
+    }
+
+    return buildPayloadFromRequest(request);
+  }
+
+  function sendDirect(
+    request: SendNotificationRequest,
+    payload: AnyPayload
+  ): Promise<SendResult> {
+    switch (request.channel) {
+      case "email":
+        if (!deps.providers.email) {
+          return Promise.resolve({
+            success: false,
+            provider: "none",
+            error: {
+              code: "providerNotConfigured",
+              message: "Email provider not configured",
+              retryable: false,
+            },
+          });
+        }
+        return deps.providers.email.send(payload as EmailPayload);
+
+      case "sms":
+        if (!deps.providers.sms) {
+          return Promise.resolve({
+            success: false,
+            provider: "none",
+            error: {
+              code: "providerNotConfigured",
+              message: "SMS provider not configured",
+              retryable: false,
+            },
+          });
+        }
+        return deps.providers.sms.send(payload as SmsPayload);
+
+      case "whatsapp":
+        if (!deps.providers.whatsapp) {
+          return Promise.resolve({
+            success: false,
+            provider: "none",
+            error: {
+              code: "providerNotConfigured",
+              message: "WhatsApp provider not configured",
+              retryable: false,
+            },
+          });
+        }
+        return deps.providers.whatsapp.send(payload as WhatsAppPayload);
+
+      case "telegram":
+        if (!deps.providers.telegram) {
+          return Promise.resolve({
+            success: false,
+            provider: "none",
+            error: {
+              code: "providerNotConfigured",
+              message: "Telegram provider not configured",
+              retryable: false,
+            },
+          });
+        }
+        return deps.providers.telegram.send(payload as TelegramPayload);
+
+      case "push":
+        return Promise.resolve({
+          success: false,
+          provider: "none",
+          error: {
+            code: "providerNotConfigured",
+            message: "Push provider not configured",
+            retryable: false,
+          },
+        });
+
+      default:
+        return Promise.resolve({
+          success: false,
+          provider: "none",
+          error: {
+            code: "unknownChannel",
+            message: `Unknown channel: ${request.channel}`,
+            retryable: false,
+          },
+        });
+    }
+  }
+
+  async function checkUserPreferences(
+    request: SendNotificationRequest
+  ): Promise<SendResult | null> {
+    if (!request.userId) {
+      return null;
+    }
+
+    const channelEnabled = await preferenceService.isChannelEnabled(
+      request.userId,
+      request.channel
+    );
+    const categoryEnabled = await preferenceService.isCategoryEnabled(
+      request.userId,
+      request.category
+    );
+
+    if (channelEnabled && categoryEnabled) {
+      return null;
+    }
+
+    return {
+      success: false,
+      provider: "none",
+      error: {
+        code: "optedOut",
+        message: "User has opted out of this notification type",
+        retryable: false,
+      },
+    };
+  }
+
+  async function insertNotificationRecord(
+    id: string,
+    request: SendNotificationRequest,
+    bodyText: string
+  ): Promise<void> {
+    await db.insert(notifications).values({
+      id,
+      userId: request.userId,
+      channel: request.channel,
+      category: request.category,
+      priority: request.priority ?? "normal",
+      status: "pending",
+      recipientEmail: request.recipient.email,
+      recipientPhone: request.recipient.phone,
+      recipientTelegramId: request.recipient.telegramId,
+      templateId: request.templateId,
+      subject: request.subject,
+      body: bodyText,
+      bodyHtml: request.bodyHtml,
+      templateData: request.templateData,
+      campaignId: request.campaignId,
+      maxRetries: 3,
+    });
+  }
+
+  async function updateNotificationStatus(
+    id: string,
+    result: SendResult
+  ): Promise<void> {
+    await db
+      .update(notifications)
+      .set({
+        status: result.success ? "sent" : "failed",
+        sentAt: result.success ? new Date() : undefined,
+        failedAt: result.success ? undefined : new Date(),
+        statusMessage: result.error?.message,
+        updatedAt: new Date(),
+      })
+      .where(eq(notifications.id, id));
+  }
+
+  return {
+    async send(request: SendNotificationRequest): Promise<SendResult> {
+      const optOutResult = await checkUserPreferences(request);
+      if (optOutResult) {
+        return optOutResult;
+      }
+
+      const notificationId = nanoid();
+      const payload = await buildPayload(request);
+      const bodyText = extractBodyFromPayload(payload);
+
+      await insertNotificationRecord(notificationId, request, bodyText);
+
+      if (deps.queue && request.priority !== "urgent") {
+        await deps.queue.enqueue({
+          id: notificationId,
+          channel: request.channel,
+          userId: request.userId,
+          templateId: request.templateId,
+          templateData: request.templateData,
+          payload,
+          priority: request.priority ?? "normal",
+          category: request.category,
+          campaignId: request.campaignId,
+          retryCount: 0,
+          maxRetries: 3,
+        });
+
+        return { success: true, messageId: notificationId, provider: "queue" };
+      }
+
+      const result = await sendDirect(request, payload);
+      await updateNotificationStatus(notificationId, result);
+
+      return { ...result, messageId: notificationId };
+    },
+
+    async sendBulk(
+      request: SendBulkRequest
+    ): Promise<{ queued: number; skipped: number }> {
+      let queued = 0;
+      let skipped = 0;
+
+      if (request.userIds.length === 0) {
+        return { queued, skipped };
+      }
+
+      const userRecords = await db
+        .select()
+        .from(users)
+        .where(inArray(users.id, request.userIds));
+
+      for (const user of userRecords) {
+        const channelEnabled = await preferenceService.isChannelEnabled(
+          user.id,
+          request.channel
+        );
+        const categoryEnabled = await preferenceService.isCategoryEnabled(
+          user.id,
+          request.category
+        );
+
+        if (!(channelEnabled && categoryEnabled)) {
+          skipped += 1;
+          continue;
+        }
+
+        await this.send({
+          channel: request.channel,
+          category: request.category,
+          priority: request.priority ?? "low",
+          userId: user.id,
+          recipient: { email: user.email },
+          templateId: request.templateId,
+          templateData: request.templateData,
+          campaignId: request.campaignId,
+        });
+
+        queued += 1;
+      }
+
+      return { queued, skipped };
+    },
+
+    getHistory(
+      userId: string,
+      options?: { limit?: number; offset?: number }
+    ): Promise<Notification[]> {
+      return db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.userId, userId))
+        .orderBy(notifications.createdAt)
+        .limit(options?.limit ?? 50)
+        .offset(options?.offset ?? 0);
+    },
+
+    async getById(id: string): Promise<Notification | null> {
+      const [notification] = await db
+        .select()
+        .from(notifications)
+        .where(eq(notifications.id, id))
+        .limit(1);
+
+      return notification ?? null;
+    },
+  };
+}

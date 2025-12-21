@@ -15,7 +15,31 @@
       "Bash(pnpm dlx shadcn@latest add:*)",
       "Bash(pnpm view:*)",
       "Bash(dir:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git commit:*)",
+      "Bash(bun fix:*)",
+      "Bash(bun typecheck:*)",
+      "Bash(pnpm why:*)",
+      "Bash(pnpm dlx ultracite:*)",
+      "Bash(grep:*)",
+      "Bash(git diff:*)",
+      "Bash(pnpm turbo build:*)",
+      "Bash(pnpm build:*)",
+      "Bash(git add:*)",
+      "Bash(find:*)",
+      "Bash(pnpm tsp:*)",
+      "Bash(pnpm openapi-ts:*)",
+      "Bash(pnpm generate:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(timeout 5 pnpm dev:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm drizzle-kit generate:*)",
+      "Bash(wc:*)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm drizzle-kit push:*)",
+      "Bash(pnpm dlx @better-auth/cli generate:*)",
+      "Bash(BETTER_AUTH_URL=http://localhost:3001 pnpm dlx:*)",
+      "Bash(pnpm auth:generate:*)"
     ]
   }
 }

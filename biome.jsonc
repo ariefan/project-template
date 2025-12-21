@@ -9,7 +9,8 @@
       "!dist",
       "!tsp-output",
       "!coverage",
-      "!**/__tests__"
+      "!**/__tests__",
+      "!packages/contracts/src"
     ]
   },
   "linter": {

@@ -328,6 +328,108 @@ export type AuditResource = {
 };
 
 /**
+ * Batch delete response envelope
+ */
+export type BatchDeleteResponse = {
+    /**
+     * Results for each item in the batch
+     */
+    results: Array<BatchDeleteResult>;
+    /**
+     * Summary of operation results
+     */
+    summary: BatchSummary;
+    /**
+     * Response metadata
+     */
+    meta: ResponseMeta;
+};
+
+/**
+ * Batch delete result (soft delete)
+ */
+export type BatchDeleteResult = {
+    /**
+     * Index of the item in the original request array
+     */
+    index: number;
+    /**
+     * Status of the operation for this item
+     */
+    status: 'success' | 'error' | 'skipped';
+    /**
+     * Deleted item info (present if status is success)
+     */
+    data?: {
+        /**
+         * ID of the deleted item
+         */
+        id: string;
+        /**
+         * Timestamp when the item was deleted
+         */
+        deletedAt: string;
+    };
+    /**
+     * Error details (present if status is error)
+     */
+    error?: {
+        /**
+         * Error code
+         */
+        code: string;
+        /**
+         * Error message
+         */
+        message: string;
+    };
+};
+
+/**
+ * Options for batch operations
+ */
+export type BatchOptions = {
+    /**
+     * If true, all items succeed or all fail (transactional)
+     */
+    atomic?: boolean;
+    /**
+     * If true, return created/updated records in response
+     */
+    returnRecords?: boolean;
+    /**
+     * If true, skip items that already exist (duplicates)
+     */
+    skipDuplicates?: boolean;
+    /**
+     * If true, validate without actually creating/updating
+     */
+    validateOnly?: boolean;
+};
+
+/**
+ * Summary of batch operation results
+ */
+export type BatchSummary = {
+    /**
+     * Total number of items in the request
+     */
+    total: number;
+    /**
+     * Number of successfully processed items
+     */
+    successful: number;
+    /**
+     * Number of failed items
+     */
+    failed: number;
+    /**
+     * Number of skipped items (e.g., duplicates)
+     */
+    skipped: number;
+};
+
+/**
  * Request to confirm an upload completed successfully
  */
 export type ConfirmUploadRequest = {
@@ -357,6 +459,42 @@ export type CreateApiKeyRequest = {
      * When the key should expire (optional, null for no expiration)
      */
     expiresAt?: string;
+};
+
+/**
+ * Request body for creating a new comment
+ */
+export type CreateExampleCommentRequest = {
+    /**
+     * Comment content
+     */
+    content: string;
+    /**
+     * Author user ID
+     */
+    authorId: string;
+};
+
+/**
+ * Request body for creating a new post
+ */
+export type CreateExamplePostRequest = {
+    /**
+     * Post title
+     */
+    title: string;
+    /**
+     * Post content (supports markdown)
+     */
+    content: string;
+    /**
+     * Author user ID
+     */
+    authorId: string;
+    /**
+     * Post status (default: draft)
+     */
+    status?: ExamplePostStatus;
 };
 
 /**
@@ -484,6 +622,155 @@ export type ErrorResponse = {
      */
     error: Error;
 };
+
+/**
+ * ExampleComment resource model (nested under ExamplePost)
+ *
+ * Demonstrates:
+ * - Nested sub-resource pattern (belongs to a post)
+ * - Multi-tenant scoping (orgId)
+ * - Soft delete with restore capability
+ */
+export type ExampleComment = {
+    /**
+     * Unique comment identifier (format: cmt_{randomString})
+     */
+    id: string;
+    /**
+     * Organization ID (tenant scope)
+     */
+    orgId: string;
+    /**
+     * Parent post ID
+     */
+    postId: string;
+    /**
+     * Comment content
+     */
+    content: string;
+    /**
+     * Author user ID
+     */
+    authorId: string;
+    /**
+     * Whether the comment is soft deleted
+     */
+    isDeleted: boolean;
+    /**
+     * Timestamp when the comment was soft deleted
+     */
+    deletedAt?: string;
+    /**
+     * User ID who deleted this comment
+     */
+    deletedBy?: string;
+    /**
+     * Timestamp when the comment was created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when the comment was last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Comment collection response
+ */
+export type ExampleCommentListResponse = {
+    data: Array<ExampleComment>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Single comment response
+ */
+export type ExampleCommentResponse = {
+    data: ExampleComment;
+    meta: ResponseMeta;
+};
+
+/**
+ * ExamplePost resource model
+ *
+ * Demonstrates a typical content resource with:
+ * - Multi-tenant scoping (orgId)
+ * - Status workflow (draft → published → archived)
+ * - Soft delete with restore capability
+ */
+export type ExamplePost = {
+    /**
+     * Unique post identifier (format: post_{randomString})
+     */
+    id: string;
+    /**
+     * Organization ID (tenant scope)
+     */
+    orgId: string;
+    /**
+     * Post title
+     */
+    title: string;
+    /**
+     * Post content (supports markdown)
+     */
+    content: string;
+    /**
+     * Author user ID
+     */
+    authorId: string;
+    /**
+     * Post status
+     */
+    status: ExamplePostStatus;
+    /**
+     * Timestamp when the post was published (null if not published)
+     */
+    publishedAt?: string;
+    /**
+     * Whether the post is soft deleted
+     */
+    isDeleted: boolean;
+    /**
+     * Timestamp when the post was soft deleted (null if not deleted)
+     */
+    deletedAt?: string;
+    /**
+     * User ID who deleted this post (null if not deleted)
+     */
+    deletedBy?: string;
+    /**
+     * Timestamp when the post was created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when the post was last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Post collection response
+ */
+export type ExamplePostListResponse = {
+    data: Array<ExamplePost>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Single post response
+ */
+export type ExamplePostResponse = {
+    data: ExamplePost;
+    meta: ResponseMeta;
+};
+
+/**
+ * Post status enum
+ */
+export type ExamplePostStatus = 'draft' | 'published' | 'archived';
 
 /**
  * File resource model
@@ -1000,6 +1287,34 @@ export type UpdateApiKeyRequest = {
      * Whether the key is active
      */
     isActive?: boolean;
+};
+
+/**
+ * Request body for updating a comment
+ */
+export type UpdateExampleCommentRequest = {
+    /**
+     * Comment content (optional)
+     */
+    content?: string;
+};
+
+/**
+ * Request body for updating a post
+ */
+export type UpdateExamplePostRequest = {
+    /**
+     * Post title (optional)
+     */
+    title?: string;
+    /**
+     * Post content (optional)
+     */
+    content?: string;
+    /**
+     * Post status (optional)
+     */
+    status?: ExamplePostStatus;
 };
 
 /**
@@ -1829,6 +2144,801 @@ export type AuditLogsGetResponses = {
 };
 
 export type AuditLogsGetResponse = AuditLogsGetResponses[keyof AuditLogsGetResponses];
+
+export type ExamplePostsListData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page (max: 100)
+         */
+        pageSize?: number;
+        /**
+         * Sort order (e.g., "-createdAt,title" for desc createdAt, then asc title)
+         */
+        orderBy?: string;
+        /**
+         * Comma-separated list of fields to return (e.g., "id,title,status")
+         */
+        fields?: string;
+        /**
+         * Comma-separated list of relations to include (e.g., "comments")
+         */
+        include?: string;
+        /**
+         * Full-text search query
+         */
+        search?: string;
+        /**
+         * Filter by post status (exact match)
+         */
+        status?: ExamplePostStatus;
+        /**
+         * Filter by status NOT equal to value
+         */
+        statusNe?: string;
+        /**
+         * Filter by status IN list (comma-separated values)
+         */
+        statusIn?: string;
+        /**
+         * Filter by author ID
+         */
+        authorId?: string;
+        /**
+         * Filter by title contains
+         */
+        titleContains?: string;
+        /**
+         * Filter by content contains
+         */
+        contentContains?: string;
+        /**
+         * Filter posts created after this timestamp
+         */
+        createdAfter?: string;
+        /**
+         * Filter posts created before this timestamp
+         */
+        createdBefore?: string;
+        /**
+         * Filter posts published after this timestamp
+         */
+        publishedAfter?: string;
+        /**
+         * Filter posts published before this timestamp
+         */
+        publishedBefore?: string;
+    };
+    url: '/v1/orgs/{orgId}/example-posts';
+};
+
+export type ExamplePostsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExamplePostListResponse | ErrorResponse;
+};
+
+export type ExamplePostsListResponse = ExamplePostsListResponses[keyof ExamplePostsListResponses];
+
+export type ExamplePostsCreateData = {
+    /**
+     * Post creation data
+     */
+    body: CreateExamplePostRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts';
+};
+
+export type ExamplePostsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: ExamplePostResponse;
+};
+
+export type ExamplePostsCreateResponse = ExamplePostsCreateResponses[keyof ExamplePostsCreateResponses];
+
+export type ExamplePostsBatchUpdateData = {
+    /**
+     * Batch update request
+     */
+    body: {
+        items?: Array<{
+            id: string;
+            updates: UpdateExamplePostRequest;
+        }>;
+        options?: BatchOptions;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/batch';
+};
+
+export type ExamplePostsBatchUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: {
+        /**
+         * Results for each item in the batch
+         */
+        results: Array<{
+            /**
+             * Index of the item in the original request array
+             */
+            index: number;
+            /**
+             * Status of the operation for this item
+             */
+            status: 'success' | 'error' | 'skipped';
+            /**
+             * The created/updated data (present if status is success)
+             */
+            data?: ExamplePost;
+            /**
+             * Error details (present if status is error)
+             */
+            error?: {
+                /**
+                 * Error code
+                 */
+                code: string;
+                /**
+                 * Error message
+                 */
+                message: string;
+            };
+            /**
+             * Original input (included for failed items to help with retry/debugging)
+             */
+            input?: {
+                [key: string]: unknown;
+            };
+        }>;
+        /**
+         * Summary of operation results
+         */
+        summary: BatchSummary;
+        /**
+         * Response metadata
+         */
+        meta: ResponseMeta;
+    } | ErrorResponse;
+};
+
+export type ExamplePostsBatchUpdateResponse = ExamplePostsBatchUpdateResponses[keyof ExamplePostsBatchUpdateResponses];
+
+export type ExamplePostsBatchCreateData = {
+    /**
+     * Batch create request
+     */
+    body: {
+        items: Array<CreateExamplePostRequest>;
+        options?: BatchOptions;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/batch';
+};
+
+export type ExamplePostsBatchCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * Generic batch response envelope
+     *
+     * Uses results array with status field for each item, matching documentation
+     */
+    201: {
+        /**
+         * Results for each item in the batch
+         */
+        results: Array<{
+            /**
+             * Index of the item in the original request array
+             */
+            index: number;
+            /**
+             * Status of the operation for this item
+             */
+            status: 'success' | 'error' | 'skipped';
+            /**
+             * The created/updated data (present if status is success)
+             */
+            data?: ExamplePost;
+            /**
+             * Error details (present if status is error)
+             */
+            error?: {
+                /**
+                 * Error code
+                 */
+                code: string;
+                /**
+                 * Error message
+                 */
+                message: string;
+            };
+            /**
+             * Original input (included for failed items to help with retry/debugging)
+             */
+            input?: {
+                [key: string]: unknown;
+            };
+        }>;
+        /**
+         * Summary of operation results
+         */
+        summary: BatchSummary;
+        /**
+         * Response metadata
+         */
+        meta: ResponseMeta;
+    };
+};
+
+export type ExamplePostsBatchCreateResponse = ExamplePostsBatchCreateResponses[keyof ExamplePostsBatchCreateResponses];
+
+export type ExamplePostsBatchSoftDeleteData = {
+    /**
+     * Post IDs to soft delete
+     */
+    body: {
+        ids: Array<string>;
+        options?: BatchOptions;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/batch/soft-delete';
+};
+
+export type ExamplePostsBatchSoftDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: BatchDeleteResponse | ErrorResponse;
+};
+
+export type ExamplePostsBatchSoftDeleteResponse = ExamplePostsBatchSoftDeleteResponses[keyof ExamplePostsBatchSoftDeleteResponses];
+
+export type ExamplePostsDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Post ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{id}';
+};
+
+export type ExamplePostsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type ExamplePostsDeleteResponse = ExamplePostsDeleteResponses[keyof ExamplePostsDeleteResponses];
+
+export type ExamplePostsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Post ID
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Comma-separated list of fields to return
+         */
+        fields?: string;
+        /**
+         * Comma-separated list of relations to include
+         */
+        include?: string;
+    };
+    url: '/v1/orgs/{orgId}/example-posts/{id}';
+};
+
+export type ExamplePostsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExamplePostResponse | ErrorResponse;
+};
+
+export type ExamplePostsGetResponse = ExamplePostsGetResponses[keyof ExamplePostsGetResponses];
+
+export type ExamplePostsUpdateData = {
+    /**
+     * Post update data
+     */
+    body: UpdateExamplePostRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Post ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{id}';
+};
+
+export type ExamplePostsUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExamplePostResponse | ErrorResponse;
+};
+
+export type ExamplePostsUpdateResponse = ExamplePostsUpdateResponses[keyof ExamplePostsUpdateResponses];
+
+export type ExamplePostsDeletePermanentData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Post ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{id}/permanent';
+};
+
+export type ExamplePostsDeletePermanentResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type ExamplePostsDeletePermanentResponse = ExamplePostsDeletePermanentResponses[keyof ExamplePostsDeletePermanentResponses];
+
+export type ExamplePostsRestoreData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Post ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{id}/restore';
+};
+
+export type ExamplePostsRestoreResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExamplePostResponse | ErrorResponse;
+};
+
+export type ExamplePostsRestoreResponse = ExamplePostsRestoreResponses[keyof ExamplePostsRestoreResponses];
+
+export type ExampleCommentsListData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page (max: 100)
+         */
+        pageSize?: number;
+        /**
+         * Sort order (e.g., "-createdAt" for newest first)
+         */
+        orderBy?: string;
+        /**
+         * Comma-separated list of fields to return
+         */
+        fields?: string;
+        /**
+         * Filter by author ID
+         */
+        authorId?: string;
+        /**
+         * Filter by content contains
+         */
+        contentContains?: string;
+        /**
+         * Filter comments created after this timestamp
+         */
+        createdAfter?: string;
+        /**
+         * Filter comments created before this timestamp
+         */
+        createdBefore?: string;
+    };
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments';
+};
+
+export type ExampleCommentsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExampleCommentListResponse | ErrorResponse;
+};
+
+export type ExampleCommentsListResponse = ExampleCommentsListResponses[keyof ExampleCommentsListResponses];
+
+export type ExampleCommentsCreateData = {
+    /**
+     * Comment creation data
+     */
+    body: CreateExampleCommentRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments';
+};
+
+export type ExampleCommentsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: ExampleCommentResponse;
+};
+
+export type ExampleCommentsCreateResponse = ExampleCommentsCreateResponses[keyof ExampleCommentsCreateResponses];
+
+export type ExampleCommentsBatchCreateData = {
+    /**
+     * Batch create request
+     */
+    body: {
+        items: Array<CreateExampleCommentRequest>;
+        options?: BatchOptions;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments/batch';
+};
+
+export type ExampleCommentsBatchCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * Generic batch response envelope
+     *
+     * Uses results array with status field for each item, matching documentation
+     */
+    201: {
+        /**
+         * Results for each item in the batch
+         */
+        results: Array<{
+            /**
+             * Index of the item in the original request array
+             */
+            index: number;
+            /**
+             * Status of the operation for this item
+             */
+            status: 'success' | 'error' | 'skipped';
+            /**
+             * The created/updated data (present if status is success)
+             */
+            data?: ExampleComment;
+            /**
+             * Error details (present if status is error)
+             */
+            error?: {
+                /**
+                 * Error code
+                 */
+                code: string;
+                /**
+                 * Error message
+                 */
+                message: string;
+            };
+            /**
+             * Original input (included for failed items to help with retry/debugging)
+             */
+            input?: {
+                [key: string]: unknown;
+            };
+        }>;
+        /**
+         * Summary of operation results
+         */
+        summary: BatchSummary;
+        /**
+         * Response metadata
+         */
+        meta: ResponseMeta;
+    };
+};
+
+export type ExampleCommentsBatchCreateResponse = ExampleCommentsBatchCreateResponses[keyof ExampleCommentsBatchCreateResponses];
+
+export type ExampleCommentsBatchSoftDeleteData = {
+    /**
+     * Comment IDs to soft delete
+     */
+    body: {
+        ids: Array<string>;
+        options?: BatchOptions;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments/batch/soft-delete';
+};
+
+export type ExampleCommentsBatchSoftDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: BatchDeleteResponse | ErrorResponse;
+};
+
+export type ExampleCommentsBatchSoftDeleteResponse = ExampleCommentsBatchSoftDeleteResponses[keyof ExampleCommentsBatchSoftDeleteResponses];
+
+export type ExampleCommentsDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+        /**
+         * Comment ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}';
+};
+
+export type ExampleCommentsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type ExampleCommentsDeleteResponse = ExampleCommentsDeleteResponses[keyof ExampleCommentsDeleteResponses];
+
+export type ExampleCommentsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+        /**
+         * Comment ID
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * Comma-separated list of fields to return
+         */
+        fields?: string;
+    };
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}';
+};
+
+export type ExampleCommentsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExampleCommentResponse | ErrorResponse;
+};
+
+export type ExampleCommentsGetResponse = ExampleCommentsGetResponses[keyof ExampleCommentsGetResponses];
+
+export type ExampleCommentsUpdateData = {
+    /**
+     * Comment update data
+     */
+    body: UpdateExampleCommentRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+        /**
+         * Comment ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}';
+};
+
+export type ExampleCommentsUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExampleCommentResponse | ErrorResponse;
+};
+
+export type ExampleCommentsUpdateResponse = ExampleCommentsUpdateResponses[keyof ExampleCommentsUpdateResponses];
+
+export type ExampleCommentsDeletePermanentData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+        /**
+         * Comment ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}/permanent';
+};
+
+export type ExampleCommentsDeletePermanentResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type ExampleCommentsDeletePermanentResponse = ExampleCommentsDeletePermanentResponses[keyof ExampleCommentsDeletePermanentResponses];
+
+export type ExampleCommentsRestoreData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Parent post ID
+         */
+        postId: string;
+        /**
+         * Comment ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}/restore';
+};
+
+export type ExampleCommentsRestoreResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExampleCommentResponse | ErrorResponse;
+};
+
+export type ExampleCommentsRestoreResponse = ExampleCommentsRestoreResponses[keyof ExampleCommentsRestoreResponses];
 
 export type FilesListData = {
     body?: never;

@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "auth:generate": "cross-env BETTER_AUTH_URL=http://localhost:3001 pnpm dlx @better-auth/cli generate --config ../auth/src/index.ts --output ./src/schema/auth.ts -y",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -18,6 +19,7 @@
   "devDependencies": {
     "@types/pg": "^8.16.0",
     "@workspace/typescript-config": "workspace:*",
+    "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.8",
     "typescript": "^5.9.3"
   },

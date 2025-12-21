@@ -8,10 +8,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "better-auth": "^1.4.7",
-    "@workspace/db": "workspace:*"
+    "@better-auth/passkey": "^1.4.7",
+    "@better-auth/sso": "^1.4.7",
+    "@workspace/db": "workspace:*",
+    "bcrypt": "^6.0.0",
+    "better-auth": "^1.4.7"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "^5.9.3"
   },

@@ -112,6 +112,46 @@ export const zAuditLog = z.object({
 });
 
 /**
+ * Batch delete result (soft delete)
+ */
+export const zBatchDeleteResult = z.object({
+    index: z.number().int(),
+    status: z.enum([
+        'success',
+        'error',
+        'skipped'
+    ]),
+    data: z.object({
+        id: z.string(),
+        deletedAt: z.string().datetime()
+    }).optional(),
+    error: z.object({
+        code: z.string(),
+        message: z.string()
+    }).optional()
+});
+
+/**
+ * Options for batch operations
+ */
+export const zBatchOptions = z.object({
+    atomic: z.boolean().optional(),
+    returnRecords: z.boolean().optional(),
+    skipDuplicates: z.boolean().optional(),
+    validateOnly: z.boolean().optional()
+});
+
+/**
+ * Summary of batch operation results
+ */
+export const zBatchSummary = z.object({
+    total: z.number().int(),
+    successful: z.number().int(),
+    failed: z.number().int(),
+    skipped: z.number().int()
+});
+
+/**
  * Request to confirm an upload completed successfully
  */
 export const zConfirmUploadRequest = z.object({
@@ -126,6 +166,14 @@ export const zCreateApiKeyRequest = z.object({
     description: z.string().max(500).optional(),
     permissions: z.array(z.string()).min(1),
     expiresAt: z.string().datetime().optional()
+});
+
+/**
+ * Request body for creating a new comment
+ */
+export const zCreateExampleCommentRequest = z.object({
+    content: z.string(),
+    authorId: z.string()
 });
 
 /**
@@ -184,6 +232,69 @@ export const zError = z.object({
  */
 export const zErrorResponse = z.object({
     error: zError
+});
+
+/**
+ * ExampleComment resource model (nested under ExamplePost)
+ *
+ * Demonstrates:
+ * - Nested sub-resource pattern (belongs to a post)
+ * - Multi-tenant scoping (orgId)
+ * - Soft delete with restore capability
+ */
+export const zExampleComment = z.object({
+    id: z.string(),
+    orgId: z.string(),
+    postId: z.string(),
+    content: z.string(),
+    authorId: z.string(),
+    isDeleted: z.boolean(),
+    deletedAt: z.string().datetime().optional(),
+    deletedBy: z.string().optional(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime()
+});
+
+/**
+ * Post status enum
+ */
+export const zExamplePostStatus = z.enum([
+    'draft',
+    'published',
+    'archived'
+]);
+
+/**
+ * Request body for creating a new post
+ */
+export const zCreateExamplePostRequest = z.object({
+    title: z.string(),
+    content: z.string(),
+    authorId: z.string(),
+    status: zExamplePostStatus.optional()
+});
+
+/**
+ * ExamplePost resource model
+ *
+ * Demonstrates a typical content resource with:
+ * - Multi-tenant scoping (orgId)
+ * - Status workflow (draft → published → archived)
+ * - Soft delete with restore capability
+ */
+export const zExamplePost = z.object({
+    id: z.string(),
+    orgId: z.string(),
+    title: z.string(),
+    content: z.string(),
+    authorId: z.string(),
+    status: zExamplePostStatus,
+    publishedAt: z.string().datetime().optional(),
+    isDeleted: z.boolean(),
+    deletedAt: z.string().datetime().optional(),
+    deletedBy: z.string().optional(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime()
 });
 
 /**
@@ -344,6 +455,49 @@ export const zAuditLogResponse = z.object({
 });
 
 /**
+ * Batch delete response envelope
+ */
+export const zBatchDeleteResponse = z.object({
+    results: z.array(zBatchDeleteResult),
+    summary: zBatchSummary,
+    meta: zResponseMeta
+});
+
+/**
+ * Comment collection response
+ */
+export const zExampleCommentListResponse = z.object({
+    data: z.array(zExampleComment),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single comment response
+ */
+export const zExampleCommentResponse = z.object({
+    data: zExampleComment,
+    meta: zResponseMeta
+});
+
+/**
+ * Post collection response
+ */
+export const zExamplePostListResponse = z.object({
+    data: z.array(zExamplePost),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single post response
+ */
+export const zExamplePostResponse = z.object({
+    data: zExamplePost,
+    meta: zResponseMeta
+});
+
+/**
  * File deletion response
  */
 export const zFileDeleteResponse = z.object({
@@ -466,6 +620,22 @@ export const zUpdateApiKeyRequest = z.object({
     description: z.string().max(500).optional(),
     permissions: z.array(z.string()).optional(),
     isActive: z.boolean().optional()
+});
+
+/**
+ * Request body for updating a comment
+ */
+export const zUpdateExampleCommentRequest = z.object({
+    content: z.string().optional()
+});
+
+/**
+ * Request body for updating a post
+ */
+export const zUpdateExamplePostRequest = z.object({
+    title: z.string().optional(),
+    content: z.string().optional(),
+    status: zExamplePostStatus.optional()
 });
 
 /**
@@ -965,6 +1135,411 @@ export const zAuditLogsGetData = z.object({
  */
 export const zAuditLogsGetResponse = z.union([
     zAuditLogResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsListData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.object({
+        page: z.number().int().optional().default(1),
+        pageSize: z.number().int().optional().default(50),
+        orderBy: z.string().optional(),
+        fields: z.string().optional(),
+        include: z.string().optional(),
+        search: z.string().optional(),
+        status: zExamplePostStatus.optional(),
+        statusNe: z.string().optional(),
+        statusIn: z.string().optional(),
+        authorId: z.string().optional(),
+        titleContains: z.string().optional(),
+        contentContains: z.string().optional(),
+        createdAfter: z.string().datetime().optional(),
+        createdBefore: z.string().datetime().optional(),
+        publishedAfter: z.string().datetime().optional(),
+        publishedBefore: z.string().datetime().optional()
+    }).optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsListResponse = z.union([
+    zExamplePostListResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsCreateData = z.object({
+    body: zCreateExamplePostRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zExamplePostsCreateResponse = z.union([
+    zErrorResponse,
+    zExamplePostResponse
+]);
+
+export const zExamplePostsBatchUpdateData = z.object({
+    body: z.object({
+        items: z.array(z.object({
+            id: z.string(),
+            updates: zUpdateExamplePostRequest
+        })).optional(),
+        options: zBatchOptions.optional()
+    }),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsBatchUpdateResponse = z.union([
+    z.object({
+        results: z.array(z.object({
+            index: z.number().int(),
+            status: z.enum([
+                'success',
+                'error',
+                'skipped'
+            ]),
+            data: zExamplePost.optional(),
+            error: z.object({
+                code: z.string(),
+                message: z.string()
+            }).optional(),
+            input: z.record(z.unknown()).optional()
+        })),
+        summary: zBatchSummary,
+        meta: zResponseMeta
+    }),
+    zErrorResponse
+]);
+
+export const zExamplePostsBatchCreateData = z.object({
+    body: z.object({
+        items: z.array(zCreateExamplePostRequest),
+        options: zBatchOptions.optional()
+    }),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zExamplePostsBatchCreateResponse = z.union([
+    zErrorResponse,
+    z.object({
+        results: z.array(z.object({
+            index: z.number().int(),
+            status: z.enum([
+                'success',
+                'error',
+                'skipped'
+            ]),
+            data: zExamplePost.optional(),
+            error: z.object({
+                code: z.string(),
+                message: z.string()
+            }).optional(),
+            input: z.record(z.unknown()).optional()
+        })),
+        summary: zBatchSummary,
+        meta: zResponseMeta
+    })
+]);
+
+export const zExamplePostsBatchSoftDeleteData = z.object({
+    body: z.object({
+        ids: z.array(z.string()),
+        options: zBatchOptions.optional()
+    }),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsBatchSoftDeleteResponse = z.union([
+    zBatchDeleteResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsDeleteData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsGetData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.object({
+        fields: z.string().optional(),
+        include: z.string().optional()
+    }).optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsGetResponse = z.union([
+    zExamplePostResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsUpdateData = z.object({
+    body: zUpdateExamplePostRequest,
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsUpdateResponse = z.union([
+    zExamplePostResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsDeletePermanentData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zExamplePostsDeletePermanentResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zExamplePostsRestoreData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsRestoreResponse = z.union([
+    zExamplePostResponse,
+    zErrorResponse
+]);
+
+export const zExampleCommentsListData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string()
+    }),
+    query: z.object({
+        page: z.number().int().optional().default(1),
+        pageSize: z.number().int().optional().default(50),
+        orderBy: z.string().optional(),
+        fields: z.string().optional(),
+        authorId: z.string().optional(),
+        contentContains: z.string().optional(),
+        createdAfter: z.string().datetime().optional(),
+        createdBefore: z.string().datetime().optional()
+    }).optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExampleCommentsListResponse = z.union([
+    zExampleCommentListResponse,
+    zErrorResponse
+]);
+
+export const zExampleCommentsCreateData = z.object({
+    body: zCreateExampleCommentRequest,
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zExampleCommentsCreateResponse = z.union([
+    zErrorResponse,
+    zExampleCommentResponse
+]);
+
+export const zExampleCommentsBatchCreateData = z.object({
+    body: z.object({
+        items: z.array(zCreateExampleCommentRequest),
+        options: zBatchOptions.optional()
+    }),
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zExampleCommentsBatchCreateResponse = z.union([
+    zErrorResponse,
+    z.object({
+        results: z.array(z.object({
+            index: z.number().int(),
+            status: z.enum([
+                'success',
+                'error',
+                'skipped'
+            ]),
+            data: zExampleComment.optional(),
+            error: z.object({
+                code: z.string(),
+                message: z.string()
+            }).optional(),
+            input: z.record(z.unknown()).optional()
+        })),
+        summary: zBatchSummary,
+        meta: zResponseMeta
+    })
+]);
+
+export const zExampleCommentsBatchSoftDeleteData = z.object({
+    body: z.object({
+        ids: z.array(z.string()),
+        options: zBatchOptions.optional()
+    }),
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExampleCommentsBatchSoftDeleteResponse = z.union([
+    zBatchDeleteResponse,
+    zErrorResponse
+]);
+
+export const zExampleCommentsDeleteData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExampleCommentsDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zExampleCommentsGetData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string(),
+        id: z.string()
+    }),
+    query: z.object({
+        fields: z.string().optional()
+    }).optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExampleCommentsGetResponse = z.union([
+    zExampleCommentResponse,
+    zErrorResponse
+]);
+
+export const zExampleCommentsUpdateData = z.object({
+    body: zUpdateExampleCommentRequest,
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExampleCommentsUpdateResponse = z.union([
+    zExampleCommentResponse,
+    zErrorResponse
+]);
+
+export const zExampleCommentsDeletePermanentData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zExampleCommentsDeletePermanentResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zExampleCommentsRestoreData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string(),
+        postId: z.string(),
+        id: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExampleCommentsRestoreResponse = z.union([
+    zExampleCommentResponse,
     zErrorResponse
 ]);
 

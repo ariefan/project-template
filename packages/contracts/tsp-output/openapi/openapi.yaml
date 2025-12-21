@@ -23,6 +23,8 @@ tags:
   - name: Audit Logs
   - name: Jobs
   - name: Webhooks
+  - name: ExamplePosts
+  - name: ExampleComments
 paths:
   /health:
     get:
@@ -530,6 +532,1078 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Audit Logs
+  /v1/orgs/{orgId}/example-posts:
+    get:
+      operationId: ExamplePosts_list
+      summary: List example posts
+      description: |-
+        List posts in an organization
+        Supports pagination, filtering, sorting, and field selection
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: 'Number of items per page (max: 100)'
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: Sort order (e.g., "-createdAt,title" for desc createdAt, then asc title)
+          schema:
+            type: string
+          explode: false
+        - name: fields
+          in: query
+          required: false
+          description: Comma-separated list of fields to return (e.g., "id,title,status")
+          schema:
+            type: string
+          explode: false
+        - name: include
+          in: query
+          required: false
+          description: Comma-separated list of relations to include (e.g., "comments")
+          schema:
+            type: string
+          explode: false
+        - name: search
+          in: query
+          required: false
+          description: Full-text search query
+          schema:
+            type: string
+          explode: false
+        - name: status
+          in: query
+          required: false
+          description: Filter by post status (exact match)
+          schema:
+            $ref: '#/components/schemas/ExamplePostStatus'
+          explode: false
+        - name: statusNe
+          in: query
+          required: false
+          description: Filter by status NOT equal to value
+          schema:
+            type: string
+          explode: false
+        - name: statusIn
+          in: query
+          required: false
+          description: Filter by status IN list (comma-separated values)
+          schema:
+            type: string
+          explode: false
+        - name: authorId
+          in: query
+          required: false
+          description: Filter by author ID
+          schema:
+            type: string
+          explode: false
+        - name: titleContains
+          in: query
+          required: false
+          description: Filter by title contains
+          schema:
+            type: string
+          explode: false
+        - name: contentContains
+          in: query
+          required: false
+          description: Filter by content contains
+          schema:
+            type: string
+          explode: false
+        - name: createdAfter
+          in: query
+          required: false
+          description: Filter posts created after this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+        - name: createdBefore
+          in: query
+          required: false
+          description: Filter posts created before this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+        - name: publishedAfter
+          in: query
+          required: false
+          description: Filter posts published after this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+        - name: publishedBefore
+          in: query
+          required: false
+          description: Filter posts published before this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExamplePostListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+    post:
+      operationId: ExamplePosts_create
+      summary: Create example post
+      description: Create a new post
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            location:
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamplePostResponse'
+      tags:
+        - ExamplePosts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExamplePostRequest'
+        description: Post creation data
+  /v1/orgs/{orgId}/example-posts/batch:
+    post:
+      operationId: ExamplePosts_batchCreate
+      summary: Batch create example posts
+      description: Batch create posts
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - results
+                  - summary
+                  - meta
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - index
+                        - status
+                      properties:
+                        index:
+                          type: integer
+                          format: int32
+                          description: Index of the item in the original request array
+                        status:
+                          type: string
+                          enum:
+                            - success
+                            - error
+                            - skipped
+                          description: Status of the operation for this item
+                        data:
+                          allOf:
+                            - $ref: '#/components/schemas/ExamplePost'
+                          description: The created/updated data (present if status is success)
+                        error:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              description: Error code
+                            message:
+                              type: string
+                              description: Error message
+                          required:
+                            - code
+                            - message
+                          description: Error details (present if status is error)
+                        input:
+                          type: object
+                          additionalProperties: {}
+                          description: Original input (included for failed items to help with retry/debugging)
+                      description: Result of a single item in a batch operation
+                    description: Results for each item in the batch
+                  summary:
+                    allOf:
+                      - $ref: '#/components/schemas/BatchSummary'
+                    description: Summary of operation results
+                  meta:
+                    allOf:
+                      - $ref: '#/components/schemas/ResponseMeta'
+                    description: Response metadata
+                description: |-
+                  Generic batch response envelope
+
+                  Uses results array with status field for each item, matching documentation
+      tags:
+        - ExamplePosts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CreateExamplePostRequest'
+                options:
+                  $ref: '#/components/schemas/BatchOptions'
+              required:
+                - items
+        description: Batch create request
+    patch:
+      operationId: ExamplePosts_batchUpdate
+      summary: Batch update example posts
+      description: Batch update posts
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    required:
+                      - results
+                      - summary
+                      - meta
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - index
+                            - status
+                          properties:
+                            index:
+                              type: integer
+                              format: int32
+                              description: Index of the item in the original request array
+                            status:
+                              type: string
+                              enum:
+                                - success
+                                - error
+                                - skipped
+                              description: Status of the operation for this item
+                            data:
+                              allOf:
+                                - $ref: '#/components/schemas/ExamplePost'
+                              description: The created/updated data (present if status is success)
+                            error:
+                              type: object
+                              properties:
+                                code:
+                                  type: string
+                                  description: Error code
+                                message:
+                                  type: string
+                                  description: Error message
+                              required:
+                                - code
+                                - message
+                              description: Error details (present if status is error)
+                            input:
+                              type: object
+                              additionalProperties: {}
+                              description: Original input (included for failed items to help with retry/debugging)
+                          description: Result of a single item in a batch operation
+                        description: Results for each item in the batch
+                      summary:
+                        allOf:
+                          - $ref: '#/components/schemas/BatchSummary'
+                        description: Summary of operation results
+                      meta:
+                        allOf:
+                          - $ref: '#/components/schemas/ResponseMeta'
+                        description: Response metadata
+                    description: |-
+                      Generic batch response envelope
+
+                      Uses results array with status field for each item, matching documentation
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      updates:
+                        $ref: '#/components/schemas/UpdateExamplePostRequest'
+                    required:
+                      - id
+                      - updates
+                options:
+                  $ref: '#/components/schemas/BatchOptions'
+        description: Batch update request
+  /v1/orgs/{orgId}/example-posts/batch/soft-delete:
+    post:
+      operationId: ExamplePosts_batchSoftDelete
+      summary: Batch soft delete example posts
+      description: Batch soft delete posts
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/BatchDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                options:
+                  $ref: '#/components/schemas/BatchOptions'
+              required:
+                - ids
+        description: Post IDs to soft delete
+  /v1/orgs/{orgId}/example-posts/{id}:
+    get:
+      operationId: ExamplePosts_get
+      summary: Get example post
+      description: Get a single post by ID
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Post ID
+          schema:
+            type: string
+        - name: fields
+          in: query
+          required: false
+          description: Comma-separated list of fields to return
+          schema:
+            type: string
+          explode: false
+        - name: include
+          in: query
+          required: false
+          description: Comma-separated list of relations to include
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExamplePostResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+    patch:
+      operationId: ExamplePosts_update
+      summary: Update example post
+      description: Update a post (partial update)
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Post ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExamplePostResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExamplePostRequest'
+        description: Post update data
+    delete:
+      operationId: ExamplePosts_delete
+      summary: Soft delete example post
+      description: |-
+        Soft delete a post (default delete behavior)
+        Post is marked as deleted but can be restored
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Post ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+  /v1/orgs/{orgId}/example-posts/{id}/permanent:
+    delete:
+      operationId: ExamplePosts_deletePermanent
+      summary: Permanently delete example post
+      description: |-
+        Permanently delete a post (hard delete)
+        Post is permanently removed and cannot be restored
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Post ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - ExamplePosts
+  /v1/orgs/{orgId}/example-posts/{id}/restore:
+    post:
+      operationId: ExamplePosts_restore
+      summary: Restore example post
+      description: Restore a soft-deleted post
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Post ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExamplePostResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+  /v1/orgs/{orgId}/example-posts/{postId}/example-comments:
+    get:
+      operationId: ExampleComments_list
+      summary: List comments for a post
+      description: |-
+        List comments for a post
+        Supports pagination, filtering, and sorting
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: 'Number of items per page (max: 100)'
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: Sort order (e.g., "-createdAt" for newest first)
+          schema:
+            type: string
+          explode: false
+        - name: fields
+          in: query
+          required: false
+          description: Comma-separated list of fields to return
+          schema:
+            type: string
+          explode: false
+        - name: authorId
+          in: query
+          required: false
+          description: Filter by author ID
+          schema:
+            type: string
+          explode: false
+        - name: contentContains
+          in: query
+          required: false
+          description: Filter by content contains
+          schema:
+            type: string
+          explode: false
+        - name: createdAfter
+          in: query
+          required: false
+          description: Filter comments created after this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+        - name: createdBefore
+          in: query
+          required: false
+          description: Filter comments created before this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExampleCommentListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExampleComments
+    post:
+      operationId: ExampleComments_create
+      summary: Create comment on post
+      description: Create a new comment on a post
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            location:
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExampleCommentResponse'
+      tags:
+        - ExampleComments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExampleCommentRequest'
+        description: Comment creation data
+  /v1/orgs/{orgId}/example-posts/{postId}/example-comments/batch:
+    post:
+      operationId: ExampleComments_batchCreate
+      summary: Batch create comments
+      description: Batch create comments
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - results
+                  - summary
+                  - meta
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - index
+                        - status
+                      properties:
+                        index:
+                          type: integer
+                          format: int32
+                          description: Index of the item in the original request array
+                        status:
+                          type: string
+                          enum:
+                            - success
+                            - error
+                            - skipped
+                          description: Status of the operation for this item
+                        data:
+                          allOf:
+                            - $ref: '#/components/schemas/ExampleComment'
+                          description: The created/updated data (present if status is success)
+                        error:
+                          type: object
+                          properties:
+                            code:
+                              type: string
+                              description: Error code
+                            message:
+                              type: string
+                              description: Error message
+                          required:
+                            - code
+                            - message
+                          description: Error details (present if status is error)
+                        input:
+                          type: object
+                          additionalProperties: {}
+                          description: Original input (included for failed items to help with retry/debugging)
+                      description: Result of a single item in a batch operation
+                    description: Results for each item in the batch
+                  summary:
+                    allOf:
+                      - $ref: '#/components/schemas/BatchSummary'
+                    description: Summary of operation results
+                  meta:
+                    allOf:
+                      - $ref: '#/components/schemas/ResponseMeta'
+                    description: Response metadata
+                description: |-
+                  Generic batch response envelope
+
+                  Uses results array with status field for each item, matching documentation
+      tags:
+        - ExampleComments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CreateExampleCommentRequest'
+                options:
+                  $ref: '#/components/schemas/BatchOptions'
+              required:
+                - items
+        description: Batch create request
+  /v1/orgs/{orgId}/example-posts/{postId}/example-comments/batch/soft-delete:
+    post:
+      operationId: ExampleComments_batchSoftDelete
+      summary: Batch soft delete comments
+      description: Batch soft delete comments
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/BatchDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExampleComments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                options:
+                  $ref: '#/components/schemas/BatchOptions'
+              required:
+                - ids
+        description: Comment IDs to soft delete
+  /v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}:
+    get:
+      operationId: ExampleComments_get
+      summary: Get comment
+      description: Get a single comment by ID
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Comment ID
+          schema:
+            type: string
+        - name: fields
+          in: query
+          required: false
+          description: Comma-separated list of fields to return
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExampleCommentResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExampleComments
+    patch:
+      operationId: ExampleComments_update
+      summary: Update comment
+      description: Update a comment (partial update)
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Comment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExampleCommentResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExampleComments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExampleCommentRequest'
+        description: Comment update data
+    delete:
+      operationId: ExampleComments_delete
+      summary: Soft delete comment
+      description: Soft delete a comment
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Comment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExampleComments
+  /v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}/permanent:
+    delete:
+      operationId: ExampleComments_deletePermanent
+      summary: Permanently delete comment
+      description: Permanently delete a comment (hard delete)
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Comment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - ExampleComments
+  /v1/orgs/{orgId}/example-posts/{postId}/example-comments/{id}/restore:
+    post:
+      operationId: ExampleComments_restore
+      summary: Restore comment
+      description: Restore a soft-deleted comment
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: postId
+          in: path
+          required: true
+          description: Parent post ID
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Comment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExampleCommentResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExampleComments
   /v1/orgs/{orgId}/files:
     get:
       operationId: Files_list
@@ -2900,6 +3974,113 @@ components:
           description: HTTP method used
           example: PATCH
       description: Resource affected by the action
+    BatchDeleteResponse:
+      type: object
+      required:
+        - results
+        - summary
+        - meta
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchDeleteResult'
+          description: Results for each item in the batch
+        summary:
+          allOf:
+            - $ref: '#/components/schemas/BatchSummary'
+          description: Summary of operation results
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/ResponseMeta'
+          description: Response metadata
+      description: Batch delete response envelope
+    BatchDeleteResult:
+      type: object
+      required:
+        - index
+        - status
+      properties:
+        index:
+          type: integer
+          format: int32
+          description: Index of the item in the original request array
+        status:
+          type: string
+          enum:
+            - success
+            - error
+            - skipped
+          description: Status of the operation for this item
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID of the deleted item
+            deletedAt:
+              type: string
+              format: date-time
+              description: Timestamp when the item was deleted
+          required:
+            - id
+            - deletedAt
+          description: Deleted item info (present if status is success)
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Error code
+            message:
+              type: string
+              description: Error message
+          required:
+            - code
+            - message
+          description: Error details (present if status is error)
+      description: Batch delete result (soft delete)
+    BatchOptions:
+      type: object
+      properties:
+        atomic:
+          type: boolean
+          description: If true, all items succeed or all fail (transactional)
+        returnRecords:
+          type: boolean
+          description: If true, return created/updated records in response
+        skipDuplicates:
+          type: boolean
+          description: If true, skip items that already exist (duplicates)
+        validateOnly:
+          type: boolean
+          description: If true, validate without actually creating/updating
+      description: Options for batch operations
+    BatchSummary:
+      type: object
+      required:
+        - total
+        - successful
+        - failed
+        - skipped
+      properties:
+        total:
+          type: integer
+          format: int32
+          description: Total number of items in the request
+        successful:
+          type: integer
+          format: int32
+          description: Number of successfully processed items
+        failed:
+          type: integer
+          format: int32
+          description: Number of failed items
+        skipped:
+          type: integer
+          format: int32
+          description: Number of skipped items (e.g., duplicates)
+      description: Summary of batch operation results
     ConfirmUploadRequest:
       type: object
       properties:
@@ -2933,6 +4114,45 @@ components:
           format: date-time
           description: When the key should expire (optional, null for no expiration)
       description: Request to create a new API key
+    CreateExampleCommentRequest:
+      type: object
+      required:
+        - content
+        - authorId
+      properties:
+        content:
+          type: string
+          description: Comment content
+          example: Great post! Very informative.
+        authorId:
+          type: string
+          description: Author user ID
+          example: usr_commenter789
+      description: Request body for creating a new comment
+    CreateExamplePostRequest:
+      type: object
+      required:
+        - title
+        - content
+        - authorId
+      properties:
+        title:
+          type: string
+          description: Post title
+          example: Introduction to TypeSpec
+        content:
+          type: string
+          description: Post content (supports markdown)
+          example: This is the full content of the post...
+        authorId:
+          type: string
+          description: Author user ID
+          example: usr_author123
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ExamplePostStatus'
+          description: 'Post status (default: draft)'
+      description: Request body for creating a new post
     CreateRoleRequest:
       type: object
       required:
@@ -3062,6 +4282,190 @@ components:
             - $ref: '#/components/schemas/Error'
           description: The error object
       description: Standard error response envelope
+    ExampleComment:
+      type: object
+      required:
+        - id
+        - orgId
+        - postId
+        - content
+        - authorId
+        - isDeleted
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: 'Unique comment identifier (format: cmt_{randomString})'
+          example: cmt_abc123
+        orgId:
+          type: string
+          description: Organization ID (tenant scope)
+          example: org_xyz789
+        postId:
+          type: string
+          description: Parent post ID
+          example: post_parent456
+        content:
+          type: string
+          description: Comment content
+          example: Great post! Very informative.
+        authorId:
+          type: string
+          description: Author user ID
+          example: usr_commenter789
+        isDeleted:
+          type: boolean
+          description: Whether the comment is soft deleted
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the comment was soft deleted
+        deletedBy:
+          type: string
+          description: User ID who deleted this comment
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the comment was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the comment was last updated
+      description: |-
+        ExampleComment resource model (nested under ExamplePost)
+
+        Demonstrates:
+        - Nested sub-resource pattern (belongs to a post)
+        - Multi-tenant scoping (orgId)
+        - Soft delete with restore capability
+    ExampleCommentListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExampleComment'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Comment collection response
+    ExampleCommentResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ExampleComment'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single comment response
+    ExamplePost:
+      type: object
+      required:
+        - id
+        - orgId
+        - title
+        - content
+        - authorId
+        - status
+        - isDeleted
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: 'Unique post identifier (format: post_{randomString})'
+          example: post_abc123
+        orgId:
+          type: string
+          description: Organization ID (tenant scope)
+          example: org_xyz789
+        title:
+          type: string
+          description: Post title
+          example: Introduction to TypeSpec
+        content:
+          type: string
+          description: Post content (supports markdown)
+          example: This is the full content of the post...
+        authorId:
+          type: string
+          description: Author user ID
+          example: usr_author123
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ExamplePostStatus'
+          description: Post status
+        publishedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the post was published (null if not published)
+        isDeleted:
+          type: boolean
+          description: Whether the post is soft deleted
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the post was soft deleted (null if not deleted)
+        deletedBy:
+          type: string
+          description: User ID who deleted this post (null if not deleted)
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the post was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the post was last updated
+      description: |-
+        ExamplePost resource model
+
+        Demonstrates a typical content resource with:
+        - Multi-tenant scoping (orgId)
+        - Status workflow (draft → published → archived)
+        - Soft delete with restore capability
+    ExamplePostListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamplePost'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Post collection response
+    ExamplePostResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ExamplePost'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single post response
+    ExamplePostStatus:
+      type: string
+      enum:
+        - draft
+        - published
+        - archived
+      description: Post status enum
     File:
       type: object
       required:
@@ -3668,6 +5072,27 @@ components:
           type: boolean
           description: Whether the key is active
       description: Request to update an API key
+    UpdateExampleCommentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          description: Comment content (optional)
+      description: Request body for updating a comment
+    UpdateExamplePostRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Post title (optional)
+        content:
+          type: string
+          description: Post content (optional)
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ExamplePostStatus'
+          description: Post status (optional)
+      description: Request body for updating a post
     UpdateRoleRequest:
       type: object
       properties:

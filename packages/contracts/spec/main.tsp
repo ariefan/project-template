@@ -82,6 +82,8 @@ import "./models/api-key.tsp";
 import "./models/audit-log.tsp";
 import "./models/job.tsp";
 import "./models/webhook.tsp";
+import "./models/example-post.tsp";
+import "./models/example-comment.tsp";
 // import "./models/product.tsp";     ← Example: Add new models
 
 // ============================================================================
@@ -95,6 +97,8 @@ import "./routes/api-keys.tsp";
 import "./routes/audit-logs.tsp";
 import "./routes/jobs.tsp";
 import "./routes/webhooks.tsp";
+import "./routes/example-posts.tsp";
+import "./routes/example-comments.tsp";
 // import "./routes/products.tsp";    ← Example: Add new routes
 
 using TypeSpec.Http;

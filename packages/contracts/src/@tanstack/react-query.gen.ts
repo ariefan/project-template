@@ -2,9 +2,9 @@
 
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
-import { client } from '../client.gen.js';
-import { apiKeysCreate, apiKeysGet, apiKeysList, apiKeysRevoke, apiKeysRotate, apiKeysUpdate, auditLogsExport, auditLogsGet, auditLogsList, crossTenantRolesList, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, healthCheck, jobsCancel, jobsGet, jobsList, type Options, rolesCreate, rolesDelete, rolesGet, rolesList, rolesUpdate, tenantSwitchSwitch, userPermissionsEndpointGet, userRolesAssign, userRolesList, userRolesRemove, usersBatchCreate, usersBatchSoftDelete, usersBatchUpdate, usersCreate, usersDelete, usersDeletePermanent, usersGet, usersList, usersResetPassword, usersRestore, usersUpdate, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen.js';
-import type { ApiKeysCreateData, ApiKeysCreateResponse, ApiKeysGetData, ApiKeysGetResponse, ApiKeysListData, ApiKeysListResponse, ApiKeysRevokeData, ApiKeysRevokeResponse, ApiKeysRotateData, ApiKeysRotateResponse, ApiKeysUpdateData, ApiKeysUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, CrossTenantRolesListData, CrossTenantRolesListResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, RolesCreateData, RolesCreateResponse, RolesDeleteData, RolesDeleteResponse, RolesGetData, RolesGetResponse, RolesListData, RolesListResponse, RolesUpdateData, RolesUpdateResponse, TenantSwitchSwitchData, TenantSwitchSwitchResponse, UserPermissionsEndpointGetData, UserPermissionsEndpointGetResponse, UserRolesAssignData, UserRolesAssignResponse, UserRolesListData, UserRolesListResponse, UserRolesRemoveData, UserRolesRemoveResponse, UsersBatchCreateData, UsersBatchCreateResponse, UsersBatchSoftDeleteData, UsersBatchSoftDeleteResponse, UsersBatchUpdateData, UsersBatchUpdateResponse, UsersCreateData, UsersCreateResponse, UsersDeleteData, UsersDeletePermanentData, UsersDeletePermanentResponse, UsersDeleteResponse, UsersGetData, UsersGetResponse, UsersListData, UsersListResponse, UsersResetPasswordData, UsersResetPasswordResponse, UsersRestoreData, UsersRestoreResponse, UsersUpdateData, UsersUpdateResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen.js';
+import { client } from '../client.gen';
+import { apiKeysCreate, apiKeysGet, apiKeysList, apiKeysRevoke, apiKeysRotate, apiKeysUpdate, auditLogsExport, auditLogsGet, auditLogsList, crossTenantRolesList, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, healthCheck, jobsCancel, jobsGet, jobsList, type Options, rolesCreate, rolesDelete, rolesGet, rolesList, rolesUpdate, tenantSwitchSwitch, userPermissionsEndpointGet, userRolesAssign, userRolesList, userRolesRemove, usersBatchCreate, usersBatchSoftDelete, usersBatchUpdate, usersCreate, usersDelete, usersDeletePermanent, usersGet, usersList, usersResetPassword, usersRestore, usersUpdate, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { ApiKeysCreateData, ApiKeysCreateResponse, ApiKeysGetData, ApiKeysGetResponse, ApiKeysListData, ApiKeysListResponse, ApiKeysRevokeData, ApiKeysRevokeResponse, ApiKeysRotateData, ApiKeysRotateResponse, ApiKeysUpdateData, ApiKeysUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, CrossTenantRolesListData, CrossTenantRolesListResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListData, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, RolesCreateData, RolesCreateResponse, RolesDeleteData, RolesDeleteResponse, RolesGetData, RolesGetResponse, RolesListData, RolesListResponse, RolesUpdateData, RolesUpdateResponse, TenantSwitchSwitchData, TenantSwitchSwitchResponse, UserPermissionsEndpointGetData, UserPermissionsEndpointGetResponse, UserRolesAssignData, UserRolesAssignResponse, UserRolesListData, UserRolesListResponse, UserRolesRemoveData, UserRolesRemoveResponse, UsersBatchCreateData, UsersBatchCreateResponse, UsersBatchSoftDeleteData, UsersBatchSoftDeleteResponse, UsersBatchUpdateData, UsersBatchUpdateResponse, UsersCreateData, UsersCreateResponse, UsersDeleteData, UsersDeletePermanentData, UsersDeletePermanentResponse, UsersDeleteResponse, UsersGetData, UsersGetResponse, UsersListData, UsersListResponse, UsersResetPasswordData, UsersResetPasswordResponse, UsersRestoreData, UsersRestoreResponse, UsersUpdateData, UsersUpdateResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -348,6 +348,435 @@ export const auditLogsGetOptions = (options: Options<AuditLogsGetData>) => query
     },
     queryKey: auditLogsGetQueryKey(options)
 });
+
+export const examplePostsListQueryKey = (options: Options<ExamplePostsListData>) => createQueryKey('examplePostsList', options);
+
+/**
+ * List example posts
+ *
+ * List posts in an organization
+ * Supports pagination, filtering, sorting, and field selection
+ */
+export const examplePostsListOptions = (options: Options<ExamplePostsListData>) => queryOptions<ExamplePostsListResponse, DefaultError, ExamplePostsListResponse, ReturnType<typeof examplePostsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await examplePostsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: examplePostsListQueryKey(options)
+});
+
+export const examplePostsListInfiniteQueryKey = (options: Options<ExamplePostsListData>): QueryKey<Options<ExamplePostsListData>> => createQueryKey('examplePostsList', options, true);
+
+/**
+ * List example posts
+ *
+ * List posts in an organization
+ * Supports pagination, filtering, sorting, and field selection
+ */
+export const examplePostsListInfiniteOptions = (options: Options<ExamplePostsListData>) => infiniteQueryOptions<ExamplePostsListResponse, DefaultError, InfiniteData<ExamplePostsListResponse>, QueryKey<Options<ExamplePostsListData>>, number | Pick<QueryKey<Options<ExamplePostsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ExamplePostsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await examplePostsList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: examplePostsListInfiniteQueryKey(options)
+});
+
+/**
+ * Create example post
+ *
+ * Create a new post
+ */
+export const examplePostsCreateMutation = (options?: Partial<Options<ExamplePostsCreateData>>): UseMutationOptions<ExamplePostsCreateResponse, DefaultError, Options<ExamplePostsCreateData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsCreateResponse, DefaultError, Options<ExamplePostsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Batch update example posts
+ *
+ * Batch update posts
+ */
+export const examplePostsBatchUpdateMutation = (options?: Partial<Options<ExamplePostsBatchUpdateData>>): UseMutationOptions<ExamplePostsBatchUpdateResponse, DefaultError, Options<ExamplePostsBatchUpdateData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsBatchUpdateResponse, DefaultError, Options<ExamplePostsBatchUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsBatchUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Batch create example posts
+ *
+ * Batch create posts
+ */
+export const examplePostsBatchCreateMutation = (options?: Partial<Options<ExamplePostsBatchCreateData>>): UseMutationOptions<ExamplePostsBatchCreateResponse, DefaultError, Options<ExamplePostsBatchCreateData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsBatchCreateResponse, DefaultError, Options<ExamplePostsBatchCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsBatchCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Batch soft delete example posts
+ *
+ * Batch soft delete posts
+ */
+export const examplePostsBatchSoftDeleteMutation = (options?: Partial<Options<ExamplePostsBatchSoftDeleteData>>): UseMutationOptions<ExamplePostsBatchSoftDeleteResponse, DefaultError, Options<ExamplePostsBatchSoftDeleteData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsBatchSoftDeleteResponse, DefaultError, Options<ExamplePostsBatchSoftDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsBatchSoftDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Soft delete example post
+ *
+ * Soft delete a post (default delete behavior)
+ * Post is marked as deleted but can be restored
+ */
+export const examplePostsDeleteMutation = (options?: Partial<Options<ExamplePostsDeleteData>>): UseMutationOptions<ExamplePostsDeleteResponse, DefaultError, Options<ExamplePostsDeleteData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsDeleteResponse, DefaultError, Options<ExamplePostsDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const examplePostsGetQueryKey = (options: Options<ExamplePostsGetData>) => createQueryKey('examplePostsGet', options);
+
+/**
+ * Get example post
+ *
+ * Get a single post by ID
+ */
+export const examplePostsGetOptions = (options: Options<ExamplePostsGetData>) => queryOptions<ExamplePostsGetResponse, DefaultError, ExamplePostsGetResponse, ReturnType<typeof examplePostsGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await examplePostsGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: examplePostsGetQueryKey(options)
+});
+
+/**
+ * Update example post
+ *
+ * Update a post (partial update)
+ */
+export const examplePostsUpdateMutation = (options?: Partial<Options<ExamplePostsUpdateData>>): UseMutationOptions<ExamplePostsUpdateResponse, DefaultError, Options<ExamplePostsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsUpdateResponse, DefaultError, Options<ExamplePostsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Permanently delete example post
+ *
+ * Permanently delete a post (hard delete)
+ * Post is permanently removed and cannot be restored
+ */
+export const examplePostsDeletePermanentMutation = (options?: Partial<Options<ExamplePostsDeletePermanentData>>): UseMutationOptions<ExamplePostsDeletePermanentResponse, DefaultError, Options<ExamplePostsDeletePermanentData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsDeletePermanentResponse, DefaultError, Options<ExamplePostsDeletePermanentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsDeletePermanent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Restore example post
+ *
+ * Restore a soft-deleted post
+ */
+export const examplePostsRestoreMutation = (options?: Partial<Options<ExamplePostsRestoreData>>): UseMutationOptions<ExamplePostsRestoreResponse, DefaultError, Options<ExamplePostsRestoreData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsRestoreResponse, DefaultError, Options<ExamplePostsRestoreData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsRestore({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const exampleCommentsListQueryKey = (options: Options<ExampleCommentsListData>) => createQueryKey('exampleCommentsList', options);
+
+/**
+ * List comments for a post
+ *
+ * List comments for a post
+ * Supports pagination, filtering, and sorting
+ */
+export const exampleCommentsListOptions = (options: Options<ExampleCommentsListData>) => queryOptions<ExampleCommentsListResponse, DefaultError, ExampleCommentsListResponse, ReturnType<typeof exampleCommentsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await exampleCommentsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: exampleCommentsListQueryKey(options)
+});
+
+export const exampleCommentsListInfiniteQueryKey = (options: Options<ExampleCommentsListData>): QueryKey<Options<ExampleCommentsListData>> => createQueryKey('exampleCommentsList', options, true);
+
+/**
+ * List comments for a post
+ *
+ * List comments for a post
+ * Supports pagination, filtering, and sorting
+ */
+export const exampleCommentsListInfiniteOptions = (options: Options<ExampleCommentsListData>) => infiniteQueryOptions<ExampleCommentsListResponse, DefaultError, InfiniteData<ExampleCommentsListResponse>, QueryKey<Options<ExampleCommentsListData>>, number | Pick<QueryKey<Options<ExampleCommentsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ExampleCommentsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await exampleCommentsList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: exampleCommentsListInfiniteQueryKey(options)
+});
+
+/**
+ * Create comment on post
+ *
+ * Create a new comment on a post
+ */
+export const exampleCommentsCreateMutation = (options?: Partial<Options<ExampleCommentsCreateData>>): UseMutationOptions<ExampleCommentsCreateResponse, DefaultError, Options<ExampleCommentsCreateData>> => {
+    const mutationOptions: UseMutationOptions<ExampleCommentsCreateResponse, DefaultError, Options<ExampleCommentsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await exampleCommentsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Batch create comments
+ *
+ * Batch create comments
+ */
+export const exampleCommentsBatchCreateMutation = (options?: Partial<Options<ExampleCommentsBatchCreateData>>): UseMutationOptions<ExampleCommentsBatchCreateResponse, DefaultError, Options<ExampleCommentsBatchCreateData>> => {
+    const mutationOptions: UseMutationOptions<ExampleCommentsBatchCreateResponse, DefaultError, Options<ExampleCommentsBatchCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await exampleCommentsBatchCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Batch soft delete comments
+ *
+ * Batch soft delete comments
+ */
+export const exampleCommentsBatchSoftDeleteMutation = (options?: Partial<Options<ExampleCommentsBatchSoftDeleteData>>): UseMutationOptions<ExampleCommentsBatchSoftDeleteResponse, DefaultError, Options<ExampleCommentsBatchSoftDeleteData>> => {
+    const mutationOptions: UseMutationOptions<ExampleCommentsBatchSoftDeleteResponse, DefaultError, Options<ExampleCommentsBatchSoftDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await exampleCommentsBatchSoftDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Soft delete comment
+ *
+ * Soft delete a comment
+ */
+export const exampleCommentsDeleteMutation = (options?: Partial<Options<ExampleCommentsDeleteData>>): UseMutationOptions<ExampleCommentsDeleteResponse, DefaultError, Options<ExampleCommentsDeleteData>> => {
+    const mutationOptions: UseMutationOptions<ExampleCommentsDeleteResponse, DefaultError, Options<ExampleCommentsDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await exampleCommentsDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const exampleCommentsGetQueryKey = (options: Options<ExampleCommentsGetData>) => createQueryKey('exampleCommentsGet', options);
+
+/**
+ * Get comment
+ *
+ * Get a single comment by ID
+ */
+export const exampleCommentsGetOptions = (options: Options<ExampleCommentsGetData>) => queryOptions<ExampleCommentsGetResponse, DefaultError, ExampleCommentsGetResponse, ReturnType<typeof exampleCommentsGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await exampleCommentsGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: exampleCommentsGetQueryKey(options)
+});
+
+/**
+ * Update comment
+ *
+ * Update a comment (partial update)
+ */
+export const exampleCommentsUpdateMutation = (options?: Partial<Options<ExampleCommentsUpdateData>>): UseMutationOptions<ExampleCommentsUpdateResponse, DefaultError, Options<ExampleCommentsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<ExampleCommentsUpdateResponse, DefaultError, Options<ExampleCommentsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await exampleCommentsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Permanently delete comment
+ *
+ * Permanently delete a comment (hard delete)
+ */
+export const exampleCommentsDeletePermanentMutation = (options?: Partial<Options<ExampleCommentsDeletePermanentData>>): UseMutationOptions<ExampleCommentsDeletePermanentResponse, DefaultError, Options<ExampleCommentsDeletePermanentData>> => {
+    const mutationOptions: UseMutationOptions<ExampleCommentsDeletePermanentResponse, DefaultError, Options<ExampleCommentsDeletePermanentData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await exampleCommentsDeletePermanent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Restore comment
+ *
+ * Restore a soft-deleted comment
+ */
+export const exampleCommentsRestoreMutation = (options?: Partial<Options<ExampleCommentsRestoreData>>): UseMutationOptions<ExampleCommentsRestoreResponse, DefaultError, Options<ExampleCommentsRestoreData>> => {
+    const mutationOptions: UseMutationOptions<ExampleCommentsRestoreResponse, DefaultError, Options<ExampleCommentsRestoreData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await exampleCommentsRestore({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const filesListQueryKey = (options: Options<FilesListData>) => createQueryKey('filesList', options);
 
