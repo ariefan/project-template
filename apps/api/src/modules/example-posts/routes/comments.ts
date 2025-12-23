@@ -13,6 +13,7 @@ import {
 import type { FastifyInstance } from "fastify";
 import { handleError, ValidationError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
+import { requirePermission } from "../../auth/authorization-middleware";
 import * as commentsService from "../services/comments.service";
 
 export function commentsRoutes(app: FastifyInstance) {
@@ -31,6 +32,7 @@ export function commentsRoutes(app: FastifyInstance) {
     };
   }>(
     "/:orgId/example-posts/:postId/example-comments",
+    { preHandler: [requirePermission("comments", "read")] },
     async (
       request,
       reply
@@ -80,6 +82,7 @@ export function commentsRoutes(app: FastifyInstance) {
     Body: CreateExampleCommentRequest;
   }>(
     "/:orgId/example-posts/:postId/example-comments",
+    { preHandler: [requirePermission("comments", "create")] },
     async (request, reply): Promise<ExampleCommentResponse | ErrorResponse> => {
       const parseResult = zCreateExampleCommentRequest.safeParse(request.body);
       if (!parseResult.success) {
@@ -122,6 +125,7 @@ export function commentsRoutes(app: FastifyInstance) {
     Querystring: { fields?: string };
   }>(
     "/:orgId/example-posts/:postId/example-comments/:id",
+    { preHandler: [requirePermission("comments", "read")] },
     async (request, reply): Promise<ExampleCommentResponse | ErrorResponse> => {
       try {
         const comment = await commentsService.getExampleCommentById(
@@ -144,6 +148,7 @@ export function commentsRoutes(app: FastifyInstance) {
     Body: UpdateExampleCommentRequest;
   }>(
     "/:orgId/example-posts/:postId/example-comments/:id",
+    { preHandler: [requirePermission("comments", "update")] },
     async (request, reply): Promise<ExampleCommentResponse | ErrorResponse> => {
       const parseResult = zUpdateExampleCommentRequest.safeParse(request.body);
       if (!parseResult.success) {
@@ -181,6 +186,7 @@ export function commentsRoutes(app: FastifyInstance) {
     Params: { orgId: string; postId: string; id: string };
   }>(
     "/:orgId/example-posts/:postId/example-comments/:id",
+    { preHandler: [requirePermission("comments", "delete")] },
     async (request, reply): Promise<SoftDeleteResponse | ErrorResponse> => {
       try {
         const result = await commentsService.softDeleteExampleComment(
@@ -203,6 +209,7 @@ export function commentsRoutes(app: FastifyInstance) {
     Params: { orgId: string; postId: string; id: string };
   }>(
     "/:orgId/example-posts/:postId/example-comments/:id/permanent",
+    { preHandler: [requirePermission("comments", "delete")] },
     async (request, reply) => {
       try {
         await commentsService.permanentDeleteExampleComment(
@@ -225,6 +232,7 @@ export function commentsRoutes(app: FastifyInstance) {
     Params: { orgId: string; postId: string; id: string };
   }>(
     "/:orgId/example-posts/:postId/example-comments/:id/restore",
+    { preHandler: [requirePermission("comments", "update")] },
     async (request, reply): Promise<ExampleCommentResponse | ErrorResponse> => {
       try {
         const comment = await commentsService.restoreExampleComment(
@@ -250,6 +258,7 @@ export function commentsRoutes(app: FastifyInstance) {
     };
   }>(
     "/:orgId/example-posts/:postId/example-comments/batch",
+    { preHandler: [requirePermission("comments", "create")] },
     async (request, reply) => {
       try {
         const result = await commentsService.batchCreateExampleComments(
@@ -277,6 +286,7 @@ export function commentsRoutes(app: FastifyInstance) {
     };
   }>(
     "/:orgId/example-posts/:postId/example-comments/batch/soft-delete",
+    { preHandler: [requirePermission("comments", "delete")] },
     async (request, reply) => {
       try {
         const result = await commentsService.batchSoftDeleteExampleComments({

@@ -13,6 +13,7 @@ import {
 import type { FastifyInstance } from "fastify";
 import { handleError, ValidationError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
+import { requirePermission } from "../../auth/authorization-middleware";
 import * as postsService from "../services/posts.service";
 
 export function postsRoutes(app: FastifyInstance) {
@@ -39,6 +40,7 @@ export function postsRoutes(app: FastifyInstance) {
     };
   }>(
     "/:orgId/example-posts",
+    { preHandler: [requirePermission("posts", "read")] },
     async (request): Promise<ExamplePostListResponse> => {
       const { orgId } = request.params;
       const page = request.query.page ?? 1;
@@ -83,6 +85,7 @@ export function postsRoutes(app: FastifyInstance) {
     Body: CreateExamplePostRequest;
   }>(
     "/:orgId/example-posts",
+    { preHandler: [requirePermission("posts", "create")] },
     async (request, reply): Promise<ExamplePostResponse | ErrorResponse> => {
       const parseResult = zCreateExamplePostRequest.safeParse(request.body);
       if (!parseResult.success) {
@@ -124,6 +127,7 @@ export function postsRoutes(app: FastifyInstance) {
     Querystring: { fields?: string; include?: string };
   }>(
     "/:orgId/example-posts/:id",
+    { preHandler: [requirePermission("posts", "read")] },
     async (request, reply): Promise<ExamplePostResponse | ErrorResponse> => {
       try {
         const post = await postsService.getExamplePostById(
@@ -145,6 +149,7 @@ export function postsRoutes(app: FastifyInstance) {
     Body: UpdateExamplePostRequest;
   }>(
     "/:orgId/example-posts/:id",
+    { preHandler: [requirePermission("posts", "update")] },
     async (request, reply): Promise<ExamplePostResponse | ErrorResponse> => {
       const parseResult = zUpdateExamplePostRequest.safeParse(request.body);
       if (!parseResult.success) {
@@ -181,6 +186,7 @@ export function postsRoutes(app: FastifyInstance) {
     Params: { orgId: string; id: string };
   }>(
     "/:orgId/example-posts/:id",
+    { preHandler: [requirePermission("posts", "delete")] },
     async (request, reply): Promise<SoftDeleteResponse | ErrorResponse> => {
       try {
         const result = await postsService.softDeleteExamplePost(
@@ -200,26 +206,31 @@ export function postsRoutes(app: FastifyInstance) {
   // Hard delete post
   app.delete<{
     Params: { orgId: string; id: string };
-  }>("/:orgId/example-posts/:id/permanent", async (request, reply) => {
-    try {
-      await postsService.permanentDeleteExamplePost(
-        request.params.id,
-        request.params.orgId
-      );
-      reply.status(204);
-      return;
-    } catch (error) {
-      const { statusCode, response } = handleError(error, request.id);
-      reply.status(statusCode);
-      return response;
+  }>(
+    "/:orgId/example-posts/:id/permanent",
+    { preHandler: [requirePermission("posts", "delete")] },
+    async (request, reply) => {
+      try {
+        await postsService.permanentDeleteExamplePost(
+          request.params.id,
+          request.params.orgId
+        );
+        reply.status(204);
+        return;
+      } catch (error) {
+        const { statusCode, response } = handleError(error, request.id);
+        reply.status(statusCode);
+        return response;
+      }
     }
-  });
+  );
 
   // Restore post
   app.post<{
     Params: { orgId: string; id: string };
   }>(
     "/:orgId/example-posts/:id/restore",
+    { preHandler: [requirePermission("posts", "update")] },
     async (request, reply): Promise<ExamplePostResponse | ErrorResponse> => {
       try {
         const post = await postsService.restoreExamplePost(
@@ -242,21 +253,25 @@ export function postsRoutes(app: FastifyInstance) {
       items: CreateExamplePostRequest[];
       options?: { atomic?: boolean };
     };
-  }>("/:orgId/example-posts/batch", async (request, reply) => {
-    try {
-      const result = await postsService.batchCreateExamplePosts(
-        request.params.orgId,
-        request.body.items,
-        request.body.options
-      );
-      reply.status(201);
-      return { ...result, meta: createMeta(request.id) };
-    } catch (error) {
-      const { statusCode, response } = handleError(error, request.id);
-      reply.status(statusCode);
-      return response;
+  }>(
+    "/:orgId/example-posts/batch",
+    { preHandler: [requirePermission("posts", "create")] },
+    async (request, reply) => {
+      try {
+        const result = await postsService.batchCreateExamplePosts(
+          request.params.orgId,
+          request.body.items,
+          request.body.options
+        );
+        reply.status(201);
+        return { ...result, meta: createMeta(request.id) };
+      } catch (error) {
+        const { statusCode, response } = handleError(error, request.id);
+        reply.status(statusCode);
+        return response;
+      }
     }
-  });
+  );
 
   // Batch update posts
   app.patch<{
@@ -265,20 +280,24 @@ export function postsRoutes(app: FastifyInstance) {
       items: Array<{ id: string; updates: UpdateExamplePostRequest }>;
       options?: { atomic?: boolean };
     };
-  }>("/:orgId/example-posts/batch", async (request, reply) => {
-    try {
-      const result = await postsService.batchUpdateExamplePosts(
-        request.params.orgId,
-        request.body.items,
-        request.body.options
-      );
-      return { ...result, meta: createMeta(request.id) };
-    } catch (error) {
-      const { statusCode, response } = handleError(error, request.id);
-      reply.status(statusCode);
-      return response;
+  }>(
+    "/:orgId/example-posts/batch",
+    { preHandler: [requirePermission("posts", "update")] },
+    async (request, reply) => {
+      try {
+        const result = await postsService.batchUpdateExamplePosts(
+          request.params.orgId,
+          request.body.items,
+          request.body.options
+        );
+        return { ...result, meta: createMeta(request.id) };
+      } catch (error) {
+        const { statusCode, response } = handleError(error, request.id);
+        reply.status(statusCode);
+        return response;
+      }
     }
-  });
+  );
 
   // Batch soft delete posts
   app.post<{
@@ -287,19 +306,23 @@ export function postsRoutes(app: FastifyInstance) {
       ids: string[];
       options?: { atomic?: boolean };
     };
-  }>("/:orgId/example-posts/batch/soft-delete", async (request, reply) => {
-    try {
-      const result = await postsService.batchSoftDeleteExamplePosts(
-        request.params.orgId,
-        request.body.ids,
-        "system", // TODO: Get from authenticated user
-        request.body.options
-      );
-      return { ...result, meta: createMeta(request.id) };
-    } catch (error) {
-      const { statusCode, response } = handleError(error, request.id);
-      reply.status(statusCode);
-      return response;
+  }>(
+    "/:orgId/example-posts/batch/soft-delete",
+    { preHandler: [requirePermission("posts", "delete")] },
+    async (request, reply) => {
+      try {
+        const result = await postsService.batchSoftDeleteExamplePosts(
+          request.params.orgId,
+          request.body.ids,
+          "system", // TODO: Get from authenticated user
+          request.body.options
+        );
+        return { ...result, meta: createMeta(request.id) };
+      } catch (error) {
+        const { statusCode, response } = handleError(error, request.id);
+        reply.status(statusCode);
+        return response;
+      }
     }
-  });
+  );
 }

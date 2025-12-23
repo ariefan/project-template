@@ -9,9 +9,11 @@ import Fastify from "fastify";
 import YAML from "yaml";
 import { env } from "./env";
 import { authRoutes } from "./modules/auth";
+import { authorizationModule } from "./modules/authorization";
 import { examplePostsModule } from "./modules/example-posts";
 import { healthRoutes } from "./modules/health";
 import { notificationsModule } from "./modules/notifications";
+import authorizationPlugin from "./plugins/authorization";
 
 const require = createRequire(import.meta.url);
 
@@ -99,6 +101,9 @@ export async function buildApp() {
   // Cookies
   await app.register(cookie);
 
+  // Authorization
+  await app.register(authorizationPlugin);
+
   // Initialize notification system
   const notificationConfig = buildNotificationConfig();
   const hasAnyProvider =
@@ -138,6 +143,7 @@ export async function buildApp() {
   // Modules
   await app.register(healthRoutes);
   await app.register(authRoutes);
+  await app.register(authorizationModule, { prefix: "/v1/orgs" });
   await app.register(examplePostsModule, { prefix: "/v1/orgs" });
   await app.register(notificationsModule, { prefix: "/v1" });
 

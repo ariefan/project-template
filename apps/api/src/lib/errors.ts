@@ -28,6 +28,13 @@ export class ConflictError extends AppError {
   }
 }
 
+export class ForbiddenError extends AppError {
+  constructor(message: string) {
+    super("forbidden", message, 403);
+    this.name = "ForbiddenError";
+  }
+}
+
 export class ValidationError extends AppError {
   details?: Array<{ field: string; code: string; message: string }>;
 
