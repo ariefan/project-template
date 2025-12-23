@@ -1,0 +1,22 @@
+{
+  "name": "@workspace/authorization",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "casbin": "^5.30.0",
+    "@workspace/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./policies": "./src/policies/index.ts"
+  }
+}
