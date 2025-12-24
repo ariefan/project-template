@@ -174,6 +174,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
           v3: "read",
           v4: null,
           v5: null,
+          v6: null,
         },
       ]);
     });
@@ -262,6 +263,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
         v3: "write",
         v4: null,
         v5: null,
+        v6: null,
       });
     });
 
@@ -279,6 +281,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
         v3: null,
         v4: null,
         v5: null,
+        v6: null,
       });
     });
   });
@@ -315,6 +318,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
           v3: "write",
           v4: null,
           v5: null,
+          v6: null,
         },
         {
           ptype: "p",
@@ -324,6 +328,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
           v3: "read",
           v4: null,
           v5: null,
+          v6: null,
         },
       ]);
     });

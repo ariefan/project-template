@@ -44,7 +44,8 @@ vi.mock("@workspace/authorization", () => {
 
 // Mock the auth middleware
 vi.mock("../../auth/middleware", () => ({
-  requireAuth: vi.fn((request, _reply) => {
+  requireAuth: vi.fn(async (request, _reply) => {
+    await Promise.resolve();
     // Simulate authenticated user
     request.user = { id: "admin1", email: "admin@test.com" };
     request.session = { userId: "admin1" };
@@ -54,9 +55,13 @@ vi.mock("../../auth/middleware", () => ({
 // Mock the authorization middleware
 vi.mock("../../auth/authorization-middleware", () => ({
   requirePermission: vi.fn((_resource: string, _action: string) => {
-    return (request: any, _reply: any) => {
+    return async (request: unknown, _reply: unknown) => {
+      await Promise.resolve();
       // Simulate permission check passing
-      request.user = { id: "admin1", email: "admin@test.com" };
+      (request as { user: { id: string; email: string } }).user = {
+        id: "admin1",
+        email: "admin@test.com",
+      };
     };
   }),
 }));
@@ -91,9 +96,10 @@ describe("Violation Routes", () => {
     });
 
     // Register routes under /authorization prefix
-    app.register(
-      (instance) => {
+    await app.register(
+      async (instance) => {
         violationRoutes(instance);
+        await Promise.resolve();
       },
       { prefix: "/authorization" }
     );

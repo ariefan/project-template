@@ -1,8 +1,36 @@
 import type { Database } from "@workspace/db";
 import {
   AuthorizationAuditEventType,
+  type AuthorizationLog,
   authorizationLogs,
 } from "@workspace/db/schema";
+
+/**
+ * Filters for querying audit logs
+ */
+export type AuditLogFilters = {
+  eventType?: string;
+  actorId?: string;
+  resourceType?: string;
+  userId?: string;
+  timestampAfter?: Date;
+  timestampBefore?: Date;
+  ipAddress?: string;
+};
+
+/**
+ * Result of a paginated audit log query
+ */
+export type AuditLogQueryResult = {
+  data: AuthorizationLog[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+};
 
 /**
  * Context information for audit logging
@@ -246,5 +274,129 @@ export class AuthorizationAuditService {
     }
 
     return true;
+  }
+
+  /**
+   * Build filter conditions for audit log queries
+   */
+  private async buildFilterConditions(
+    orgId: string,
+    filters?: AuditLogFilters
+  ) {
+    const { and, eq, gte, lte, like } = await import("@workspace/db");
+    const conditions = [eq(authorizationLogs.orgId, orgId)];
+
+    if (filters?.eventType) {
+      conditions.push(eq(authorizationLogs.eventType, filters.eventType));
+    }
+    if (filters?.actorId) {
+      conditions.push(eq(authorizationLogs.actorId, filters.actorId));
+    }
+    if (filters?.userId) {
+      conditions.push(eq(authorizationLogs.userId, filters.userId));
+    }
+    if (filters?.resourceType) {
+      conditions.push(
+        like(authorizationLogs.resource, `${filters.resourceType}%`)
+      );
+    }
+    if (filters?.ipAddress) {
+      conditions.push(eq(authorizationLogs.actorIp, filters.ipAddress));
+    }
+    if (filters?.timestampAfter) {
+      conditions.push(gte(authorizationLogs.timestamp, filters.timestampAfter));
+    }
+    if (filters?.timestampBefore) {
+      conditions.push(
+        lte(authorizationLogs.timestamp, filters.timestampBefore)
+      );
+    }
+
+    return and(...conditions);
+  }
+
+  /**
+   * Query audit logs with pagination and filters
+   */
+  async queryLogs(
+    orgId: string,
+    options: {
+      page?: number;
+      pageSize?: number;
+      filters?: AuditLogFilters;
+    } = {}
+  ): Promise<AuditLogQueryResult> {
+    const { desc, count } = await import("@workspace/db");
+    const page = Math.max(1, options.page ?? 1);
+    const pageSize = Math.min(100, Math.max(1, options.pageSize ?? 50));
+    const offset = (page - 1) * pageSize;
+
+    const whereCondition = await this.buildFilterConditions(
+      orgId,
+      options.filters
+    );
+
+    // Get total count
+    const [countResult] = await this.db
+      .select({ count: count() })
+      .from(authorizationLogs)
+      .where(whereCondition);
+
+    const totalItems = Number(countResult?.count ?? 0);
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // Get paginated data
+    const data = await this.db
+      .select()
+      .from(authorizationLogs)
+      .where(whereCondition)
+      .orderBy(desc(authorizationLogs.timestamp))
+      .limit(pageSize)
+      .offset(offset);
+
+    return {
+      data,
+      pagination: {
+        page,
+        pageSize,
+        totalItems,
+        totalPages,
+        hasMore: page < totalPages,
+      },
+    };
+  }
+
+  /**
+   * Get a single audit log by ID
+   */
+  async getLogById(
+    orgId: string,
+    logId: number
+  ): Promise<AuthorizationLog | null> {
+    const { and, eq } = await import("@workspace/db");
+    const [log] = await this.db
+      .select()
+      .from(authorizationLogs)
+      .where(
+        and(eq(authorizationLogs.orgId, orgId), eq(authorizationLogs.id, logId))
+      )
+      .limit(1);
+
+    return log ?? null;
+  }
+
+  /**
+   * Count audit logs with optional filters
+   */
+  async countLogs(orgId: string, filters?: AuditLogFilters): Promise<number> {
+    const { count } = await import("@workspace/db");
+    const whereCondition = await this.buildFilterConditions(orgId, filters);
+
+    const [result] = await this.db
+      .select({ count: count() })
+      .from(authorizationLogs)
+      .where(whereCondition);
+
+    return Number(result?.count ?? 0);
   }
 }

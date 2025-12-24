@@ -103,6 +103,25 @@ interface Files {
   ): FileResponse | ErrorResponse;
 
   /**
+   * Update file properties
+   *
+   * Currently supports changing the access level (private/public).
+   */
+  @route("/{fileId}")
+  @patch(#{implicitOptionality: true})
+  @summary("Update file")
+  update(
+    /** Organization ID */
+    @path orgId: string,
+
+    /** File ID */
+    @path fileId: string,
+
+    /** Update request */
+    @body body: UpdateFileRequest
+  ): FileResponse | ErrorResponse;
+
+  /**
    * Download a file
    *
    * Returns a redirect to a signed URL for the file.

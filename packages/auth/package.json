@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "lint": "biome lint .",
+    "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -18,7 +19,8 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@workspace/typescript-config": "workspace:*",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
   },
   "exports": {
     ".": "./src/index.ts",

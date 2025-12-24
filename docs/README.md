@@ -33,6 +33,7 @@ Each package has its own README with usage examples:
 | [@workspace/db](../packages/db/README.md) | Drizzle ORM database |
 | [@workspace/notifications](../packages/notifications/README.md) | Multi-channel notifications |
 | [@workspace/storage](../packages/storage/README.md) | File storage (S3/Local) |
+| [@workspace/test-utils](../packages/test-utils/README.md) | Testing utilities and mocks |
 | [@workspace/ui](../packages/ui/README.md) | shadcn/ui web components |
 | [@workspace/ui-mobile](../packages/ui-mobile/README.md) | React Native components |
 | [@workspace/utils](../packages/utils/README.md) | Shared utilities |

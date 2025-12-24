@@ -7,7 +7,11 @@ import { registerConditionFunctions } from "./functions/conditions";
 
 export { casbinRules } from "@workspace/db/schema";
 export { CasbinDrizzleAdapter } from "./adapter/drizzle-adapter";
-export type { AuditContext } from "./audit/service";
+export type {
+  AuditContext,
+  AuditLogFilters,
+  AuditLogQueryResult,
+} from "./audit/service";
 export { AuthorizationAuditService } from "./audit/service";
 export type { AuthorizationConfig } from "./config";
 export { isOwner, isShared } from "./functions/conditions";

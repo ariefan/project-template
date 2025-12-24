@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
+    "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,7 +29,8 @@
     "@workspace/typescript-config": "workspace:*",
     "nativewind": "^4.1.23",
     "react-native": "^0.76.9",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.8"
   },
   "exports": {
     "./lib/*": "./src/lib/*.ts",

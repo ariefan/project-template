@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { auditLogRoutes } from "./audit-log-routes";
 import { contextRoutes } from "./context-routes";
 import { roleRoutes } from "./role-routes";
 import { userRoleRoutes } from "./user-role-routes";
@@ -12,4 +13,7 @@ export function authorizationModule(app: FastifyInstance) {
 
   // Violation management (emergency lockdown, permission suspension)
   violationRoutes(app);
+
+  // Audit log queries
+  auditLogRoutes(app);
 }

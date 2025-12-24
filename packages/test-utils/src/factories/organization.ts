@@ -19,7 +19,7 @@ let orgCounter = 0;
 export function createOrganization(
   overrides: Partial<MockOrganization> = {}
 ): MockOrganization {
-  orgCounter++;
+  orgCounter += 1;
   const id = overrides.id ?? `org_${orgCounter}`;
   const name = overrides.name ?? `Test Org ${orgCounter}`;
 

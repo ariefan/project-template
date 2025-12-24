@@ -18,7 +18,7 @@ let userCounter = 0;
  * const admin = createUser({ name: "Admin", email: "admin@test.com" });
  */
 export function createUser(overrides: Partial<MockUser> = {}): MockUser {
-  userCounter++;
+  userCounter += 1;
   const id = overrides.id ?? `user_${userCounter}`;
 
   return {

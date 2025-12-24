@@ -48,7 +48,12 @@
       "Bash(while read dir)",
       "Bash(done)",
       "Bash(for pkg in auth authorization cache contracts db metrics notifications storage typescript-config ui ui-mobile utils)",
-      "Bash(do echo \"=== $pkg ===\" ls -1 \"c:/dev/project-template/packages/$pkg/\")"
+      "Bash(do echo \"=== $pkg ===\" ls -1 \"c:/dev/project-template/packages/$pkg/\")",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm turbo typecheck:*)",
+      "Bash(pnpm turbo test:*)",
+      "Bash(pnpm build:tsp:*)",
+      "Bash(pnpm vitest:*)"
     ]
   }
 }

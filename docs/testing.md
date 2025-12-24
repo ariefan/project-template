@@ -7,11 +7,13 @@ This guide documents the testing patterns, tools, and best practices used across
 1. [Overview](#overview)
 2. [Running Tests](#running-tests)
 3. [Test Structure](#test-structure)
-4. [Unit Tests](#unit-tests)
-5. [Integration Tests](#integration-tests)
-6. [API Testing](#api-testing)
-7. [Mocking Patterns](#mocking-patterns)
-8. [Test Coverage](#test-coverage)
+4. [Test Utilities Package](#test-utilities-package)
+5. [Unit Tests](#unit-tests)
+6. [Integration Tests](#integration-tests)
+7. [API Testing](#api-testing)
+8. [Mocking Patterns](#mocking-patterns)
+9. [Test Coverage](#test-coverage)
+10. [Placeholder Tests](#placeholder-tests)
 
 ---
 
@@ -68,6 +70,79 @@ apps/
 │       └── plugins/
 │           └── __tests__/
 │               └── authorization.test.ts
+```
+
+## Test Utilities Package
+
+The `@workspace/test-utils` package provides shared testing utilities across the monorepo.
+
+### Installation
+
+Add to your package's devDependencies:
+
+```json
+{
+  "devDependencies": {
+    "@workspace/test-utils": "workspace:*"
+  }
+}
+```
+
+### Mock Factories
+
+Create realistic test data with sensible defaults:
+
+```typescript
+import { createUser, createOrganization, createPost } from "@workspace/test-utils";
+
+// Create with defaults
+const user = createUser();
+// { id: "user_1", email: "user1@test.com", name: "Test User 1", ... }
+
+// Override specific fields
+const admin = createUser({ name: "Admin", email: "admin@test.com" });
+
+// Create related data
+const org = createOrganization({ ownerId: user.id });
+const post = createPost({ authorId: user.id, organizationId: org.id });
+```
+
+### Mock Database
+
+Chainable mock that mimics Drizzle ORM's query API:
+
+```typescript
+import { createMockDb } from "@workspace/test-utils";
+import { vi } from "vitest";
+
+const mockDb = createMockDb();
+
+// Mock a select query result
+mockDb.select.mockQueryResult([
+  { id: "1", title: "Post 1" },
+  { id: "2", title: "Post 2" },
+]);
+
+// Use in tests
+vi.mock("@workspace/db", () => ({ db: mockDb }));
+```
+
+### Mock Cache
+
+Mock cache provider with internal storage:
+
+```typescript
+import { createMockCache } from "@workspace/test-utils";
+
+const mockCache = createMockCache();
+
+// Preset cached values
+mockCache._preset("user:1", { id: "1", name: "Cached User" });
+
+// Use in tests
+vi.mock("@workspace/cache", () => ({
+  createCacheProvider: () => mockCache,
+}));
 ```
 
 ## Unit Tests
@@ -489,4 +564,49 @@ jobs:
       - run: pnpm install
       - run: pnpm test
       - run: pnpm test -- --coverage
+```
+
+## Placeholder Tests
+
+Use `it.todo()` to document tests that need to be written. This makes missing tests visible and documents expected behavior:
+
+```typescript
+import { describe, it } from "vitest";
+
+describe("@workspace/auth", () => {
+  describe("auth configuration", () => {
+    it.todo("should configure social providers correctly");
+    it.todo("should configure passkey authentication");
+    it.todo("should set correct session expiry");
+  });
+
+  describe("password service", () => {
+    it.todo("should validate password complexity requirements");
+    it.todo("should hash passwords securely");
+  });
+});
+```
+
+### Benefits
+
+- **Visible in test output**: Turbo shows packages with todos instead of silently skipping
+- **Documents expected behavior**: Future contributors know what needs testing
+- **AI-friendly**: AI agents can see what tests are missing and implement them
+- **Prevents false confidence**: "All tests pass" now means "all implemented tests pass"
+
+### Converting Todos to Tests
+
+```typescript
+// Before: Placeholder
+it.todo("should hash passwords securely");
+
+// After: Implemented test
+it("should hash passwords securely", async () => {
+  const password = "MySecureP@ssw0rd!";
+  const hash = await hashPassword(password);
+
+  expect(hash).not.toBe(password);
+  expect(hash).toMatch(/^\$2[ayb]\$.{56}$/); // bcrypt format
+  expect(await verifyPassword(password, hash)).toBe(true);
+});
 ```

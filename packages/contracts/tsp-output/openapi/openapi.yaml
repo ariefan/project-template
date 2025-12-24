@@ -2082,6 +2082,44 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Files
+    patch:
+      operationId: Files_update
+      summary: Update file
+      description: |-
+        Update file properties
+
+        Currently supports changing the access level (private/public).
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: fileId
+          in: path
+          required: true
+          description: File ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/FileResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Files
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFileRequest'
+        description: Update request
     delete:
       operationId: Files_delete
       summary: Delete file
@@ -5664,6 +5702,14 @@ components:
             - $ref: '#/components/schemas/ExamplePostStatus'
           description: Post status (optional)
       description: Request body for updating a post
+    UpdateFileRequest:
+      type: object
+      properties:
+        access:
+          allOf:
+            - $ref: '#/components/schemas/FileAccess'
+          description: New access level
+      description: Request to update file properties
     UpdateRoleRequest:
       type: object
       properties:
