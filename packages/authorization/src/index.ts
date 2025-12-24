@@ -3,15 +3,30 @@ import { fileURLToPath } from "node:url";
 import * as casbin from "casbin";
 import { CasbinDrizzleAdapter } from "./adapter/drizzle-adapter";
 import type { AuthorizationConfig } from "./config";
+import { registerConditionFunctions } from "./functions/conditions";
 
 export { casbinRules } from "@workspace/db/schema";
 export { CasbinDrizzleAdapter } from "./adapter/drizzle-adapter";
+export type { AuditContext } from "./audit/service";
+export { AuthorizationAuditService } from "./audit/service";
 export type { AuthorizationConfig } from "./config";
-export * from "./policies/index";
+export { isOwner, isShared } from "./functions/conditions";
+export * from "./roles/index";
 export * from "./types";
+export {
+  createViolationManager,
+  type ViolationControl,
+  ViolationManager,
+  ViolationSeverity,
+} from "./violations";
 
 /**
  * Create a fully configured Casbin enforcer for authorization
+ *
+ * Multi-App RBAC with dynamic conditions:
+ * - Request format: (sub, app, tenant, obj, act, resourceOwnerId)
+ * - Policy format: (sub, app, tenant, obj, act, eft, condition)
+ * - Grouping format: (user, role, app, tenant)
  *
  * @param config Optional configuration for the enforcer
  * @returns Configured Casbin enforcer instance
@@ -27,6 +42,9 @@ export async function createAuthorization(
 
   // Create the enforcer
   const enforcer = await casbin.newEnforcer(modelPath, adapter);
+
+  // Register custom condition functions
+  registerConditionFunctions(enforcer);
 
   // Enable auto-save to persist policy changes to database
   enforcer.enableAutoSave(config?.autoSave ?? true);

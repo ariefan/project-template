@@ -91,7 +91,16 @@ export function requireOrgMembership(orgIdParam = "orgId") {
     }
 
     // Check org membership using better-auth organization plugin
-    const membership = await auth.api.getFullOrganization({
+    // Type assertion needed because plugin methods aren't visible on base type
+    type OrgApi = {
+      getFullOrganization: (opts: {
+        headers: Headers;
+        query: { organizationId: string };
+      }) => Promise<{ id: string; members: unknown[] } | null>;
+    };
+    const membership = await (
+      auth.api as unknown as OrgApi
+    ).getFullOrganization({
       headers: fromNodeHeaders(request.headers),
       query: { organizationId: orgId },
     });

@@ -48,6 +48,42 @@ const envSchema = z.object({
   QUEUE_ENABLED: z.coerce.boolean().default(false),
   QUEUE_CONCURRENCY: z.coerce.number().default(10),
   QUEUE_MAX_RETRIES: z.coerce.number().default(3),
+
+  // Cache Configuration
+  CACHE_PROVIDER: z.enum(["memory", "redis"]).default("memory"),
+  CACHE_TTL: z.coerce.number().default(300), // 5 minutes in seconds
+  CACHE_MAX_SIZE: z.coerce.number().default(1000), // For in-memory provider
+
+  // Redis Configuration (only needed if CACHE_PROVIDER=redis)
+  REDIS_URL: z.string().url().optional(),
+  REDIS_KEY_PREFIX: z.string().default("authz:"),
+
+  // Rate Limiting (Tier-Based)
+  RATE_LIMIT_ENABLED: z.coerce.boolean().default(true),
+  RATE_LIMIT_WINDOW: z.string().default("1 hour"), // Time window
+  // Tier limits (requests per hour as documented)
+  RATE_LIMIT_FREE: z.coerce.number().default(100),
+  RATE_LIMIT_BASIC: z.coerce.number().default(1000),
+  RATE_LIMIT_PRO: z.coerce.number().default(10_000),
+  RATE_LIMIT_ENTERPRISE: z.coerce.number().default(100_000),
+
+  // Idempotency
+  IDEMPOTENCY_ENABLED: z.coerce.boolean().default(true),
+  IDEMPOTENCY_TTL: z.coerce.number().default(86_400), // 24 hours in seconds
+
+  // Storage Configuration
+  STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
+  STORAGE_LOCAL_PATH: z.string().default("./uploads"),
+
+  // S3/R2 Configuration (only needed if STORAGE_PROVIDER=s3)
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_REGION: z.string().optional(),
+  S3_BUCKET: z.string().optional(),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+
+  // File Upload Limits
+  FILE_MAX_SIZE: z.coerce.number().default(52_428_800), // 50 MB default
 });
 
 function validateEnv() {

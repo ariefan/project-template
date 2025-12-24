@@ -1,4 +1,4 @@
-import { and, db, eq } from "@workspace/db";
+import { and, db, eq, inArray } from "@workspace/db";
 import { casbinRules } from "@workspace/db/schema";
 import type { Adapter, Model } from "casbin";
 
@@ -11,12 +11,19 @@ function loadPolicyLine(
     v3: string | null;
     v4: string | null;
     v5: string | null;
+    v6: string | null;
   },
   model: Model
 ): void {
-  const values = [rule.v0, rule.v1, rule.v2, rule.v3, rule.v4, rule.v5].filter(
-    (v): v is string => v !== null && v !== undefined
-  );
+  const values = [
+    rule.v0,
+    rule.v1,
+    rule.v2,
+    rule.v3,
+    rule.v4,
+    rule.v5,
+    rule.v6,
+  ].filter((v): v is string => v !== null && v !== undefined);
 
   if (ptype === "p") {
     const pModel = model.model.get("p");
@@ -44,14 +51,16 @@ export class CasbinDrizzleAdapter implements Adapter {
   }
 
   /**
-   * Save all policies from the Casbin model to the database
+   * Save all policies from the Casbin model to the database using diff-based approach
+   * Only inserts new policies and deletes removed ones - unchanged policies are left untouched
    * This is called when policies are modified and autoSave is enabled
    */
   async savePolicy(model: Model): Promise<boolean> {
-    // Delete all existing rules
-    await db.delete(casbinRules);
+    // 1. Load existing policies from database
+    const existingRules = await db.select().from(casbinRules);
 
-    const allRules: Array<{
+    // 2. Extract desired policies from Casbin model
+    const desiredRules: Array<{
       ptype: string;
       v0: string | null;
       v1: string | null;
@@ -59,6 +68,7 @@ export class CasbinDrizzleAdapter implements Adapter {
       v3: string | null;
       v4: string | null;
       v5: string | null;
+      v6: string | null;
     }> = [];
 
     // Extract policy rules (p)
@@ -67,7 +77,7 @@ export class CasbinDrizzleAdapter implements Adapter {
       const pTokens = pModel.get("p");
       if (pTokens) {
         for (const rule of pTokens.policy) {
-          allRules.push({
+          desiredRules.push({
             ptype: "p",
             ...this.ruleToObject(rule),
           });
@@ -81,7 +91,7 @@ export class CasbinDrizzleAdapter implements Adapter {
       const gTokens = gModel.get("g");
       if (gTokens) {
         for (const rule of gTokens.policy) {
-          allRules.push({
+          desiredRules.push({
             ptype: "g",
             ...this.ruleToObject(rule),
           });
@@ -89,12 +99,75 @@ export class CasbinDrizzleAdapter implements Adapter {
       }
     }
 
-    // Insert all rules
-    if (allRules.length > 0) {
-      await db.insert(casbinRules).values(allRules);
+    // 3. Compute diff: what to add, what to delete
+    const { toAdd, toDelete } = this.computeDiff(existingRules, desiredRules);
+
+    // 4. Execute only necessary changes
+    if (toDelete.length > 0) {
+      // Delete by IDs for efficiency
+      const deleteIds = toDelete.map((r) => r.id);
+      await db.delete(casbinRules).where(inArray(casbinRules.id, deleteIds));
+    }
+
+    if (toAdd.length > 0) {
+      await db.insert(casbinRules).values(toAdd);
     }
 
     return true;
+  }
+
+  /**
+   * Compute difference between existing and desired policies
+   * @returns Object with toAdd (new policies) and toDelete (removed policies)
+   */
+  private computeDiff(
+    existing: (typeof casbinRules.$inferSelect)[],
+    desired: Array<{
+      ptype: string;
+      v0: string | null;
+      v1: string | null;
+      v2: string | null;
+      v3: string | null;
+      v4: string | null;
+      v5: string | null;
+      v6: string | null;
+    }>
+  ): {
+    toAdd: typeof desired;
+    toDelete: typeof existing;
+  } {
+    // Convert to comparable format using rule key
+    const existingSet = new Set(existing.map((r) => this.ruleToKey(r)));
+    const desiredSet = new Set(desired.map((r) => this.ruleToKey(r)));
+
+    // Find rules to add (in desired but not in existing)
+    const toAdd = desired.filter((r) => !existingSet.has(this.ruleToKey(r)));
+
+    // Find rules to delete (in existing but not in desired)
+    const toDelete = existing.filter((r) => !desiredSet.has(this.ruleToKey(r)));
+
+    return { toAdd, toDelete };
+  }
+
+  /**
+   * Convert rule to a comparable key string
+   * Used for diff computation
+   */
+  private ruleToKey(
+    rule:
+      | typeof casbinRules.$inferSelect
+      | {
+          ptype: string;
+          v0: string | null;
+          v1: string | null;
+          v2: string | null;
+          v3: string | null;
+          v4: string | null;
+          v5: string | null;
+          v6: string | null;
+        }
+  ): string {
+    return `${rule.ptype}|${rule.v0 ?? ""}|${rule.v1 ?? ""}|${rule.v2 ?? ""}|${rule.v3 ?? ""}|${rule.v4 ?? ""}|${rule.v5 ?? ""}|${rule.v6 ?? ""}`;
   }
 
   /**
@@ -155,7 +228,7 @@ export class CasbinDrizzleAdapter implements Adapter {
   }
 
   /**
-   * Convert rule array to object with v0-v5 fields
+   * Convert rule array to object with v0-v6 fields
    */
   private ruleToObject(rule: string[]) {
     return {
@@ -165,6 +238,7 @@ export class CasbinDrizzleAdapter implements Adapter {
       v3: rule[3] ?? null,
       v4: rule[4] ?? null,
       v5: rule[5] ?? null,
+      v6: rule[6] ?? null,
     };
   }
 
@@ -185,6 +259,7 @@ export class CasbinDrizzleAdapter implements Adapter {
       casbinRules.v3,
       casbinRules.v4,
       casbinRules.v5,
+      casbinRules.v6,
     ];
 
     const conditions = [eq(casbinRules.ptype, ptype)];
@@ -223,6 +298,9 @@ export class CasbinDrizzleAdapter implements Adapter {
     }
     if (rule[5]) {
       conditions.push(eq(casbinRules.v5, rule[5]));
+    }
+    if (rule[6]) {
+      conditions.push(eq(casbinRules.v6, rule[6]));
     }
 
     return conditions;

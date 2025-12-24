@@ -3,6 +3,16 @@
 import { z } from 'zod';
 
 /**
+ * User's active context (current app/tenant selection)
+ */
+export const zActiveContext = z.object({
+    userId: z.string(),
+    activeApplicationId: z.string(),
+    activeTenantId: z.string().optional(),
+    updatedAt: z.string().datetime()
+});
+
+/**
  * API Key resource model
  *
  * Used for service accounts and automation.
@@ -177,15 +187,6 @@ export const zCreateExampleCommentRequest = z.object({
 });
 
 /**
- * Request to create a custom role
- */
-export const zCreateRoleRequest = z.object({
-    name: z.string().min(1).max(100),
-    description: z.string().max(500).optional(),
-    permissions: z.array(z.string()).min(1)
-});
-
-/**
  * Request body for creating a new user
  */
 export const zCreateUserRequest = z.object({
@@ -204,6 +205,22 @@ export const zCreateWebhookRequest = z.object({
     description: z.string().max(500).optional(),
     events: z.array(z.string()).min(1),
     isActive: z.boolean().optional()
+});
+
+/**
+ * Cursor-based pagination for large datasets or real-time data
+ */
+export const zCursorPagination = z.object({
+    limit: z.number().int(),
+    hasNext: z.boolean(),
+    nextCursor: z.union([
+        z.string(),
+        z.null()
+    ]),
+    previousCursor: z.union([
+        z.string(),
+        z.null()
+    ])
 });
 
 /**
@@ -385,6 +402,74 @@ export const zPagination = z.object({
 });
 
 /**
+ * Permission actions
+ */
+export const zPermissionAction = z.enum([
+    'read',
+    'create',
+    'update',
+    'delete',
+    'manage',
+    '*'
+]);
+
+/**
+ * Permission condition - when the permission applies
+ *
+ * Conditions enable dynamic, context-aware access control.
+ */
+export const zPermissionCondition = z.enum([
+    '',
+    'owner',
+    'shared'
+]);
+
+/**
+ * Permission effect - whether to allow or deny access
+ *
+ * When a user has multiple roles, permissions are combined:
+ * - If ANY role denies an action, it is denied (deny wins)
+ * - If no role denies and ANY role allows, it is allowed
+ * - If no rules match, access is denied (default deny)
+ */
+export const zPermissionEffect = z.enum(['allow', 'deny']);
+
+/**
+ * Permission definition
+ *
+ * Permissions define what actions can be performed on resources.
+ * They support allow/deny effects and optional conditions.
+ */
+export const zPermission = z.object({
+    resource: z.string(),
+    action: z.union([
+        zPermissionAction,
+        z.string()
+    ]),
+    effect: zPermissionEffect,
+    condition: zPermissionCondition.optional()
+});
+
+/**
+ * Permission input for creating/updating roles
+ */
+export const zPermissionInput = z.object({
+    resource: z.string(),
+    action: z.string(),
+    effect: zPermissionEffect.optional(),
+    condition: zPermissionCondition.optional()
+});
+
+/**
+ * Request to create a custom role
+ */
+export const zCreateRoleRequest = z.object({
+    name: z.string().min(1).max(100),
+    description: z.string().max(500).optional(),
+    permissions: z.array(zPermissionInput).min(1)
+});
+
+/**
  * Response metadata included in all API responses
  */
 export const zResponseMeta = z.object({
@@ -394,6 +479,14 @@ export const zResponseMeta = z.object({
     tenantId: z.string().optional(),
     tenantName: z.string().optional(),
     durationMs: z.number().int().optional()
+});
+
+/**
+ * Active context response
+ */
+export const zActiveContextResponse = z.object({
+    data: zActiveContext,
+    meta: zResponseMeta
 });
 
 /**
@@ -481,7 +574,18 @@ export const zExampleCommentResponse = z.object({
 });
 
 /**
- * Post collection response
+ * Post collection response (cursor-based)
+ *
+ * Used for streaming/real-time scenarios or large datasets
+ */
+export const zExamplePostCursorListResponse = z.object({
+    data: z.array(zExamplePost),
+    pagination: zCursorPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Post collection response (page-based)
  */
 export const zExamplePostListResponse = z.object({
     data: z.array(zExamplePost),
@@ -544,17 +648,25 @@ export const zJobResponse = z.object({
 /**
  * Role resource model
  *
- * Roles are tenant-scoped and contain a set of permissions.
+ * Roles can be:
+ * - **Global roles**: App-scoped (tenantId is null), apply across all tenants
+ * - **Tenant roles**: Scoped to a specific organization
+ *
+ * Users can have multiple roles, and permissions are combined with
+ * deny-override semantics.
  */
 export const zRole = z.object({
     id: z.string(),
-    tenantId: z.string(),
+    applicationId: z.string(),
+    tenantId: z.string().optional(),
     name: z.string(),
     description: z.string().optional(),
-    permissions: z.array(z.string()),
+    permissions: z.array(zPermission),
     isSystemRole: z.boolean(),
+    isGlobalRole: z.boolean(),
     createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime()
+    updatedAt: z.string().datetime(),
+    createdBy: z.string().optional()
 });
 
 /**
@@ -592,22 +704,23 @@ export const zSoftDeleteResponse = z.object({
 });
 
 /**
- * Request to switch active tenant
+ * Request to switch active context (application and/or tenant)
  */
-export const zSwitchTenantRequest = z.object({
-    tenantId: z.string()
+export const zSwitchContextRequest = z.object({
+    applicationId: z.string().optional(),
+    tenantId: z.string().optional()
 });
 
 /**
- * Tenant switch response with new token
+ * Context switch response
  */
-export const zSwitchTenantResponse = z.object({
+export const zSwitchContextResponse = z.object({
     data: z.object({
-        tenantId: z.string(),
-        tenantName: z.string(),
+        applicationId: z.string(),
+        tenantId: z.string().optional(),
+        tenantName: z.string().optional(),
         roles: z.array(z.string()),
-        permissions: z.array(z.string()),
-        accessToken: z.string()
+        permissions: z.array(zPermission)
     }),
     meta: zResponseMeta
 });
@@ -644,7 +757,7 @@ export const zUpdateExamplePostRequest = z.object({
 export const zUpdateRoleRequest = z.object({
     name: z.string().min(1).max(100).optional(),
     description: z.string().max(500).optional(),
-    permissions: z.array(z.string()).optional()
+    permissions: z.array(zPermissionInput).optional()
 });
 
 /**
@@ -684,33 +797,62 @@ export const zUser = z.object({
 });
 
 /**
+ * User's context across applications and tenants
+ */
+export const zUserContext = z.object({
+    applicationId: z.string(),
+    applicationName: z.string(),
+    tenantId: z.string(),
+    tenantName: z.string(),
+    roles: z.array(z.string())
+});
+
+/**
+ * User available contexts response (all apps/tenants user belongs to)
+ */
+export const zUserContextListResponse = z.object({
+    data: z.array(zUserContext),
+    meta: zResponseMeta
+});
+
+/**
+ * User's effective permissions
+ *
+ * Represents the combined permissions from all roles assigned to a user
+ * within a specific application and tenant context.
+ */
+export const zUserEffectivePermissions = z.object({
+    userId: z.string(),
+    applicationId: z.string(),
+    tenantId: z.string().optional(),
+    globalRoles: z.array(z.object({
+        id: z.string(),
+        name: z.string(),
+        permissions: z.array(zPermission)
+    })),
+    tenantRoles: z.array(z.object({
+        id: z.string(),
+        name: z.string(),
+        permissions: z.array(zPermission)
+    })),
+    effectivePermissions: z.array(zPermission),
+    allowedActions: z.array(z.string())
+});
+
+/**
+ * User effective permissions response
+ */
+export const zUserEffectivePermissionsResponse = z.object({
+    data: zUserEffectivePermissions,
+    meta: zResponseMeta
+});
+
+/**
  * User collection response
  */
 export const zUserListResponse = z.object({
     data: z.array(zUser),
     pagination: zPagination,
-    meta: zResponseMeta
-});
-
-/**
- * User's permissions within a tenant
- */
-export const zUserPermissions = z.object({
-    userId: z.string(),
-    tenantId: z.string(),
-    roles: z.array(z.object({
-        id: z.string(),
-        name: z.string(),
-        permissions: z.array(z.string())
-    })),
-    effectivePermissions: z.array(z.string())
-});
-
-/**
- * User permissions response
- */
-export const zUserPermissionsResponse = z.object({
-    data: zUserPermissions,
     meta: zResponseMeta
 });
 
@@ -723,39 +865,36 @@ export const zUserResponse = z.object({
 });
 
 /**
- * User's role assignment within a tenant
+ * User's role assignment
+ *
+ * Represents a single role assigned to a user within a specific
+ * application and optional tenant context.
  */
-export const zUserRole = z.object({
+export const zUserRoleAssignment = z.object({
+    id: z.string(),
     userId: z.string(),
-    tenantId: z.string(),
+    applicationId: z.string(),
+    tenantId: z.string().optional(),
     roleId: z.string(),
     roleName: z.string(),
+    isGlobalRole: z.boolean(),
     assignedAt: z.string().datetime(),
-    assignedBy: z.string()
+    assignedBy: z.string().optional()
+});
+
+/**
+ * User role assignments list response
+ */
+export const zUserRoleAssignmentListResponse = z.object({
+    data: z.array(zUserRoleAssignment),
+    meta: zResponseMeta
 });
 
 /**
  * User role assignment response
  */
-export const zUserRoleResponse = z.object({
-    data: zUserRole,
-    meta: zResponseMeta
-});
-
-/**
- * User's roles across all tenants
- */
-export const zUserTenantRoles = z.object({
-    tenantId: z.string(),
-    tenantName: z.string(),
-    roles: z.array(z.string())
-});
-
-/**
- * User tenant roles response (all tenants)
- */
-export const zUserTenantRolesResponse = z.object({
-    data: z.array(zUserTenantRoles),
+export const zUserRoleAssignmentResponse = z.object({
+    data: zUserRoleAssignment,
     meta: zResponseMeta
 });
 
@@ -1256,6 +1395,42 @@ export const zExamplePostsBatchCreateResponse = z.union([
     })
 ]);
 
+export const zExamplePostsBatchRestoreData = z.object({
+    body: z.object({
+        ids: z.array(z.string()),
+        options: zBatchOptions.optional()
+    }),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsBatchRestoreResponse = z.union([
+    z.object({
+        results: z.array(z.object({
+            index: z.number().int(),
+            status: z.enum([
+                'success',
+                'error',
+                'skipped'
+            ]),
+            data: zExamplePost.optional(),
+            error: z.object({
+                code: z.string(),
+                message: z.string()
+            }).optional(),
+            input: z.record(z.unknown()).optional()
+        })),
+        summary: zBatchSummary,
+        meta: zResponseMeta
+    }),
+    zErrorResponse
+]);
+
 export const zExamplePostsBatchSoftDeleteData = z.object({
     body: z.object({
         ids: z.array(z.string()),
@@ -1272,6 +1447,48 @@ export const zExamplePostsBatchSoftDeleteData = z.object({
  */
 export const zExamplePostsBatchSoftDeleteResponse = z.union([
     zBatchDeleteResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsListCursorData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.object({
+        cursor: z.string().optional(),
+        limit: z.number().int().optional().default(50),
+        orderBy: z.string().optional(),
+        status: zExamplePostStatus.optional(),
+        authorId: z.string().optional(),
+        search: z.string().optional()
+    }).optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsListCursorResponse = z.union([
+    zExamplePostCursorListResponse,
+    zErrorResponse
+]);
+
+export const zExamplePostsListDeletedData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.object({
+        page: z.number().int().optional().default(1),
+        pageSize: z.number().int().optional().default(50)
+    }).optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zExamplePostsListDeletedResponse = z.union([
+    zExamplePostListResponse,
     zErrorResponse
 ]);
 
@@ -1733,7 +1950,7 @@ export const zJobsCancelResponse = z.union([
     zErrorResponse
 ]);
 
-export const zRolesListData = z.object({
+export const zTenantRolesListData = z.object({
     body: z.never().optional(),
     path: z.object({
         orgId: z.string()
@@ -1748,12 +1965,12 @@ export const zRolesListData = z.object({
 /**
  * The request has succeeded.
  */
-export const zRolesListResponse = z.union([
+export const zTenantRolesListResponse = z.union([
     zRoleListResponse,
     zErrorResponse
 ]);
 
-export const zRolesCreateData = z.object({
+export const zTenantRolesCreateData = z.object({
     body: zCreateRoleRequest,
     path: z.object({
         orgId: z.string()
@@ -1761,12 +1978,12 @@ export const zRolesCreateData = z.object({
     query: z.never().optional()
 });
 
-export const zRolesCreateResponse = z.union([
+export const zTenantRolesCreateResponse = z.union([
     zErrorResponse,
     zRoleResponse
 ]);
 
-export const zRolesDeleteData = z.object({
+export const zTenantRolesDeleteData = z.object({
     body: z.never().optional(),
     path: z.object({
         orgId: z.string(),
@@ -1775,12 +1992,12 @@ export const zRolesDeleteData = z.object({
     query: z.never().optional()
 });
 
-export const zRolesDeleteResponse = z.union([
+export const zTenantRolesDeleteResponse = z.union([
     zErrorResponse,
     z.void()
 ]);
 
-export const zRolesGetData = z.object({
+export const zTenantRolesGetData = z.object({
     body: z.never().optional(),
     path: z.object({
         orgId: z.string(),
@@ -1792,12 +2009,12 @@ export const zRolesGetData = z.object({
 /**
  * The request has succeeded.
  */
-export const zRolesGetResponse = z.union([
+export const zTenantRolesGetResponse = z.union([
     zRoleResponse,
     zErrorResponse
 ]);
 
-export const zRolesUpdateData = z.object({
+export const zTenantRolesUpdateData = z.object({
     body: zUpdateRoleRequest,
     path: z.object({
         orgId: z.string(),
@@ -1809,7 +2026,7 @@ export const zRolesUpdateData = z.object({
 /**
  * The request has succeeded.
  */
-export const zRolesUpdateResponse = z.union([
+export const zTenantRolesUpdateResponse = z.union([
     zRoleResponse,
     zErrorResponse
 ]);
@@ -2063,7 +2280,7 @@ export const zUsersRestoreResponse = z.union([
     zErrorResponse
 ]);
 
-export const zUserPermissionsEndpointGetData = z.object({
+export const zUserPermissionsGetData = z.object({
     body: z.never().optional(),
     path: z.object({
         orgId: z.string(),
@@ -2075,12 +2292,12 @@ export const zUserPermissionsEndpointGetData = z.object({
 /**
  * The request has succeeded.
  */
-export const zUserPermissionsEndpointGetResponse = z.union([
-    zUserPermissionsResponse,
+export const zUserPermissionsGetResponse = z.union([
+    zUserEffectivePermissionsResponse,
     zErrorResponse
 ]);
 
-export const zUserRolesListData = z.object({
+export const zUserTenantRolesListData = z.object({
     body: z.never().optional(),
     path: z.object({
         orgId: z.string(),
@@ -2092,15 +2309,12 @@ export const zUserRolesListData = z.object({
 /**
  * The request has succeeded.
  */
-export const zUserRolesListResponse = z.union([
-    z.object({
-        data: z.array(zUserRole),
-        meta: zResponseMeta
-    }),
+export const zUserTenantRolesListResponse = z.union([
+    zUserRoleAssignmentListResponse,
     zErrorResponse
 ]);
 
-export const zUserRolesAssignData = z.object({
+export const zUserTenantRolesAssignData = z.object({
     body: zAssignRoleRequest,
     path: z.object({
         orgId: z.string(),
@@ -2109,12 +2323,12 @@ export const zUserRolesAssignData = z.object({
     query: z.never().optional()
 });
 
-export const zUserRolesAssignResponse = z.union([
+export const zUserTenantRolesAssignResponse = z.union([
     zErrorResponse,
-    zUserRoleResponse
+    zUserRoleAssignmentResponse
 ]);
 
-export const zUserRolesRemoveData = z.object({
+export const zUserTenantRolesRemoveData = z.object({
     body: z.never().optional(),
     path: z.object({
         orgId: z.string(),
@@ -2124,7 +2338,7 @@ export const zUserRolesRemoveData = z.object({
     query: z.never().optional()
 });
 
-export const zUserRolesRemoveResponse = z.union([
+export const zUserTenantRolesRemoveResponse = z.union([
     zErrorResponse,
     z.void()
 ]);
@@ -2327,10 +2541,52 @@ export const zWebhooksTestResponse = z.union([
     zErrorResponse
 ]);
 
-export const zTenantSwitchSwitchData = z.object({
-    body: zSwitchTenantRequest,
+export const zGlobalRolesListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.object({
+        page: z.number().int().optional().default(1),
+        pageSize: z.number().int().optional().default(50),
+        isSystemRole: z.boolean().optional()
+    }).optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zGlobalRolesListResponse = z.union([
+    zRoleListResponse,
+    zErrorResponse
+]);
+
+export const zGlobalRolesCreateData = z.object({
+    body: zCreateRoleRequest,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+export const zGlobalRolesCreateResponse = z.union([
+    zErrorResponse,
+    zRoleResponse
+]);
+
+export const zGlobalRolesDeleteData = z.object({
+    body: z.never().optional(),
     path: z.object({
-        userId: z.string()
+        roleId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+export const zGlobalRolesDeleteResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zGlobalRolesGetData = z.object({
+    body: z.never().optional(),
+    path: z.object({
+        roleId: z.string()
     }),
     query: z.never().optional()
 });
@@ -2338,12 +2594,70 @@ export const zTenantSwitchSwitchData = z.object({
 /**
  * The request has succeeded.
  */
-export const zTenantSwitchSwitchResponse = z.union([
-    zSwitchTenantResponse,
+export const zGlobalRolesGetResponse = z.union([
+    zRoleResponse,
     zErrorResponse
 ]);
 
-export const zCrossTenantRolesListData = z.object({
+export const zGlobalRolesUpdateData = z.object({
+    body: zUpdateRoleRequest,
+    path: z.object({
+        roleId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zGlobalRolesUpdateResponse = z.union([
+    zRoleResponse,
+    zErrorResponse
+]);
+
+export const zAvailableContextsListData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAvailableContextsListResponse = z.union([
+    zUserContextListResponse,
+    zErrorResponse
+]);
+
+export const zCurrentUserContextGetData = z.object({
+    body: z.never().optional(),
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zCurrentUserContextGetResponse = z.union([
+    zActiveContextResponse,
+    zErrorResponse
+]);
+
+export const zContextSwitchSwitchData = z.object({
+    body: zSwitchContextRequest,
+    path: z.never().optional(),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zContextSwitchSwitchResponse = z.union([
+    zSwitchContextResponse,
+    zErrorResponse
+]);
+
+export const zAllUserRolesListData = z.object({
     body: z.never().optional(),
     path: z.object({
         userId: z.string()
@@ -2354,7 +2668,7 @@ export const zCrossTenantRolesListData = z.object({
 /**
  * The request has succeeded.
  */
-export const zCrossTenantRolesListResponse = z.union([
-    zUserTenantRolesResponse,
+export const zAllUserRolesListResponse = z.union([
+    zUserRoleAssignmentListResponse,
     zErrorResponse
 ]);

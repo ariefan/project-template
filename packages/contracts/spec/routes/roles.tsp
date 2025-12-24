@@ -3,7 +3,11 @@
  * ROLES API - Role Management Endpoints
  * ============================================================================
  *
- * RBAC role management within a tenant.
+ * Multi-Application RBAC role management with:
+ * - Global roles (app-scoped, no tenant)
+ * - Tenant-scoped roles
+ * - User role assignments
+ * - Context switching (app/tenant)
  *
  * @see docs/api-guide/03-security/02-authorization.md
  * ============================================================================
@@ -18,22 +22,120 @@ using TypeSpec.Http;
 
 namespace ProjectAPI;
 
+// ============================================================================
+// GLOBAL ROLES (App-scoped, no tenant)
+// ============================================================================
+
 /**
- * Roles API endpoints
+ * Global Roles API
  *
- * Manage custom roles within an organization.
- * System roles (owner, admin, member, viewer) are predefined.
+ * Manage global roles that apply across all tenants within an application.
+ * Global roles are useful for super admins, app-level permissions, etc.
+ */
+@route("/v1/roles")
+@tag("Roles")
+interface GlobalRoles {
+  /**
+   * List all global roles
+   *
+   * Returns global roles (no tenant scope) for the default application.
+   */
+  @get
+  @summary("List global roles")
+  list(
+    /** Page number (1-indexed) */
+    @query page?: int32 = 1,
+
+    /** Number of items per page */
+    @query pageSize?: int32 = 50,
+
+    /** Filter by system role status */
+    @query isSystemRole?: boolean
+  ): RoleListResponse | ErrorResponse;
+
+  /**
+   * Create a global role
+   *
+   * Creates a role that applies across all tenants.
+   */
+  @post
+  @summary("Create global role")
+  create(
+    /** Role data */
+    @body body: CreateRoleRequest
+  ):
+    | {
+        @statusCode statusCode: 201;
+        @body body: RoleResponse;
+      }
+    | ErrorResponse;
+
+  /**
+   * Get a role by ID
+   */
+  @route("/{roleId}")
+  @get
+  @summary("Get role")
+  get(
+    /** Role ID */
+    @path roleId: string
+  ): RoleResponse | ErrorResponse;
+
+  /**
+   * Update a role
+   *
+   * System roles cannot be renamed but their permissions can be modified.
+   */
+  @route("/{roleId}")
+  @patch(#{ implicitOptionality: true })
+  @summary("Update role")
+  update(
+    /** Role ID */
+    @path roleId: string,
+
+    /** Role update data */
+    @body body: UpdateRoleRequest
+  ): RoleResponse | ErrorResponse;
+
+  /**
+   * Delete a role
+   *
+   * System roles cannot be deleted.
+   * Fails if role is assigned to any users.
+   */
+  @route("/{roleId}")
+  @delete
+  @summary("Delete role")
+  delete(
+    /** Role ID */
+    @path roleId: string
+  ):
+    | {
+        @statusCode statusCode: 204;
+      }
+    | ErrorResponse;
+}
+
+// ============================================================================
+// TENANT-SCOPED ROLES
+// ============================================================================
+
+/**
+ * Tenant Roles API
+ *
+ * Manage roles scoped to a specific organization/tenant.
+ * These roles only apply within the specified tenant.
  */
 @route("/v1/orgs/{orgId}/roles")
 @tag("Roles")
-interface Roles {
+interface TenantRoles {
   /**
-   * List all roles in an organization
+   * List all roles in a tenant
    *
-   * Returns both system roles and custom roles.
+   * Returns both system roles and custom roles for this tenant.
    */
   @get
-  @summary("List roles")
+  @summary("List tenant roles")
   list(
     /** Organization ID */
     @path orgId: string,
@@ -49,12 +151,12 @@ interface Roles {
   ): RoleListResponse | ErrorResponse;
 
   /**
-   * Create a custom role
+   * Create a tenant-scoped role
    *
-   * System roles cannot be created via API.
+   * Creates a custom role for this specific tenant.
    */
   @post
-  @summary("Create role")
+  @summary("Create tenant role")
   create(
     /** Organization ID */
     @path orgId: string,
@@ -83,9 +185,9 @@ interface Roles {
   ): RoleResponse | ErrorResponse;
 
   /**
-   * Update a custom role
+   * Update a role
    *
-   * System roles cannot be modified.
+   * System roles cannot be renamed but their permissions can be modified.
    */
   @route("/{roleId}")
   @patch(#{ implicitOptionality: true })
@@ -102,7 +204,7 @@ interface Roles {
   ): RoleResponse | ErrorResponse;
 
   /**
-   * Delete a custom role
+   * Delete a role
    *
    * System roles cannot be deleted.
    * Fails if role is assigned to any users.
@@ -123,32 +225,33 @@ interface Roles {
     | ErrorResponse;
 }
 
+// ============================================================================
+// USER ROLE ASSIGNMENTS
+// ============================================================================
+
 /**
- * User Roles API - Role assignment for users
- *
- * Nested under users endpoint for clarity.
+ * User Roles API - Role assignment within a tenant
  */
 @route("/v1/orgs/{orgId}/users/{userId}/roles")
 @tag("Roles")
-interface UserRoles {
+interface UserTenantRoles {
   /**
    * List roles assigned to a user in this tenant
+   *
+   * Returns both global and tenant-specific role assignments.
    */
   @get
-  @summary("List user roles")
+  @summary("List user roles in tenant")
   list(
     /** Organization ID */
     @path orgId: string,
 
     /** User ID */
     @path userId: string
-  ): {
-    data: UserRole[];
-    meta: ResponseMeta;
-  } | ErrorResponse;
+  ): UserRoleAssignmentListResponse | ErrorResponse;
 
   /**
-   * Assign a role to a user
+   * Assign a role to a user in this tenant
    */
   @post
   @summary("Assign role to user")
@@ -164,7 +267,7 @@ interface UserRoles {
   ):
     | {
         @statusCode statusCode: 201;
-        @body body: UserRoleResponse;
+        @body body: UserRoleAssignmentResponse;
       }
     | ErrorResponse;
 
@@ -195,60 +298,96 @@ interface UserRoles {
  */
 @route("/v1/orgs/{orgId}/users/{userId}/permissions")
 @tag("Roles")
-interface UserPermissionsEndpoint {
+interface UserPermissions {
   /**
    * Get user's effective permissions in this tenant
    *
-   * Returns all roles and the combined effective permissions.
+   * Returns all roles (global + tenant) and the combined effective permissions
+   * after applying deny-override resolution.
    */
   @get
-  @summary("Get user permissions")
+  @summary("Get user effective permissions")
   get(
     /** Organization ID */
     @path orgId: string,
 
     /** User ID */
     @path userId: string
-  ): UserPermissionsResponse | ErrorResponse;
+  ): UserEffectivePermissionsResponse | ErrorResponse;
+}
+
+// ============================================================================
+// CONTEXT MANAGEMENT
+// ============================================================================
+
+/**
+ * User Context API - Current user's active context
+ */
+@route("/v1/users/me/context")
+@tag("Context")
+interface CurrentUserContext {
+  /**
+   * Get current user's active context
+   *
+   * Returns the currently active application and tenant for the user.
+   * This is for UI state management, not authorization decisions.
+   */
+  @get
+  @summary("Get active context")
+  get(): ActiveContextResponse | ErrorResponse;
 }
 
 /**
- * Cross-tenant user roles (user-scoped, not tenant-scoped)
+ * Context Switch API
  */
-@route("/v1/users/{userId}/tenant-roles")
-@tag("Roles")
-interface CrossTenantRoles {
+@route("/v1/users/me/switch-context")
+@tag("Context")
+interface ContextSwitch {
   /**
-   * List user's roles across all tenants
+   * Switch user's active context
    *
-   * Returns all tenants the user belongs to with their roles.
+   * Changes the active application and/or tenant.
+   * This is for UI state management, not authorization decisions.
+   */
+  @post
+  @summary("Switch context")
+  switch(
+    /** Target context */
+    @body body: SwitchContextRequest
+  ): SwitchContextResponse | ErrorResponse;
+}
+
+/**
+ * Available Contexts API
+ */
+@route("/v1/users/me/available-contexts")
+@tag("Context")
+interface AvailableContexts {
+  /**
+   * List all available contexts for the current user
+   *
+   * Returns all applications and tenants the user has access to.
    */
   @get
-  @summary("List user tenant roles")
+  @summary("List available contexts")
+  list(): UserContextListResponse | ErrorResponse;
+}
+
+/**
+ * Cross-context user roles (view roles across all contexts)
+ */
+@route("/v1/users/{userId}/roles")
+@tag("Roles")
+interface AllUserRoles {
+  /**
+   * List user's roles across all applications and tenants
+   *
+   * Returns all role assignments for the user across all contexts.
+   */
+  @get
+  @summary("List all user roles")
   list(
     /** User ID */
     @path userId: string
-  ): UserTenantRolesResponse | ErrorResponse;
-}
-
-/**
- * Tenant switching endpoint
- */
-@route("/v1/users/{userId}/switch-tenant")
-@tag("Roles")
-interface TenantSwitch {
-  /**
-   * Switch user's active tenant
-   *
-   * Returns a new access token scoped to the target tenant.
-   */
-  @post
-  @summary("Switch tenant")
-  switch(
-    /** User ID */
-    @path userId: string,
-
-    /** Target tenant */
-    @body body: SwitchTenantRequest
-  ): SwitchTenantResponse | ErrorResponse;
+  ): UserRoleAssignmentListResponse | ErrorResponse;
 }

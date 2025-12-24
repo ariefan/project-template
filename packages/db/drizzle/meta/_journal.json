@@ -8,6 +8,20 @@
       "when": 1766461106914,
       "tag": "0000_mysterious_zarda",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766476781317,
+      "tag": "0001_lonely_molecule_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766508473212,
+      "tag": "0002_pretty_steel_serpent",
+      "breakpoints": true
     }
   ]
 }

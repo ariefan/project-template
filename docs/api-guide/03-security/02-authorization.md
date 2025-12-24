@@ -4,313 +4,383 @@
 
 ## Overview
 
-Use **Role-Based Access Control (RBAC)** with **tenant-scoped permissions**.
+Use **Multi-Application Role-Based Access Control (RBAC)** with:
+
+- **Multiple applications** with isolated tenants, users, and roles
+- **Global roles** (app-scoped, no tenant) and tenant-scoped roles
+- **Multiple roles per user** with deny-override permission model
+- **Dynamic conditions** (ownership, sharing) for fine-grained access
 
 **Key principles:**
-- Users can belong to **multiple tenants**
-- Each tenant can assign **different roles** to the same user
-- Permissions are **tenant-scoped** (isolated per organization)
-- Permission checks require **both user identity and tenant context**
 
-## Multi-Tenant RBAC Model
+- Users can belong to **multiple applications**
+- Each application has its **own tenants and roles**
+- Global roles apply **across all tenants** within an application
+- Permissions combine **allow/deny** with deny taking precedence
+- All access is **denied by default**
 
-### User → Tenants → Roles
+## Multi-App RBAC Model
+
+### Hierarchy
+
+```
+Application (app_default)
+├── Global Roles (app-scoped, no tenant)
+│   ├── super_user (full system access)
+│   ├── app_admin (app-level management)
+│   └── user (basic authenticated user)
+│
+├── Tenant A (org_abc)
+│   ├── Tenant Roles
+│   │   ├── owner (full control)
+│   │   ├── admin (manage members/settings)
+│   │   ├── member (create/edit own resources)
+│   │   └── viewer (read-only)
+│   └── Members
+│       └── User + Roles[]
+│
+└── Tenant B (org_xyz)
+    ├── Tenant Roles (can differ from Tenant A)
+    └── Members
+```
+
+### User Context Example
 
 ```
 User (usr_123)
-├─ Tenant A (org_abc)
-│  ├─ Role: admin
-│  └─ Permissions: users:*, invoices:*, settings:*
-│
-├─ Tenant B (org_xyz)
-│  ├─ Role: member
-│  └─ Permissions: users:read, invoices:read
-│
-└─ Tenant C (org_def)
-   ├─ Roles: billing_manager, viewer
-   └─ Permissions: invoices:*, reports:read
+├── Application: app_default
+│   ├── Global Role: user
+│   │   └── Permissions: basic:read
+│   │
+│   ├── Tenant A (org_abc)
+│   │   ├── Tenant Role: admin
+│   │   └── Permissions: users:*, settings:*, billing:*
+│   │
+│   └── Tenant B (org_xyz)
+│       ├── Tenant Role: member
+│       └── Permissions: documents:read, documents:create:owner
 ```
 
-**Same user, different roles per tenant:**
-- In Tenant A: Full admin access
-- In Tenant B: Read-only member
-- In Tenant C: Billing manager + viewer
+**Same user, different permissions per context:**
+- Global: Basic read access
+- Tenant A: Full admin access
+- Tenant B: Member with ownership-based write access
 
-## Permission Format
+## Permission Model
 
-**Pattern:** `{resource}:{action}`
+### Permission Structure
 
-**Actions:**
-- `read` - View resource
-- `write` - Create and update resource
-- `delete` - Delete resource
-- `admin` - Full control (create, read, update, delete)
-- `*` - All actions (wildcard)
-
-**Examples:**
-```
-users:read              Read user list
-users:write             Create/update users
-users:delete            Delete users
-users:*                 All user operations
-
-invoices:read           View invoices
-invoices:write          Create/edit invoices
-invoices:admin          Full invoice control
-
-settings:admin          Manage org settings
-billing:*               All billing operations
+```typescript
+interface Permission {
+  resource: string;      // "documents", "users", "settings"
+  action: string;        // "read", "create", "update", "delete", "manage"
+  effect: "allow" | "deny";
+  condition?: "owner" | "shared";  // Optional dynamic condition
+}
 ```
 
-## Token Claims
+### Actions
 
-Access tokens include tenant-scoped permissions:
+| Action | Description |
+|--------|-------------|
+| `read` | View resource |
+| `create` | Create new resource |
+| `update` | Modify existing resource |
+| `delete` | Delete resource |
+| `manage` | Full control (settings, permissions) |
+| `*` | All actions (wildcard) |
+
+### Effects
+
+| Effect | Description |
+|--------|-------------|
+| `allow` | Grant access to the action |
+| `deny` | Explicitly deny access (overrides allow) |
+
+### Deny-Override Resolution
+
+When a user has multiple roles, permissions are combined:
+
+1. **Collect all permissions** from all roles (global + tenant)
+2. **If ANY role denies** an action → **DENIED**
+3. **If no deny and ANY role allows** → **ALLOWED**
+4. **If no rules match** → **DENIED** (default deny)
+
+```
+Example: User has "admin" and "restricted_viewer" roles
+
+admin role:
+  - documents:* → allow
+
+restricted_viewer role:
+  - documents:delete → deny
+
+Result:
+  - documents:read → ALLOWED (admin allows, no deny)
+  - documents:create → ALLOWED (admin allows, no deny)
+  - documents:delete → DENIED (restricted_viewer denies, overrides admin's allow)
+```
+
+### Dynamic Conditions
+
+Conditions enable context-aware access control:
+
+| Condition | Description | Use Case |
+|-----------|-------------|----------|
+| `owner` | User must own the resource | Edit own posts, delete own comments |
+| `shared` | Resource must be shared with user | View shared documents |
+
+**Example permission with condition:**
 
 ```json
 {
-  "sub": "usr_123",
-  "email": "user@example.com",
-  "tenantId": "org_abc",
-  "roles": ["admin", "billing_manager"],
+  "resource": "documents",
+  "action": "update",
+  "effect": "allow",
+  "condition": "owner"
+}
+```
+
+This allows: "User can update documents they own"
+
+## Role Types
+
+### Global Roles (App-scoped)
+
+Global roles have `tenantId: null` and apply across all tenants within an application.
+
+| Role | Description | Use Case |
+|------|-------------|----------|
+| `super_user` | Full system access | Platform administrators |
+| `app_admin` | App-level management | Support staff, ops team |
+| `user` | Basic authenticated user | Default role for all users |
+
+**API endpoint:** `GET/POST /v1/roles`
+
+### Tenant Roles (Org-scoped)
+
+Tenant roles are scoped to a specific organization.
+
+| Role | Description | Typical Permissions |
+|------|-------------|---------------------|
+| `owner` | Organization owner | `*:*` (full access) |
+| `admin` | Organization admin | `users:*, settings:*, billing:*` |
+| `member` | Standard member | `documents:*, projects:*` |
+| `viewer` | Read-only access | `*:read` |
+
+**API endpoint:** `GET/POST /v1/orgs/{orgId}/roles`
+
+### System Roles
+
+System roles (`isSystemRole: true`) have special protections:
+
+- ❌ Cannot be deleted
+- ❌ Cannot be renamed
+- ✅ Permissions CAN be modified
+
+This allows customization while preventing accidental removal.
+
+## API Endpoints
+
+### Global Roles
+
+```http
+# List global roles
+GET /v1/roles
+
+# Create global role
+POST /v1/roles
+{
+  "name": "Support Staff",
+  "description": "Customer support team",
   "permissions": [
-    "users:read",
-    "users:write",
-    "users:delete",
-    "invoices:read",
-    "invoices:write",
-    "settings:admin"
+    { "resource": "users", "action": "read", "effect": "allow" },
+    { "resource": "tickets", "action": "*", "effect": "allow" }
+  ]
+}
+
+# Get/Update/Delete role
+GET /v1/roles/{roleId}
+PATCH /v1/roles/{roleId}
+DELETE /v1/roles/{roleId}
+```
+
+### Tenant Roles
+
+```http
+# List tenant roles
+GET /v1/orgs/{orgId}/roles
+
+# Create tenant role
+POST /v1/orgs/{orgId}/roles
+{
+  "name": "Project Manager",
+  "description": "Can manage projects and tasks",
+  "permissions": [
+    { "resource": "projects", "action": "*", "effect": "allow" },
+    { "resource": "tasks", "action": "*", "effect": "allow" },
+    { "resource": "settings", "action": "read", "effect": "allow" }
   ]
 }
 ```
 
-**Note:** `tenantId` and permissions are specific to the current active tenant.
-
-## User Permissions Model
-
-### Database Schema
-
-```typescript
-interface UserTenantRole {
-  userId: string;         // usr_123
-  tenantId: string;       // org_abc
-  roleId: string;         // role_admin
-  createdAt: Date;
-  createdBy: string;
-}
-
-interface Role {
-  id: string;              // role_admin
-  name: string;            // "Admin"
-  permissions: string[];   // ["users:*", "invoices:*"]
-  tenantId: string;        // org_abc (tenant-scoped)
-  isSystemRole: boolean;   // true for predefined roles
-}
-
-interface Permission {
-  resource: string;        // "users"
-  action: string;          // "read" | "write" | "delete" | "admin" | "*"
-}
-```
-
-### User Permissions Response
+### User Role Assignment
 
 ```http
-GET /v1/orgs/{orgId}/users/usr_123/permissions HTTP/1.1
+# List user's roles in tenant
+GET /v1/orgs/{orgId}/users/{userId}/roles
+
+# Assign role to user
+POST /v1/orgs/{orgId}/users/{userId}/roles
+{
+  "roleId": "role_admin"
+}
+
+# Remove role from user
+DELETE /v1/orgs/{orgId}/users/{userId}/roles/{roleId}
+```
+
+### Effective Permissions
+
+```http
+GET /v1/orgs/{orgId}/users/{userId}/permissions
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
     "userId": "usr_123",
+    "applicationId": "app_default",
     "tenantId": "org_abc",
-    "roles": [
+    "globalRoles": [
+      {
+        "id": "role_user",
+        "name": "user",
+        "permissions": [
+          { "resource": "basic", "action": "read", "effect": "allow" }
+        ]
+      }
+    ],
+    "tenantRoles": [
       {
         "id": "role_admin",
-        "name": "Admin",
-        "permissions": ["users:*", "invoices:*", "settings:*"]
-      },
-      {
-        "id": "role_billing",
-        "name": "Billing Manager",
-        "permissions": ["invoices:*", "payments:*"]
+        "name": "admin",
+        "permissions": [
+          { "resource": "users", "action": "*", "effect": "allow" },
+          { "resource": "settings", "action": "*", "effect": "allow" }
+        ]
       }
     ],
     "effectivePermissions": [
+      { "resource": "basic", "action": "read", "effect": "allow" },
+      { "resource": "users", "action": "*", "effect": "allow" },
+      { "resource": "settings", "action": "*", "effect": "allow" }
+    ],
+    "allowedActions": [
+      "basic:read",
       "users:read",
-      "users:write",
+      "users:create",
+      "users:update",
       "users:delete",
-      "invoices:read",
-      "invoices:write",
-      "invoices:delete",
-      "payments:read",
-      "payments:write",
-      "payments:delete",
-      "settings:admin"
+      "settings:read",
+      "settings:manage"
     ]
   }
 }
 ```
 
-## Predefined Roles
+## Context Management
 
-### System Roles (Recommended)
+### Active Context
 
-| Role | Permissions | Use Case |
-|------|-------------|----------|
-| **owner** | `*:*` | Tenant owner, full access |
-| **admin** | `users:*, settings:*, billing:*` | Organization administrator |
-| **member** | `users:read, projects:*, tasks:*` | Standard team member |
-| **billing_manager** | `invoices:*, payments:*, subscriptions:*` | Financial operations |
-| **viewer** | `*:read` | Read-only access |
-
-### Custom Roles
-
-Tenants can create custom roles:
+Users can switch between applications and tenants. The active context is for **UI state management only**, not authorization decisions.
 
 ```http
-POST /v1/orgs/{orgId}/roles HTTP/1.1
-Content-Type: application/json
+# Get current context
+GET /v1/users/me/context
 
-{
-  "name": "Customer Support",
-  "permissions": [
-    "users:read",
-    "tickets:*",
-    "customers:read",
-    "customers:write"
-  ]
-}
-```
-
-**Response:**
-```json
+# Response
 {
   "data": {
-    "id": "role_cs_abc",
-    "tenantId": "org_abc",
-    "name": "Customer Support",
-    "permissions": [
-      "users:read",
-      "tickets:*",
-      "customers:read",
-      "customers:write"
-    ],
-    "isSystemRole": false,
-    "createdAt": "2024-01-15T10:00:00Z"
+    "userId": "usr_123",
+    "activeApplicationId": "app_default",
+    "activeTenantId": "org_abc",
+    "updatedAt": "2024-01-15T10:30:00Z"
   }
 }
 ```
 
-## Role Management
-
-### Assign Role to User
+### Switch Context
 
 ```http
-POST /v1/orgs/{orgId}/users/usr_456/roles HTTP/1.1
-Content-Type: application/json
-
+POST /v1/users/me/switch-context
 {
-  "roleId": "role_admin"
+  "applicationId": "app_default",
+  "tenantId": "org_xyz"
 }
 ```
 
-**Response:**
-```json
-{
-  "data": {
-    "userId": "usr_456",
-    "tenantId": "org_abc",
-    "roleId": "role_admin",
-    "assignedAt": "2024-01-15T10:30:00Z",
-    "assignedBy": "usr_123"
-  }
-}
-```
-
-### Remove Role from User
+### Available Contexts
 
 ```http
-DELETE /v1/orgs/{orgId}/users/usr_456/roles/role_admin HTTP/1.1
-```
+GET /v1/users/me/available-contexts
 
-**Response:**
-```http
-HTTP/1.1 204 No Content
-```
-
-### List User Roles (All Tenants)
-
-```http
-GET /v1/users/usr_123/tenant-roles HTTP/1.1
-```
-
-**Response:**
-```json
+# Response
 {
   "data": [
     {
+      "applicationId": "app_default",
+      "applicationName": "My SaaS Platform",
       "tenantId": "org_abc",
       "tenantName": "Acme Corp",
       "roles": ["admin", "billing_manager"]
     },
     {
+      "applicationId": "app_default",
+      "applicationName": "My SaaS Platform",
       "tenantId": "org_xyz",
       "tenantName": "XYZ Inc",
       "roles": ["member"]
-    },
-    {
-      "tenantId": "org_def",
-      "tenantName": "DEF LLC",
-      "roles": ["viewer"]
     }
   ]
 }
 ```
 
-## Permission Checking
+## Authorization Middleware
 
-### Authorization Middleware
+### Permission Check
 
 ```typescript
 interface AuthContext {
   userId: string;
+  applicationId: string;
   tenantId: string;
-  permissions: string[];
 }
 
-function requirePermission(...requiredPerms: string[]) {
-  return (req, res, next) => {
-    const user: AuthContext = req.user;
+function requirePermission(resource: string, action: string) {
+  return async (req, res, next) => {
+    const { userId, applicationId, tenantId } = req.authContext;
 
-    // Verify tenant context matches URL
-    if (req.params.orgId !== user.tenantId) {
-      return res.status(403).json({
-        error: {
-          code: 'forbidden',
-          message: 'Access denied to this tenant',
-        },
-      });
-    }
-
-    // Check if user has ALL required permissions
-    const hasPermission = requiredPerms.every((required) =>
-      user.permissions.some((perm) => matchesPermission(perm, required))
+    // Check with authorization engine
+    const allowed = await authz.enforce(
+      userId,
+      applicationId,
+      tenantId,
+      resource,
+      action
     );
 
-    if (!hasPermission) {
+    if (!allowed) {
       return res.status(403).json({
         error: {
-          code: 'forbidden',
-          message: 'Insufficient permissions',
+          code: "forbidden",
+          message: "Permission denied",
           details: [
             {
-              code: 'insufficientPermissions',
-              message: `Required: ${requiredPerms.join(', ')}`,
-              metadata: {
-                requiredPermissions: requiredPerms,
-                userPermissions: user.permissions,
-              },
+              code: "insufficientPermissions",
+              message: `Required: ${resource}:${action}`,
             },
           ],
         },
@@ -320,59 +390,77 @@ function requirePermission(...requiredPerms: string[]) {
     next();
   };
 }
+```
 
-// Permission matching with wildcards
-function matchesPermission(userPerm: string, requiredPerm: string): boolean {
-  const [userResource, userAction] = userPerm.split(':');
-  const [reqResource, reqAction] = requiredPerm.split(':');
+### Ownership Check
 
-  // Exact match
-  if (userPerm === requiredPerm) return true;
+For permissions with `condition: "owner"`:
 
-  // Wildcard resource
-  if (userResource === '*' && userAction === '*') return true;
+```typescript
+function requireOwnership(resource: string, action: string) {
+  return async (req, res, next) => {
+    const { userId, applicationId, tenantId } = req.authContext;
+    const resourceId = req.params.id;
 
-  // Wildcard action for matching resource
-  if (userResource === reqResource && userAction === '*') return true;
+    // Get resource owner
+    const resourceData = await getResource(resourceId);
+    const ownerId = resourceData.createdBy;
 
-  // Wildcard resource for matching action
-  if (userResource === '*' && userAction === reqAction) return true;
+    // Check with ownership context
+    const allowed = await authz.enforceWithContext(
+      userId,
+      applicationId,
+      tenantId,
+      resource,
+      action,
+      { ownerId }
+    );
 
-  return false;
+    if (!allowed) {
+      return res.status(403).json({
+        error: {
+          code: "forbidden",
+          message: "You can only modify your own resources",
+        },
+      });
+    }
+
+    next();
+  };
 }
 ```
 
 ### Usage in Routes
 
 ```typescript
-// Single permission
+// Simple permission check
 app.get(
-  '/v1/orgs/:orgId/users',
+  "/v1/orgs/:orgId/users",
   authenticate,
-  requirePermission('users:read'),
+  requirePermission("users", "read"),
   listUsers
 );
 
-// Multiple permissions (AND)
-app.post(
-  '/v1/orgs/:orgId/users',
+// Ownership-based permission
+app.patch(
+  "/v1/orgs/:orgId/documents/:id",
   authenticate,
-  requirePermission('users:write'),
-  createUser
+  requireOwnership("documents", "update"),
+  updateDocument
 );
 
-// Admin-only
+// Multiple permissions (AND)
 app.delete(
-  '/v1/orgs/:orgId/settings',
+  "/v1/orgs/:orgId/settings",
   authenticate,
-  requirePermission('settings:admin'),
+  requirePermission("settings", "manage"),
   deleteSettings
 );
 ```
 
-## Forbidden Responses
+## Error Responses
 
-### Missing Permission
+### Insufficient Permissions
 
 ```json
 {
@@ -382,10 +470,9 @@ app.delete(
     "details": [
       {
         "code": "insufficientPermissions",
-        "message": "This action requires 'users:write' permission",
+        "message": "This action requires 'users:delete' permission",
         "metadata": {
-          "requiredPermission": "users:write",
-          "userPermissions": ["users:read", "invoices:read"]
+          "requiredPermission": "users:delete"
         }
       }
     ]
@@ -393,20 +480,20 @@ app.delete(
 }
 ```
 
-### Wrong Tenant
+### Ownership Required
 
 ```json
 {
   "error": {
     "code": "forbidden",
-    "message": "Access denied to this tenant",
+    "message": "You can only modify your own resources",
     "details": [
       {
-        "code": "tenantMismatch",
-        "message": "You do not have access to org_xyz",
+        "code": "ownershipRequired",
+        "message": "This action requires ownership of the resource",
         "metadata": {
-          "requestedTenant": "org_xyz",
-          "userTenant": "org_abc"
+          "resourceId": "doc_123",
+          "ownerId": "usr_456"
         }
       }
     ]
@@ -434,122 +521,66 @@ app.delete(
 }
 ```
 
-## Tenant Switching
-
-Users with access to multiple tenants can switch active tenant:
-
-```http
-POST /v1/users/usr_123/switch-tenant HTTP/1.1
-Content-Type: application/json
-
-{
-  "tenantId": "org_xyz"
-}
-```
-
-**Response:**
-```json
-{
-  "data": {
-    "tenantId": "org_xyz",
-    "tenantName": "XYZ Inc",
-    "roles": ["member"],
-    "permissions": ["users:read", "projects:*"],
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-**New token includes:**
-- Updated `tenantId`
-- Roles for the new tenant
-- Permissions for the new tenant
-
-**Security:**
-- Verify user is a member of target tenant
-- Invalidate old session token
-- Log tenant switch in audit log
-- Consider requiring MFA for sensitive tenants
-
-## Permission Inheritance
-
-### Role Hierarchy (Optional)
-
-```
-owner (inherits all below)
-  └─ admin
-      └─ manager
-          └─ member
-              └─ viewer
-```
-
-**Example:**
-- Owner inherits admin, manager, member, viewer permissions
-- Admin inherits manager, member, viewer permissions
-- Member inherits viewer permissions
-
-### Implementation
-
-```typescript
-const roleHierarchy = {
-  owner: ['admin', 'manager', 'member', 'viewer'],
-  admin: ['manager', 'member', 'viewer'],
-  manager: ['member', 'viewer'],
-  member: ['viewer'],
-  viewer: [],
-};
-
-function getEffectivePermissions(userRoles: string[], allRoles: Role[]) {
-  const effectiveRoles = new Set<string>();
-
-  // Add user's direct roles
-  userRoles.forEach((role) => effectiveRoles.add(role));
-
-  // Add inherited roles
-  userRoles.forEach((role) => {
-    roleHierarchy[role]?.forEach((inheritedRole) =>
-      effectiveRoles.add(inheritedRole)
-    );
-  });
-
-  // Collect all permissions
-  const permissions = new Set<string>();
-  effectiveRoles.forEach((roleName) => {
-    const role = allRoles.find((r) => r.name === roleName);
-    role?.permissions.forEach((perm) => permissions.add(perm));
-  });
-
-  return Array.from(permissions);
-}
-```
-
 ## Best Practices
 
-1. **Principle of Least Privilege**
-   - Grant minimum permissions needed
-   - Use specific permissions over wildcards
-   - Review permissions regularly
+### 1. Principle of Least Privilege
 
-2. **Tenant Isolation**
-   - Always validate tenantId from token matches URL
-   - Never allow cross-tenant data access
-   - Audit cross-tenant operations
+- Grant minimum permissions needed
+- Use specific permissions over wildcards
+- Review permissions regularly
+- Use `deny` rules to restrict inherited access
 
-3. **Role Design**
-   - Create meaningful role names
-   - Group related permissions into roles
-   - Document role purposes
+### 2. Role Design
 
-4. **Permission Granularity**
-   - Use resource:action format consistently
-   - Avoid overly broad wildcards (`*:*`)
-   - Create specific actions when needed
+- Create meaningful role names
+- Group related permissions into roles
+- Document role purposes
+- Use tenant roles for org-specific needs
+- Use global roles sparingly (admin, support)
 
-5. **Audit Everything**
-   - Log role assignments
-   - Log permission checks
-   - Log tenant switches
-   - Track who granted permissions
+### 3. Deny-Override Strategy
+
+Use explicit deny rules for:
+
+- Preventing accidental escalation
+- Restricting sensitive operations
+- Compliance requirements
+
+```json
+{
+  "name": "restricted_member",
+  "permissions": [
+    { "resource": "documents", "action": "*", "effect": "allow" },
+    { "resource": "documents", "action": "delete", "effect": "deny" }
+  ]
+}
+```
+
+### 4. Ownership Conditions
+
+Use ownership conditions for:
+
+- User-generated content (posts, comments)
+- Personal resources (profiles, settings)
+- Draft/unpublished content
+
+```json
+{
+  "name": "author",
+  "permissions": [
+    { "resource": "posts", "action": "read", "effect": "allow" },
+    { "resource": "posts", "action": "update", "effect": "allow", "condition": "owner" },
+    { "resource": "posts", "action": "delete", "effect": "allow", "condition": "owner" }
+  ]
+}
+```
+
+### 5. Audit Everything
+
+- Log role assignments
+- Log permission checks (especially denials)
+- Log context switches
+- Track who granted permissions
 
 ## See Also
 

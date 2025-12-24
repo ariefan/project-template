@@ -32,7 +32,7 @@ export {
 /**
  * Create a fully configured better-auth instance
  */
-export function createAuth(config: AuthConfig) {
+export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
   const {
     baseUrl,
     emailService,

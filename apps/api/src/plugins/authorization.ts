@@ -1,16 +1,200 @@
-import { authorization } from "@workspace/authorization";
+import {
+  type AuthorizationAuditService,
+  authorization,
+} from "@workspace/authorization";
+import {
+  buildAuthzKey,
+  buildAuthzPatternForOrg,
+  buildAuthzPatternForUser,
+  type CacheProvider,
+} from "@workspace/cache";
+import type { AuthorizationMetrics } from "@workspace/metrics";
 import type * as casbin from "casbin";
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
+type AuthorizeParams = {
+  userId: string;
+  orgId: string;
+  resource: string;
+  action: string;
+};
+
+type AuthorizationDeps = {
+  enforcer: casbin.Enforcer;
+  cache: CacheProvider | null;
+  cacheTtl: number;
+  auditService: AuthorizationAuditService | null;
+  logPermissionDenials: boolean;
+  metrics: AuthorizationMetrics | null;
+  log: FastifyInstance["log"];
+};
+
+/**
+ * Check cache for authorization result
+ */
+async function checkCache(
+  params: AuthorizeParams,
+  deps: AuthorizationDeps
+): Promise<{ hit: boolean; allowed: boolean | null }> {
+  if (!deps.cache) {
+    return { hit: false, allowed: null };
+  }
+
+  const cacheKey = buildAuthzKey(
+    params.userId,
+    params.orgId,
+    params.resource,
+    params.action
+  );
+  const cachedValue = await deps.cache.get<boolean>(cacheKey);
+
+  if (cachedValue !== null) {
+    deps.log.debug({ cacheKey }, "Authorization cache hit");
+    deps.metrics?.recordCacheHit({ operation: "get" });
+    return { hit: true, allowed: cachedValue };
+  }
+
+  deps.metrics?.recordCacheMiss({ operation: "get" });
+  return { hit: false, allowed: null };
+}
+
+/**
+ * Store authorization result in cache
+ */
+async function storeInCache(
+  params: AuthorizeParams,
+  allowed: boolean,
+  deps: AuthorizationDeps
+): Promise<void> {
+  if (!deps.cache) {
+    return;
+  }
+
+  const cacheKey = buildAuthzKey(
+    params.userId,
+    params.orgId,
+    params.resource,
+    params.action
+  );
+  await deps.cache.set(cacheKey, allowed, deps.cacheTtl);
+  deps.log.debug({ cacheKey, allowed }, "Authorization cached");
+}
+
+/**
+ * Log permission denial to audit service
+ */
+async function logDenialIfEnabled(
+  params: AuthorizeParams,
+  deps: AuthorizationDeps
+): Promise<void> {
+  if (!deps.auditService) {
+    return;
+  }
+  if (!deps.logPermissionDenials) {
+    return;
+  }
+
+  try {
+    await deps.auditService.logPermissionDenied({
+      userId: params.userId,
+      orgId: params.orgId,
+      resource: params.resource,
+      action: params.action,
+      context: { actorId: params.userId },
+    });
+  } catch (auditError) {
+    deps.log.error(
+      { ...params, error: auditError },
+      "Failed to log permission denial"
+    );
+  }
+}
+
+type MetricsContext = {
+  params: AuthorizeParams;
+  allowed: boolean;
+  cached: boolean;
+  durationMs: number;
+};
+
+/**
+ * Record permission check metrics
+ */
+function recordMetrics(ctx: MetricsContext, deps: AuthorizationDeps): void {
+  deps.metrics?.recordPermissionCheck(
+    {
+      result: ctx.allowed ? "allowed" : "denied",
+      resource: ctx.params.resource,
+      action: ctx.params.action,
+      orgId: ctx.params.orgId,
+      cached: ctx.cached,
+    },
+    ctx.durationMs / 1000
+  );
+}
+
+/**
+ * Perform authorization check with all side effects (caching, logging, metrics)
+ */
+async function performAuthorizationCheck(
+  params: AuthorizeParams,
+  deps: AuthorizationDeps
+): Promise<boolean> {
+  const startTime = performance.now();
+
+  // Check cache first
+  const cacheResult = await checkCache(params, deps);
+  if (cacheResult.hit && cacheResult.allowed !== null) {
+    const durationMs = performance.now() - startTime;
+    recordMetrics(
+      { params, allowed: cacheResult.allowed, cached: true, durationMs },
+      deps
+    );
+    return cacheResult.allowed;
+  }
+
+  // Cache miss - check enforcer
+  const allowed = await deps.enforcer.enforce(
+    params.userId,
+    params.orgId,
+    params.resource,
+    params.action
+  );
+
+  // Log denial if enabled
+  if (!allowed) {
+    await logDenialIfEnabled(params, deps);
+  }
+
+  // Store in cache
+  await storeInCache(params, allowed, deps);
+
+  // Record metrics
+  const durationMs = performance.now() - startTime;
+  recordMetrics({ params, allowed, cached: false, durationMs }, deps);
+
+  return allowed;
+}
+
 declare module "fastify" {
+  // biome-ignore lint/nursery/noShadow: Module augmentation requires shadowing
   // biome-ignore lint/style/useConsistentTypeDefinitions: Module augmentation requires interface
-  // biome-ignore lint/nursery/noShadow: Module augmentation pattern
   interface FastifyInstance {
     /**
      * Casbin enforcer instance for manual authorization checks
      */
     readonly enforcer: casbin.Enforcer;
+
+    /**
+     * Cache provider instance (may be null if caching is disabled)
+     */
+    readonly authzCache: CacheProvider | null;
+
+    /**
+     * Authorization audit service for logging auth events
+     */
+    readonly auditService: AuthorizationAuditService | null;
 
     /**
      * Check if a user has permission for a resource action in an organization
@@ -27,16 +211,56 @@ declare module "fastify" {
       resource: string,
       action: string
     ): Promise<boolean>;
+
+    /**
+     * Invalidate authorization cache for a specific user
+     *
+     * @param userId User ID
+     * @param orgId Optional organization ID (if provided, only invalidates cache for that org)
+     */
+    invalidateAuthzCache(userId: string, orgId?: string): Promise<void>;
+
+    /**
+     * Invalidate authorization cache for an entire organization
+     *
+     * @param orgId Organization ID
+     */
+    invalidateOrgAuthzCache(orgId: string): Promise<void>;
   }
 }
 
 /**
- * Fastify plugin for Casbin authorization
- * Provides enforcer instance and authorize() helper method
+ * Fastify plugin for Casbin authorization with optional caching, audit logging, and metrics
+ * Provides enforcer instance, authorize() helper method, cache invalidation, audit service, and metrics tracking
  */
-function authorizationPlugin(fastify: FastifyInstance): void {
+function authorizationPlugin(
+  fastify: FastifyInstance,
+  opts?: {
+    cache?: CacheProvider | null;
+    cacheTtlSeconds?: number;
+    auditService?: AuthorizationAuditService | null;
+    logPermissionDenials?: boolean;
+    metrics?: AuthorizationMetrics | null;
+  }
+): void {
+  const deps: AuthorizationDeps = {
+    enforcer: authorization,
+    cache: opts?.cache ?? null,
+    cacheTtl: opts?.cacheTtlSeconds ?? 300, // 5 minutes default
+    auditService: opts?.auditService ?? null,
+    logPermissionDenials: opts?.logPermissionDenials ?? false,
+    metrics: opts?.metrics ?? null,
+    log: fastify.log,
+  };
+
   // Decorate fastify with enforcer instance
   fastify.decorate("enforcer", authorization);
+
+  // Decorate fastify with cache provider instance
+  fastify.decorate("authzCache", deps.cache);
+
+  // Decorate fastify with audit service instance
+  fastify.decorate("auditService", deps.auditService);
 
   // Decorate fastify with convenience authorize method
   fastify.decorate(
@@ -48,13 +272,46 @@ function authorizationPlugin(fastify: FastifyInstance): void {
       action: string
     ): Promise<boolean> => {
       try {
-        return await fastify.enforcer.enforce(userId, orgId, resource, action);
+        return await performAuthorizationCheck(
+          { userId, orgId, resource, action },
+          deps
+        );
       } catch (error) {
         fastify.log.error(
           { userId, orgId, resource, action, error },
           "Authorization check failed"
         );
         return false;
+      }
+    }
+  );
+
+  // Cache invalidation for user in organization
+  fastify.decorate(
+    "invalidateAuthzCache",
+    async (userId: string, orgId?: string): Promise<void> => {
+      if (deps.cache) {
+        const pattern = buildAuthzPatternForUser(userId, orgId);
+        const count = await deps.cache.deletePattern(pattern);
+        fastify.log.info(
+          { userId, orgId, count },
+          "Invalidated user authorization cache"
+        );
+      }
+    }
+  );
+
+  // Cache invalidation for organization
+  fastify.decorate(
+    "invalidateOrgAuthzCache",
+    async (orgId: string): Promise<void> => {
+      if (deps.cache) {
+        const pattern = buildAuthzPatternForOrg(orgId);
+        const count = await deps.cache.deletePattern(pattern);
+        fastify.log.info(
+          { orgId, count },
+          "Invalidated organization authorization cache"
+        );
       }
     }
   );

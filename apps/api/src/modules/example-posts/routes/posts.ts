@@ -1,6 +1,8 @@
 import type {
   CreateExamplePostRequest,
   ErrorResponse,
+  ExamplePost,
+  ExamplePostCursorListResponse,
   ExamplePostListResponse,
   ExamplePostResponse,
   SoftDeleteResponse,
@@ -65,7 +67,7 @@ export function postsRoutes(app: FastifyInstance) {
       });
 
       return {
-        data: result.posts,
+        data: result.posts as ExamplePost[],
         pagination: {
           page: result.page,
           pageSize: result.pageSize,
@@ -73,6 +75,48 @@ export function postsRoutes(app: FastifyInstance) {
           totalPages: result.totalPages,
           hasNext: result.hasNext,
           hasPrevious: result.hasPrevious,
+        },
+        meta: createMeta(request.id),
+      };
+    }
+  );
+
+  // List posts (cursor-based pagination)
+  // As documented in docs/api-guide/02-data-operations/01-pagination.md
+  // Best for large datasets (>100K records) or real-time data
+  app.get<{
+    Params: { orgId: string };
+    Querystring: {
+      cursor?: string;
+      limit?: number;
+      orderBy?: string;
+      status?: string;
+      authorId?: string;
+      search?: string;
+    };
+  }>(
+    "/:orgId/example-posts/cursor",
+    { preHandler: [requirePermission("posts", "read")] },
+    async (request): Promise<ExamplePostCursorListResponse | ErrorResponse> => {
+      const { orgId } = request.params;
+      const limit = Math.min(request.query.limit ?? 50, 100);
+
+      const result = await postsService.listExamplePostsCursor(orgId, {
+        cursor: request.query.cursor,
+        limit,
+        orderBy: request.query.orderBy,
+        status: request.query.status,
+        authorId: request.query.authorId,
+        search: request.query.search,
+      });
+
+      return {
+        data: result.posts,
+        pagination: {
+          limit: result.limit,
+          hasNext: result.hasNext,
+          nextCursor: result.nextCursor,
+          previousCursor: result.previousCursor,
         },
         meta: createMeta(request.id),
       };
@@ -318,6 +362,78 @@ export function postsRoutes(app: FastifyInstance) {
           request.body.options
         );
         return { ...result, meta: createMeta(request.id) };
+      } catch (error) {
+        const { statusCode, response } = handleError(error, request.id);
+        reply.status(statusCode);
+        return response;
+      }
+    }
+  );
+
+  // Batch restore posts
+  // As documented in docs/api-guide/05-advanced-operations/05-restore.md
+  app.post<{
+    Params: { orgId: string };
+    Body: {
+      ids: string[];
+      options?: { atomic?: boolean };
+    };
+  }>(
+    "/:orgId/example-posts/batch/restore",
+    { preHandler: [requirePermission("posts", "update")] },
+    async (request, reply) => {
+      try {
+        const result = await postsService.batchRestoreExamplePosts(
+          request.params.orgId,
+          request.body.ids,
+          request.body.options
+        );
+        return { ...result, meta: createMeta(request.id) };
+      } catch (error) {
+        const { statusCode, response } = handleError(error, request.id);
+        reply.status(statusCode);
+        return response;
+      }
+    }
+  );
+
+  // List deleted posts
+  // As documented in docs/api-guide/05-advanced-operations/04-soft-delete.md
+  app.get<{
+    Params: { orgId: string };
+    Querystring: {
+      page?: number;
+      pageSize?: number;
+    };
+  }>(
+    "/:orgId/example-posts/deleted",
+    { preHandler: [requirePermission("posts", "read")] },
+    async (
+      request,
+      reply
+    ): Promise<ExamplePostListResponse | ErrorResponse> => {
+      const { orgId } = request.params;
+      const page = request.query.page ?? 1;
+      const pageSize = Math.min(request.query.pageSize ?? 50, 100);
+
+      try {
+        const result = await postsService.listDeletedExamplePosts(orgId, {
+          page,
+          pageSize,
+        });
+
+        return {
+          data: result.posts as ExamplePost[],
+          pagination: {
+            page: result.page,
+            pageSize: result.pageSize,
+            totalCount: result.totalCount,
+            totalPages: result.totalPages,
+            hasNext: result.hasNext,
+            hasPrevious: result.hasPrevious,
+          },
+          meta: createMeta(request.id),
+        };
       } catch (error) {
         const { statusCode, response } = handleError(error, request.id);
         reply.status(statusCode);

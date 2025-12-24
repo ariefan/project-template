@@ -1,6 +1,15 @@
 import type { FastifyInstance } from "fastify";
-import { authorizationRoutes } from "./routes";
+import { contextRoutes } from "./context-routes";
+import { roleRoutes } from "./role-routes";
+import { userRoleRoutes } from "./user-role-routes";
+import { violationRoutes } from "./violation-routes";
 
 export function authorizationModule(app: FastifyInstance) {
-  authorizationRoutes(app);
+  // Multi-app RBAC routes
+  roleRoutes(app);
+  userRoleRoutes(app);
+  contextRoutes(app);
+
+  // Violation management (emergency lockdown, permission suspension)
+  violationRoutes(app);
 }

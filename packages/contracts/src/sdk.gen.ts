@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ApiKeysCreateData, ApiKeysCreateResponses, ApiKeysGetData, ApiKeysGetResponses, ApiKeysListData, ApiKeysListResponses, ApiKeysRevokeData, ApiKeysRevokeResponses, ApiKeysRotateData, ApiKeysRotateResponses, ApiKeysUpdateData, ApiKeysUpdateResponses, AuditLogsExportData, AuditLogsExportResponses, AuditLogsGetData, AuditLogsGetResponses, AuditLogsListData, AuditLogsListResponses, CrossTenantRolesListData, CrossTenantRolesListResponses, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponses, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponses, ExampleCommentsCreateData, ExampleCommentsCreateResponses, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponses, ExampleCommentsDeleteResponses, ExampleCommentsGetData, ExampleCommentsGetResponses, ExampleCommentsListData, ExampleCommentsListResponses, ExampleCommentsRestoreData, ExampleCommentsRestoreResponses, ExampleCommentsUpdateData, ExampleCommentsUpdateResponses, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponses, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponses, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponses, ExamplePostsCreateData, ExamplePostsCreateResponses, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponses, ExamplePostsDeleteResponses, ExamplePostsGetData, ExamplePostsGetResponses, ExamplePostsListData, ExamplePostsListResponses, ExamplePostsRestoreData, ExamplePostsRestoreResponses, ExamplePostsUpdateData, ExamplePostsUpdateResponses, FilesConfirmUploadData, FilesConfirmUploadResponses, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponses, FilesDeleteResponses, FilesDirectUploadData, FilesDirectUploadResponses, FilesDownloadData, FilesDownloadResponses, FilesGetData, FilesGetResponses, FilesInitiateUploadData, FilesInitiateUploadResponses, FilesListData, FilesListResponses, HealthCheckData, HealthCheckResponses, JobsCancelData, JobsCancelResponses, JobsGetData, JobsGetResponses, JobsListData, JobsListResponses, RolesCreateData, RolesCreateResponses, RolesDeleteData, RolesDeleteResponses, RolesGetData, RolesGetResponses, RolesListData, RolesListResponses, RolesUpdateData, RolesUpdateResponses, TenantSwitchSwitchData, TenantSwitchSwitchResponses, UserPermissionsEndpointGetData, UserPermissionsEndpointGetResponses, UserRolesAssignData, UserRolesAssignResponses, UserRolesListData, UserRolesListResponses, UserRolesRemoveData, UserRolesRemoveResponses, UsersBatchCreateData, UsersBatchCreateResponses, UsersBatchSoftDeleteData, UsersBatchSoftDeleteResponses, UsersBatchUpdateData, UsersBatchUpdateResponses, UsersCreateData, UsersCreateResponses, UsersDeleteData, UsersDeletePermanentData, UsersDeletePermanentResponses, UsersDeleteResponses, UsersGetData, UsersGetResponses, UsersListData, UsersListResponses, UsersResetPasswordData, UsersResetPasswordResponses, UsersRestoreData, UsersRestoreResponses, UsersUpdateData, UsersUpdateResponses, WebhooksCreateData, WebhooksCreateResponses, WebhooksDeleteData, WebhooksDeleteResponses, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponses, WebhooksGetResponses, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponses, WebhooksListEventTypesData, WebhooksListEventTypesResponses, WebhooksListResponses, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponses, WebhooksRotateSecretData, WebhooksRotateSecretResponses, WebhooksTestData, WebhooksTestResponses, WebhooksUpdateData, WebhooksUpdateResponses } from './types.gen';
-import { zApiKeysCreateData, zApiKeysCreateResponse, zApiKeysGetData, zApiKeysGetResponse, zApiKeysListData, zApiKeysListResponse, zApiKeysRevokeData, zApiKeysRevokeResponse, zApiKeysRotateData, zApiKeysRotateResponse, zApiKeysUpdateData, zApiKeysUpdateResponse, zAuditLogsExportData, zAuditLogsExportResponse, zAuditLogsGetData, zAuditLogsGetResponse, zAuditLogsListData, zAuditLogsListResponse, zCrossTenantRolesListData, zCrossTenantRolesListResponse, zExampleCommentsBatchCreateData, zExampleCommentsBatchCreateResponse, zExampleCommentsBatchSoftDeleteData, zExampleCommentsBatchSoftDeleteResponse, zExampleCommentsCreateData, zExampleCommentsCreateResponse, zExampleCommentsDeleteData, zExampleCommentsDeletePermanentData, zExampleCommentsDeletePermanentResponse, zExampleCommentsDeleteResponse, zExampleCommentsGetData, zExampleCommentsGetResponse, zExampleCommentsListData, zExampleCommentsListResponse, zExampleCommentsRestoreData, zExampleCommentsRestoreResponse, zExampleCommentsUpdateData, zExampleCommentsUpdateResponse, zExamplePostsBatchCreateData, zExamplePostsBatchCreateResponse, zExamplePostsBatchSoftDeleteData, zExamplePostsBatchSoftDeleteResponse, zExamplePostsBatchUpdateData, zExamplePostsBatchUpdateResponse, zExamplePostsCreateData, zExamplePostsCreateResponse, zExamplePostsDeleteData, zExamplePostsDeletePermanentData, zExamplePostsDeletePermanentResponse, zExamplePostsDeleteResponse, zExamplePostsGetData, zExamplePostsGetResponse, zExamplePostsListData, zExamplePostsListResponse, zExamplePostsRestoreData, zExamplePostsRestoreResponse, zExamplePostsUpdateData, zExamplePostsUpdateResponse, zFilesConfirmUploadData, zFilesConfirmUploadResponse, zFilesDeleteData, zFilesDeletePermanentData, zFilesDeletePermanentResponse, zFilesDeleteResponse, zFilesDirectUploadData, zFilesDirectUploadResponse, zFilesDownloadData, zFilesDownloadResponse, zFilesGetData, zFilesGetResponse, zFilesInitiateUploadData, zFilesInitiateUploadResponse, zFilesListData, zFilesListResponse, zHealthCheckData, zHealthCheckResponse, zJobsCancelData, zJobsCancelResponse, zJobsGetData, zJobsGetResponse, zJobsListData, zJobsListResponse, zRolesCreateData, zRolesCreateResponse, zRolesDeleteData, zRolesDeleteResponse, zRolesGetData, zRolesGetResponse, zRolesListData, zRolesListResponse, zRolesUpdateData, zRolesUpdateResponse, zTenantSwitchSwitchData, zTenantSwitchSwitchResponse, zUserPermissionsEndpointGetData, zUserPermissionsEndpointGetResponse, zUserRolesAssignData, zUserRolesAssignResponse, zUserRolesListData, zUserRolesListResponse, zUserRolesRemoveData, zUserRolesRemoveResponse, zUsersBatchCreateData, zUsersBatchCreateResponse, zUsersBatchSoftDeleteData, zUsersBatchSoftDeleteResponse, zUsersBatchUpdateData, zUsersBatchUpdateResponse, zUsersCreateData, zUsersCreateResponse, zUsersDeleteData, zUsersDeletePermanentData, zUsersDeletePermanentResponse, zUsersDeleteResponse, zUsersGetData, zUsersGetResponse, zUsersListData, zUsersListResponse, zUsersResetPasswordData, zUsersResetPasswordResponse, zUsersRestoreData, zUsersRestoreResponse, zUsersUpdateData, zUsersUpdateResponse, zWebhooksCreateData, zWebhooksCreateResponse, zWebhooksDeleteData, zWebhooksDeleteResponse, zWebhooksGetData, zWebhooksGetDeliveryData, zWebhooksGetDeliveryResponse, zWebhooksGetResponse, zWebhooksListData, zWebhooksListDeliveriesData, zWebhooksListDeliveriesResponse, zWebhooksListEventTypesData, zWebhooksListEventTypesResponse, zWebhooksListResponse, zWebhooksRetryDeliveryData, zWebhooksRetryDeliveryResponse, zWebhooksRotateSecretData, zWebhooksRotateSecretResponse, zWebhooksTestData, zWebhooksTestResponse, zWebhooksUpdateData, zWebhooksUpdateResponse } from './zod.gen';
+import type { AllUserRolesListData, AllUserRolesListResponses, ApiKeysCreateData, ApiKeysCreateResponses, ApiKeysGetData, ApiKeysGetResponses, ApiKeysListData, ApiKeysListResponses, ApiKeysRevokeData, ApiKeysRevokeResponses, ApiKeysRotateData, ApiKeysRotateResponses, ApiKeysUpdateData, ApiKeysUpdateResponses, AuditLogsExportData, AuditLogsExportResponses, AuditLogsGetData, AuditLogsGetResponses, AuditLogsListData, AuditLogsListResponses, AvailableContextsListData, AvailableContextsListResponses, ContextSwitchSwitchData, ContextSwitchSwitchResponses, CurrentUserContextGetData, CurrentUserContextGetResponses, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponses, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponses, ExampleCommentsCreateData, ExampleCommentsCreateResponses, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponses, ExampleCommentsDeleteResponses, ExampleCommentsGetData, ExampleCommentsGetResponses, ExampleCommentsListData, ExampleCommentsListResponses, ExampleCommentsRestoreData, ExampleCommentsRestoreResponses, ExampleCommentsUpdateData, ExampleCommentsUpdateResponses, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponses, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponses, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponses, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponses, ExamplePostsCreateData, ExamplePostsCreateResponses, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponses, ExamplePostsDeleteResponses, ExamplePostsGetData, ExamplePostsGetResponses, ExamplePostsListCursorData, ExamplePostsListCursorResponses, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponses, ExamplePostsListResponses, ExamplePostsRestoreData, ExamplePostsRestoreResponses, ExamplePostsUpdateData, ExamplePostsUpdateResponses, FilesConfirmUploadData, FilesConfirmUploadResponses, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponses, FilesDeleteResponses, FilesDirectUploadData, FilesDirectUploadResponses, FilesDownloadData, FilesDownloadResponses, FilesGetData, FilesGetResponses, FilesInitiateUploadData, FilesInitiateUploadResponses, FilesListData, FilesListResponses, GlobalRolesCreateData, GlobalRolesCreateResponses, GlobalRolesDeleteData, GlobalRolesDeleteResponses, GlobalRolesGetData, GlobalRolesGetResponses, GlobalRolesListData, GlobalRolesListResponses, GlobalRolesUpdateData, GlobalRolesUpdateResponses, HealthCheckData, HealthCheckResponses, JobsCancelData, JobsCancelResponses, JobsGetData, JobsGetResponses, JobsListData, JobsListResponses, TenantRolesCreateData, TenantRolesCreateResponses, TenantRolesDeleteData, TenantRolesDeleteResponses, TenantRolesGetData, TenantRolesGetResponses, TenantRolesListData, TenantRolesListResponses, TenantRolesUpdateData, TenantRolesUpdateResponses, UserPermissionsGetData, UserPermissionsGetResponses, UsersBatchCreateData, UsersBatchCreateResponses, UsersBatchSoftDeleteData, UsersBatchSoftDeleteResponses, UsersBatchUpdateData, UsersBatchUpdateResponses, UsersCreateData, UsersCreateResponses, UsersDeleteData, UsersDeletePermanentData, UsersDeletePermanentResponses, UsersDeleteResponses, UsersGetData, UsersGetResponses, UsersListData, UsersListResponses, UsersResetPasswordData, UsersResetPasswordResponses, UsersRestoreData, UsersRestoreResponses, UsersUpdateData, UsersUpdateResponses, UserTenantRolesAssignData, UserTenantRolesAssignResponses, UserTenantRolesListData, UserTenantRolesListResponses, UserTenantRolesRemoveData, UserTenantRolesRemoveResponses, WebhooksCreateData, WebhooksCreateResponses, WebhooksDeleteData, WebhooksDeleteResponses, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponses, WebhooksGetResponses, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponses, WebhooksListEventTypesData, WebhooksListEventTypesResponses, WebhooksListResponses, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponses, WebhooksRotateSecretData, WebhooksRotateSecretResponses, WebhooksTestData, WebhooksTestResponses, WebhooksUpdateData, WebhooksUpdateResponses } from './types.gen';
+import { zAllUserRolesListData, zAllUserRolesListResponse, zApiKeysCreateData, zApiKeysCreateResponse, zApiKeysGetData, zApiKeysGetResponse, zApiKeysListData, zApiKeysListResponse, zApiKeysRevokeData, zApiKeysRevokeResponse, zApiKeysRotateData, zApiKeysRotateResponse, zApiKeysUpdateData, zApiKeysUpdateResponse, zAuditLogsExportData, zAuditLogsExportResponse, zAuditLogsGetData, zAuditLogsGetResponse, zAuditLogsListData, zAuditLogsListResponse, zAvailableContextsListData, zAvailableContextsListResponse, zContextSwitchSwitchData, zContextSwitchSwitchResponse, zCurrentUserContextGetData, zCurrentUserContextGetResponse, zExampleCommentsBatchCreateData, zExampleCommentsBatchCreateResponse, zExampleCommentsBatchSoftDeleteData, zExampleCommentsBatchSoftDeleteResponse, zExampleCommentsCreateData, zExampleCommentsCreateResponse, zExampleCommentsDeleteData, zExampleCommentsDeletePermanentData, zExampleCommentsDeletePermanentResponse, zExampleCommentsDeleteResponse, zExampleCommentsGetData, zExampleCommentsGetResponse, zExampleCommentsListData, zExampleCommentsListResponse, zExampleCommentsRestoreData, zExampleCommentsRestoreResponse, zExampleCommentsUpdateData, zExampleCommentsUpdateResponse, zExamplePostsBatchCreateData, zExamplePostsBatchCreateResponse, zExamplePostsBatchRestoreData, zExamplePostsBatchRestoreResponse, zExamplePostsBatchSoftDeleteData, zExamplePostsBatchSoftDeleteResponse, zExamplePostsBatchUpdateData, zExamplePostsBatchUpdateResponse, zExamplePostsCreateData, zExamplePostsCreateResponse, zExamplePostsDeleteData, zExamplePostsDeletePermanentData, zExamplePostsDeletePermanentResponse, zExamplePostsDeleteResponse, zExamplePostsGetData, zExamplePostsGetResponse, zExamplePostsListCursorData, zExamplePostsListCursorResponse, zExamplePostsListData, zExamplePostsListDeletedData, zExamplePostsListDeletedResponse, zExamplePostsListResponse, zExamplePostsRestoreData, zExamplePostsRestoreResponse, zExamplePostsUpdateData, zExamplePostsUpdateResponse, zFilesConfirmUploadData, zFilesConfirmUploadResponse, zFilesDeleteData, zFilesDeletePermanentData, zFilesDeletePermanentResponse, zFilesDeleteResponse, zFilesDirectUploadData, zFilesDirectUploadResponse, zFilesDownloadData, zFilesDownloadResponse, zFilesGetData, zFilesGetResponse, zFilesInitiateUploadData, zFilesInitiateUploadResponse, zFilesListData, zFilesListResponse, zGlobalRolesCreateData, zGlobalRolesCreateResponse, zGlobalRolesDeleteData, zGlobalRolesDeleteResponse, zGlobalRolesGetData, zGlobalRolesGetResponse, zGlobalRolesListData, zGlobalRolesListResponse, zGlobalRolesUpdateData, zGlobalRolesUpdateResponse, zHealthCheckData, zHealthCheckResponse, zJobsCancelData, zJobsCancelResponse, zJobsGetData, zJobsGetResponse, zJobsListData, zJobsListResponse, zTenantRolesCreateData, zTenantRolesCreateResponse, zTenantRolesDeleteData, zTenantRolesDeleteResponse, zTenantRolesGetData, zTenantRolesGetResponse, zTenantRolesListData, zTenantRolesListResponse, zTenantRolesUpdateData, zTenantRolesUpdateResponse, zUserPermissionsGetData, zUserPermissionsGetResponse, zUsersBatchCreateData, zUsersBatchCreateResponse, zUsersBatchSoftDeleteData, zUsersBatchSoftDeleteResponse, zUsersBatchUpdateData, zUsersBatchUpdateResponse, zUsersCreateData, zUsersCreateResponse, zUsersDeleteData, zUsersDeletePermanentData, zUsersDeletePermanentResponse, zUsersDeleteResponse, zUsersGetData, zUsersGetResponse, zUsersListData, zUsersListResponse, zUsersResetPasswordData, zUsersResetPasswordResponse, zUsersRestoreData, zUsersRestoreResponse, zUsersUpdateData, zUsersUpdateResponse, zUserTenantRolesAssignData, zUserTenantRolesAssignResponse, zUserTenantRolesListData, zUserTenantRolesListResponse, zUserTenantRolesRemoveData, zUserTenantRolesRemoveResponse, zWebhooksCreateData, zWebhooksCreateResponse, zWebhooksDeleteData, zWebhooksDeleteResponse, zWebhooksGetData, zWebhooksGetDeliveryData, zWebhooksGetDeliveryResponse, zWebhooksGetResponse, zWebhooksListData, zWebhooksListDeliveriesData, zWebhooksListDeliveriesResponse, zWebhooksListEventTypesData, zWebhooksListEventTypesResponse, zWebhooksListResponse, zWebhooksRetryDeliveryData, zWebhooksRetryDeliveryResponse, zWebhooksRotateSecretData, zWebhooksRotateSecretResponse, zWebhooksTestData, zWebhooksTestResponse, zWebhooksUpdateData, zWebhooksUpdateResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -236,6 +236,22 @@ export const examplePostsBatchCreate = <ThrowOnError extends boolean = false>(op
 });
 
 /**
+ * Batch restore example posts
+ *
+ * Batch restore soft-deleted posts
+ */
+export const examplePostsBatchRestore = <ThrowOnError extends boolean = false>(options: Options<ExamplePostsBatchRestoreData, ThrowOnError>) => (options.client ?? client).post<ExamplePostsBatchRestoreResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zExamplePostsBatchRestoreData.parseAsync(data),
+    responseValidator: async (data) => await zExamplePostsBatchRestoreResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/example-posts/batch/restore',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Batch soft delete example posts
  *
  * Batch soft delete posts
@@ -249,6 +265,34 @@ export const examplePostsBatchSoftDelete = <ThrowOnError extends boolean = false
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * List example posts (cursor-based)
+ *
+ * List posts using cursor-based pagination
+ *
+ * Best for large datasets (>100K records) or real-time data where
+ * consistent ordering is critical. Use page-based pagination for
+ * typical UI scenarios with page numbers.
+ */
+export const examplePostsListCursor = <ThrowOnError extends boolean = false>(options: Options<ExamplePostsListCursorData, ThrowOnError>) => (options.client ?? client).get<ExamplePostsListCursorResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zExamplePostsListCursorData.parseAsync(data),
+    responseValidator: async (data) => await zExamplePostsListCursorResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/example-posts/cursor',
+    ...options
+});
+
+/**
+ * List deleted example posts
+ *
+ * List soft-deleted posts
+ */
+export const examplePostsListDeleted = <ThrowOnError extends boolean = false>(options: Options<ExamplePostsListDeletedData, ThrowOnError>) => (options.client ?? client).get<ExamplePostsListDeletedResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zExamplePostsListDeletedData.parseAsync(data),
+    responseValidator: async (data) => await zExamplePostsListDeletedResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/example-posts/deleted',
+    ...options
 });
 
 /**
@@ -618,29 +662,29 @@ export const jobsCancel = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
- * List roles
+ * List tenant roles
  *
- * List all roles in an organization
+ * List all roles in a tenant
  *
- * Returns both system roles and custom roles.
+ * Returns both system roles and custom roles for this tenant.
  */
-export const rolesList = <ThrowOnError extends boolean = false>(options: Options<RolesListData, ThrowOnError>) => (options.client ?? client).get<RolesListResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zRolesListData.parseAsync(data),
-    responseValidator: async (data) => await zRolesListResponse.parseAsync(data),
+export const tenantRolesList = <ThrowOnError extends boolean = false>(options: Options<TenantRolesListData, ThrowOnError>) => (options.client ?? client).get<TenantRolesListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTenantRolesListData.parseAsync(data),
+    responseValidator: async (data) => await zTenantRolesListResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/roles',
     ...options
 });
 
 /**
- * Create role
+ * Create tenant role
  *
- * Create a custom role
+ * Create a tenant-scoped role
  *
- * System roles cannot be created via API.
+ * Creates a custom role for this specific tenant.
  */
-export const rolesCreate = <ThrowOnError extends boolean = false>(options: Options<RolesCreateData, ThrowOnError>) => (options.client ?? client).post<RolesCreateResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zRolesCreateData.parseAsync(data),
-    responseValidator: async (data) => await zRolesCreateResponse.parseAsync(data),
+export const tenantRolesCreate = <ThrowOnError extends boolean = false>(options: Options<TenantRolesCreateData, ThrowOnError>) => (options.client ?? client).post<TenantRolesCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTenantRolesCreateData.parseAsync(data),
+    responseValidator: async (data) => await zTenantRolesCreateResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/roles',
     ...options,
     headers: {
@@ -652,14 +696,14 @@ export const rolesCreate = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Delete role
  *
- * Delete a custom role
+ * Delete a role
  *
  * System roles cannot be deleted.
  * Fails if role is assigned to any users.
  */
-export const rolesDelete = <ThrowOnError extends boolean = false>(options: Options<RolesDeleteData, ThrowOnError>) => (options.client ?? client).delete<RolesDeleteResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zRolesDeleteData.parseAsync(data),
-    responseValidator: async (data) => await zRolesDeleteResponse.parseAsync(data),
+export const tenantRolesDelete = <ThrowOnError extends boolean = false>(options: Options<TenantRolesDeleteData, ThrowOnError>) => (options.client ?? client).delete<TenantRolesDeleteResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTenantRolesDeleteData.parseAsync(data),
+    responseValidator: async (data) => await zTenantRolesDeleteResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/roles/{roleId}',
     ...options
 });
@@ -669,9 +713,9 @@ export const rolesDelete = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Get a role by ID
  */
-export const rolesGet = <ThrowOnError extends boolean = false>(options: Options<RolesGetData, ThrowOnError>) => (options.client ?? client).get<RolesGetResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zRolesGetData.parseAsync(data),
-    responseValidator: async (data) => await zRolesGetResponse.parseAsync(data),
+export const tenantRolesGet = <ThrowOnError extends boolean = false>(options: Options<TenantRolesGetData, ThrowOnError>) => (options.client ?? client).get<TenantRolesGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTenantRolesGetData.parseAsync(data),
+    responseValidator: async (data) => await zTenantRolesGetResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/roles/{roleId}',
     ...options
 });
@@ -679,13 +723,13 @@ export const rolesGet = <ThrowOnError extends boolean = false>(options: Options<
 /**
  * Update role
  *
- * Update a custom role
+ * Update a role
  *
- * System roles cannot be modified.
+ * System roles cannot be renamed but their permissions can be modified.
  */
-export const rolesUpdate = <ThrowOnError extends boolean = false>(options: Options<RolesUpdateData, ThrowOnError>) => (options.client ?? client).patch<RolesUpdateResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zRolesUpdateData.parseAsync(data),
-    responseValidator: async (data) => await zRolesUpdateResponse.parseAsync(data),
+export const tenantRolesUpdate = <ThrowOnError extends boolean = false>(options: Options<TenantRolesUpdateData, ThrowOnError>) => (options.client ?? client).patch<TenantRolesUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zTenantRolesUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zTenantRolesUpdateResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/roles/{roleId}',
     ...options,
     headers: {
@@ -854,27 +898,30 @@ export const usersRestore = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
- * Get user permissions
+ * Get user effective permissions
  *
  * Get user's effective permissions in this tenant
  *
- * Returns all roles and the combined effective permissions.
+ * Returns all roles (global + tenant) and the combined effective permissions
+ * after applying deny-override resolution.
  */
-export const userPermissionsEndpointGet = <ThrowOnError extends boolean = false>(options: Options<UserPermissionsEndpointGetData, ThrowOnError>) => (options.client ?? client).get<UserPermissionsEndpointGetResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zUserPermissionsEndpointGetData.parseAsync(data),
-    responseValidator: async (data) => await zUserPermissionsEndpointGetResponse.parseAsync(data),
+export const userPermissionsGet = <ThrowOnError extends boolean = false>(options: Options<UserPermissionsGetData, ThrowOnError>) => (options.client ?? client).get<UserPermissionsGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUserPermissionsGetData.parseAsync(data),
+    responseValidator: async (data) => await zUserPermissionsGetResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/users/{userId}/permissions',
     ...options
 });
 
 /**
- * List user roles
+ * List user roles in tenant
  *
  * List roles assigned to a user in this tenant
+ *
+ * Returns both global and tenant-specific role assignments.
  */
-export const userRolesList = <ThrowOnError extends boolean = false>(options: Options<UserRolesListData, ThrowOnError>) => (options.client ?? client).get<UserRolesListResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zUserRolesListData.parseAsync(data),
-    responseValidator: async (data) => await zUserRolesListResponse.parseAsync(data),
+export const userTenantRolesList = <ThrowOnError extends boolean = false>(options: Options<UserTenantRolesListData, ThrowOnError>) => (options.client ?? client).get<UserTenantRolesListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUserTenantRolesListData.parseAsync(data),
+    responseValidator: async (data) => await zUserTenantRolesListResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/users/{userId}/roles',
     ...options
 });
@@ -882,11 +929,11 @@ export const userRolesList = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Assign role to user
  *
- * Assign a role to a user
+ * Assign a role to a user in this tenant
  */
-export const userRolesAssign = <ThrowOnError extends boolean = false>(options: Options<UserRolesAssignData, ThrowOnError>) => (options.client ?? client).post<UserRolesAssignResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zUserRolesAssignData.parseAsync(data),
-    responseValidator: async (data) => await zUserRolesAssignResponse.parseAsync(data),
+export const userTenantRolesAssign = <ThrowOnError extends boolean = false>(options: Options<UserTenantRolesAssignData, ThrowOnError>) => (options.client ?? client).post<UserTenantRolesAssignResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUserTenantRolesAssignData.parseAsync(data),
+    responseValidator: async (data) => await zUserTenantRolesAssignResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/users/{userId}/roles',
     ...options,
     headers: {
@@ -900,9 +947,9 @@ export const userRolesAssign = <ThrowOnError extends boolean = false>(options: O
  *
  * Remove a role from a user
  */
-export const userRolesRemove = <ThrowOnError extends boolean = false>(options: Options<UserRolesRemoveData, ThrowOnError>) => (options.client ?? client).delete<UserRolesRemoveResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zUserRolesRemoveData.parseAsync(data),
-    responseValidator: async (data) => await zUserRolesRemoveResponse.parseAsync(data),
+export const userTenantRolesRemove = <ThrowOnError extends boolean = false>(options: Options<UserTenantRolesRemoveData, ThrowOnError>) => (options.client ?? client).delete<UserTenantRolesRemoveResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zUserTenantRolesRemoveData.parseAsync(data),
+    responseValidator: async (data) => await zUserTenantRolesRemoveResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/users/{userId}/roles/{roleId}',
     ...options
 });
@@ -1061,16 +1108,30 @@ export const webhooksTest = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
- * Switch tenant
+ * List global roles
  *
- * Switch user's active tenant
+ * List all global roles
  *
- * Returns a new access token scoped to the target tenant.
+ * Returns global roles (no tenant scope) for the default application.
  */
-export const tenantSwitchSwitch = <ThrowOnError extends boolean = false>(options: Options<TenantSwitchSwitchData, ThrowOnError>) => (options.client ?? client).post<TenantSwitchSwitchResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zTenantSwitchSwitchData.parseAsync(data),
-    responseValidator: async (data) => await zTenantSwitchSwitchResponse.parseAsync(data),
-    url: '/v1/users/{userId}/switch-tenant',
+export const globalRolesList = <ThrowOnError extends boolean = false>(options?: Options<GlobalRolesListData, ThrowOnError>) => (options?.client ?? client).get<GlobalRolesListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGlobalRolesListData.parseAsync(data),
+    responseValidator: async (data) => await zGlobalRolesListResponse.parseAsync(data),
+    url: '/v1/roles',
+    ...options
+});
+
+/**
+ * Create global role
+ *
+ * Create a global role
+ *
+ * Creates a role that applies across all tenants.
+ */
+export const globalRolesCreate = <ThrowOnError extends boolean = false>(options: Options<GlobalRolesCreateData, ThrowOnError>) => (options.client ?? client).post<GlobalRolesCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGlobalRolesCreateData.parseAsync(data),
+    responseValidator: async (data) => await zGlobalRolesCreateResponse.parseAsync(data),
+    url: '/v1/roles',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1079,15 +1140,108 @@ export const tenantSwitchSwitch = <ThrowOnError extends boolean = false>(options
 });
 
 /**
- * List user tenant roles
+ * Delete role
  *
- * List user's roles across all tenants
+ * Delete a role
  *
- * Returns all tenants the user belongs to with their roles.
+ * System roles cannot be deleted.
+ * Fails if role is assigned to any users.
  */
-export const crossTenantRolesList = <ThrowOnError extends boolean = false>(options: Options<CrossTenantRolesListData, ThrowOnError>) => (options.client ?? client).get<CrossTenantRolesListResponses, unknown, ThrowOnError>({
-    requestValidator: async (data) => await zCrossTenantRolesListData.parseAsync(data),
-    responseValidator: async (data) => await zCrossTenantRolesListResponse.parseAsync(data),
-    url: '/v1/users/{userId}/tenant-roles',
+export const globalRolesDelete = <ThrowOnError extends boolean = false>(options: Options<GlobalRolesDeleteData, ThrowOnError>) => (options.client ?? client).delete<GlobalRolesDeleteResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGlobalRolesDeleteData.parseAsync(data),
+    responseValidator: async (data) => await zGlobalRolesDeleteResponse.parseAsync(data),
+    url: '/v1/roles/{roleId}',
+    ...options
+});
+
+/**
+ * Get role
+ *
+ * Get a role by ID
+ */
+export const globalRolesGet = <ThrowOnError extends boolean = false>(options: Options<GlobalRolesGetData, ThrowOnError>) => (options.client ?? client).get<GlobalRolesGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGlobalRolesGetData.parseAsync(data),
+    responseValidator: async (data) => await zGlobalRolesGetResponse.parseAsync(data),
+    url: '/v1/roles/{roleId}',
+    ...options
+});
+
+/**
+ * Update role
+ *
+ * Update a role
+ *
+ * System roles cannot be renamed but their permissions can be modified.
+ */
+export const globalRolesUpdate = <ThrowOnError extends boolean = false>(options: Options<GlobalRolesUpdateData, ThrowOnError>) => (options.client ?? client).patch<GlobalRolesUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zGlobalRolesUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zGlobalRolesUpdateResponse.parseAsync(data),
+    url: '/v1/roles/{roleId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List available contexts
+ *
+ * List all available contexts for the current user
+ *
+ * Returns all applications and tenants the user has access to.
+ */
+export const availableContextsList = <ThrowOnError extends boolean = false>(options?: Options<AvailableContextsListData, ThrowOnError>) => (options?.client ?? client).get<AvailableContextsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zAvailableContextsListData.parseAsync(data),
+    responseValidator: async (data) => await zAvailableContextsListResponse.parseAsync(data),
+    url: '/v1/users/me/available-contexts',
+    ...options
+});
+
+/**
+ * Get active context
+ *
+ * Get current user's active context
+ *
+ * Returns the currently active application and tenant for the user.
+ * This is for UI state management, not authorization decisions.
+ */
+export const currentUserContextGet = <ThrowOnError extends boolean = false>(options?: Options<CurrentUserContextGetData, ThrowOnError>) => (options?.client ?? client).get<CurrentUserContextGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zCurrentUserContextGetData.parseAsync(data),
+    responseValidator: async (data) => await zCurrentUserContextGetResponse.parseAsync(data),
+    url: '/v1/users/me/context',
+    ...options
+});
+
+/**
+ * Switch context
+ *
+ * Switch user's active context
+ *
+ * Changes the active application and/or tenant.
+ * This is for UI state management, not authorization decisions.
+ */
+export const contextSwitchSwitch = <ThrowOnError extends boolean = false>(options: Options<ContextSwitchSwitchData, ThrowOnError>) => (options.client ?? client).post<ContextSwitchSwitchResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zContextSwitchSwitchData.parseAsync(data),
+    responseValidator: async (data) => await zContextSwitchSwitchResponse.parseAsync(data),
+    url: '/v1/users/me/switch-context',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List all user roles
+ *
+ * List user's roles across all applications and tenants
+ *
+ * Returns all role assignments for the user across all contexts.
+ */
+export const allUserRolesList = <ThrowOnError extends boolean = false>(options: Options<AllUserRolesListData, ThrowOnError>) => (options.client ?? client).get<AllUserRolesListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zAllUserRolesListData.parseAsync(data),
+    responseValidator: async (data) => await zAllUserRolesListResponse.parseAsync(data),
+    url: '/v1/users/{userId}/roles',
     ...options
 });

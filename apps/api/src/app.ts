@@ -3,17 +3,23 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
 import scalarApiReference from "@scalar/fastify-api-reference";
 import { createNotificationSystem } from "@workspace/notifications";
+import { createStorageProvider } from "@workspace/storage";
 import Fastify from "fastify";
 import YAML from "yaml";
 import { env } from "./env";
 import { authRoutes } from "./modules/auth";
 import { authorizationModule } from "./modules/authorization";
 import { examplePostsModule } from "./modules/example-posts";
+import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
+import { jobsModule } from "./modules/jobs";
 import { notificationsModule } from "./modules/notifications";
 import authorizationPlugin from "./plugins/authorization";
+import rateLimitPlugin from "./plugins/rate-limit";
+import securityHeadersPlugin from "./plugins/security-headers";
 
 const require = createRequire(import.meta.url);
 
@@ -89,8 +95,24 @@ function buildNotificationConfig() {
   };
 }
 
+// Build storage provider config from environment
+function buildStorageConfig() {
+  return {
+    type: env.STORAGE_PROVIDER,
+    localPath: env.STORAGE_LOCAL_PATH,
+    s3Endpoint: env.S3_ENDPOINT,
+    s3Region: env.S3_REGION,
+    s3Bucket: env.S3_BUCKET,
+    s3AccessKeyId: env.S3_ACCESS_KEY_ID,
+    s3SecretAccessKey: env.S3_SECRET_ACCESS_KEY,
+  };
+}
+
 export async function buildApp() {
   const app = Fastify({ logger: true });
+
+  // Security Headers
+  await app.register(securityHeadersPlugin);
 
   // CORS
   await app.register(cors, {
@@ -101,8 +123,42 @@ export async function buildApp() {
   // Cookies
   await app.register(cookie);
 
+  // Multipart (for file uploads)
+  await app.register(multipart, {
+    limits: {
+      fileSize: env.FILE_MAX_SIZE,
+    },
+  });
+
+  // Rate Limiting
+  await app.register(rateLimitPlugin);
+
   // Authorization
   await app.register(authorizationPlugin);
+
+  // Idempotency (for POST/PATCH operations)
+  // As documented in docs/api-guide/06-quality/02-idempotency.md
+  if (env.IDEMPOTENCY_ENABLED) {
+    const { createCacheProvider } = await import("@workspace/cache");
+    const { default: idempotencyPlugin } = await import(
+      "./plugins/idempotency"
+    );
+
+    const cacheProvider = createCacheProvider(
+      env.CACHE_PROVIDER === "redis" && env.REDIS_URL
+        ? { type: "redis", url: env.REDIS_URL, keyPrefix: "idempotency:" }
+        : { type: "memory", maxSize: env.CACHE_MAX_SIZE }
+    );
+
+    await app.register(idempotencyPlugin, {
+      cacheProvider,
+      ttlSeconds: env.IDEMPOTENCY_TTL,
+    });
+  }
+
+  // Initialize storage provider for file uploads
+  const storageProvider = createStorageProvider(buildStorageConfig());
+  filesService.initFilesService(storageProvider);
 
   // Initialize notification system
   const notificationConfig = buildNotificationConfig();
@@ -145,6 +201,8 @@ export async function buildApp() {
   await app.register(authRoutes);
   await app.register(authorizationModule, { prefix: "/v1/orgs" });
   await app.register(examplePostsModule, { prefix: "/v1/orgs" });
+  await app.register(jobsModule, { prefix: "/v1/orgs" });
+  await app.register(filesModule, { prefix: "/v1/orgs" });
   await app.register(notificationsModule, { prefix: "/v1" });
 
   return app;

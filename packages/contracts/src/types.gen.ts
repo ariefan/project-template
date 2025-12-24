@@ -5,6 +5,36 @@ export type ClientOptions = {
 };
 
 /**
+ * User's active context (current app/tenant selection)
+ */
+export type ActiveContext = {
+    /**
+     * User ID
+     */
+    userId: string;
+    /**
+     * Currently active application ID
+     */
+    activeApplicationId: string;
+    /**
+     * Currently active tenant ID (null if no tenant selected)
+     */
+    activeTenantId?: string;
+    /**
+     * When the context was last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Active context response
+ */
+export type ActiveContextResponse = {
+    data: ActiveContext;
+    meta: ResponseMeta;
+};
+
+/**
  * API Key resource model
  *
  * Used for service accounts and automation.
@@ -510,9 +540,9 @@ export type CreateRoleRequest = {
      */
     description?: string;
     /**
-     * Permissions to grant (format: resource:action)
+     * Permissions to grant
      */
-    permissions: Array<string>;
+    permissions: Array<PermissionInput>;
 };
 
 /**
@@ -561,6 +591,28 @@ export type CreateWebhookRequest = {
      * Whether the webhook is active (default: true)
      */
     isActive?: boolean;
+};
+
+/**
+ * Cursor-based pagination for large datasets or real-time data
+ */
+export type CursorPagination = {
+    /**
+     * Maximum items returned per page
+     */
+    limit: number;
+    /**
+     * Whether there is a next page
+     */
+    hasNext: boolean;
+    /**
+     * Cursor for fetching the next page (null if no more pages)
+     */
+    nextCursor: string | null;
+    /**
+     * Cursor for fetching the previous page (null if on first page)
+     */
+    previousCursor: string | null;
 };
 
 /**
@@ -751,7 +803,18 @@ export type ExamplePost = {
 };
 
 /**
- * Post collection response
+ * Post collection response (cursor-based)
+ *
+ * Used for streaming/real-time scenarios or large datasets
+ */
+export type ExamplePostCursorListResponse = {
+    data: Array<ExamplePost>;
+    pagination: CursorPagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Post collection response (page-based)
  */
 export type ExamplePostListResponse = {
     data: Array<ExamplePost>;
@@ -1104,6 +1167,75 @@ export type PaginationLinks = {
 };
 
 /**
+ * Permission definition
+ *
+ * Permissions define what actions can be performed on resources.
+ * They support allow/deny effects and optional conditions.
+ */
+export type Permission = {
+    /**
+     * Resource identifier (e.g., "users", "invoices", "settings")
+     */
+    resource: string;
+    /**
+     * Action to perform on the resource
+     */
+    action: PermissionAction | string;
+    /**
+     * Whether to allow or deny this action
+     */
+    effect: PermissionEffect;
+    /**
+     * Optional condition for when this permission applies
+     */
+    condition?: PermissionCondition;
+};
+
+/**
+ * Permission actions
+ */
+export type PermissionAction = 'read' | 'create' | 'update' | 'delete' | 'manage' | '*';
+
+/**
+ * Permission condition - when the permission applies
+ *
+ * Conditions enable dynamic, context-aware access control.
+ */
+export type PermissionCondition = '' | 'owner' | 'shared';
+
+/**
+ * Permission effect - whether to allow or deny access
+ *
+ * When a user has multiple roles, permissions are combined:
+ * - If ANY role denies an action, it is denied (deny wins)
+ * - If no role denies and ANY role allows, it is allowed
+ * - If no rules match, access is denied (default deny)
+ */
+export type PermissionEffect = 'allow' | 'deny';
+
+/**
+ * Permission input for creating/updating roles
+ */
+export type PermissionInput = {
+    /**
+     * Resource identifier
+     */
+    resource: string;
+    /**
+     * Action to perform
+     */
+    action: string;
+    /**
+     * Effect (defaults to "allow" if not specified)
+     */
+    effect?: PermissionEffect;
+    /**
+     * Optional condition
+     */
+    condition?: PermissionCondition;
+};
+
+/**
  * Response metadata included in all API responses
  */
 export type ResponseMeta = {
@@ -1136,7 +1268,12 @@ export type ResponseMeta = {
 /**
  * Role resource model
  *
- * Roles are tenant-scoped and contain a set of permissions.
+ * Roles can be:
+ * - **Global roles**: App-scoped (tenantId is null), apply across all tenants
+ * - **Tenant roles**: Scoped to a specific organization
+ *
+ * Users can have multiple roles, and permissions are combined with
+ * deny-override semantics.
  */
 export type Role = {
     /**
@@ -1144,9 +1281,13 @@ export type Role = {
      */
     id: string;
     /**
-     * Tenant this role belongs to
+     * Application this role belongs to
      */
-    tenantId: string;
+    applicationId: string;
+    /**
+     * Tenant this role belongs to (null for global roles)
+     */
+    tenantId?: string;
     /**
      * Role name
      */
@@ -1156,13 +1297,17 @@ export type Role = {
      */
     description?: string;
     /**
-     * Permissions granted by this role (format: resource:action)
+     * Permissions granted by this role
      */
-    permissions: Array<string>;
+    permissions: Array<Permission>;
     /**
-     * Whether this is a system-defined role (cannot be deleted)
+     * Whether this is a system-defined role (cannot be deleted or renamed)
      */
     isSystemRole: boolean;
+    /**
+     * Whether this is a global role (tenantId is null)
+     */
+    isGlobalRole: boolean;
     /**
      * Timestamp when the role was created
      */
@@ -1171,6 +1316,10 @@ export type Role = {
      * Timestamp when the role was last updated
      */
     updatedAt: string;
+    /**
+     * User who created this role
+     */
+    createdBy?: string;
 };
 
 /**
@@ -1229,40 +1378,44 @@ export type SoftDeleteResponse = {
 };
 
 /**
- * Request to switch active tenant
+ * Request to switch active context (application and/or tenant)
  */
-export type SwitchTenantRequest = {
+export type SwitchContextRequest = {
     /**
-     * Target tenant ID
+     * Target application ID (optional, defaults to current)
      */
-    tenantId: string;
+    applicationId?: string;
+    /**
+     * Target tenant ID (optional, null to clear tenant context)
+     */
+    tenantId?: string;
 };
 
 /**
- * Tenant switch response with new token
+ * Context switch response
  */
-export type SwitchTenantResponse = {
+export type SwitchContextResponse = {
     data: {
         /**
-         * New active tenant ID
+         * New active application ID
          */
-        tenantId: string;
+        applicationId: string;
         /**
-         * Tenant name
+         * New active tenant ID (null if no tenant)
          */
-        tenantName: string;
+        tenantId?: string;
         /**
-         * Roles in the new tenant
+         * Tenant name (if tenant selected)
+         */
+        tenantName?: string;
+        /**
+         * Roles in the new context
          */
         roles: Array<string>;
         /**
-         * Permissions in the new tenant
+         * Effective permissions in the new context
          */
-        permissions: Array<string>;
-        /**
-         * New access token scoped to the tenant
-         */
-        accessToken: string;
+        permissions: Array<Permission>;
     };
     meta: ResponseMeta;
 };
@@ -1330,9 +1483,9 @@ export type UpdateRoleRequest = {
      */
     description?: string;
     /**
-     * Permissions to grant
+     * Permissions to grant (replaces existing permissions)
      */
-    permissions?: Array<string>;
+    permissions?: Array<PermissionInput>;
 };
 
 /**
@@ -1426,30 +1579,62 @@ export type User = {
 };
 
 /**
- * User collection response
+ * User's context across applications and tenants
  */
-export type UserListResponse = {
-    data: Array<User>;
-    pagination: Pagination;
-    meta: ResponseMeta;
-};
-
-/**
- * User's permissions within a tenant
- */
-export type UserPermissions = {
+export type UserContext = {
     /**
-     * User ID
+     * Application ID
      */
-    userId: string;
+    applicationId: string;
+    /**
+     * Application name
+     */
+    applicationName: string;
     /**
      * Tenant ID
      */
     tenantId: string;
     /**
-     * Roles assigned to the user
+     * Tenant name
      */
-    roles: Array<{
+    tenantName: string;
+    /**
+     * Role names in this context
+     */
+    roles: Array<string>;
+};
+
+/**
+ * User available contexts response (all apps/tenants user belongs to)
+ */
+export type UserContextListResponse = {
+    data: Array<UserContext>;
+    meta: ResponseMeta;
+};
+
+/**
+ * User's effective permissions
+ *
+ * Represents the combined permissions from all roles assigned to a user
+ * within a specific application and tenant context.
+ */
+export type UserEffectivePermissions = {
+    /**
+     * User ID
+     */
+    userId: string;
+    /**
+     * Application ID
+     */
+    applicationId: string;
+    /**
+     * Tenant ID (context for permission calculation)
+     */
+    tenantId?: string;
+    /**
+     * Global roles (app-scoped, no tenant)
+     */
+    globalRoles: Array<{
         /**
          * Role ID
          */
@@ -1461,19 +1646,49 @@ export type UserPermissions = {
         /**
          * Permissions from this role
          */
-        permissions: Array<string>;
+        permissions: Array<Permission>;
     }>;
     /**
-     * Combined permissions from all roles (deduplicated, expanded)
+     * Tenant-specific roles
      */
-    effectivePermissions: Array<string>;
+    tenantRoles: Array<{
+        /**
+         * Role ID
+         */
+        id: string;
+        /**
+         * Role name
+         */
+        name: string;
+        /**
+         * Permissions from this role
+         */
+        permissions: Array<Permission>;
+    }>;
+    /**
+     * Combined effective permissions (after deny-override resolution)
+     */
+    effectivePermissions: Array<Permission>;
+    /**
+     * Simple list of allowed actions (for quick checks)
+     */
+    allowedActions: Array<string>;
 };
 
 /**
- * User permissions response
+ * User effective permissions response
  */
-export type UserPermissionsResponse = {
-    data: UserPermissions;
+export type UserEffectivePermissionsResponse = {
+    data: UserEffectivePermissions;
+    meta: ResponseMeta;
+};
+
+/**
+ * User collection response
+ */
+export type UserListResponse = {
+    data: Array<User>;
+    pagination: Pagination;
     meta: ResponseMeta;
 };
 
@@ -1486,17 +1701,28 @@ export type UserResponse = {
 };
 
 /**
- * User's role assignment within a tenant
+ * User's role assignment
+ *
+ * Represents a single role assigned to a user within a specific
+ * application and optional tenant context.
  */
-export type UserRole = {
+export type UserRoleAssignment = {
+    /**
+     * Assignment ID
+     */
+    id: string;
     /**
      * User ID
      */
     userId: string;
     /**
-     * Tenant ID
+     * Application ID
      */
-    tenantId: string;
+    applicationId: string;
+    /**
+     * Tenant ID (null for global role assignments)
+     */
+    tenantId?: string;
     /**
      * Role ID
      */
@@ -1506,46 +1732,32 @@ export type UserRole = {
      */
     roleName: string;
     /**
+     * Whether this is a global role assignment
+     */
+    isGlobalRole: boolean;
+    /**
      * When the role was assigned
      */
     assignedAt: string;
     /**
      * Who assigned the role
      */
-    assignedBy: string;
+    assignedBy?: string;
+};
+
+/**
+ * User role assignments list response
+ */
+export type UserRoleAssignmentListResponse = {
+    data: Array<UserRoleAssignment>;
+    meta: ResponseMeta;
 };
 
 /**
  * User role assignment response
  */
-export type UserRoleResponse = {
-    data: UserRole;
-    meta: ResponseMeta;
-};
-
-/**
- * User's roles across all tenants
- */
-export type UserTenantRoles = {
-    /**
-     * Tenant ID
-     */
-    tenantId: string;
-    /**
-     * Tenant name
-     */
-    tenantName: string;
-    /**
-     * Role names in this tenant
-     */
-    roles: Array<string>;
-};
-
-/**
- * User tenant roles response (all tenants)
- */
-export type UserTenantRolesResponse = {
-    data: Array<UserTenantRoles>;
+export type UserRoleAssignmentResponse = {
+    data: UserRoleAssignment;
     meta: ResponseMeta;
 };
 
@@ -2412,6 +2624,78 @@ export type ExamplePostsBatchCreateResponses = {
 
 export type ExamplePostsBatchCreateResponse = ExamplePostsBatchCreateResponses[keyof ExamplePostsBatchCreateResponses];
 
+export type ExamplePostsBatchRestoreData = {
+    /**
+     * Post IDs to restore
+     */
+    body: {
+        ids: Array<string>;
+        options?: BatchOptions;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/example-posts/batch/restore';
+};
+
+export type ExamplePostsBatchRestoreResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: {
+        /**
+         * Results for each item in the batch
+         */
+        results: Array<{
+            /**
+             * Index of the item in the original request array
+             */
+            index: number;
+            /**
+             * Status of the operation for this item
+             */
+            status: 'success' | 'error' | 'skipped';
+            /**
+             * The created/updated data (present if status is success)
+             */
+            data?: ExamplePost;
+            /**
+             * Error details (present if status is error)
+             */
+            error?: {
+                /**
+                 * Error code
+                 */
+                code: string;
+                /**
+                 * Error message
+                 */
+                message: string;
+            };
+            /**
+             * Original input (included for failed items to help with retry/debugging)
+             */
+            input?: {
+                [key: string]: unknown;
+            };
+        }>;
+        /**
+         * Summary of operation results
+         */
+        summary: BatchSummary;
+        /**
+         * Response metadata
+         */
+        meta: ResponseMeta;
+    } | ErrorResponse;
+};
+
+export type ExamplePostsBatchRestoreResponse = ExamplePostsBatchRestoreResponses[keyof ExamplePostsBatchRestoreResponses];
+
 export type ExamplePostsBatchSoftDeleteData = {
     /**
      * Post IDs to soft delete
@@ -2438,6 +2722,82 @@ export type ExamplePostsBatchSoftDeleteResponses = {
 };
 
 export type ExamplePostsBatchSoftDeleteResponse = ExamplePostsBatchSoftDeleteResponses[keyof ExamplePostsBatchSoftDeleteResponses];
+
+export type ExamplePostsListCursorData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Cursor for fetching next page (post ID from previous response)
+         */
+        cursor?: string;
+        /**
+         * Maximum items to return (max: 100, default: 50)
+         */
+        limit?: number;
+        /**
+         * Sort order (e.g., "-createdAt" for desc, "createdAt" for asc)
+         */
+        orderBy?: string;
+        /**
+         * Filter by post status
+         */
+        status?: ExamplePostStatus;
+        /**
+         * Filter by author ID
+         */
+        authorId?: string;
+        /**
+         * Full-text search query
+         */
+        search?: string;
+    };
+    url: '/v1/orgs/{orgId}/example-posts/cursor';
+};
+
+export type ExamplePostsListCursorResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExamplePostCursorListResponse | ErrorResponse;
+};
+
+export type ExamplePostsListCursorResponse = ExamplePostsListCursorResponses[keyof ExamplePostsListCursorResponses];
+
+export type ExamplePostsListDeletedData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Items per page (max 100)
+         */
+        pageSize?: number;
+    };
+    url: '/v1/orgs/{orgId}/example-posts/deleted';
+};
+
+export type ExamplePostsListDeletedResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ExamplePostListResponse | ErrorResponse;
+};
+
+export type ExamplePostsListDeletedResponse = ExamplePostsListDeletedResponses[keyof ExamplePostsListDeletedResponses];
 
 export type ExamplePostsDeleteData = {
     body?: never;
@@ -3284,7 +3644,7 @@ export type JobsCancelResponses = {
 
 export type JobsCancelResponse = JobsCancelResponses[keyof JobsCancelResponses];
 
-export type RolesListData = {
+export type TenantRolesListData = {
     body?: never;
     path: {
         /**
@@ -3309,16 +3669,16 @@ export type RolesListData = {
     url: '/v1/orgs/{orgId}/roles';
 };
 
-export type RolesListResponses = {
+export type TenantRolesListResponses = {
     /**
      * The request has succeeded.
      */
     200: RoleListResponse | ErrorResponse;
 };
 
-export type RolesListResponse = RolesListResponses[keyof RolesListResponses];
+export type TenantRolesListResponse = TenantRolesListResponses[keyof TenantRolesListResponses];
 
-export type RolesCreateData = {
+export type TenantRolesCreateData = {
     /**
      * Role data
      */
@@ -3333,7 +3693,7 @@ export type RolesCreateData = {
     url: '/v1/orgs/{orgId}/roles';
 };
 
-export type RolesCreateResponses = {
+export type TenantRolesCreateResponses = {
     /**
      * The request has succeeded.
      */
@@ -3344,9 +3704,9 @@ export type RolesCreateResponses = {
     201: RoleResponse;
 };
 
-export type RolesCreateResponse = RolesCreateResponses[keyof RolesCreateResponses];
+export type TenantRolesCreateResponse = TenantRolesCreateResponses[keyof TenantRolesCreateResponses];
 
-export type RolesDeleteData = {
+export type TenantRolesDeleteData = {
     body?: never;
     path: {
         /**
@@ -3362,7 +3722,7 @@ export type RolesDeleteData = {
     url: '/v1/orgs/{orgId}/roles/{roleId}';
 };
 
-export type RolesDeleteResponses = {
+export type TenantRolesDeleteResponses = {
     /**
      * The request has succeeded.
      */
@@ -3373,9 +3733,9 @@ export type RolesDeleteResponses = {
     204: void;
 };
 
-export type RolesDeleteResponse = RolesDeleteResponses[keyof RolesDeleteResponses];
+export type TenantRolesDeleteResponse = TenantRolesDeleteResponses[keyof TenantRolesDeleteResponses];
 
-export type RolesGetData = {
+export type TenantRolesGetData = {
     body?: never;
     path: {
         /**
@@ -3391,16 +3751,16 @@ export type RolesGetData = {
     url: '/v1/orgs/{orgId}/roles/{roleId}';
 };
 
-export type RolesGetResponses = {
+export type TenantRolesGetResponses = {
     /**
      * The request has succeeded.
      */
     200: RoleResponse | ErrorResponse;
 };
 
-export type RolesGetResponse = RolesGetResponses[keyof RolesGetResponses];
+export type TenantRolesGetResponse = TenantRolesGetResponses[keyof TenantRolesGetResponses];
 
-export type RolesUpdateData = {
+export type TenantRolesUpdateData = {
     /**
      * Role update data
      */
@@ -3419,14 +3779,14 @@ export type RolesUpdateData = {
     url: '/v1/orgs/{orgId}/roles/{roleId}';
 };
 
-export type RolesUpdateResponses = {
+export type TenantRolesUpdateResponses = {
     /**
      * The request has succeeded.
      */
     200: RoleResponse | ErrorResponse;
 };
 
-export type RolesUpdateResponse = RolesUpdateResponses[keyof RolesUpdateResponses];
+export type TenantRolesUpdateResponse = TenantRolesUpdateResponses[keyof TenantRolesUpdateResponses];
 
 export type UsersListData = {
     body?: never;
@@ -3870,7 +4230,7 @@ export type UsersRestoreResponses = {
 
 export type UsersRestoreResponse = UsersRestoreResponses[keyof UsersRestoreResponses];
 
-export type UserPermissionsEndpointGetData = {
+export type UserPermissionsGetData = {
     body?: never;
     path: {
         /**
@@ -3886,16 +4246,16 @@ export type UserPermissionsEndpointGetData = {
     url: '/v1/orgs/{orgId}/users/{userId}/permissions';
 };
 
-export type UserPermissionsEndpointGetResponses = {
+export type UserPermissionsGetResponses = {
     /**
      * The request has succeeded.
      */
-    200: UserPermissionsResponse | ErrorResponse;
+    200: UserEffectivePermissionsResponse | ErrorResponse;
 };
 
-export type UserPermissionsEndpointGetResponse = UserPermissionsEndpointGetResponses[keyof UserPermissionsEndpointGetResponses];
+export type UserPermissionsGetResponse = UserPermissionsGetResponses[keyof UserPermissionsGetResponses];
 
-export type UserRolesListData = {
+export type UserTenantRolesListData = {
     body?: never;
     path: {
         /**
@@ -3911,19 +4271,16 @@ export type UserRolesListData = {
     url: '/v1/orgs/{orgId}/users/{userId}/roles';
 };
 
-export type UserRolesListResponses = {
+export type UserTenantRolesListResponses = {
     /**
      * The request has succeeded.
      */
-    200: {
-        data: Array<UserRole>;
-        meta: ResponseMeta;
-    } | ErrorResponse;
+    200: UserRoleAssignmentListResponse | ErrorResponse;
 };
 
-export type UserRolesListResponse = UserRolesListResponses[keyof UserRolesListResponses];
+export type UserTenantRolesListResponse = UserTenantRolesListResponses[keyof UserTenantRolesListResponses];
 
-export type UserRolesAssignData = {
+export type UserTenantRolesAssignData = {
     /**
      * Role assignment
      */
@@ -3942,7 +4299,7 @@ export type UserRolesAssignData = {
     url: '/v1/orgs/{orgId}/users/{userId}/roles';
 };
 
-export type UserRolesAssignResponses = {
+export type UserTenantRolesAssignResponses = {
     /**
      * The request has succeeded.
      */
@@ -3950,12 +4307,12 @@ export type UserRolesAssignResponses = {
     /**
      * The request has succeeded and a new resource has been created as a result.
      */
-    201: UserRoleResponse;
+    201: UserRoleAssignmentResponse;
 };
 
-export type UserRolesAssignResponse = UserRolesAssignResponses[keyof UserRolesAssignResponses];
+export type UserTenantRolesAssignResponse = UserTenantRolesAssignResponses[keyof UserTenantRolesAssignResponses];
 
-export type UserRolesRemoveData = {
+export type UserTenantRolesRemoveData = {
     body?: never;
     path: {
         /**
@@ -3975,7 +4332,7 @@ export type UserRolesRemoveData = {
     url: '/v1/orgs/{orgId}/users/{userId}/roles/{roleId}';
 };
 
-export type UserRolesRemoveResponses = {
+export type UserTenantRolesRemoveResponses = {
     /**
      * The request has succeeded.
      */
@@ -3986,7 +4343,7 @@ export type UserRolesRemoveResponses = {
     204: void;
 };
 
-export type UserRolesRemoveResponse = UserRolesRemoveResponses[keyof UserRolesRemoveResponses];
+export type UserTenantRolesRemoveResponse = UserTenantRolesRemoveResponses[keyof UserTenantRolesRemoveResponses];
 
 export type WebhooksListData = {
     body?: never;
@@ -4327,31 +4684,180 @@ export type WebhooksTestResponses = {
 
 export type WebhooksTestResponse = WebhooksTestResponses[keyof WebhooksTestResponses];
 
-export type TenantSwitchSwitchData = {
-    /**
-     * Target tenant
-     */
-    body: SwitchTenantRequest;
-    path: {
+export type GlobalRolesListData = {
+    body?: never;
+    path?: never;
+    query?: {
         /**
-         * User ID
+         * Page number (1-indexed)
          */
-        userId: string;
+        page?: number;
+        /**
+         * Number of items per page
+         */
+        pageSize?: number;
+        /**
+         * Filter by system role status
+         */
+        isSystemRole?: boolean;
     };
-    query?: never;
-    url: '/v1/users/{userId}/switch-tenant';
+    url: '/v1/roles';
 };
 
-export type TenantSwitchSwitchResponses = {
+export type GlobalRolesListResponses = {
     /**
      * The request has succeeded.
      */
-    200: SwitchTenantResponse | ErrorResponse;
+    200: RoleListResponse | ErrorResponse;
 };
 
-export type TenantSwitchSwitchResponse = TenantSwitchSwitchResponses[keyof TenantSwitchSwitchResponses];
+export type GlobalRolesListResponse = GlobalRolesListResponses[keyof GlobalRolesListResponses];
 
-export type CrossTenantRolesListData = {
+export type GlobalRolesCreateData = {
+    /**
+     * Role data
+     */
+    body: CreateRoleRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/roles';
+};
+
+export type GlobalRolesCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: RoleResponse;
+};
+
+export type GlobalRolesCreateResponse = GlobalRolesCreateResponses[keyof GlobalRolesCreateResponses];
+
+export type GlobalRolesDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        roleId: string;
+    };
+    query?: never;
+    url: '/v1/roles/{roleId}';
+};
+
+export type GlobalRolesDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type GlobalRolesDeleteResponse = GlobalRolesDeleteResponses[keyof GlobalRolesDeleteResponses];
+
+export type GlobalRolesGetData = {
+    body?: never;
+    path: {
+        /**
+         * Role ID
+         */
+        roleId: string;
+    };
+    query?: never;
+    url: '/v1/roles/{roleId}';
+};
+
+export type GlobalRolesGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: RoleResponse | ErrorResponse;
+};
+
+export type GlobalRolesGetResponse = GlobalRolesGetResponses[keyof GlobalRolesGetResponses];
+
+export type GlobalRolesUpdateData = {
+    /**
+     * Role update data
+     */
+    body: UpdateRoleRequest;
+    path: {
+        /**
+         * Role ID
+         */
+        roleId: string;
+    };
+    query?: never;
+    url: '/v1/roles/{roleId}';
+};
+
+export type GlobalRolesUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: RoleResponse | ErrorResponse;
+};
+
+export type GlobalRolesUpdateResponse = GlobalRolesUpdateResponses[keyof GlobalRolesUpdateResponses];
+
+export type AvailableContextsListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/users/me/available-contexts';
+};
+
+export type AvailableContextsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: UserContextListResponse | ErrorResponse;
+};
+
+export type AvailableContextsListResponse = AvailableContextsListResponses[keyof AvailableContextsListResponses];
+
+export type CurrentUserContextGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/users/me/context';
+};
+
+export type CurrentUserContextGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ActiveContextResponse | ErrorResponse;
+};
+
+export type CurrentUserContextGetResponse = CurrentUserContextGetResponses[keyof CurrentUserContextGetResponses];
+
+export type ContextSwitchSwitchData = {
+    /**
+     * Target context
+     */
+    body: SwitchContextRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/users/me/switch-context';
+};
+
+export type ContextSwitchSwitchResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SwitchContextResponse | ErrorResponse;
+};
+
+export type ContextSwitchSwitchResponse = ContextSwitchSwitchResponses[keyof ContextSwitchSwitchResponses];
+
+export type AllUserRolesListData = {
     body?: never;
     path: {
         /**
@@ -4360,14 +4866,14 @@ export type CrossTenantRolesListData = {
         userId: string;
     };
     query?: never;
-    url: '/v1/users/{userId}/tenant-roles';
+    url: '/v1/users/{userId}/roles';
 };
 
-export type CrossTenantRolesListResponses = {
+export type AllUserRolesListResponses = {
     /**
      * The request has succeeded.
      */
-    200: UserTenantRolesResponse | ErrorResponse;
+    200: UserRoleAssignmentListResponse | ErrorResponse;
 };
 
-export type CrossTenantRolesListResponse = CrossTenantRolesListResponses[keyof CrossTenantRolesListResponses];
+export type AllUserRolesListResponse = AllUserRolesListResponses[keyof AllUserRolesListResponses];

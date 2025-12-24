@@ -19,6 +19,7 @@ tags:
   - name: Users
   - name: Files
   - name: Roles
+  - name: Context
   - name: API Keys
   - name: Audit Logs
   - name: Jobs
@@ -920,6 +921,104 @@ paths:
                 options:
                   $ref: '#/components/schemas/BatchOptions'
         description: Batch update request
+  /v1/orgs/{orgId}/example-posts/batch/restore:
+    post:
+      operationId: ExamplePosts_batchRestore
+      summary: Batch restore example posts
+      description: Batch restore soft-deleted posts
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    required:
+                      - results
+                      - summary
+                      - meta
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - index
+                            - status
+                          properties:
+                            index:
+                              type: integer
+                              format: int32
+                              description: Index of the item in the original request array
+                            status:
+                              type: string
+                              enum:
+                                - success
+                                - error
+                                - skipped
+                              description: Status of the operation for this item
+                            data:
+                              allOf:
+                                - $ref: '#/components/schemas/ExamplePost'
+                              description: The created/updated data (present if status is success)
+                            error:
+                              type: object
+                              properties:
+                                code:
+                                  type: string
+                                  description: Error code
+                                message:
+                                  type: string
+                                  description: Error message
+                              required:
+                                - code
+                                - message
+                              description: Error details (present if status is error)
+                            input:
+                              type: object
+                              additionalProperties: {}
+                              description: Original input (included for failed items to help with retry/debugging)
+                          description: Result of a single item in a batch operation
+                        description: Results for each item in the batch
+                      summary:
+                        allOf:
+                          - $ref: '#/components/schemas/BatchSummary'
+                        description: Summary of operation results
+                      meta:
+                        allOf:
+                          - $ref: '#/components/schemas/ResponseMeta'
+                        description: Response metadata
+                    description: |-
+                      Generic batch response envelope
+
+                      Uses results array with status field for each item, matching documentation
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                options:
+                  $ref: '#/components/schemas/BatchOptions'
+              required:
+                - ids
+        description: Post IDs to restore
   /v1/orgs/{orgId}/example-posts/batch/soft-delete:
     post:
       operationId: ExamplePosts_batchSoftDelete
@@ -959,6 +1058,119 @@ paths:
               required:
                 - ids
         description: Post IDs to soft delete
+  /v1/orgs/{orgId}/example-posts/cursor:
+    get:
+      operationId: ExamplePosts_listCursor
+      summary: List example posts (cursor-based)
+      description: |-
+        List posts using cursor-based pagination
+
+        Best for large datasets (>100K records) or real-time data where
+        consistent ordering is critical. Use page-based pagination for
+        typical UI scenarios with page numbers.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: cursor
+          in: query
+          required: false
+          description: Cursor for fetching next page (post ID from previous response)
+          schema:
+            type: string
+          explode: false
+        - name: limit
+          in: query
+          required: false
+          description: 'Maximum items to return (max: 100, default: 50)'
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: Sort order (e.g., "-createdAt" for desc, "createdAt" for asc)
+          schema:
+            type: string
+          explode: false
+        - name: status
+          in: query
+          required: false
+          description: Filter by post status
+          schema:
+            $ref: '#/components/schemas/ExamplePostStatus'
+          explode: false
+        - name: authorId
+          in: query
+          required: false
+          description: Filter by author ID
+          schema:
+            type: string
+          explode: false
+        - name: search
+          in: query
+          required: false
+          description: Full-text search query
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExamplePostCursorListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
+  /v1/orgs/{orgId}/example-posts/deleted:
+    get:
+      operationId: ExamplePosts_listDeleted
+      summary: List deleted example posts
+      description: List soft-deleted posts
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Items per page (max 100)
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ExamplePostListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - ExamplePosts
   /v1/orgs/{orgId}/example-posts/{id}:
     get:
       operationId: ExamplePosts_get
@@ -2105,12 +2317,12 @@ paths:
         - Jobs
   /v1/orgs/{orgId}/roles:
     get:
-      operationId: Roles_list
-      summary: List roles
+      operationId: TenantRoles_list
+      summary: List tenant roles
       description: |-
-        List all roles in an organization
+        List all roles in a tenant
 
-        Returns both system roles and custom roles.
+        Returns both system roles and custom roles for this tenant.
       parameters:
         - name: orgId
           in: path
@@ -2155,12 +2367,12 @@ paths:
       tags:
         - Roles
     post:
-      operationId: Roles_create
-      summary: Create role
+      operationId: TenantRoles_create
+      summary: Create tenant role
       description: |-
-        Create a custom role
+        Create a tenant-scoped role
 
-        System roles cannot be created via API.
+        Creates a custom role for this specific tenant.
       parameters:
         - name: orgId
           in: path
@@ -2192,7 +2404,7 @@ paths:
         description: Role data
   /v1/orgs/{orgId}/roles/{roleId}:
     get:
-      operationId: Roles_get
+      operationId: TenantRoles_get
       summary: Get role
       description: Get a role by ID
       parameters:
@@ -2220,12 +2432,12 @@ paths:
       tags:
         - Roles
     patch:
-      operationId: Roles_update
+      operationId: TenantRoles_update
       summary: Update role
       description: |-
-        Update a custom role
+        Update a role
 
-        System roles cannot be modified.
+        System roles cannot be renamed but their permissions can be modified.
       parameters:
         - name: orgId
           in: path
@@ -2258,10 +2470,10 @@ paths:
               $ref: '#/components/schemas/UpdateRoleRequest'
         description: Role update data
     delete:
-      operationId: Roles_delete
+      operationId: TenantRoles_delete
       summary: Delete role
       description: |-
-        Delete a custom role
+        Delete a role
 
         System roles cannot be deleted.
         Fails if role is assigned to any users.
@@ -2970,12 +3182,13 @@ paths:
         - Users
   /v1/orgs/{orgId}/users/{userId}/permissions:
     get:
-      operationId: UserPermissionsEndpoint_get
-      summary: Get user permissions
+      operationId: UserPermissions_get
+      summary: Get user effective permissions
       description: |-
         Get user's effective permissions in this tenant
 
-        Returns all roles and the combined effective permissions.
+        Returns all roles (global + tenant) and the combined effective permissions
+        after applying deny-override resolution.
       parameters:
         - name: orgId
           in: path
@@ -2996,15 +3209,18 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - $ref: '#/components/schemas/UserPermissionsResponse'
+                  - $ref: '#/components/schemas/UserEffectivePermissionsResponse'
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Roles
   /v1/orgs/{orgId}/users/{userId}/roles:
     get:
-      operationId: UserRoles_list
-      summary: List user roles
-      description: List roles assigned to a user in this tenant
+      operationId: UserTenantRoles_list
+      summary: List user roles in tenant
+      description: |-
+        List roles assigned to a user in this tenant
+
+        Returns both global and tenant-specific role assignments.
       parameters:
         - name: orgId
           in: path
@@ -3025,24 +3241,14 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/UserRole'
-                      meta:
-                        $ref: '#/components/schemas/ResponseMeta'
-                    required:
-                      - data
-                      - meta
+                  - $ref: '#/components/schemas/UserRoleAssignmentListResponse'
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Roles
     post:
-      operationId: UserRoles_assign
+      operationId: UserTenantRoles_assign
       summary: Assign role to user
-      description: Assign a role to a user
+      description: Assign a role to a user in this tenant
       parameters:
         - name: orgId
           in: path
@@ -3068,7 +3274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserRoleResponse'
+                $ref: '#/components/schemas/UserRoleAssignmentResponse'
       tags:
         - Roles
       requestBody:
@@ -3080,7 +3286,7 @@ paths:
         description: Role assignment
   /v1/orgs/{orgId}/users/{userId}/roles/{roleId}:
     delete:
-      operationId: UserRoles_remove
+      operationId: UserTenantRoles_remove
       summary: Remove role from user
       description: Remove a role from a user
       parameters:
@@ -3550,19 +3756,91 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Webhooks
-  /v1/users/{userId}/switch-tenant:
-    post:
-      operationId: TenantSwitch_switch
-      summary: Switch tenant
+  /v1/roles:
+    get:
+      operationId: GlobalRoles_list
+      summary: List global roles
       description: |-
-        Switch user's active tenant
+        List all global roles
 
-        Returns a new access token scoped to the target tenant.
+        Returns global roles (no tenant scope) for the default application.
       parameters:
-        - name: userId
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: isSystemRole
+          in: query
+          required: false
+          description: Filter by system role status
+          schema:
+            type: boolean
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/RoleListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Roles
+    post:
+      operationId: GlobalRoles_create
+      summary: Create global role
+      description: |-
+        Create a global role
+
+        Creates a role that applies across all tenants.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+      tags:
+        - Roles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+        description: Role data
+  /v1/roles/{roleId}:
+    get:
+      operationId: GlobalRoles_get
+      summary: Get role
+      description: Get a role by ID
+      parameters:
+        - name: roleId
           in: path
           required: true
-          description: User ID
+          description: Role ID
           schema:
             type: string
       responses:
@@ -3572,7 +3850,32 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - $ref: '#/components/schemas/SwitchTenantResponse'
+                  - $ref: '#/components/schemas/RoleResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Roles
+    patch:
+      operationId: GlobalRoles_update
+      summary: Update role
+      description: |-
+        Update a role
+
+        System roles cannot be renamed but their permissions can be modified.
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/RoleResponse'
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Roles
@@ -3581,16 +3884,111 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SwitchTenantRequest'
-        description: Target tenant
-  /v1/users/{userId}/tenant-roles:
-    get:
-      operationId: CrossTenantRoles_list
-      summary: List user tenant roles
+              $ref: '#/components/schemas/UpdateRoleRequest'
+        description: Role update data
+    delete:
+      operationId: GlobalRoles_delete
+      summary: Delete role
       description: |-
-        List user's roles across all tenants
+        Delete a role
 
-        Returns all tenants the user belongs to with their roles.
+        System roles cannot be deleted.
+        Fails if role is assigned to any users.
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          description: Role ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Roles
+  /v1/users/me/available-contexts:
+    get:
+      operationId: AvailableContexts_list
+      summary: List available contexts
+      description: |-
+        List all available contexts for the current user
+
+        Returns all applications and tenants the user has access to.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/UserContextListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Context
+  /v1/users/me/context:
+    get:
+      operationId: CurrentUserContext_get
+      summary: Get active context
+      description: |-
+        Get current user's active context
+
+        Returns the currently active application and tenant for the user.
+        This is for UI state management, not authorization decisions.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ActiveContextResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Context
+  /v1/users/me/switch-context:
+    post:
+      operationId: ContextSwitch_switch
+      summary: Switch context
+      description: |-
+        Switch user's active context
+
+        Changes the active application and/or tenant.
+        This is for UI state management, not authorization decisions.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SwitchContextResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Context
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchContextRequest'
+        description: Target context
+  /v1/users/{userId}/roles:
+    get:
+      operationId: AllUserRoles_list
+      summary: List all user roles
+      description: |-
+        List user's roles across all applications and tenants
+
+        Returns all role assignments for the user across all contexts.
       parameters:
         - name: userId
           in: path
@@ -3605,12 +4003,47 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - $ref: '#/components/schemas/UserTenantRolesResponse'
+                  - $ref: '#/components/schemas/UserRoleAssignmentListResponse'
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Roles
 components:
   schemas:
+    ActiveContext:
+      type: object
+      required:
+        - userId
+        - activeApplicationId
+        - updatedAt
+      properties:
+        userId:
+          type: string
+          description: User ID
+          example: usr_123
+        activeApplicationId:
+          type: string
+          description: Currently active application ID
+          example: app_default
+        activeTenantId:
+          type: string
+          description: Currently active tenant ID (null if no tenant selected)
+          example: org_abc123
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the context was last updated
+      description: User's active context (current app/tenant selection)
+    ActiveContextResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ActiveContext'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Active context response
     ApiKey:
       type: object
       required:
@@ -4171,9 +4604,9 @@ components:
         permissions:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/PermissionInput'
           minItems: 1
-          description: 'Permissions to grant (format: resource:action)'
+          description: Permissions to grant
       description: Request to create a custom role
     CreateUserRequest:
       type: object
@@ -4226,6 +4659,30 @@ components:
           type: boolean
           description: 'Whether the webhook is active (default: true)'
       description: Request to create a webhook
+    CursorPagination:
+      type: object
+      required:
+        - limit
+        - hasNext
+        - nextCursor
+        - previousCursor
+      properties:
+        limit:
+          type: integer
+          format: int32
+          description: Maximum items returned per page
+        hasNext:
+          type: boolean
+          description: Whether there is a next page
+        nextCursor:
+          type: string
+          nullable: true
+          description: Cursor for fetching the next page (null if no more pages)
+        previousCursor:
+          type: string
+          nullable: true
+          description: Cursor for fetching the previous page (null if on first page)
+      description: Cursor-based pagination for large datasets or real-time data
     Error:
       type: object
       required:
@@ -4432,6 +4889,25 @@ components:
         - Multi-tenant scoping (orgId)
         - Status workflow (draft → published → archived)
         - Soft delete with restore capability
+    ExamplePostCursorListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamplePost'
+        pagination:
+          $ref: '#/components/schemas/CursorPagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: |-
+        Post collection response (cursor-based)
+
+        Used for streaming/real-time scenarios or large datasets
     ExamplePostListResponse:
       type: object
       required:
@@ -4447,7 +4923,7 @@ components:
           $ref: '#/components/schemas/Pagination'
         meta:
           $ref: '#/components/schemas/ResponseMeta'
-      description: Post collection response
+      description: Post collection response (page-based)
     ExamplePostResponse:
       type: object
       required:
@@ -4858,6 +5334,89 @@ components:
           nullable: true
           description: URL for the last page
       description: Pagination links for navigating through paginated results
+    Permission:
+      type: object
+      required:
+        - resource
+        - action
+        - effect
+      properties:
+        resource:
+          type: string
+          description: Resource identifier (e.g., "users", "invoices", "settings")
+          example: documents
+        action:
+          anyOf:
+            - $ref: '#/components/schemas/PermissionAction'
+            - type: string
+          description: Action to perform on the resource
+          example: update
+        effect:
+          allOf:
+            - $ref: '#/components/schemas/PermissionEffect'
+          description: Whether to allow or deny this action
+        condition:
+          allOf:
+            - $ref: '#/components/schemas/PermissionCondition'
+          description: Optional condition for when this permission applies
+      description: |-
+        Permission definition
+
+        Permissions define what actions can be performed on resources.
+        They support allow/deny effects and optional conditions.
+    PermissionAction:
+      type: string
+      enum:
+        - read
+        - create
+        - update
+        - delete
+        - manage
+        - '*'
+      description: Permission actions
+    PermissionCondition:
+      type: string
+      enum:
+        - ''
+        - owner
+        - shared
+      description: |-
+        Permission condition - when the permission applies
+
+        Conditions enable dynamic, context-aware access control.
+    PermissionEffect:
+      type: string
+      enum:
+        - allow
+        - deny
+      description: |-
+        Permission effect - whether to allow or deny access
+
+        When a user has multiple roles, permissions are combined:
+        - If ANY role denies an action, it is denied (deny wins)
+        - If no role denies and ANY role allows, it is allowed
+        - If no rules match, access is denied (default deny)
+    PermissionInput:
+      type: object
+      required:
+        - resource
+        - action
+      properties:
+        resource:
+          type: string
+          description: Resource identifier
+        action:
+          type: string
+          description: Action to perform
+        effect:
+          allOf:
+            - $ref: '#/components/schemas/PermissionEffect'
+          description: Effect (defaults to "allow" if not specified)
+        condition:
+          allOf:
+            - $ref: '#/components/schemas/PermissionCondition'
+          description: Optional condition
+      description: Permission input for creating/updating roles
     ResponseMeta:
       type: object
       required:
@@ -4889,10 +5448,11 @@ components:
       type: object
       required:
         - id
-        - tenantId
+        - applicationId
         - name
         - permissions
         - isSystemRole
+        - isGlobalRole
         - createdAt
         - updatedAt
       properties:
@@ -4900,9 +5460,13 @@ components:
           type: string
           description: 'Unique role identifier (format: role_abc123)'
           example: role_admin
+        applicationId:
+          type: string
+          description: Application this role belongs to
+          example: app_default
         tenantId:
           type: string
-          description: Tenant this role belongs to
+          description: Tenant this role belongs to (null for global roles)
           example: org_abc123
         name:
           type: string
@@ -4915,15 +5479,14 @@ components:
         permissions:
           type: array
           items:
-            type: string
-          description: 'Permissions granted by this role (format: resource:action)'
-          example:
-            - users:*
-            - invoices:read
-            - settings:admin
+            $ref: '#/components/schemas/Permission'
+          description: Permissions granted by this role
         isSystemRole:
           type: boolean
-          description: Whether this is a system-defined role (cannot be deleted)
+          description: Whether this is a system-defined role (cannot be deleted or renamed)
+        isGlobalRole:
+          type: boolean
+          description: Whether this is a global role (tenantId is null)
         createdAt:
           type: string
           format: date-time
@@ -4932,10 +5495,19 @@ components:
           type: string
           format: date-time
           description: Timestamp when the role was last updated
+        createdBy:
+          type: string
+          description: User who created this role
+          example: usr_owner
       description: |-
         Role resource model
 
-        Roles are tenant-scoped and contain a set of permissions.
+        Roles can be:
+        - **Global roles**: App-scoped (tenantId is null), apply across all tenants
+        - **Tenant roles**: Scoped to a specific organization
+
+        Users can have multiple roles, and permissions are combined with
+        deny-override semantics.
     RoleListResponse:
       type: object
       required:
@@ -5005,16 +5577,17 @@ components:
         Response for soft delete operations
 
         Includes resource ID, deletion metadata, and restore information
-    SwitchTenantRequest:
+    SwitchContextRequest:
       type: object
-      required:
-        - tenantId
       properties:
+        applicationId:
+          type: string
+          description: Target application ID (optional, defaults to current)
         tenantId:
           type: string
-          description: Target tenant ID
-      description: Request to switch active tenant
-    SwitchTenantResponse:
+          description: Target tenant ID (optional, null to clear tenant context)
+      description: Request to switch active context (application and/or tenant)
+    SwitchContextResponse:
       type: object
       required:
         - data
@@ -5023,34 +5596,32 @@ components:
         data:
           type: object
           properties:
+            applicationId:
+              type: string
+              description: New active application ID
             tenantId:
               type: string
-              description: New active tenant ID
+              description: New active tenant ID (null if no tenant)
             tenantName:
               type: string
-              description: Tenant name
+              description: Tenant name (if tenant selected)
             roles:
               type: array
               items:
                 type: string
-              description: Roles in the new tenant
+              description: Roles in the new context
             permissions:
               type: array
               items:
-                type: string
-              description: Permissions in the new tenant
-            accessToken:
-              type: string
-              description: New access token scoped to the tenant
+                $ref: '#/components/schemas/Permission'
+              description: Effective permissions in the new context
           required:
-            - tenantId
-            - tenantName
+            - applicationId
             - roles
             - permissions
-            - accessToken
         meta:
           $ref: '#/components/schemas/ResponseMeta'
-      description: Tenant switch response with new token
+      description: Context switch response
     UpdateApiKeyRequest:
       type: object
       properties:
@@ -5108,8 +5679,8 @@ components:
         permissions:
           type: array
           items:
-            type: string
-          description: Permissions to grant
+            $ref: '#/components/schemas/PermissionInput'
+          description: Permissions to grant (replaces existing permissions)
       description: Request to update a role
     UpdateUserRequest:
       type: object
@@ -5198,6 +5769,148 @@ components:
           format: date-time
           description: Timestamp of the user's last login (optional)
       description: User resource model
+    UserContext:
+      type: object
+      required:
+        - applicationId
+        - applicationName
+        - tenantId
+        - tenantName
+        - roles
+      properties:
+        applicationId:
+          type: string
+          description: Application ID
+          example: app_default
+        applicationName:
+          type: string
+          description: Application name
+          example: My SaaS Platform
+        tenantId:
+          type: string
+          description: Tenant ID
+          example: org_abc123
+        tenantName:
+          type: string
+          description: Tenant name
+          example: Acme Corp
+        roles:
+          type: array
+          items:
+            type: string
+          description: Role names in this context
+          example:
+            - admin
+            - billing_manager
+      description: User's context across applications and tenants
+    UserContextListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserContext'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: User available contexts response (all apps/tenants user belongs to)
+    UserEffectivePermissions:
+      type: object
+      required:
+        - userId
+        - applicationId
+        - globalRoles
+        - tenantRoles
+        - effectivePermissions
+        - allowedActions
+      properties:
+        userId:
+          type: string
+          description: User ID
+          example: usr_123
+        applicationId:
+          type: string
+          description: Application ID
+          example: app_default
+        tenantId:
+          type: string
+          description: Tenant ID (context for permission calculation)
+          example: org_abc123
+        globalRoles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Role ID
+              name:
+                type: string
+                description: Role name
+              permissions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Permission'
+                description: Permissions from this role
+            required:
+              - id
+              - name
+              - permissions
+          description: Global roles (app-scoped, no tenant)
+        tenantRoles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Role ID
+              name:
+                type: string
+                description: Role name
+              permissions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Permission'
+                description: Permissions from this role
+            required:
+              - id
+              - name
+              - permissions
+          description: Tenant-specific roles
+        effectivePermissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+          description: Combined effective permissions (after deny-override resolution)
+        allowedActions:
+          type: array
+          items:
+            type: string
+          description: Simple list of allowed actions (for quick checks)
+          example:
+            - users:read
+            - users:update
+            - documents:read
+            - documents:update:owner
+      description: |-
+        User's effective permissions
+
+        Represents the combined permissions from all roles assigned to a user
+        within a specific application and tenant context.
+    UserEffectivePermissionsResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/UserEffectivePermissions'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: User effective permissions response
     UserListResponse:
       type: object
       required:
@@ -5214,65 +5927,6 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: User collection response
-    UserPermissions:
-      type: object
-      required:
-        - userId
-        - tenantId
-        - roles
-        - effectivePermissions
-      properties:
-        userId:
-          type: string
-          description: User ID
-          example: usr_123
-        tenantId:
-          type: string
-          description: Tenant ID
-          example: org_abc123
-        roles:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                description: Role ID
-              name:
-                type: string
-                description: Role name
-              permissions:
-                type: array
-                items:
-                  type: string
-                description: Permissions from this role
-            required:
-              - id
-              - name
-              - permissions
-          description: Roles assigned to the user
-        effectivePermissions:
-          type: array
-          items:
-            type: string
-          description: Combined permissions from all roles (deduplicated, expanded)
-          example:
-            - users:read
-            - users:write
-            - users:delete
-            - invoices:read
-      description: User's permissions within a tenant
-    UserPermissionsResponse:
-      type: object
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          $ref: '#/components/schemas/UserPermissions'
-        meta:
-          $ref: '#/components/schemas/ResponseMeta'
-      description: User permissions response
     UserResponse:
       type: object
       required:
@@ -5284,23 +5938,32 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Single user response
-    UserRole:
+    UserRoleAssignment:
       type: object
       required:
+        - id
         - userId
-        - tenantId
+        - applicationId
         - roleId
         - roleName
+        - isGlobalRole
         - assignedAt
-        - assignedBy
       properties:
+        id:
+          type: string
+          description: Assignment ID
+          example: ura_abc123
         userId:
           type: string
           description: User ID
           example: usr_123
+        applicationId:
+          type: string
+          description: Application ID
+          example: app_default
         tenantId:
           type: string
-          description: Tenant ID
+          description: Tenant ID (null for global role assignments)
           example: org_abc123
         roleId:
           type: string
@@ -5310,6 +5973,9 @@ components:
           type: string
           description: Role name (denormalized for convenience)
           example: Admin
+        isGlobalRole:
+          type: boolean
+          description: Whether this is a global role assignment
         assignedAt:
           type: string
           format: date-time
@@ -5318,55 +5984,35 @@ components:
           type: string
           description: Who assigned the role
           example: usr_owner
-      description: User's role assignment within a tenant
-    UserRoleResponse:
+      description: |-
+        User's role assignment
+
+        Represents a single role assigned to a user within a specific
+        application and optional tenant context.
+    UserRoleAssignmentListResponse:
       type: object
       required:
         - data
         - meta
       properties:
         data:
-          $ref: '#/components/schemas/UserRole'
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRoleAssignment'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: User role assignments list response
+    UserRoleAssignmentResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/UserRoleAssignment'
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: User role assignment response
-    UserTenantRoles:
-      type: object
-      required:
-        - tenantId
-        - tenantName
-        - roles
-      properties:
-        tenantId:
-          type: string
-          description: Tenant ID
-          example: org_abc123
-        tenantName:
-          type: string
-          description: Tenant name
-          example: Acme Corp
-        roles:
-          type: array
-          items:
-            type: string
-          description: Role names in this tenant
-          example:
-            - admin
-            - billing_manager
-      description: User's roles across all tenants
-    UserTenantRolesResponse:
-      type: object
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserTenantRoles'
-        meta:
-          $ref: '#/components/schemas/ResponseMeta'
-      description: User tenant roles response (all tenants)
     VirusScanStatus:
       type: string
       enum:

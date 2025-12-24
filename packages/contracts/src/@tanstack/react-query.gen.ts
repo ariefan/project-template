@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { apiKeysCreate, apiKeysGet, apiKeysList, apiKeysRevoke, apiKeysRotate, apiKeysUpdate, auditLogsExport, auditLogsGet, auditLogsList, crossTenantRolesList, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, healthCheck, jobsCancel, jobsGet, jobsList, type Options, rolesCreate, rolesDelete, rolesGet, rolesList, rolesUpdate, tenantSwitchSwitch, userPermissionsEndpointGet, userRolesAssign, userRolesList, userRolesRemove, usersBatchCreate, usersBatchSoftDelete, usersBatchUpdate, usersCreate, usersDelete, usersDeletePermanent, usersGet, usersList, usersResetPassword, usersRestore, usersUpdate, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
-import type { ApiKeysCreateData, ApiKeysCreateResponse, ApiKeysGetData, ApiKeysGetResponse, ApiKeysListData, ApiKeysListResponse, ApiKeysRevokeData, ApiKeysRevokeResponse, ApiKeysRotateData, ApiKeysRotateResponse, ApiKeysUpdateData, ApiKeysUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, CrossTenantRolesListData, CrossTenantRolesListResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListData, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, RolesCreateData, RolesCreateResponse, RolesDeleteData, RolesDeleteResponse, RolesGetData, RolesGetResponse, RolesListData, RolesListResponse, RolesUpdateData, RolesUpdateResponse, TenantSwitchSwitchData, TenantSwitchSwitchResponse, UserPermissionsEndpointGetData, UserPermissionsEndpointGetResponse, UserRolesAssignData, UserRolesAssignResponse, UserRolesListData, UserRolesListResponse, UserRolesRemoveData, UserRolesRemoveResponse, UsersBatchCreateData, UsersBatchCreateResponse, UsersBatchSoftDeleteData, UsersBatchSoftDeleteResponse, UsersBatchUpdateData, UsersBatchUpdateResponse, UsersCreateData, UsersCreateResponse, UsersDeleteData, UsersDeletePermanentData, UsersDeletePermanentResponse, UsersDeleteResponse, UsersGetData, UsersGetResponse, UsersListData, UsersListResponse, UsersResetPasswordData, UsersResetPasswordResponse, UsersRestoreData, UsersRestoreResponse, UsersUpdateData, UsersUpdateResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
+import { allUserRolesList, apiKeysCreate, apiKeysGet, apiKeysList, apiKeysRevoke, apiKeysRotate, apiKeysUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsGet, jobsList, type Options, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, usersBatchCreate, usersBatchSoftDelete, usersBatchUpdate, usersCreate, usersDelete, usersDeletePermanent, usersGet, usersList, usersResetPassword, usersRestore, usersUpdate, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { AllUserRolesListData, AllUserRolesListResponse, ApiKeysCreateData, ApiKeysCreateResponse, ApiKeysGetData, ApiKeysGetResponse, ApiKeysListData, ApiKeysListResponse, ApiKeysRevokeData, ApiKeysRevokeResponse, ApiKeysRotateData, ApiKeysRotateResponse, ApiKeysUpdateData, ApiKeysUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UsersBatchCreateData, UsersBatchCreateResponse, UsersBatchSoftDeleteData, UsersBatchSoftDeleteResponse, UsersBatchUpdateData, UsersBatchUpdateResponse, UsersCreateData, UsersCreateResponse, UsersDeleteData, UsersDeletePermanentData, UsersDeletePermanentResponse, UsersDeleteResponse, UsersGetData, UsersGetResponse, UsersListData, UsersListResponse, UsersResetPasswordData, UsersResetPasswordResponse, UsersRestoreData, UsersRestoreResponse, UsersUpdateData, UsersUpdateResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -458,6 +458,25 @@ export const examplePostsBatchCreateMutation = (options?: Partial<Options<Exampl
 };
 
 /**
+ * Batch restore example posts
+ *
+ * Batch restore soft-deleted posts
+ */
+export const examplePostsBatchRestoreMutation = (options?: Partial<Options<ExamplePostsBatchRestoreData>>): UseMutationOptions<ExamplePostsBatchRestoreResponse, DefaultError, Options<ExamplePostsBatchRestoreData>> => {
+    const mutationOptions: UseMutationOptions<ExamplePostsBatchRestoreResponse, DefaultError, Options<ExamplePostsBatchRestoreData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await examplePostsBatchRestore({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
  * Batch soft delete example posts
  *
  * Batch soft delete posts
@@ -475,6 +494,112 @@ export const examplePostsBatchSoftDeleteMutation = (options?: Partial<Options<Ex
     };
     return mutationOptions;
 };
+
+export const examplePostsListCursorQueryKey = (options: Options<ExamplePostsListCursorData>) => createQueryKey('examplePostsListCursor', options);
+
+/**
+ * List example posts (cursor-based)
+ *
+ * List posts using cursor-based pagination
+ *
+ * Best for large datasets (>100K records) or real-time data where
+ * consistent ordering is critical. Use page-based pagination for
+ * typical UI scenarios with page numbers.
+ */
+export const examplePostsListCursorOptions = (options: Options<ExamplePostsListCursorData>) => queryOptions<ExamplePostsListCursorResponse, DefaultError, ExamplePostsListCursorResponse, ReturnType<typeof examplePostsListCursorQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await examplePostsListCursor({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: examplePostsListCursorQueryKey(options)
+});
+
+export const examplePostsListCursorInfiniteQueryKey = (options: Options<ExamplePostsListCursorData>): QueryKey<Options<ExamplePostsListCursorData>> => createQueryKey('examplePostsListCursor', options, true);
+
+/**
+ * List example posts (cursor-based)
+ *
+ * List posts using cursor-based pagination
+ *
+ * Best for large datasets (>100K records) or real-time data where
+ * consistent ordering is critical. Use page-based pagination for
+ * typical UI scenarios with page numbers.
+ */
+export const examplePostsListCursorInfiniteOptions = (options: Options<ExamplePostsListCursorData>) => infiniteQueryOptions<ExamplePostsListCursorResponse, DefaultError, InfiniteData<ExamplePostsListCursorResponse>, QueryKey<Options<ExamplePostsListCursorData>>, string | Pick<QueryKey<Options<ExamplePostsListCursorData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ExamplePostsListCursorData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                cursor: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await examplePostsListCursor({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: examplePostsListCursorInfiniteQueryKey(options)
+});
+
+export const examplePostsListDeletedQueryKey = (options: Options<ExamplePostsListDeletedData>) => createQueryKey('examplePostsListDeleted', options);
+
+/**
+ * List deleted example posts
+ *
+ * List soft-deleted posts
+ */
+export const examplePostsListDeletedOptions = (options: Options<ExamplePostsListDeletedData>) => queryOptions<ExamplePostsListDeletedResponse, DefaultError, ExamplePostsListDeletedResponse, ReturnType<typeof examplePostsListDeletedQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await examplePostsListDeleted({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: examplePostsListDeletedQueryKey(options)
+});
+
+export const examplePostsListDeletedInfiniteQueryKey = (options: Options<ExamplePostsListDeletedData>): QueryKey<Options<ExamplePostsListDeletedData>> => createQueryKey('examplePostsListDeleted', options, true);
+
+/**
+ * List deleted example posts
+ *
+ * List soft-deleted posts
+ */
+export const examplePostsListDeletedInfiniteOptions = (options: Options<ExamplePostsListDeletedData>) => infiniteQueryOptions<ExamplePostsListDeletedResponse, DefaultError, InfiniteData<ExamplePostsListDeletedResponse>, QueryKey<Options<ExamplePostsListDeletedData>>, number | Pick<QueryKey<Options<ExamplePostsListDeletedData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ExamplePostsListDeletedData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await examplePostsListDeleted({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: examplePostsListDeletedInfiniteQueryKey(options)
+});
 
 /**
  * Soft delete example post
@@ -1089,18 +1214,18 @@ export const jobsCancelMutation = (options?: Partial<Options<JobsCancelData>>): 
     return mutationOptions;
 };
 
-export const rolesListQueryKey = (options: Options<RolesListData>) => createQueryKey('rolesList', options);
+export const tenantRolesListQueryKey = (options: Options<TenantRolesListData>) => createQueryKey('tenantRolesList', options);
 
 /**
- * List roles
+ * List tenant roles
  *
- * List all roles in an organization
+ * List all roles in a tenant
  *
- * Returns both system roles and custom roles.
+ * Returns both system roles and custom roles for this tenant.
  */
-export const rolesListOptions = (options: Options<RolesListData>) => queryOptions<RolesListResponse, DefaultError, RolesListResponse, ReturnType<typeof rolesListQueryKey>>({
+export const tenantRolesListOptions = (options: Options<TenantRolesListData>) => queryOptions<TenantRolesListResponse, DefaultError, TenantRolesListResponse, ReturnType<typeof tenantRolesListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await rolesList({
+        const { data } = await tenantRolesList({
             ...options,
             ...queryKey[0],
             signal,
@@ -1108,30 +1233,30 @@ export const rolesListOptions = (options: Options<RolesListData>) => queryOption
         });
         return data;
     },
-    queryKey: rolesListQueryKey(options)
+    queryKey: tenantRolesListQueryKey(options)
 });
 
-export const rolesListInfiniteQueryKey = (options: Options<RolesListData>): QueryKey<Options<RolesListData>> => createQueryKey('rolesList', options, true);
+export const tenantRolesListInfiniteQueryKey = (options: Options<TenantRolesListData>): QueryKey<Options<TenantRolesListData>> => createQueryKey('tenantRolesList', options, true);
 
 /**
- * List roles
+ * List tenant roles
  *
- * List all roles in an organization
+ * List all roles in a tenant
  *
- * Returns both system roles and custom roles.
+ * Returns both system roles and custom roles for this tenant.
  */
-export const rolesListInfiniteOptions = (options: Options<RolesListData>) => infiniteQueryOptions<RolesListResponse, DefaultError, InfiniteData<RolesListResponse>, QueryKey<Options<RolesListData>>, number | Pick<QueryKey<Options<RolesListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+export const tenantRolesListInfiniteOptions = (options: Options<TenantRolesListData>) => infiniteQueryOptions<TenantRolesListResponse, DefaultError, InfiniteData<TenantRolesListResponse>, QueryKey<Options<TenantRolesListData>>, number | Pick<QueryKey<Options<TenantRolesListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
 // @ts-ignore
 {
     queryFn: async ({ pageParam, queryKey, signal }) => {
         // @ts-ignore
-        const page: Pick<QueryKey<Options<RolesListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+        const page: Pick<QueryKey<Options<TenantRolesListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
             query: {
                 page: pageParam
             }
         };
         const params = createInfiniteParams(queryKey, page);
-        const { data } = await rolesList({
+        const { data } = await tenantRolesList({
             ...options,
             ...params,
             signal,
@@ -1139,20 +1264,20 @@ export const rolesListInfiniteOptions = (options: Options<RolesListData>) => inf
         });
         return data;
     },
-    queryKey: rolesListInfiniteQueryKey(options)
+    queryKey: tenantRolesListInfiniteQueryKey(options)
 });
 
 /**
- * Create role
+ * Create tenant role
  *
- * Create a custom role
+ * Create a tenant-scoped role
  *
- * System roles cannot be created via API.
+ * Creates a custom role for this specific tenant.
  */
-export const rolesCreateMutation = (options?: Partial<Options<RolesCreateData>>): UseMutationOptions<RolesCreateResponse, DefaultError, Options<RolesCreateData>> => {
-    const mutationOptions: UseMutationOptions<RolesCreateResponse, DefaultError, Options<RolesCreateData>> = {
+export const tenantRolesCreateMutation = (options?: Partial<Options<TenantRolesCreateData>>): UseMutationOptions<TenantRolesCreateResponse, DefaultError, Options<TenantRolesCreateData>> => {
+    const mutationOptions: UseMutationOptions<TenantRolesCreateResponse, DefaultError, Options<TenantRolesCreateData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await rolesCreate({
+            const { data } = await tenantRolesCreate({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1166,15 +1291,15 @@ export const rolesCreateMutation = (options?: Partial<Options<RolesCreateData>>)
 /**
  * Delete role
  *
- * Delete a custom role
+ * Delete a role
  *
  * System roles cannot be deleted.
  * Fails if role is assigned to any users.
  */
-export const rolesDeleteMutation = (options?: Partial<Options<RolesDeleteData>>): UseMutationOptions<RolesDeleteResponse, DefaultError, Options<RolesDeleteData>> => {
-    const mutationOptions: UseMutationOptions<RolesDeleteResponse, DefaultError, Options<RolesDeleteData>> = {
+export const tenantRolesDeleteMutation = (options?: Partial<Options<TenantRolesDeleteData>>): UseMutationOptions<TenantRolesDeleteResponse, DefaultError, Options<TenantRolesDeleteData>> => {
+    const mutationOptions: UseMutationOptions<TenantRolesDeleteResponse, DefaultError, Options<TenantRolesDeleteData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await rolesDelete({
+            const { data } = await tenantRolesDelete({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1185,16 +1310,16 @@ export const rolesDeleteMutation = (options?: Partial<Options<RolesDeleteData>>)
     return mutationOptions;
 };
 
-export const rolesGetQueryKey = (options: Options<RolesGetData>) => createQueryKey('rolesGet', options);
+export const tenantRolesGetQueryKey = (options: Options<TenantRolesGetData>) => createQueryKey('tenantRolesGet', options);
 
 /**
  * Get role
  *
  * Get a role by ID
  */
-export const rolesGetOptions = (options: Options<RolesGetData>) => queryOptions<RolesGetResponse, DefaultError, RolesGetResponse, ReturnType<typeof rolesGetQueryKey>>({
+export const tenantRolesGetOptions = (options: Options<TenantRolesGetData>) => queryOptions<TenantRolesGetResponse, DefaultError, TenantRolesGetResponse, ReturnType<typeof tenantRolesGetQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await rolesGet({
+        const { data } = await tenantRolesGet({
             ...options,
             ...queryKey[0],
             signal,
@@ -1202,20 +1327,20 @@ export const rolesGetOptions = (options: Options<RolesGetData>) => queryOptions<
         });
         return data;
     },
-    queryKey: rolesGetQueryKey(options)
+    queryKey: tenantRolesGetQueryKey(options)
 });
 
 /**
  * Update role
  *
- * Update a custom role
+ * Update a role
  *
- * System roles cannot be modified.
+ * System roles cannot be renamed but their permissions can be modified.
  */
-export const rolesUpdateMutation = (options?: Partial<Options<RolesUpdateData>>): UseMutationOptions<RolesUpdateResponse, DefaultError, Options<RolesUpdateData>> => {
-    const mutationOptions: UseMutationOptions<RolesUpdateResponse, DefaultError, Options<RolesUpdateData>> = {
+export const tenantRolesUpdateMutation = (options?: Partial<Options<TenantRolesUpdateData>>): UseMutationOptions<TenantRolesUpdateResponse, DefaultError, Options<TenantRolesUpdateData>> => {
+    const mutationOptions: UseMutationOptions<TenantRolesUpdateResponse, DefaultError, Options<TenantRolesUpdateData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await rolesUpdate({
+            const { data } = await tenantRolesUpdate({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1470,18 +1595,19 @@ export const usersRestoreMutation = (options?: Partial<Options<UsersRestoreData>
     return mutationOptions;
 };
 
-export const userPermissionsEndpointGetQueryKey = (options: Options<UserPermissionsEndpointGetData>) => createQueryKey('userPermissionsEndpointGet', options);
+export const userPermissionsGetQueryKey = (options: Options<UserPermissionsGetData>) => createQueryKey('userPermissionsGet', options);
 
 /**
- * Get user permissions
+ * Get user effective permissions
  *
  * Get user's effective permissions in this tenant
  *
- * Returns all roles and the combined effective permissions.
+ * Returns all roles (global + tenant) and the combined effective permissions
+ * after applying deny-override resolution.
  */
-export const userPermissionsEndpointGetOptions = (options: Options<UserPermissionsEndpointGetData>) => queryOptions<UserPermissionsEndpointGetResponse, DefaultError, UserPermissionsEndpointGetResponse, ReturnType<typeof userPermissionsEndpointGetQueryKey>>({
+export const userPermissionsGetOptions = (options: Options<UserPermissionsGetData>) => queryOptions<UserPermissionsGetResponse, DefaultError, UserPermissionsGetResponse, ReturnType<typeof userPermissionsGetQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await userPermissionsEndpointGet({
+        const { data } = await userPermissionsGet({
             ...options,
             ...queryKey[0],
             signal,
@@ -1489,19 +1615,21 @@ export const userPermissionsEndpointGetOptions = (options: Options<UserPermissio
         });
         return data;
     },
-    queryKey: userPermissionsEndpointGetQueryKey(options)
+    queryKey: userPermissionsGetQueryKey(options)
 });
 
-export const userRolesListQueryKey = (options: Options<UserRolesListData>) => createQueryKey('userRolesList', options);
+export const userTenantRolesListQueryKey = (options: Options<UserTenantRolesListData>) => createQueryKey('userTenantRolesList', options);
 
 /**
- * List user roles
+ * List user roles in tenant
  *
  * List roles assigned to a user in this tenant
+ *
+ * Returns both global and tenant-specific role assignments.
  */
-export const userRolesListOptions = (options: Options<UserRolesListData>) => queryOptions<UserRolesListResponse, DefaultError, UserRolesListResponse, ReturnType<typeof userRolesListQueryKey>>({
+export const userTenantRolesListOptions = (options: Options<UserTenantRolesListData>) => queryOptions<UserTenantRolesListResponse, DefaultError, UserTenantRolesListResponse, ReturnType<typeof userTenantRolesListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await userRolesList({
+        const { data } = await userTenantRolesList({
             ...options,
             ...queryKey[0],
             signal,
@@ -1509,18 +1637,18 @@ export const userRolesListOptions = (options: Options<UserRolesListData>) => que
         });
         return data;
     },
-    queryKey: userRolesListQueryKey(options)
+    queryKey: userTenantRolesListQueryKey(options)
 });
 
 /**
  * Assign role to user
  *
- * Assign a role to a user
+ * Assign a role to a user in this tenant
  */
-export const userRolesAssignMutation = (options?: Partial<Options<UserRolesAssignData>>): UseMutationOptions<UserRolesAssignResponse, DefaultError, Options<UserRolesAssignData>> => {
-    const mutationOptions: UseMutationOptions<UserRolesAssignResponse, DefaultError, Options<UserRolesAssignData>> = {
+export const userTenantRolesAssignMutation = (options?: Partial<Options<UserTenantRolesAssignData>>): UseMutationOptions<UserTenantRolesAssignResponse, DefaultError, Options<UserTenantRolesAssignData>> => {
+    const mutationOptions: UseMutationOptions<UserTenantRolesAssignResponse, DefaultError, Options<UserTenantRolesAssignData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await userRolesAssign({
+            const { data } = await userTenantRolesAssign({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1536,10 +1664,10 @@ export const userRolesAssignMutation = (options?: Partial<Options<UserRolesAssig
  *
  * Remove a role from a user
  */
-export const userRolesRemoveMutation = (options?: Partial<Options<UserRolesRemoveData>>): UseMutationOptions<UserRolesRemoveResponse, DefaultError, Options<UserRolesRemoveData>> => {
-    const mutationOptions: UseMutationOptions<UserRolesRemoveResponse, DefaultError, Options<UserRolesRemoveData>> = {
+export const userTenantRolesRemoveMutation = (options?: Partial<Options<UserTenantRolesRemoveData>>): UseMutationOptions<UserTenantRolesRemoveResponse, DefaultError, Options<UserTenantRolesRemoveData>> => {
+    const mutationOptions: UseMutationOptions<UserTenantRolesRemoveResponse, DefaultError, Options<UserTenantRolesRemoveData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await userRolesRemove({
+            const { data } = await userTenantRolesRemove({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1837,17 +1965,70 @@ export const webhooksTestMutation = (options?: Partial<Options<WebhooksTestData>
     return mutationOptions;
 };
 
+export const globalRolesListQueryKey = (options?: Options<GlobalRolesListData>) => createQueryKey('globalRolesList', options);
+
 /**
- * Switch tenant
+ * List global roles
  *
- * Switch user's active tenant
+ * List all global roles
  *
- * Returns a new access token scoped to the target tenant.
+ * Returns global roles (no tenant scope) for the default application.
  */
-export const tenantSwitchSwitchMutation = (options?: Partial<Options<TenantSwitchSwitchData>>): UseMutationOptions<TenantSwitchSwitchResponse, DefaultError, Options<TenantSwitchSwitchData>> => {
-    const mutationOptions: UseMutationOptions<TenantSwitchSwitchResponse, DefaultError, Options<TenantSwitchSwitchData>> = {
+export const globalRolesListOptions = (options?: Options<GlobalRolesListData>) => queryOptions<GlobalRolesListResponse, DefaultError, GlobalRolesListResponse, ReturnType<typeof globalRolesListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await globalRolesList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: globalRolesListQueryKey(options)
+});
+
+export const globalRolesListInfiniteQueryKey = (options?: Options<GlobalRolesListData>): QueryKey<Options<GlobalRolesListData>> => createQueryKey('globalRolesList', options, true);
+
+/**
+ * List global roles
+ *
+ * List all global roles
+ *
+ * Returns global roles (no tenant scope) for the default application.
+ */
+export const globalRolesListInfiniteOptions = (options?: Options<GlobalRolesListData>) => infiniteQueryOptions<GlobalRolesListResponse, DefaultError, InfiniteData<GlobalRolesListResponse>, QueryKey<Options<GlobalRolesListData>>, number | Pick<QueryKey<Options<GlobalRolesListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<GlobalRolesListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await globalRolesList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: globalRolesListInfiniteQueryKey(options)
+});
+
+/**
+ * Create global role
+ *
+ * Create a global role
+ *
+ * Creates a role that applies across all tenants.
+ */
+export const globalRolesCreateMutation = (options?: Partial<Options<GlobalRolesCreateData>>): UseMutationOptions<GlobalRolesCreateResponse, DefaultError, Options<GlobalRolesCreateData>> => {
+    const mutationOptions: UseMutationOptions<GlobalRolesCreateResponse, DefaultError, Options<GlobalRolesCreateData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await tenantSwitchSwitch({
+            const { data } = await globalRolesCreate({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1858,18 +2039,38 @@ export const tenantSwitchSwitchMutation = (options?: Partial<Options<TenantSwitc
     return mutationOptions;
 };
 
-export const crossTenantRolesListQueryKey = (options: Options<CrossTenantRolesListData>) => createQueryKey('crossTenantRolesList', options);
+/**
+ * Delete role
+ *
+ * Delete a role
+ *
+ * System roles cannot be deleted.
+ * Fails if role is assigned to any users.
+ */
+export const globalRolesDeleteMutation = (options?: Partial<Options<GlobalRolesDeleteData>>): UseMutationOptions<GlobalRolesDeleteResponse, DefaultError, Options<GlobalRolesDeleteData>> => {
+    const mutationOptions: UseMutationOptions<GlobalRolesDeleteResponse, DefaultError, Options<GlobalRolesDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await globalRolesDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const globalRolesGetQueryKey = (options: Options<GlobalRolesGetData>) => createQueryKey('globalRolesGet', options);
 
 /**
- * List user tenant roles
+ * Get role
  *
- * List user's roles across all tenants
- *
- * Returns all tenants the user belongs to with their roles.
+ * Get a role by ID
  */
-export const crossTenantRolesListOptions = (options: Options<CrossTenantRolesListData>) => queryOptions<CrossTenantRolesListResponse, DefaultError, CrossTenantRolesListResponse, ReturnType<typeof crossTenantRolesListQueryKey>>({
+export const globalRolesGetOptions = (options: Options<GlobalRolesGetData>) => queryOptions<GlobalRolesGetResponse, DefaultError, GlobalRolesGetResponse, ReturnType<typeof globalRolesGetQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await crossTenantRolesList({
+        const { data } = await globalRolesGet({
             ...options,
             ...queryKey[0],
             signal,
@@ -1877,5 +2078,115 @@ export const crossTenantRolesListOptions = (options: Options<CrossTenantRolesLis
         });
         return data;
     },
-    queryKey: crossTenantRolesListQueryKey(options)
+    queryKey: globalRolesGetQueryKey(options)
+});
+
+/**
+ * Update role
+ *
+ * Update a role
+ *
+ * System roles cannot be renamed but their permissions can be modified.
+ */
+export const globalRolesUpdateMutation = (options?: Partial<Options<GlobalRolesUpdateData>>): UseMutationOptions<GlobalRolesUpdateResponse, DefaultError, Options<GlobalRolesUpdateData>> => {
+    const mutationOptions: UseMutationOptions<GlobalRolesUpdateResponse, DefaultError, Options<GlobalRolesUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await globalRolesUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const availableContextsListQueryKey = (options?: Options<AvailableContextsListData>) => createQueryKey('availableContextsList', options);
+
+/**
+ * List available contexts
+ *
+ * List all available contexts for the current user
+ *
+ * Returns all applications and tenants the user has access to.
+ */
+export const availableContextsListOptions = (options?: Options<AvailableContextsListData>) => queryOptions<AvailableContextsListResponse, DefaultError, AvailableContextsListResponse, ReturnType<typeof availableContextsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await availableContextsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: availableContextsListQueryKey(options)
+});
+
+export const currentUserContextGetQueryKey = (options?: Options<CurrentUserContextGetData>) => createQueryKey('currentUserContextGet', options);
+
+/**
+ * Get active context
+ *
+ * Get current user's active context
+ *
+ * Returns the currently active application and tenant for the user.
+ * This is for UI state management, not authorization decisions.
+ */
+export const currentUserContextGetOptions = (options?: Options<CurrentUserContextGetData>) => queryOptions<CurrentUserContextGetResponse, DefaultError, CurrentUserContextGetResponse, ReturnType<typeof currentUserContextGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await currentUserContextGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: currentUserContextGetQueryKey(options)
+});
+
+/**
+ * Switch context
+ *
+ * Switch user's active context
+ *
+ * Changes the active application and/or tenant.
+ * This is for UI state management, not authorization decisions.
+ */
+export const contextSwitchSwitchMutation = (options?: Partial<Options<ContextSwitchSwitchData>>): UseMutationOptions<ContextSwitchSwitchResponse, DefaultError, Options<ContextSwitchSwitchData>> => {
+    const mutationOptions: UseMutationOptions<ContextSwitchSwitchResponse, DefaultError, Options<ContextSwitchSwitchData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await contextSwitchSwitch({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const allUserRolesListQueryKey = (options: Options<AllUserRolesListData>) => createQueryKey('allUserRolesList', options);
+
+/**
+ * List all user roles
+ *
+ * List user's roles across all applications and tenants
+ *
+ * Returns all role assignments for the user across all contexts.
+ */
+export const allUserRolesListOptions = (options: Options<AllUserRolesListData>) => queryOptions<AllUserRolesListResponse, DefaultError, AllUserRolesListResponse, ReturnType<typeof allUserRolesListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await allUserRolesList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: allUserRolesListQueryKey(options)
 });

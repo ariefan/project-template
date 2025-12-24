@@ -106,10 +106,21 @@ model ExamplePostResponse {
 }
 
 /**
- * Post collection response
+ * Post collection response (page-based)
  */
 model ExamplePostListResponse {
   data: ExamplePost[];
   pagination: Pagination;
+  meta: ResponseMeta;
+}
+
+/**
+ * Post collection response (cursor-based)
+ *
+ * Used for streaming/real-time scenarios or large datasets
+ */
+model ExamplePostCursorListResponse {
+  data: ExamplePost[];
+  pagination: CursorPagination;
   meta: ResponseMeta;
 }

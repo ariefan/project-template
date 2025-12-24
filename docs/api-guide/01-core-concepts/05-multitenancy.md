@@ -4,13 +4,60 @@
 
 ## Overview
 
-Multitenancy allows a single API instance to serve multiple customers (tenants) while maintaining complete data isolation.
+Multitenancy allows a single API instance to serve multiple customers (tenants) while maintaining complete data isolation. The system supports **multi-application architecture** where each application has its own isolated set of tenants, users, and roles.
 
 **Key principles:**
-- Complete data isolation between tenants
-- No cross-tenant data access
-- Tenant context in every request
-- Audit trail per tenant
+
+- **Application isolation** - Each app has its own tenants and permissions
+- **Complete data isolation** between tenants
+- **No cross-tenant data access** without explicit permissions
+- **Tenant context in every request**
+- **Audit trail per tenant**
+
+## Multi-Application Architecture
+
+### Hierarchy
+
+```
+Platform
+├── Application A (app_default)
+│   ├── Global Roles (super_user, app_admin, user)
+│   ├── Tenant 1 (org_abc)
+│   │   ├── Tenant Roles (owner, admin, member, viewer)
+│   │   └── Members (users with roles)
+│   └── Tenant 2 (org_xyz)
+│       ├── Tenant Roles
+│       └── Members
+│
+└── Application B (app_mobile)
+    ├── Global Roles
+    └── Tenants...
+```
+
+### When to Use Multiple Applications
+
+| Scenario | Same Application | Different Applications |
+|----------|------------------|------------------------|
+| Web + Mobile for same product | ✅ Same `applicationId` | |
+| Separate products/platforms | | ✅ Different `applicationId` |
+| Different customer segments | | ✅ Different `applicationId` |
+| White-label versions | | ✅ Different `applicationId` |
+| Dev/staging/prod environments | Use environment variables | |
+
+### Application Model
+
+```typescript
+interface Application {
+  id: string;           // "app_default"
+  name: string;         // "My SaaS Platform"
+  slug: string;         // "my-saas"
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+Most systems start with a single `app_default` application and add more as needed.
 
 ## Tenant Identification Strategies
 
@@ -334,36 +381,64 @@ GET /v1/orgs/org_abc/available-templates
 }
 ```
 
-## Tenant Switching
+## Context Switching
 
-### User with Multiple Tenants
+Users can belong to multiple applications and tenants. The **active context** tracks which app/tenant the user is currently working in.
 
+**Important:** Active context is for **UI state management only**, not for authorization decisions. Authorization always uses the tenant from the API request URL.
+
+### User's Available Contexts
+
+```http
+GET /v1/users/me/available-contexts
+```
+
+**Response:**
 ```json
 {
-  "user": {
-    "id": "usr_123",
-    "email": "user@example.com",
-    "tenants": [
-      {
-        "tenantId": "org_abc123",
-        "tenantName": "Acme Corp",
-        "role": "admin"
-      },
-      {
-        "tenantId": "org_def456",
-        "tenantName": "Beta Inc",
-        "role": "member"
-      }
-    ]
+  "data": [
+    {
+      "applicationId": "app_default",
+      "applicationName": "My SaaS Platform",
+      "tenantId": "org_abc123",
+      "tenantName": "Acme Corp",
+      "roles": ["admin", "billing_manager"]
+    },
+    {
+      "applicationId": "app_default",
+      "applicationName": "My SaaS Platform",
+      "tenantId": "org_def456",
+      "tenantName": "Beta Inc",
+      "roles": ["member"]
+    }
+  ]
+}
+```
+
+### Get Current Context
+
+```http
+GET /v1/users/me/context
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "userId": "usr_123",
+    "activeApplicationId": "app_default",
+    "activeTenantId": "org_abc123",
+    "updatedAt": "2024-01-15T10:30:00Z"
   }
 }
 ```
 
-### Switch Tenant Endpoint
+### Switch Context
 
-```
-POST /v1/users/usr_123/actions/switch-tenant
+```http
+POST /v1/users/me/switch-context
 {
+  "applicationId": "app_default",
   "tenantId": "org_def456"
 }
 ```
@@ -372,14 +447,28 @@ POST /v1/users/usr_123/actions/switch-tenant
 ```json
 {
   "data": {
-    "userId": "usr_123",
-    "activeTenantId": "org_def456",
-    "activeTenantName": "Beta Inc",
-    "role": "member",
-    "permissions": ["users:read", "projects:read"]
+    "applicationId": "app_default",
+    "tenantId": "org_def456",
+    "tenantName": "Beta Inc",
+    "roles": ["member"],
+    "permissions": [
+      { "resource": "documents", "action": "read", "effect": "allow" },
+      { "resource": "documents", "action": "create", "effect": "allow" }
+    ]
   }
 }
 ```
+
+### Context vs Authorization
+
+| Aspect | Active Context | Authorization |
+|--------|----------------|---------------|
+| Purpose | UI state (which org is selected) | Access control decisions |
+| Source | `user_active_context` table | Request URL + user roles |
+| Trust level | User-controlled | System-enforced |
+| Used for | Showing correct data in UI | Blocking unauthorized access |
+
+**Example:** User's active context is `org_abc`, but they make an API call to `/v1/orgs/org_xyz/users`. Authorization checks access to `org_xyz`, not the active context.
 
 ## Tenant Validation Rules
 

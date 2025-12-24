@@ -78,6 +78,39 @@ namespace ProjectAPI {
     ): ExamplePostListResponse | ErrorResponse;
 
     /**
+     * List posts using cursor-based pagination
+     *
+     * Best for large datasets (>100K records) or real-time data where
+     * consistent ordering is critical. Use page-based pagination for
+     * typical UI scenarios with page numbers.
+     */
+    @route("/cursor")
+    @get
+    @summary("List example posts (cursor-based)")
+    listCursor(
+      /** Organization ID */
+      @path orgId: string,
+
+      /** Cursor for fetching next page (post ID from previous response) */
+      @query cursor?: string,
+
+      /** Maximum items to return (max: 100, default: 50) */
+      @query limit?: int32 = 50,
+
+      /** Sort order (e.g., "-createdAt" for desc, "createdAt" for asc) */
+      @query orderBy?: string,
+
+      /** Filter by post status */
+      @query status?: ExamplePostStatus,
+
+      /** Filter by author ID */
+      @query authorId?: string,
+
+      /** Full-text search query */
+      @query search?: string
+    ): ExamplePostCursorListResponse | ErrorResponse;
+
+    /**
      * Create a new post
      */
     @post
@@ -239,5 +272,40 @@ namespace ProjectAPI {
         options?: BatchOptions;
       }
     ): BatchDeleteResponse | ErrorResponse;
+
+    /**
+     * Batch restore soft-deleted posts
+     */
+    @route("/batch/restore")
+    @post
+    @summary("Batch restore example posts")
+    batchRestore(
+      /** Organization ID */
+      @path orgId: string,
+
+      /** Post IDs to restore */
+      @body body: {
+        ids: string[];
+        options?: BatchOptions;
+      }
+    ): BatchResponse<ExamplePost> | ErrorResponse;
+
+    /**
+     * List soft-deleted posts
+     */
+    @route("/deleted")
+    @get
+    @summary("List deleted example posts")
+    listDeleted(
+      /** Organization ID */
+      @path orgId: string,
+
+      // === Pagination ===
+      /** Page number (1-indexed) */
+      @query page?: int32 = 1,
+
+      /** Items per page (max 100) */
+      @query pageSize?: int32 = 50
+    ): ExamplePostListResponse | ErrorResponse;
   }
 }

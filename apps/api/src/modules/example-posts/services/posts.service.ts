@@ -8,7 +8,7 @@ import { generateId } from "../../../lib/response";
 import * as postsRepo from "../repositories/posts.repository";
 
 export type PaginatedExamplePosts = {
-  posts: ExamplePost[];
+  posts: Partial<ExamplePost>[];
   page: number;
   pageSize: number;
   totalCount: number;
@@ -45,6 +45,7 @@ export async function listExamplePosts(
     page,
     pageSize,
     orderBy: options.orderBy,
+    fields: options.fields,
     search: options.search,
     status: options.status,
     statusNe: options.statusNe,
@@ -387,6 +388,155 @@ export async function batchSoftDeleteExamplePosts(
         index,
         status: "error",
         error: { code: "deleteFailed", message: errorMessage },
+      });
+
+      if (options?.atomic) {
+        throw error;
+      }
+    }
+  }
+
+  return {
+    results,
+    summary: {
+      total: ids.length,
+      successful: results.filter((r) => r.status === "success").length,
+      failed: results.filter((r) => r.status === "error").length,
+      skipped: 0,
+    },
+  };
+}
+
+/**
+ * List soft-deleted posts.
+ * As documented in docs/api-guide/05-advanced-operations/04-soft-delete.md
+ */
+export async function listDeletedExamplePosts(
+  orgId: string,
+  options: { page: number; pageSize: number }
+): Promise<PaginatedExamplePosts> {
+  const { page, pageSize } = options;
+
+  const result = await postsRepo.listDeletedExamplePosts(orgId, {
+    page,
+    pageSize,
+  });
+
+  const totalPages = Math.ceil(result.totalCount / pageSize);
+
+  return {
+    posts: result.posts,
+    page,
+    pageSize,
+    totalCount: result.totalCount,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrevious: page > 1,
+  };
+}
+
+/**
+ * Cursor-based pagination result.
+ * As documented in docs/api-guide/02-data-operations/01-pagination.md
+ */
+export type CursorPaginatedExamplePosts = {
+  posts: ExamplePost[];
+  limit: number;
+  hasNext: boolean;
+  nextCursor: string | null;
+  previousCursor: string | null;
+};
+
+export type CursorListExamplePostsOptions = {
+  cursor?: string;
+  limit: number;
+  orderBy?: string;
+  status?: string;
+  authorId?: string;
+  search?: string;
+};
+
+/**
+ * List posts using cursor-based pagination.
+ *
+ * Best for large datasets (>100K records) or real-time data where
+ * consistent ordering is critical.
+ */
+export async function listExamplePostsCursor(
+  orgId: string,
+  options: CursorListExamplePostsOptions
+): Promise<CursorPaginatedExamplePosts> {
+  // Cap limit at 100 as documented
+  const limit = Math.min(options.limit || 50, 100);
+
+  const result = await postsRepo.listExamplePostsCursor(orgId, {
+    cursor: options.cursor,
+    limit,
+    orderBy: options.orderBy,
+    status: options.status,
+    authorId: options.authorId,
+    search: options.search,
+  });
+
+  return {
+    posts: result.posts,
+    limit,
+    hasNext: result.hasNext,
+    nextCursor: result.nextCursor,
+    previousCursor: result.previousCursor,
+  };
+}
+
+/**
+ * Batch restore soft-deleted posts.
+ * As documented in docs/api-guide/05-advanced-operations/05-restore.md
+ */
+export async function batchRestoreExamplePosts(
+  orgId: string,
+  ids: string[],
+  options?: { atomic?: boolean }
+): Promise<BatchCreateResult> {
+  const results: BatchCreateResult["results"] = [];
+
+  for (const [index, id] of ids.entries()) {
+    try {
+      const existing = await postsRepo.findExamplePostByIdAndOrg(id, orgId);
+
+      if (!existing) {
+        results.push({
+          index,
+          status: "error",
+          error: { code: "notFound", message: `Post ${id} not found` },
+        });
+        continue;
+      }
+
+      if (!existing.isDeleted) {
+        results.push({
+          index,
+          status: "error",
+          error: { code: "notDeleted", message: `Post ${id} is not deleted` },
+        });
+        continue;
+      }
+
+      const restored = await postsRepo.restoreExamplePost(id, orgId);
+      if (restored) {
+        results.push({ index, status: "success", data: restored });
+      } else {
+        results.push({
+          index,
+          status: "error",
+          error: { code: "restoreFailed", message: `Failed to restore ${id}` },
+        });
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      results.push({
+        index,
+        status: "error",
+        error: { code: "restoreFailed", message: errorMessage },
       });
 
       if (options?.atomic) {

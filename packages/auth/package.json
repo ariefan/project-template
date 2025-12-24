@@ -12,7 +12,8 @@
     "@better-auth/sso": "^1.4.7",
     "@workspace/db": "workspace:*",
     "bcrypt": "^6.0.0",
-    "better-auth": "^1.4.7"
+    "better-auth": "^1.4.7",
+    "better-call": "^1.1.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
