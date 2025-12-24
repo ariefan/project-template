@@ -1,0 +1,22 @@
+{
+  "name": "@workspace/test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write ."
+  },
+  "dependencies": {
+    "@workspace/db": "workspace:*",
+    "vitest": "^2.1.8"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}

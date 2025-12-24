@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Enforcer } from "casbin";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createViolationManager,
   ViolationManager,

@@ -8,8 +8,11 @@
       "!.turbo",
       "!dist",
       "!tsp-output",
+
+      // Test artifacts
       "!coverage",
-      "!**/__tests__",
+
+      // Generated code (auto-generated from TypeSpec)
       "!packages/contracts/src"
     ]
   },
@@ -30,6 +33,20 @@
         "noUnknownAtRules": "off"
       }
     }
+  },
+  "javascript": {
+    "globals": [
+      // Jest globals for React Native/Expo tests
+      "it",
+      "test",
+      "describe",
+      "expect",
+      "beforeEach",
+      "afterEach",
+      "beforeAll",
+      "afterAll",
+      "jest"
+    ]
   },
   "overrides": [
     {

@@ -1,19 +1,17 @@
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import RedisMock from "ioredis-mock";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRedisProvider } from "../../providers/redis";
 
 // Mock ioredis to use ioredis-mock
-vi.mock("ioredis", () => {
-  return {
-    default: RedisMock,
-  };
-});
+vi.mock("ioredis", () => ({
+  default: RedisMock,
+}));
 
 describe("Redis Cache Provider", () => {
   let cache: ReturnType<typeof createRedisProvider>;
   let redisMock: InstanceType<typeof RedisMock>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Create cache with empty keyPrefix to avoid ioredis-mock keyPrefix issues
     // keyPrefix functionality will be tested separately
     cache = createRedisProvider({

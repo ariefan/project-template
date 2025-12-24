@@ -58,7 +58,7 @@ describe("Memory Cache Provider", () => {
       expect(await cache.get("key1")).toBe("value1");
 
       // Fast-forward 1 hour
-      vi.advanceTimersByTime(3600000);
+      vi.advanceTimersByTime(3_600_000);
 
       expect(await cache.get("key1")).toBe("value1");
 

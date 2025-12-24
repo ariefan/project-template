@@ -25,7 +25,6 @@
     "@workspace/cache": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
-    "@workspace/metrics": "workspace:*",
     "@workspace/notifications": "workspace:*",
     "@workspace/storage": "workspace:*",
     "better-auth": "^1.4.7",

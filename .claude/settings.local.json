@@ -44,7 +44,11 @@
       "Bash(pnpm db:generate:*)",
       "Bash(pnpm test:*)",
       "Bash(git mv:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(while read dir)",
+      "Bash(done)",
+      "Bash(for pkg in auth authorization cache contracts db metrics notifications storage typescript-config ui ui-mobile utils)",
+      "Bash(do echo \"=== $pkg ===\" ls -1 \"c:/dev/project-template/packages/$pkg/\")"
     ]
   }
 }

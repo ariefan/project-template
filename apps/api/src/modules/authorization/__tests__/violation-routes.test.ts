@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import Fastify, { type FastifyInstance } from "fastify";
 import type { AuthorizationAuditService } from "@workspace/authorization";
+import Fastify, { type FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Create mock violation manager
 const mockViolationManager = {
@@ -44,7 +44,7 @@ vi.mock("@workspace/authorization", () => {
 
 // Mock the auth middleware
 vi.mock("../../auth/middleware", () => ({
-  requireAuth: vi.fn(async (request, _reply) => {
+  requireAuth: vi.fn((request, _reply) => {
     // Simulate authenticated user
     request.user = { id: "admin1", email: "admin@test.com" };
     request.session = { userId: "admin1" };
@@ -53,8 +53,8 @@ vi.mock("../../auth/middleware", () => ({
 
 // Mock the authorization middleware
 vi.mock("../../auth/authorization-middleware", () => ({
-  requirePermission: vi.fn((resource: string, action: string) => {
-    return async (request: any, _reply: any) => {
+  requirePermission: vi.fn((_resource: string, _action: string) => {
+    return (request: any, _reply: any) => {
       // Simulate permission check passing
       request.user = { id: "admin1", email: "admin@test.com" };
     };
@@ -92,7 +92,7 @@ describe("Violation Routes", () => {
 
     // Register routes under /authorization prefix
     app.register(
-      async (instance) => {
+      (instance) => {
         violationRoutes(instance);
       },
       { prefix: "/authorization" }

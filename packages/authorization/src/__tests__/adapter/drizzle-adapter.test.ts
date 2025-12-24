@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { newModelFromString, type Model } from "casbin";
-import { CasbinDrizzleAdapter } from "../../adapter/drizzle-adapter";
 import type * as dbModule from "@workspace/db";
+import { type Model, newModelFromString } from "casbin";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CasbinDrizzleAdapter } from "../../adapter/drizzle-adapter";
 
 // Mock the database module
 vi.mock("@workspace/db", async () => {
@@ -26,7 +26,7 @@ describe("Casbin Drizzle Adapter", () => {
   let adapter: CasbinDrizzleAdapter;
   let model: Model;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     adapter = new CasbinDrizzleAdapter();
 
     // Create a basic RBAC model for testing
@@ -57,8 +57,24 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
   describe("loadPolicy", () => {
     it("should load policy rules from database", async () => {
       const mockRules = [
-        { ptype: "p", v0: "admin", v1: "org1", v2: "posts", v3: "write", v4: null, v5: null },
-        { ptype: "p", v0: "editor", v1: "org1", v2: "posts", v3: "read", v4: null, v5: null },
+        {
+          ptype: "p",
+          v0: "admin",
+          v1: "org1",
+          v2: "posts",
+          v3: "write",
+          v4: null,
+          v5: null,
+        },
+        {
+          ptype: "p",
+          v0: "editor",
+          v1: "org1",
+          v2: "posts",
+          v3: "read",
+          v4: null,
+          v5: null,
+        },
       ];
 
       vi.mocked(db.select().from).mockResolvedValue(mockRules);
@@ -75,8 +91,24 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
     it("should load role assignment rules from database", async () => {
       const mockRules = [
-        { ptype: "g", v0: "user1", v1: "admin", v2: "org1", v3: null, v4: null, v5: null },
-        { ptype: "g", v0: "user2", v1: "editor", v2: "org1", v3: null, v4: null, v5: null },
+        {
+          ptype: "g",
+          v0: "user1",
+          v1: "admin",
+          v2: "org1",
+          v3: null,
+          v4: null,
+          v5: null,
+        },
+        {
+          ptype: "g",
+          v0: "user2",
+          v1: "editor",
+          v2: "org1",
+          v3: null,
+          v4: null,
+          v5: null,
+        },
       ];
 
       vi.mocked(db.select().from).mockResolvedValue(mockRules);
@@ -107,7 +139,16 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
     it("should only insert new policies (diff-based)", async () => {
       // Existing rules in database
       const existingRules = [
-        { id: 1, ptype: "p", v0: "admin", v1: "org1", v2: "posts", v3: "write", v4: null, v5: null },
+        {
+          id: 1,
+          ptype: "p",
+          v0: "admin",
+          v1: "org1",
+          v2: "posts",
+          v3: "write",
+          v4: null,
+          v5: null,
+        },
       ];
 
       vi.mocked(db.select().from).mockResolvedValue(existingRules);
@@ -125,15 +166,41 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
       // Should only insert the new policy
       expect(insertMock).toHaveBeenCalledTimes(1);
       expect(insertMock).toHaveBeenCalledWith([
-        { ptype: "p", v0: "editor", v1: "org1", v2: "posts", v3: "read", v4: null, v5: null },
+        {
+          ptype: "p",
+          v0: "editor",
+          v1: "org1",
+          v2: "posts",
+          v3: "read",
+          v4: null,
+          v5: null,
+        },
       ]);
     });
 
     it("should only delete removed policies (diff-based)", async () => {
       // Existing rules in database
       const existingRules = [
-        { id: 1, ptype: "p", v0: "admin", v1: "org1", v2: "posts", v3: "write", v4: null, v5: null },
-        { id: 2, ptype: "p", v0: "editor", v1: "org1", v2: "posts", v3: "read", v4: null, v5: null },
+        {
+          id: 1,
+          ptype: "p",
+          v0: "admin",
+          v1: "org1",
+          v2: "posts",
+          v3: "write",
+          v4: null,
+          v5: null,
+        },
+        {
+          id: 2,
+          ptype: "p",
+          v0: "editor",
+          v1: "org1",
+          v2: "posts",
+          v3: "read",
+          v4: null,
+          v5: null,
+        },
       ];
 
       vi.mocked(db.select().from).mockResolvedValue(existingRules);
@@ -155,7 +222,16 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
     it("should handle no changes efficiently", async () => {
       // Existing rules match desired rules exactly
       const existingRules = [
-        { id: 1, ptype: "p", v0: "admin", v1: "org1", v2: "posts", v3: "write", v4: null, v5: null },
+        {
+          id: 1,
+          ptype: "p",
+          v0: "admin",
+          v1: "org1",
+          v2: "posts",
+          v3: "write",
+          v4: null,
+          v5: null,
+        },
       ];
 
       vi.mocked(db.select().from).mockResolvedValue(existingRules);
@@ -231,8 +307,24 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
       expect(result).toBe(true);
       expect(insertMock).toHaveBeenCalledWith([
-        { ptype: "p", v0: "admin", v1: "org1", v2: "posts", v3: "write", v4: null, v5: null },
-        { ptype: "p", v0: "editor", v1: "org1", v2: "posts", v3: "read", v4: null, v5: null },
+        {
+          ptype: "p",
+          v0: "admin",
+          v1: "org1",
+          v2: "posts",
+          v3: "write",
+          v4: null,
+          v5: null,
+        },
+        {
+          ptype: "p",
+          v0: "editor",
+          v1: "org1",
+          v2: "posts",
+          v3: "read",
+          v4: null,
+          v5: null,
+        },
       ]);
     });
 

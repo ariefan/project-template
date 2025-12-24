@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AuthorizationAuditService } from "../../audit/service";
 import type * as dbModule from "@workspace/db";
 import { AuthorizationAuditEventType } from "@workspace/db/schema";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AuthorizationAuditService } from "../../audit/service";
 
 // Create mock functions that can be accessed in tests
 const mockOrderBy = vi.fn().mockResolvedValue([]);
@@ -44,7 +44,11 @@ describe("Authorization Audit Service", () => {
   let service: AuthorizationAuditService;
 
   beforeEach(() => {
-    service = new AuthorizationAuditService(db as unknown as ConstructorParameters<typeof AuthorizationAuditService>[0]);
+    service = new AuthorizationAuditService(
+      db as unknown as ConstructorParameters<
+        typeof AuthorizationAuditService
+      >[0]
+    );
     mockOrderBy.mockClear();
     mockValues.mockClear();
   });

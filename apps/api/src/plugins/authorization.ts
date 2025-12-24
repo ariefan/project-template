@@ -8,7 +8,6 @@ import {
   buildAuthzPatternForUser,
   type CacheProvider,
 } from "@workspace/cache";
-import type { AuthorizationMetrics } from "@workspace/metrics";
 import type * as casbin from "casbin";
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
@@ -26,7 +25,6 @@ type AuthorizationDeps = {
   cacheTtl: number;
   auditService: AuthorizationAuditService | null;
   logPermissionDenials: boolean;
-  metrics: AuthorizationMetrics | null;
   log: FastifyInstance["log"];
 };
 
@@ -51,11 +49,9 @@ async function checkCache(
 
   if (cachedValue !== null) {
     deps.log.debug({ cacheKey }, "Authorization cache hit");
-    deps.metrics?.recordCacheHit({ operation: "get" });
     return { hit: true, allowed: cachedValue };
   }
 
-  deps.metrics?.recordCacheMiss({ operation: "get" });
   return { hit: false, allowed: null };
 }
 
@@ -111,46 +107,16 @@ async function logDenialIfEnabled(
   }
 }
 
-type MetricsContext = {
-  params: AuthorizeParams;
-  allowed: boolean;
-  cached: boolean;
-  durationMs: number;
-};
-
 /**
- * Record permission check metrics
- */
-function recordMetrics(ctx: MetricsContext, deps: AuthorizationDeps): void {
-  deps.metrics?.recordPermissionCheck(
-    {
-      result: ctx.allowed ? "allowed" : "denied",
-      resource: ctx.params.resource,
-      action: ctx.params.action,
-      orgId: ctx.params.orgId,
-      cached: ctx.cached,
-    },
-    ctx.durationMs / 1000
-  );
-}
-
-/**
- * Perform authorization check with all side effects (caching, logging, metrics)
+ * Perform authorization check with caching and logging
  */
 async function performAuthorizationCheck(
   params: AuthorizeParams,
   deps: AuthorizationDeps
 ): Promise<boolean> {
-  const startTime = performance.now();
-
   // Check cache first
   const cacheResult = await checkCache(params, deps);
   if (cacheResult.hit && cacheResult.allowed !== null) {
-    const durationMs = performance.now() - startTime;
-    recordMetrics(
-      { params, allowed: cacheResult.allowed, cached: true, durationMs },
-      deps
-    );
     return cacheResult.allowed;
   }
 
@@ -169,10 +135,6 @@ async function performAuthorizationCheck(
 
   // Store in cache
   await storeInCache(params, allowed, deps);
-
-  // Record metrics
-  const durationMs = performance.now() - startTime;
-  recordMetrics({ params, allowed, cached: false, durationMs }, deps);
 
   return allowed;
 }
@@ -230,8 +192,8 @@ declare module "fastify" {
 }
 
 /**
- * Fastify plugin for Casbin authorization with optional caching, audit logging, and metrics
- * Provides enforcer instance, authorize() helper method, cache invalidation, audit service, and metrics tracking
+ * Fastify plugin for Casbin authorization with optional caching and audit logging
+ * Provides enforcer instance, authorize() helper method, cache invalidation, and audit service
  */
 function authorizationPlugin(
   fastify: FastifyInstance,
@@ -240,7 +202,6 @@ function authorizationPlugin(
     cacheTtlSeconds?: number;
     auditService?: AuthorizationAuditService | null;
     logPermissionDenials?: boolean;
-    metrics?: AuthorizationMetrics | null;
   }
 ): void {
   const deps: AuthorizationDeps = {
@@ -249,7 +210,6 @@ function authorizationPlugin(
     cacheTtl: opts?.cacheTtlSeconds ?? 300, // 5 minutes default
     auditService: opts?.auditService ?? null,
     logPermissionDenials: opts?.logPermissionDenials ?? false,
-    metrics: opts?.metrics ?? null,
     log: fastify.log,
   };
 

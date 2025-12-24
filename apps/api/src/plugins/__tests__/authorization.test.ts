@@ -1,8 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import Fastify, { type FastifyInstance } from "fastify";
-import type { CacheProvider } from "@workspace/cache";
 import type { AuthorizationAuditService } from "@workspace/authorization";
-import type { AuthorizationMetrics } from "@workspace/metrics";
+import type { CacheProvider } from "@workspace/cache";
+import Fastify, { type FastifyInstance } from "fastify";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the authorization module before importing the plugin
 vi.mock("@workspace/authorization", () => {
@@ -18,11 +17,11 @@ vi.mock("@workspace/authorization", () => {
 
   return {
     authorization: mockEnforcer,
-    AuthorizationAuditService: class {
-      static extractContext = vi.fn(() => ({
+    AuthorizationAuditService: {
+      extractContext: vi.fn(() => ({
         actorId: "test",
         actorIp: "127.0.0.1",
-      }));
+      })),
     },
   };
 });
@@ -34,9 +33,8 @@ describe("Authorization Plugin", () => {
   let app: FastifyInstance;
   let mockCache: CacheProvider;
   let mockAuditService: AuthorizationAuditService;
-  let mockMetrics: AuthorizationMetrics;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Clear all mocks before each test
     vi.clearAllMocks();
 
@@ -65,19 +63,6 @@ describe("Authorization Plugin", () => {
       logRoleRemoved: vi.fn(),
       verifyHashChainIntegrity: vi.fn(),
     } as unknown as AuthorizationAuditService;
-
-    // Create mock metrics
-    mockMetrics = {
-      recordPermissionCheck: vi.fn(),
-      recordCacheHit: vi.fn(),
-      recordCacheMiss: vi.fn(),
-      recordPolicyOperation: vi.fn(),
-      setCachedPoliciesCount: vi.fn(),
-      setTotalPoliciesCount: vi.fn(),
-      getMetrics: vi.fn(),
-      getRegistry: vi.fn(),
-      reset: vi.fn(),
-    } as unknown as AuthorizationMetrics;
   });
 
   describe("Plugin Registration", () => {
@@ -114,12 +99,7 @@ describe("Authorization Plugin", () => {
       // Mock enforcer to deny
       vi.spyOn(app.enforcer, "enforce").mockResolvedValue(false);
 
-      const result = await app.authorize(
-        "user1",
-        "org1",
-        "posts",
-        "delete"
-      );
+      const result = await app.authorize("user1", "org1", "posts", "delete");
 
       expect(result).toBe(false);
     });
@@ -130,12 +110,7 @@ describe("Authorization Plugin", () => {
       // Mock enforcer to allow
       vi.spyOn(app.enforcer, "enforce").mockResolvedValue(true);
 
-      const result = await app.authorize(
-        "user1",
-        "org1",
-        "posts",
-        "read"
-      );
+      const result = await app.authorize("user1", "org1", "posts", "read");
 
       expect(result).toBe(true);
     });
@@ -151,12 +126,7 @@ describe("Authorization Plugin", () => {
       // Mock cache hit
       vi.mocked(mockCache.get).mockResolvedValue(true);
 
-      const result = await app.authorize(
-        "user1",
-        "org1",
-        "posts",
-        "read"
-      );
+      const result = await app.authorize("user1", "org1", "posts", "read");
 
       expect(result).toBe(true);
       expect(mockCache.get).toHaveBeenCalledWith(
@@ -175,12 +145,7 @@ describe("Authorization Plugin", () => {
       vi.mocked(mockCache.get).mockResolvedValue(null);
       vi.spyOn(app.enforcer, "enforce").mockResolvedValue(true);
 
-      const result = await app.authorize(
-        "user1",
-        "org1",
-        "posts",
-        "read"
-      );
+      const result = await app.authorize("user1", "org1", "posts", "read");
 
       expect(result).toBe(true);
       expect(mockCache.get).toHaveBeenCalled();
@@ -234,59 +199,6 @@ describe("Authorization Plugin", () => {
       expect(mockAuditService.logPermissionDenied).not.toHaveBeenCalled();
     });
 
-    it("should track cache hits in metrics", async () => {
-      await app.register(authorizationPlugin, {
-        cache: mockCache,
-        metrics: mockMetrics,
-      });
-
-      // Mock cache hit
-      vi.mocked(mockCache.get).mockResolvedValue(true);
-
-      await app.authorize("user1", "org1", "posts", "read");
-
-      expect(mockMetrics.recordCacheHit).toHaveBeenCalledWith({
-        operation: "get",
-      });
-      expect(mockMetrics.recordPermissionCheck).toHaveBeenCalledWith(
-        {
-          result: "allowed",
-          resource: "posts",
-          action: "read",
-          orgId: "org1",
-          cached: true,
-        },
-        expect.any(Number) // duration
-      );
-    });
-
-    it("should track cache misses in metrics", async () => {
-      await app.register(authorizationPlugin, {
-        cache: mockCache,
-        metrics: mockMetrics,
-      });
-
-      // Mock cache miss
-      vi.mocked(mockCache.get).mockResolvedValue(null);
-      vi.spyOn(app.enforcer, "enforce").mockResolvedValue(false);
-
-      await app.authorize("user1", "org1", "posts", "write");
-
-      expect(mockMetrics.recordCacheMiss).toHaveBeenCalledWith({
-        operation: "get",
-      });
-      expect(mockMetrics.recordPermissionCheck).toHaveBeenCalledWith(
-        {
-          result: "denied",
-          resource: "posts",
-          action: "write",
-          orgId: "org1",
-          cached: false,
-        },
-        expect.any(Number) // duration
-      );
-    });
-
     it("should return false on error", async () => {
       await app.register(authorizationPlugin);
 
@@ -295,12 +207,7 @@ describe("Authorization Plugin", () => {
         new Error("Database error")
       );
 
-      const result = await app.authorize(
-        "user1",
-        "org1",
-        "posts",
-        "read"
-      );
+      const result = await app.authorize("user1", "org1", "posts", "read");
 
       expect(result).toBe(false);
     });
