@@ -94,6 +94,7 @@ import "./routes/roles.tsp";
 import "./routes/audit-logs.tsp";
 import "./routes/jobs.tsp";
 import "./routes/webhooks.tsp";
+import "./routes/migration.tsp";
 import "./routes/example-posts.tsp";
 import "./routes/example-comments.tsp";
 // import "./routes/products.tsp";    ← Example: Add new routes

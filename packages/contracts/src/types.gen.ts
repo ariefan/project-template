@@ -35,131 +35,6 @@ export type ActiveContextResponse = {
 };
 
 /**
- * API Key resource model
- *
- * Used for service accounts and automation.
- * The actual key value is only returned once at creation.
- */
-export type ApiKey = {
-    /**
-     * Unique API key identifier (format: key_abc123)
-     */
-    id: string;
-    /**
-     * Tenant this API key belongs to
-     */
-    tenantId: string;
-    /**
-     * Human-readable name for the API key
-     */
-    name: string;
-    /**
-     * Description of what this key is used for
-     */
-    description?: string;
-    /**
-     * Permissions granted to this key (format: resource:action)
-     */
-    permissions: Array<string>;
-    /**
-     * Masked key prefix for identification (e.g., "key_abc...xyz")
-     */
-    keyPrefix: string;
-    /**
-     * When the key was last used (null if never used)
-     */
-    lastUsedAt?: string;
-    /**
-     * IP address from which the key was last used
-     */
-    lastUsedIp?: string;
-    /**
-     * When the API key expires (null for no expiration)
-     */
-    expiresAt?: string;
-    /**
-     * Whether the key is currently active
-     */
-    isActive: boolean;
-    /**
-     * User who created this API key
-     */
-    createdBy: string;
-    /**
-     * When the API key was created
-     */
-    createdAt: string;
-    /**
-     * When the API key was last updated
-     */
-    updatedAt: string;
-};
-
-/**
- * API key creation response (includes secret once)
- */
-export type ApiKeyCreatedResponse = {
-    data: ApiKeyWithSecret;
-    meta: ResponseMeta;
-};
-
-/**
- * API key list response
- */
-export type ApiKeyListResponse = {
-    data: Array<ApiKey>;
-    pagination: Pagination;
-    meta: ResponseMeta;
-};
-
-/**
- * API key response (without secret)
- */
-export type ApiKeyResponse = {
-    data: ApiKey;
-    meta: ResponseMeta;
-};
-
-/**
- * API Key with the actual secret (only returned on creation)
- */
-export type ApiKeyWithSecret = {
-    /**
-     * Unique API key identifier
-     */
-    id: string;
-    /**
-     * Tenant this API key belongs to
-     */
-    tenantId: string;
-    /**
-     * Human-readable name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string;
-    /**
-     * Permissions granted
-     */
-    permissions: Array<string>;
-    /**
-     * The actual API key secret - ONLY RETURNED ONCE
-     * Store this securely, it cannot be retrieved again
-     */
-    key: string;
-    /**
-     * When the key expires
-     */
-    expiresAt?: string;
-    /**
-     * When the API key was created
-     */
-    createdAt: string;
-};
-
-/**
  * Request to assign a role to a user
  */
 export type AssignRoleRequest = {
@@ -470,28 +345,6 @@ export type ConfirmUploadRequest = {
 };
 
 /**
- * Request to create a new API key
- */
-export type CreateApiKeyRequest = {
-    /**
-     * Human-readable name for the API key
-     */
-    name: string;
-    /**
-     * Description of what this key is used for
-     */
-    description?: string;
-    /**
-     * Permissions to grant (format: resource:action)
-     */
-    permissions: Array<string>;
-    /**
-     * When the key should expire (optional, null for no expiration)
-     */
-    expiresAt?: string;
-};
-
-/**
  * Request body for creating a new comment
  */
 export type CreateExampleCommentRequest = {
@@ -543,28 +396,6 @@ export type CreateRoleRequest = {
      * Permissions to grant
      */
     permissions: Array<PermissionInput>;
-};
-
-/**
- * Request body for creating a new user
- */
-export type CreateUserRequest = {
-    /**
-     * User's email address
-     */
-    email: string;
-    /**
-     * User's full name
-     */
-    name: string;
-    /**
-     * User's password (min 8 characters)
-     */
-    password: string;
-    /**
-     * Whether the user should be active upon creation (default: true)
-     */
-    isActive?: boolean;
 };
 
 /**
@@ -1107,6 +938,49 @@ export type JobResponse = {
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
 
 /**
+ * Version lifecycle status
+ */
+export type MigrationStatus = 'current' | 'deprecated' | 'sunset';
+
+/**
+ * Migration status for an API version
+ */
+export type MigrationStatusResponse = {
+    /**
+     * API version (e.g., "v1")
+     */
+    version: string;
+    /**
+     * Version lifecycle status
+     */
+    status: MigrationStatus;
+    /**
+     * ISO 8601 date when this version will be removed (if deprecated)
+     */
+    sunsetDate?: string;
+    /**
+     * Days remaining until sunset (if deprecated)
+     */
+    daysUntilSunset?: number;
+    /**
+     * Version to migrate to (if deprecated)
+     */
+    replacementVersion?: string;
+    /**
+     * URL to the migration guide
+     */
+    migrationGuideUrl?: string;
+    /**
+     * List of breaking changes in the replacement version
+     */
+    breakingChanges?: Array<string>;
+    /**
+     * Steps to complete the migration
+     */
+    migrationChecklist?: Array<string>;
+};
+
+/**
  * Page-based pagination metadata for collection responses
  */
 export type Pagination = {
@@ -1421,28 +1295,6 @@ export type SwitchContextResponse = {
 };
 
 /**
- * Request to update an API key
- */
-export type UpdateApiKeyRequest = {
-    /**
-     * Human-readable name
-     */
-    name?: string;
-    /**
-     * Description
-     */
-    description?: string;
-    /**
-     * Permissions (replaces existing)
-     */
-    permissions?: Array<string>;
-    /**
-     * Whether the key is active
-     */
-    isActive?: boolean;
-};
-
-/**
  * Request body for updating a comment
  */
 export type UpdateExampleCommentRequest = {
@@ -1499,20 +1351,6 @@ export type UpdateRoleRequest = {
 };
 
 /**
- * Request body for updating a user
- */
-export type UpdateUserRequest = {
-    /**
-     * User's full name (optional)
-     */
-    name?: string;
-    /**
-     * Whether the user account is active (optional)
-     */
-    isActive?: boolean;
-};
-
-/**
  * Request to update a webhook
  */
 export type UpdateWebhookRequest = {
@@ -1536,56 +1374,6 @@ export type UpdateWebhookRequest = {
      * Whether the webhook is active
      */
     isActive?: boolean;
-};
-
-/**
- * User resource model
- */
-export type User = {
-    /**
-     * Unique user identifier (format: usr_{randomString})
-     */
-    id: string;
-    /**
-     * User's email address
-     */
-    email: string;
-    /**
-     * User's full name
-     */
-    name: string;
-    /**
-     * Whether the user account is active
-     */
-    isActive: boolean;
-    /**
-     * Whether the user's email is verified
-     */
-    isVerified: boolean;
-    /**
-     * Whether the user is soft deleted
-     */
-    isDeleted: boolean;
-    /**
-     * Timestamp when the user was soft deleted (null if not deleted)
-     */
-    deletedAt?: string;
-    /**
-     * User ID who deleted this user (null if not deleted)
-     */
-    deletedBy?: string;
-    /**
-     * Timestamp when the user was created
-     */
-    createdAt: string;
-    /**
-     * Timestamp when the user was last updated
-     */
-    updatedAt: string;
-    /**
-     * Timestamp of the user's last login (optional)
-     */
-    lastLoginAt?: string;
 };
 
 /**
@@ -1690,23 +1478,6 @@ export type UserEffectivePermissions = {
  */
 export type UserEffectivePermissionsResponse = {
     data: UserEffectivePermissions;
-    meta: ResponseMeta;
-};
-
-/**
- * User collection response
- */
-export type UserListResponse = {
-    data: Array<User>;
-    pagination: Pagination;
-    meta: ResponseMeta;
-};
-
-/**
- * Single user response
- */
-export type UserResponse = {
-    data: User;
     meta: ResponseMeta;
 };
 
@@ -2046,174 +1817,21 @@ export type HealthCheckResponses = {
 
 export type HealthCheckResponse = HealthCheckResponses[keyof HealthCheckResponses];
 
-export type ApiKeysListData = {
+export type MigrationGetStatusData = {
     body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: {
-        /**
-         * Page number (1-indexed)
-         */
-        page?: number;
-        /**
-         * Number of items per page
-         */
-        pageSize?: number;
-        /**
-         * Filter by active status
-         */
-        isActive?: boolean;
-    };
-    url: '/v1/orgs/{orgId}/api-keys';
-};
-
-export type ApiKeysListResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ApiKeyListResponse | ErrorResponse;
-};
-
-export type ApiKeysListResponse = ApiKeysListResponses[keyof ApiKeysListResponses];
-
-export type ApiKeysCreateData = {
-    /**
-     * API key data
-     */
-    body: CreateApiKeyRequest;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
+    path?: never;
     query?: never;
-    url: '/v1/orgs/{orgId}/api-keys';
+    url: '/v1/migration/status';
 };
 
-export type ApiKeysCreateResponses = {
+export type MigrationGetStatusResponses = {
     /**
      * The request has succeeded.
      */
-    200: ErrorResponse;
-    /**
-     * The request has succeeded and a new resource has been created as a result.
-     */
-    201: ApiKeyCreatedResponse;
+    200: MigrationStatusResponse;
 };
 
-export type ApiKeysCreateResponse = ApiKeysCreateResponses[keyof ApiKeysCreateResponses];
-
-export type ApiKeysRevokeData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * API key ID
-         */
-        keyId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/api-keys/{keyId}';
-};
-
-export type ApiKeysRevokeResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ErrorResponse;
-    /**
-     * There is no content to send for this request, but the headers may be useful.
-     */
-    204: void;
-};
-
-export type ApiKeysRevokeResponse = ApiKeysRevokeResponses[keyof ApiKeysRevokeResponses];
-
-export type ApiKeysGetData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * API key ID
-         */
-        keyId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/api-keys/{keyId}';
-};
-
-export type ApiKeysGetResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ApiKeyResponse | ErrorResponse;
-};
-
-export type ApiKeysGetResponse = ApiKeysGetResponses[keyof ApiKeysGetResponses];
-
-export type ApiKeysUpdateData = {
-    /**
-     * Update data
-     */
-    body: UpdateApiKeyRequest;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * API key ID
-         */
-        keyId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/api-keys/{keyId}';
-};
-
-export type ApiKeysUpdateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ApiKeyResponse | ErrorResponse;
-};
-
-export type ApiKeysUpdateResponse = ApiKeysUpdateResponses[keyof ApiKeysUpdateResponses];
-
-export type ApiKeysRotateData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * API key ID
-         */
-        keyId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/api-keys/{keyId}/rotate';
-};
-
-export type ApiKeysRotateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ApiKeyCreatedResponse | ErrorResponse;
-};
-
-export type ApiKeysRotateResponse = ApiKeysRotateResponses[keyof ApiKeysRotateResponses];
+export type MigrationGetStatusResponse = MigrationGetStatusResponses[keyof MigrationGetStatusResponses];
 
 export type AuditLogsListData = {
     body?: never;
@@ -3825,448 +3443,6 @@ export type TenantRolesUpdateResponses = {
 };
 
 export type TenantRolesUpdateResponse = TenantRolesUpdateResponses[keyof TenantRolesUpdateResponses];
-
-export type UsersListData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: {
-        /**
-         * Page number (1-indexed)
-         */
-        page?: number;
-        /**
-         * Number of items per page (max: 100)
-         */
-        pageSize?: number;
-        /**
-         * Sort order (e.g., "-createdAt,name" for desc createdAt, then asc name)
-         */
-        orderBy?: string;
-        /**
-         * Comma-separated list of fields to return (e.g., "id,email,name")
-         */
-        fields?: string;
-        /**
-         * Comma-separated list of relations to include (e.g., "addresses,sessions")
-         */
-        include?: string;
-        /**
-         * Full-text search query
-         */
-        search?: string;
-        /**
-         * Filter by user status (exact match)
-         */
-        status?: string;
-        /**
-         * Filter by status NOT equal to value
-         */
-        statusNe?: string;
-        /**
-         * Filter by status IN list (comma-separated values)
-         */
-        statusIn?: string;
-        /**
-         * Filter by verified status
-         */
-        isVerified?: boolean;
-        /**
-         * Filter by active status
-         */
-        isActive?: boolean;
-        /**
-         * Filter by role (exact match)
-         */
-        role?: string;
-        /**
-         * Filter by role IN list (comma-separated values)
-         */
-        roleIn?: string;
-        /**
-         * Filter by email contains
-         */
-        emailContains?: string;
-        /**
-         * Filter by email starts with
-         */
-        emailStartsWith?: string;
-        /**
-         * Filter by email ends with
-         */
-        emailEndsWith?: string;
-        /**
-         * Filter by name contains
-         */
-        nameContains?: string;
-        /**
-         * Filter users created after this timestamp
-         */
-        createdAfter?: string;
-        /**
-         * Filter users created before this timestamp
-         */
-        createdBefore?: string;
-        /**
-         * Filter users updated after this timestamp
-         */
-        updatedAfter?: string;
-        /**
-         * Filter users updated before this timestamp
-         */
-        updatedBefore?: string;
-        /**
-         * Filter users last login after this timestamp
-         */
-        lastLoginAfter?: string;
-        /**
-         * Filter users last login before this timestamp
-         */
-        lastLoginBefore?: string;
-    };
-    url: '/v1/orgs/{orgId}/users';
-};
-
-export type UsersListResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: UserListResponse | ErrorResponse;
-};
-
-export type UsersListResponse = UsersListResponses[keyof UsersListResponses];
-
-export type UsersCreateData = {
-    /**
-     * User creation data
-     */
-    body: CreateUserRequest;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users';
-};
-
-export type UsersCreateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ErrorResponse;
-    /**
-     * The request has succeeded and a new resource has been created as a result.
-     */
-    201: UserResponse;
-};
-
-export type UsersCreateResponse = UsersCreateResponses[keyof UsersCreateResponses];
-
-export type UsersBatchUpdateData = {
-    /**
-     * Array of user updates
-     */
-    body: {
-        users?: Array<{
-            id: string;
-            updates: UpdateUserRequest;
-        }>;
-    };
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/batch';
-};
-
-export type UsersBatchUpdateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: {
-        data: {
-            updated: Array<User>;
-            failed: Array<{
-                id: string;
-                error: Error;
-            }>;
-        };
-        meta: ResponseMeta;
-    } | ErrorResponse;
-};
-
-export type UsersBatchUpdateResponse = UsersBatchUpdateResponses[keyof UsersBatchUpdateResponses];
-
-export type UsersBatchCreateData = {
-    /**
-     * Array of users to create
-     */
-    body: {
-        users: Array<CreateUserRequest>;
-    };
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/batch';
-};
-
-export type UsersBatchCreateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ErrorResponse;
-    /**
-     * The request has succeeded and a new resource has been created as a result.
-     */
-    201: {
-        data: {
-            created: Array<User>;
-            failed: Array<{
-                index: number;
-                error: Error;
-            }>;
-        };
-        meta: ResponseMeta;
-    };
-};
-
-export type UsersBatchCreateResponse = UsersBatchCreateResponses[keyof UsersBatchCreateResponses];
-
-export type UsersBatchSoftDeleteData = {
-    /**
-     * User IDs to soft delete
-     */
-    body: {
-        ids: Array<string>;
-    };
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/batch/soft-delete';
-};
-
-export type UsersBatchSoftDeleteResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: {
-        data: {
-            deleted: Array<{
-                id: string;
-                deletedAt: string;
-            }>;
-            failed: Array<{
-                id: string;
-                error: Error;
-            }>;
-        };
-        meta: ResponseMeta;
-    } | ErrorResponse;
-};
-
-export type UsersBatchSoftDeleteResponse = UsersBatchSoftDeleteResponses[keyof UsersBatchSoftDeleteResponses];
-
-export type UsersDeleteData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * User ID
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/{id}';
-};
-
-export type UsersDeleteResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: SoftDeleteResponse | ErrorResponse;
-};
-
-export type UsersDeleteResponse = UsersDeleteResponses[keyof UsersDeleteResponses];
-
-export type UsersGetData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * User ID
-         */
-        id: string;
-    };
-    query?: {
-        /**
-         * Comma-separated list of fields to return
-         */
-        fields?: string;
-        /**
-         * Comma-separated list of relations to include
-         */
-        include?: string;
-    };
-    url: '/v1/orgs/{orgId}/users/{id}';
-};
-
-export type UsersGetResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: UserResponse | ErrorResponse;
-};
-
-export type UsersGetResponse = UsersGetResponses[keyof UsersGetResponses];
-
-export type UsersUpdateData = {
-    /**
-     * User update data
-     */
-    body: UpdateUserRequest;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * User ID
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/{id}';
-};
-
-export type UsersUpdateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: UserResponse | ErrorResponse;
-};
-
-export type UsersUpdateResponse = UsersUpdateResponses[keyof UsersUpdateResponses];
-
-export type UsersResetPasswordData = {
-    /**
-     * Password reset options
-     */
-    body: {
-        /**
-         * Email to send password reset link to
-         */
-        email?: string;
-        /**
-         * Whether to send email notification
-         */
-        sendEmail?: boolean;
-    };
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * User ID
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/{id}/actions/reset-password';
-};
-
-export type UsersResetPasswordResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: {
-        data: {
-            userId: string;
-            resetTokenSent: boolean;
-            expiresAt: string;
-        };
-        meta: ResponseMeta;
-    } | ErrorResponse;
-};
-
-export type UsersResetPasswordResponse = UsersResetPasswordResponses[keyof UsersResetPasswordResponses];
-
-export type UsersDeletePermanentData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * User ID
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/{id}/permanent';
-};
-
-export type UsersDeletePermanentResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ErrorResponse;
-    /**
-     * There is no content to send for this request, but the headers may be useful.
-     */
-    204: void;
-};
-
-export type UsersDeletePermanentResponse = UsersDeletePermanentResponses[keyof UsersDeletePermanentResponses];
-
-export type UsersRestoreData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * User ID
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/users/{id}/restore';
-};
-
-export type UsersRestoreResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: UserResponse | ErrorResponse;
-};
-
-export type UsersRestoreResponse = UsersRestoreResponses[keyof UsersRestoreResponses];
 
 export type UserPermissionsGetData = {
     body?: never;

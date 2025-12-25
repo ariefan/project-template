@@ -1,5 +1,8 @@
-import "dotenv/config";
+import { config } from "dotenv";
 import { z } from "zod";
+
+// Load .env from project root (two levels up from apps/api)
+config({ path: "../../.env" });
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -76,7 +79,7 @@ const envSchema = z.object({
   STORAGE_LOCAL_PATH: z.string().default("./uploads"),
 
   // S3/R2 Configuration (only needed if STORAGE_PROVIDER=s3)
-  S3_ENDPOINT: z.string().url().optional(),
+  S3_ENDPOINT: z.string().url().optional().or(z.literal("")),
   S3_REGION: z.string().optional(),
   S3_BUCKET: z.string().optional(),
   S3_ACCESS_KEY_ID: z.string().optional(),
@@ -84,6 +87,16 @@ const envSchema = z.object({
 
   // File Upload Limits
   FILE_MAX_SIZE: z.coerce.number().default(52_428_800), // 50 MB default
+
+  // Metrics
+  METRICS_ENABLED: z.coerce.boolean().default(true),
+  METRICS_PREFIX: z.string().default(""),
+
+  // HTTP Caching
+  CACHING_ENABLED: z.coerce.boolean().default(true),
+
+  // Deprecation Headers
+  DEPRECATION_ENABLED: z.coerce.boolean().default(true),
 });
 
 function validateEnv() {

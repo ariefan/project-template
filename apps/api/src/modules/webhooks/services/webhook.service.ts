@@ -115,7 +115,7 @@ export async function updateWebhook(
     }
   }
 
-  return webhookRepository.update(orgId, webhookId, input);
+  return await webhookRepository.update(orgId, webhookId, input);
 }
 
 /**

@@ -149,7 +149,7 @@ A compact, self-contained token format for securely transmitting information bet
 An architecture where a single application instance serves multiple isolated customers (tenants). Each tenant's data is isolated from others.
 
 **Isolation strategies:**
-- Path-based: `/v1/orgs/{orgId}/users`
+- Path-based: `/v1/orgs/{orgId}/posts`
 - Subdomain-based: `acme.api.example.com`
 - Header-based: `X-Tenant-ID: org_abc`
 

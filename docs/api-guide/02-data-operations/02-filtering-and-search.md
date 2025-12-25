@@ -7,7 +7,7 @@
 Use query parameters for exact field matches:
 
 ```
-GET /v1/orgs/{orgId}/users?status=active&role=admin
+GET /v1/orgs/{orgId}/posts?status=active&role=admin
 GET /v1/orgs/{orgId}/invoices?status=paid&amount=1000
 ```
 

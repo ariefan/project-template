@@ -1,3 +1,7 @@
+// Load environment variables FIRST, before any other imports
+// This ensures DATABASE_URL is available when @workspace/db initializes
+import "./env";
+
 import { buildApp } from "./app";
 import { env } from "./env";
 

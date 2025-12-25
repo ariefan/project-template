@@ -228,22 +228,22 @@ POST /v1/orgs/{orgId}/roles
 
 ```http
 # List user's roles in tenant
-GET /v1/orgs/{orgId}/users/{userId}/roles
+GET /v1/orgs/{orgId}/members/{userId}/roles
 
 # Assign role to user
-POST /v1/orgs/{orgId}/users/{userId}/roles
+POST /v1/orgs/{orgId}/members/{userId}/roles
 {
   "roleId": "role_admin"
 }
 
 # Remove role from user
-DELETE /v1/orgs/{orgId}/users/{userId}/roles/{roleId}
+DELETE /v1/orgs/{orgId}/members/{userId}/roles/{roleId}
 ```
 
 ### Effective Permissions
 
 ```http
-GET /v1/orgs/{orgId}/users/{userId}/permissions
+GET /v1/orgs/{orgId}/members/{userId}/permissions
 ```
 
 **Response:**
@@ -435,7 +435,7 @@ function requireOwnership(resource: string, action: string) {
 ```typescript
 // Simple permission check
 app.get(
-  "/v1/orgs/:orgId/users",
+  "/v1/orgs/:orgId/posts",
   authenticate,
   requirePermission("users", "read"),
   listUsers

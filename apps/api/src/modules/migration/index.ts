@@ -1,0 +1,1 @@
+export { migrationRoutes } from "./routes";

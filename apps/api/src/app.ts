@@ -10,12 +10,14 @@ import { createStorageProvider } from "@workspace/storage";
 import Fastify from "fastify";
 import YAML from "yaml";
 import { env } from "./env";
+import { applicationsModule } from "./modules/applications";
 import { authRoutes } from "./modules/auth";
 import { authorizationModule } from "./modules/authorization";
 import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
 import { jobsModule } from "./modules/jobs";
+import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
 import { webhooksModule } from "./modules/webhooks";
 import authorizationPlugin from "./plugins/authorization";
@@ -115,6 +117,12 @@ export async function buildApp() {
   // Security Headers
   await app.register(securityHeadersPlugin);
 
+  // Metrics (early registration to capture all requests)
+  if (env.METRICS_ENABLED) {
+    const { default: metricsPlugin } = await import("./plugins/metrics");
+    await app.register(metricsPlugin);
+  }
+
   // CORS
   await app.register(cors, {
     origin: env.CORS_ORIGIN,
@@ -157,6 +165,22 @@ export async function buildApp() {
     });
   }
 
+  // HTTP Caching (ETag, Cache-Control headers)
+  // As documented in docs/api-guide/06-quality/03-caching.md
+  if (env.CACHING_ENABLED) {
+    const { default: cachingPlugin } = await import("./plugins/caching");
+    await app.register(cachingPlugin);
+  }
+
+  // Deprecation Headers (Sunset, version warnings)
+  // As documented in docs/api-guide/08-governance/04-deprecation.md
+  if (env.DEPRECATION_ENABLED) {
+    const { default: deprecationPlugin } = await import(
+      "./plugins/deprecation"
+    );
+    await app.register(deprecationPlugin);
+  }
+
   // Initialize storage provider for file uploads
   const storageProvider = createStorageProvider(buildStorageConfig());
   filesService.initFilesService(storageProvider);
@@ -183,6 +207,26 @@ export async function buildApp() {
     });
   }
 
+  // Initialize webhook delivery queue (uses same QUEUE_ENABLED setting)
+  if (env.QUEUE_ENABLED) {
+    const { createWebhookQueue } = await import("./modules/webhooks");
+    const { initQueue } = await import(
+      "./modules/webhooks/services/webhook-delivery.service"
+    );
+
+    const webhookQueue = createWebhookQueue({
+      connectionString: env.DATABASE_URL,
+      concurrency: env.QUEUE_CONCURRENCY,
+    });
+
+    initQueue(webhookQueue);
+    await webhookQueue.start();
+
+    app.addHook("onClose", async () => {
+      await webhookQueue.stop();
+    });
+  }
+
   // OpenAPI spec endpoint
   const openApiSpec = loadOpenApiSpec();
   app.get("/openapi.json", async () => openApiSpec);
@@ -199,7 +243,9 @@ export async function buildApp() {
 
   // Modules
   await app.register(healthRoutes);
+  await app.register(migrationRoutes);
   await app.register(authRoutes);
+  await app.register(applicationsModule, { prefix: "/v1" });
   await app.register(authorizationModule, { prefix: "/v1/orgs" });
   await app.register(examplePostsModule, { prefix: "/v1/orgs" });
   await app.register(jobsModule, { prefix: "/v1/orgs" });

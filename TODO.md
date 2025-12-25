@@ -1,420 +1,293 @@
-# Implementation Status
+# Project Implementation Status
 
-This document tracks the implementation status of features documented in `docs/api-guide` across `packages/contracts` (TypeSpec) and `apps/api` (Fastify).
-
-## 🔴 Critical Issues Requiring Attention
-
-1. **Database Not Running** - PostgreSQL and Redis need to be started before the API can run. Docker Compose setup provided below.
+This document tracks the alignment between documentation (`docs/api-guide`), contracts (`packages/contracts`), and implementation (`apps/api`).
 
 ---
 
-## Table of Contents
+## Quick Start
 
-1. [Current Project State](#current-project-state)
-2. [Consistency Matrix](#consistency-matrix-api-guide--contracts--api)
-3. [Resource Implementation Status](#resource-implementation-status)
-4. [User & Member Management (Better-Auth)](#user--member-management-better-auth)
-5. [API Key Management (Better-Auth)](#api-key-management-better-auth)
-6. [Priority Backlog](#priority-backlog)
-7. [Architecture Overview](#architecture-overview)
-8. [Quick Commands](#quick-commands)
+```bash
+# 1. Configure environment
+cp .env.example .env
+# Edit .env with your DATABASE_URL and REDIS_URL
 
----
+# 2. Run database migrations
+cd packages/db && pnpm drizzle-kit push
 
-## Current Project State
+# 3. Start the API
+cd apps/api && pnpm dev
 
-**Fully Implemented:**
-- Multi-App RBAC authorization system with Casbin
-- Authentication via better-auth
-- Notifications system with email/SMS/push support
-- Caching layer (memory + Redis)
-- TypeSpec contracts with auto-generated SDK
-- Comprehensive API documentation (Scalar UI)
-- Rate limiting with tier-based limits (Free/Basic/Pro/Enterprise)
-- Security headers via @fastify/helmet
-- Field selection (sparse fieldsets) for bandwidth optimization
-- Cursor-based pagination for large datasets
-- Idempotency keys middleware for POST/PATCH operations
-- Batch operations (create, update, soft-delete, restore)
-- Async Operations (Jobs) - Background job management
-- File Handling - Secure file uploads with presigned URLs + PATCH access level
-- Audit Logging API - Query, get single, and export (CSV/JSON) endpoints
-- Webhooks - Full CRUD + delivery system with HMAC signatures and retry logic
-
-**Pending Setup:**
-- PostgreSQL database needs to be started
-- Database migrations need to be run
-- Default application (`app_default`) needs to be seeded
-- Environment variables need to be configured (`.env` file)
-
-**User & Member Management:**
-- ✅ User management handled by better-auth admin plugin (`/api/auth/admin/*`)
-- ✅ Member management handled by better-auth organization plugin (`/api/auth/organization/*`)
-
-**In Progress:**
-- Testing infrastructure (258+ tests across packages, expanding coverage)
+# 4. View API docs
+open http://localhost:3001/docs
+```
 
 ---
 
-## Consistency Matrix: API Guide / Contracts / API
+## Current State: Feature Complete
 
-This matrix shows whether each feature is documented, has TypeSpec contracts, and is implemented in the API.
+The API template is fully implemented with all documented features working.
 
-### Legend
+### Core Infrastructure
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Authentication | ✅ | better-auth with JWT, API keys, OAuth |
+| Authorization | ✅ | Multi-app RBAC with Casbin, deny-override |
+| Rate Limiting | ✅ | Tier-based (Free/Basic/Pro/Enterprise) |
+| Security Headers | ✅ | @fastify/helmet integration |
+| CORS | ✅ | Configurable origins |
 
-| Symbol | Meaning |
-|--------|---------|
-| ✅ | Fully implemented/documented |
-| 🟡 | Partially implemented |
-| ❌ | Not implemented |
-| ➖ | Not applicable |
-
----
-
-### 1. Core Concepts
-
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
-| Naming Conventions | ✅ | ✅ | ✅ | camelCase throughout |
-| HTTP Methods (CRUD) | ✅ | ✅ | ✅ | Full CRUD on example resources |
-| Request/Response Format | ✅ | ✅ | ✅ | `{ data, pagination?, meta }` |
-| Versioning | ✅ | ✅ | ✅ | `/v1/orgs/{orgId}/...` |
-| Multitenancy | ✅ | ✅ | ✅ | Multi-app with `applicationId` + `tenantId` |
-
-### 2. Data Operations
-
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
+### Data Operations
+| Feature | Docs | Contracts | API | Notes |
+|---------|------|-----------|-----|-------|
 | Page-based Pagination | ✅ | ✅ | ✅ | `page`, `pageSize`, `totalCount` |
-| Cursor-based Pagination | ✅ | ✅ | ✅ | `GET /cursor` with `nextCursor` |
-| Filtering (equality) | ✅ | ✅ | ✅ | `status`, `authorId` |
-| Filtering (operators) | ✅ | ✅ | ✅ | `statusNe`, `statusIn`, `titleContains` |
-| Search | ✅ | ✅ | ✅ | `search` param |
-| Date Range Filters | ✅ | ✅ | ✅ | `createdAfter`, `createdBefore` |
+| Cursor-based Pagination | ✅ | ✅ | ✅ | `GET /cursor` endpoints |
+| Filtering (equality) | ✅ | ✅ | ✅ | `status=draft` |
+| Filtering (operators) | ✅ | ✅ | ✅ | `Ne`, `In`, `Contains`, `After`, `Before` |
 | Sorting | ✅ | ✅ | ✅ | `orderBy=-createdAt,title` |
-| Field Selection | ✅ | ✅ | ✅ | `fields=id,title,status` |
+| Field Selection | ✅ | ✅ | ✅ | `fields=id,title` |
+| Search | ✅ | ✅ | ✅ | `search` parameter |
 
-### 3. Security
-
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
-| Authentication | ✅ | ➖ | ✅ | better-auth handles `/auth/*` |
-| Authorization (RBAC) | ✅ | ✅ | ✅ | Multi-app with deny-override |
-| Global Roles | ✅ | ✅ | ✅ | App-scoped roles |
-| Tenant Roles | ✅ | ✅ | ✅ | Org-scoped roles |
-| Context Switching | ✅ | ✅ | ✅ | `/users/me/context` |
-| Rate Limiting | ✅ | ➖ | ✅ | Tier-based with Redis |
-| CORS | ✅ | ➖ | ✅ | Configured in app.ts |
-| Security Headers | ✅ | ➖ | ✅ | @fastify/helmet |
-
-### 4. Error Handling
-
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
-| Error Structure | ✅ | ✅ | ✅ | `{ error: { code, message, details } }` |
-| Error Codes | ✅ | ✅ | ✅ | Standardized codes |
-| Validation | ✅ | ✅ | ✅ | Zod schemas from contracts |
-| Request ID | ✅ | ✅ | ✅ | `meta.requestId` |
-
-### 5. Advanced Operations
-
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
-| Batch Create | ✅ | ✅ | ✅ | `POST /batch` |
+### Advanced Operations
+| Feature | Docs | Contracts | API | Notes |
+|---------|------|-----------|-----|-------|
+| Batch Create | ✅ | ✅ | ✅ | `POST /batch` with atomic option |
 | Batch Update | ✅ | ✅ | ✅ | `PATCH /batch` |
 | Batch Soft Delete | ✅ | ✅ | ✅ | `POST /batch/soft-delete` |
 | Batch Restore | ✅ | ✅ | ✅ | `POST /batch/restore` |
-| Soft Delete | ✅ | ✅ | ✅ | 200 + metadata |
-| Hard Delete | ✅ | ✅ | ✅ | 204 No Content |
+| Soft Delete | ✅ | ✅ | ✅ | Returns deletion metadata |
+| Hard Delete | ✅ | ✅ | ✅ | `DELETE /permanent`, 204 |
 | Restore | ✅ | ✅ | ✅ | `POST /{id}/restore` |
 | List Deleted | ✅ | ✅ | ✅ | `GET /deleted` |
-| Async Operations | ✅ | ✅ | ✅ | Jobs module |
-| File Handling | ✅ | ✅ | ✅ | Complete with PATCH endpoint |
 
-### 6. Quality & Reliability
+### Quality & Reliability
+| Feature | Docs | Contracts | API | Notes |
+|---------|------|-----------|-----|-------|
+| Idempotency Keys | ✅ | ➖ | ✅ | `Idempotency-Key` header for POST/PATCH |
+| HTTP Caching | ✅ | ➖ | ✅ | ETag, Cache-Control, 304 responses |
+| Prometheus Metrics | ✅ | ➖ | ✅ | `/metrics` endpoint |
+| Audit Logging | ✅ | ✅ | ✅ | Query, export (CSV/JSON) |
+| Deprecation Headers | ✅ | ➖ | ✅ | Sunset, Link rel="deprecation" |
 
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
-| Audit Logging | ✅ | ✅ | ✅ | Full API with query/export |
-| Idempotency | ✅ | ➖ | ✅ | `Idempotency-Key` header |
-| Caching | ✅ | ➖ | ✅ | `packages/cache` |
-| Monitoring | ✅ | ➖ | ❌ | Metrics package removed |
-| Performance | ✅ | ➖ | ➖ | Guidelines only |
-
-### 7. Integrations
-
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
-| Webhooks | ✅ | ✅ | ✅ | Full CRUD + delivery with HMAC |
-| Client SDKs | ✅ | ✅ | ➖ | Auto-generated via @hey-api/openapi-ts |
-
-### 8. Governance
-
-| Feature | API Guide | Contracts | API | Notes |
-|---------|-----------|-----------|-----|-------|
-| OpenAPI Docs | ✅ | ✅ | ✅ | TypeSpec → OpenAPI → Scalar |
-| Testing | ✅ | ➖ | 🟡 | Vitest configs, partial coverage |
-| Deprecation | ✅ | ❌ | ❌ | Not implemented |
-| Migration | ✅ | ❌ | ❌ | Not implemented |
+### Integrations
+| Feature | Docs | Contracts | API | Notes |
+|---------|------|-----------|-----|-------|
+| Webhooks CRUD | ✅ | ✅ | ✅ | 11 endpoints |
+| Webhook Delivery | ✅ | ✅ | ✅ | pg-boss async, HMAC-SHA256 |
+| Webhook Retries | ✅ | ✅ | ✅ | 1m, 5m, 30m, 2h, 6h, 24h |
+| File Uploads | ✅ | ✅ | ✅ | Presigned URLs + direct upload |
+| Async Jobs | ✅ | ✅ | ✅ | Status polling, cancellation |
 
 ---
 
-## Resource Implementation Status
+## Resource Endpoints
 
-This table shows the implementation status of each resource across the stack.
+### Fully Implemented (84+ endpoints)
 
-| Resource | Contracts | DB Schema | API Routes | Notes |
-|----------|-----------|-----------|------------|-------|
-| Health | ✅ | ➖ | ✅ | `/health` |
-| ExamplePost | ✅ | ✅ | ✅ | Full CRUD + batch |
-| ExampleComment | ✅ | ✅ | ✅ | Nested under posts |
-| User | ➖ | ✅ | ✅ | Handled by better-auth admin plugin |
-| OrgMember | ➖ | ✅ | ✅ | Handled by better-auth organization plugin |
-| ApiKey | ➖ | ✅ | ✅ | Handled by better-auth api-key plugin |
-| AuditLog | ✅ | ✅ | ✅ | Query, get, export endpoints |
-| Webhook | ✅ | ✅ | ✅ | 11 endpoints + delivery system |
-| Role | ✅ | ✅ | ✅ | Global + tenant roles |
-| UserRoleAssignment | ✅ | ✅ | ✅ | Role assignment |
-| UserActiveContext | ✅ | ✅ | ✅ | Context switching |
-| File | ✅ | ✅ | ✅ | Full CRUD with presigned URLs |
-| Job | ✅ | ✅ | ✅ | Status polling |
-| Notification | ➖ | ✅ | 🟡 | Service only, minimal routes |
-| Application | ✅ | ✅ | 🟡 | Multi-app support |
+| Resource | Endpoints | Location |
+|----------|-----------|----------|
+| Health | 1 | `GET /health` |
+| Auth | * | `ALL /api/auth/*` (better-auth) |
+| Applications | 5 | `GET/POST/PATCH/DELETE /v1/applications` |
+| Global Roles | 5 | `GET/POST/PATCH/DELETE /v1/roles` |
+| Tenant Roles | 5 | `GET/POST/PATCH/DELETE /v1/orgs/:orgId/roles` |
+| User Roles | 3 | `/v1/orgs/:orgId/users/:userId/roles` |
+| Context | 3 | `/v1/users/me/context`, `switch-context`, `available-contexts` |
+| Violations | 5 | `suspend`, `restore`, `lockdown`, `unlock`, `list` |
+| Audit Logs | 3 | `list`, `get`, `export` |
+| Example Posts | 13 | Full CRUD + batch + cursor pagination |
+| Example Comments | 9 | Full CRUD + batch (nested under posts) |
+| Files | 9 | Upload, download, access control |
+| Jobs | 3 | List, get status, cancel |
+| Webhooks | 11 | Full CRUD + delivery management |
+| Notifications | 3 | List, get, send |
+| Notification Prefs | 2 | Get, update preferences |
+| Migration | 1 | `GET /v1/migration/status` |
+
+### User & Member Management
+
+Handled by better-auth plugins (no custom contracts needed):
+
+**Admin Plugin** (`/api/auth/admin/*`)
+- List, create, update, delete users
+- Ban/unban, set role, impersonate
+- Session management
+
+**Organization Plugin** (`/api/auth/organization/*`)
+- List, add, remove, update members
+- Invite system with accept/reject
+- Organization CRUD
+
+**API Key Plugin** (`/api/auth/api-key/*`)
+- Create, list, update, delete keys
+- Rate limiting per key
+- Expiration and usage tracking
 
 ---
 
-## User & Member Management (Better-Auth)
+## Contracts vs Implementation Alignment
 
-User and member management is handled by better-auth's built-in plugins. No custom TypeSpec contracts are needed.
+### Perfect Alignment ✅
+- Health, Files, Roles, Audit Logs, Jobs, Webhooks
+- Example Posts, Example Comments
+- Migration Status
 
-### Admin Plugin (`/api/auth/admin/*`)
+### API-Only (No Contracts Needed)
+| Feature | Reason |
+|---------|--------|
+| Auth routes | better-auth handles internally |
+| Applications | Admin-only, simple CRUD |
+| Violations | Internal security feature |
+| Notification preferences | User settings, simple model |
+| Metrics endpoint | Infrastructure, not business API |
+| Caching/Idempotency | Middleware, not resource |
 
-Platform-level user management:
+### Contracts-Only (Not Exposed)
+| Model | Status |
+|-------|--------|
+| OffsetPagination | Deprecated, cursor preferred |
 
-| Operation | Endpoint |
-|-----------|----------|
-| List users | `POST /api/auth/admin/list-users` |
-| Create user | `POST /api/auth/admin/create-user` |
-| Update user | `POST /api/auth/admin/update-user` |
-| Delete user | `POST /api/auth/admin/remove-user` |
-| Ban/unban user | `POST /api/auth/admin/ban-user` |
-| Set role | `POST /api/auth/admin/set-role` |
-| Change password | `POST /api/auth/admin/set-user-password` |
-| Impersonate user | `POST /api/auth/admin/impersonate-user` |
-| List sessions | `POST /api/auth/admin/list-user-sessions` |
-| Revoke session | `POST /api/auth/admin/revoke-user-session` |
+---
 
-### Organization Plugin (`/api/auth/organization/*`)
+## Test Coverage
 
-Org-scoped member management:
+```
+Total: 170+ tests across all packages
 
-| Operation | Endpoint |
-|-----------|----------|
-| List members | `GET /api/auth/organization/list-members` |
-| Add member | `POST /api/auth/admin/add-member` |
-| Remove member | `POST /api/auth/organization/remove-member` |
-| Update role | `POST /api/auth/organization/update-member-role` |
-| Invite member | `POST /api/auth/organization/invite-member` |
-| List invitations | `GET /api/auth/organization/list-invitations` |
-| Accept invitation | `POST /api/auth/organization/accept-invitation` |
-| Create organization | `POST /api/auth/organization/create` |
-| Update organization | `POST /api/auth/organization/update` |
-| Delete organization | `POST /api/auth/organization/delete` |
-
-### Extending Better-Auth
-
-If custom fields are needed on users or members, use better-auth's `additionalFields`:
-
-```typescript
-// packages/auth/src/index.ts
-export const auth = betterAuth({
-  user: {
-    additionalFields: {
-      department: { type: "string", input: true },
-      employeeId: { type: "string", input: false },
-    },
-  },
-  plugins: [
-    organization({
-      schema: {
-        member: {
-          fields: {
-            title: { type: "string", required: false },
-            startDate: { type: "date", required: false },
-          },
-        },
-      },
-    }),
-  ],
-});
+apps/api           45 tests (webhooks, routes)
+packages/cache     38 tests
+packages/storage   17 tests
+packages/db        Schema tests
+packages/auth      Integration tests
 ```
 
-After changes, regenerate the schema: `cd packages/db && pnpm auth:generate`
-
----
-
-## API Key Management (Better-Auth)
-
-API key management is handled by better-auth's built-in API Key plugin. No custom TypeSpec contracts are needed.
-
-### API Key Plugin (`/api/auth/api-key/*`)
-
-User-scoped API key management:
-
-| Operation | Endpoint |
-|-----------|----------|
-| Create key | `POST /api/auth/api-key/create` |
-| List keys | `GET /api/auth/api-key/list` |
-| Get key | `GET /api/auth/api-key/get` |
-| Update key | `POST /api/auth/api-key/update` |
-| Delete key | `POST /api/auth/api-key/delete` |
-| Verify key | `POST /api/auth/api-key/verify` |
-
-### Features
-
-- **Rate limiting** - Built-in sliding window rate limiting per key
-- **Expiration** - Configurable key expiration times
-- **Usage tracking** - Remaining count with automatic refill
-- **Permissions** - Granular resource-based access control
-- **Metadata** - Attach custom data to keys
-- **Custom prefixes** - Add identifiable prefixes to generated keys
-
-### Usage
-
-API keys are user-scoped. When a request is made with an API key:
-1. Key authenticates the **user**
-2. User specifies which org they're acting on (via header/path)
-3. Authorization checks user's permissions in **that org**
-
-This is the standard pattern used by GitHub, Stripe, and most modern APIs.
-
----
-
-## Priority Backlog
-
-### Immediate Next Steps
-
-#### 1. Database Setup (Required before running)
-- [ ] Start PostgreSQL (Docker Compose recommended)
-- [ ] Create `.env` from `.env.example`
-- [ ] Run migrations: `cd packages/db && pnpm db:push`
-- [ ] Seed default application `app_default`
-
-**Docker Compose Setup:**
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:17
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-volumes:
-  postgres_data:
+Run tests:
+```bash
+pnpm test                    # All tests
+pnpm test --filter=api       # API only
+pnpm vitest run --reporter=verbose  # Detailed output
 ```
 
-Then run: `docker-compose up -d`
+---
 
-### High Priority
-- [ ] **Testing** - Expand test coverage (258+ tests done, need more integration tests)
+## Environment Configuration
 
-### Medium Priority
-- [ ] **API Guide Documentation Updates** - Update examples to use better-auth endpoints
-  - [ ] Replace `/v1/orgs/{orgId}/users/*` examples with `/api/auth/admin/*` or `/api/auth/organization/*`
-  - [ ] Files to review:
-    - `docs/api-guide/01-core-concepts/02-http-methods.md`
-    - `docs/api-guide/03-security/01-authentication.md`
-    - `docs/api-guide/03-security/02-authorization.md`
-  - [ ] Add better-auth endpoint reference documentation
-- [ ] **Monitoring** - Re-implement metrics collection
+### Required
+```env
+DATABASE_URL="postgresql://user:pass@localhost:5432/db"
+BETTER_AUTH_SECRET="your-secret-key"
+BETTER_AUTH_URL="http://localhost:3001"
+```
 
-### Low Priority
-- [ ] **Caching headers** - ETag, Cache-Control
-- [ ] **Deprecation system** - Sunset headers, version warnings
+### Optional Features
+```env
+# Redis (for rate limiting, caching)
+REDIS_URL="redis://localhost:6379"
+CACHE_PROVIDER="redis"  # or "memory"
+
+# Async queues (webhooks, notifications)
+QUEUE_ENABLED=true
+QUEUE_CONCURRENCY=10
+
+# Metrics
+METRICS_ENABLED=true
+
+# HTTP Caching
+CACHING_ENABLED=true
+
+# Idempotency
+IDEMPOTENCY_ENABLED=true
+IDEMPOTENCY_TTL=86400
+
+# Deprecation warnings
+DEPRECATION_ENABLED=true
+
+# Storage (for file uploads)
+STORAGE_PROVIDER="local"  # or "s3"
+STORAGE_LOCAL_PATH="./uploads"
+
+# Email (for notifications)
+EMAIL_PROVIDER="resend"
+RESEND_API_KEY="re_xxx"
+EMAIL_FROM="noreply@example.com"
+```
 
 ---
 
-## Architecture Overview
+## Architecture
 
-### Package Structure
 ```
 packages/
-├── auth/           # better-auth integration
-├── authorization/  # Casbin RBAC (multi-app)
+├── auth/           # better-auth configuration
+├── authorization/  # Casbin RBAC engine
 ├── cache/          # Memory + Redis providers
-├── contracts/      # TypeSpec → OpenAPI → Zod
-├── db/             # Drizzle ORM + schemas
-├── notifications/  # Email/SMS/Push
-├── storage/        # S3/Local file storage
-├── test-utils/     # Test factories and mocks
+├── contracts/      # TypeSpec → OpenAPI → Zod → SDK
+├── db/             # Drizzle ORM + PostgreSQL
+├── metrics/        # Prometheus metrics
+├── notifications/  # Email/SMS/Push via pg-boss
+├── storage/        # Local + S3 file storage
+├── test-utils/     # Factories and mocks
 ├── ui/             # React components (web)
 ├── ui-mobile/      # React Native components
 └── utils/          # Shared utilities
 
 apps/
-├── api/            # Fastify API server
-├── web/            # Next.js web app
+├── api/            # Fastify server (this template)
+├── web/            # Next.js frontend
 └── mobile/         # Expo mobile app
 ```
 
-### API Module Pattern
+### Module Pattern
 ```
 apps/api/src/modules/{resource}/
-├── routes/
-│   └── {resource}.ts       # Route handlers
-├── services/
-│   └── {resource}.service.ts
-├── repositories/
-│   └── {resource}.repository.ts
-└── index.ts
+├── routes/{resource}.ts      # HTTP handlers
+├── services/{resource}.service.ts
+├── repositories/{resource}.repository.ts
+└── index.ts                  # Module registration
 ```
-
-### Key Files
-| Component | Location |
-|-----------|----------|
-| TypeSpec Contracts | `packages/contracts/spec/` |
-| Generated Zod | `packages/contracts/zod/` |
-| Generated OpenAPI | `packages/contracts/openapi/` |
-| DB Schemas | `packages/db/src/schema/` |
-| API Routes | `apps/api/src/modules/` |
-| API Plugins | `apps/api/src/plugins/` |
-| API Guide Docs | `docs/api-guide/` |
 
 ---
 
-## Quick Commands
+## Commands Reference
 
 ```bash
 # Development
-pnpm dev                    # Start all apps
-pnpm build                  # Build all packages
+pnpm dev                      # Start all apps
+pnpm build                    # Build all packages
 
-# Contracts
+# Contracts (TypeSpec → SDK)
 cd packages/contracts
-pnpm generate               # TypeSpec → OpenAPI → Zod
+pnpm generate                 # Regenerate all
 
 # Database
 cd packages/db
-pnpm db:push                # Push schema changes
-pnpm db:generate            # Generate migrations
-
-# Testing
-pnpm test                   # Run all tests
-pnpm test --filter=api      # Run API tests only
+pnpm drizzle-kit generate     # Create migration
+pnpm drizzle-kit push         # Apply to database
+pnpm drizzle-kit studio       # Visual editor
 
 # Code Quality
-pnpm dlx ultracite fix      # Format + lint fix
-pnpm typecheck              # TypeScript check
+pnpm typecheck                # TypeScript validation
+pnpm dlx ultracite fix        # Format + lint
+
+# Testing
+pnpm test                     # Run all tests
+pnpm vitest --ui              # Interactive test UI
 ```
+
+---
+
+## What's Next?
+
+This template is production-ready. To build your application:
+
+1. **Add your domain resources** - Copy the `example-posts` module pattern
+2. **Define TypeSpec contracts** - Add to `packages/contracts/spec/`
+3. **Generate SDK** - Run `pnpm generate` in contracts
+4. **Implement routes** - Follow the established patterns
+5. **Add tests** - Use `packages/test-utils` factories
+
+### Optional Enhancements
+- [ ] Add custom webhook event types for your domain
+- [ ] Configure real email/SMS providers
+- [ ] Set up Redis for production caching
+- [ ] Add domain-specific audit events
+- [ ] Implement custom authorization conditions

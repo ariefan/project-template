@@ -53,7 +53,12 @@
       "Bash(pnpm turbo typecheck:*)",
       "Bash(pnpm turbo test:*)",
       "Bash(pnpm build:tsp:*)",
-      "Bash(pnpm vitest:*)"
+      "Bash(pnpm vitest:*)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(yes:*)",
+      "Bash(PGPASSWORD=postgres psql:*)",
+      "Bash(timeout 10 pnpm dev:*)"
     ]
   }
 }

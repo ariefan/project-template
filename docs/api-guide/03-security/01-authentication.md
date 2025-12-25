@@ -17,13 +17,13 @@ All requests must include a valid access token in the `Authorization` header.
 **For:** User authentication, session management
 
 ```http
-GET /v1/orgs/{orgId}/users HTTP/1.1
+GET /v1/orgs/{orgId}/posts HTTP/1.1
 Authorization: Bearer {access_token}
 ```
 
 **Example:**
 ```http
-GET /v1/orgs/org_abc/users HTTP/1.1
+GET /v1/orgs/org_abc/posts HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
@@ -32,7 +32,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 **For:** Service-to-service communication, automation, long-lived access
 
 ```http
-GET /v1/orgs/{orgId}/users HTTP/1.1
+GET /v1/orgs/{orgId}/files HTTP/1.1
 X-API-Key: key_abc123xyz789
 ```
 
@@ -225,29 +225,31 @@ For service accounts and automation:
 
 ### Creating API Keys
 
+API keys are managed through your authentication provider. This project uses better-auth's API Key plugin:
+
 ```http
-POST /v1/orgs/{orgId}/api-keys HTTP/1.1
-Authorization: Bearer {admin_token}
+POST /api/auth/api-key/create HTTP/1.1
+Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
   "name": "CI/CD Pipeline",
-  "permissions": ["deployments:write", "logs:read"],
-  "expiresAt": "2025-01-15T00:00:00Z"
+  "expiresIn": 2592000,
+  "permissions": {
+    "posts": ["read"],
+    "files": ["read", "write"]
+  }
 }
 ```
 
 **Response:**
 ```json
 {
-  "data": {
-    "id": "key_abc123",
-    "name": "CI/CD Pipeline",
-    "key": "key_abc123xyz789_secret",
-    "permissions": ["deployments:write", "logs:read"],
-    "createdAt": "2024-01-15T10:00:00Z",
-    "expiresAt": "2025-01-15T00:00:00Z"
-  }
+  "id": "key_abc123",
+  "name": "CI/CD Pipeline",
+  "key": "key_abc123xyz789_secret",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "expiresAt": "2025-01-15T00:00:00Z"
 }
 ```
 
@@ -260,7 +262,7 @@ Content-Type: application/json
 ### Using API Keys
 
 ```http
-GET /v1/orgs/{orgId}/deployments HTTP/1.1
+GET /v1/orgs/{orgId}/files HTTP/1.1
 X-API-Key: key_abc123xyz789_secret
 ```
 

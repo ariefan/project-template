@@ -13,42 +13,6 @@ export const zActiveContext = z.object({
 });
 
 /**
- * API Key resource model
- *
- * Used for service accounts and automation.
- * The actual key value is only returned once at creation.
- */
-export const zApiKey = z.object({
-    id: z.string(),
-    tenantId: z.string(),
-    name: z.string(),
-    description: z.string().optional(),
-    permissions: z.array(z.string()),
-    keyPrefix: z.string(),
-    lastUsedAt: z.string().datetime().optional(),
-    lastUsedIp: z.string().optional(),
-    expiresAt: z.string().datetime().optional(),
-    isActive: z.boolean(),
-    createdBy: z.string(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime()
-});
-
-/**
- * API Key with the actual secret (only returned on creation)
- */
-export const zApiKeyWithSecret = z.object({
-    id: z.string(),
-    tenantId: z.string(),
-    name: z.string(),
-    description: z.string().optional(),
-    permissions: z.array(z.string()),
-    key: z.string(),
-    expiresAt: z.string().datetime().optional(),
-    createdAt: z.string().datetime()
-});
-
-/**
  * Request to assign a role to a user
  */
 export const zAssignRoleRequest = z.object({
@@ -169,31 +133,11 @@ export const zConfirmUploadRequest = z.object({
 });
 
 /**
- * Request to create a new API key
- */
-export const zCreateApiKeyRequest = z.object({
-    name: z.string().min(1).max(100),
-    description: z.string().max(500).optional(),
-    permissions: z.array(z.string()).min(1),
-    expiresAt: z.string().datetime().optional()
-});
-
-/**
  * Request body for creating a new comment
  */
 export const zCreateExampleCommentRequest = z.object({
     content: z.string(),
     authorId: z.string()
-});
-
-/**
- * Request body for creating a new user
- */
-export const zCreateUserRequest = z.object({
-    email: z.string(),
-    name: z.string(),
-    password: z.string().min(8),
-    isActive: z.boolean().optional()
 });
 
 /**
@@ -366,6 +310,29 @@ export const zJob = z.object({
 });
 
 /**
+ * Version lifecycle status
+ */
+export const zMigrationStatus = z.enum([
+    'current',
+    'deprecated',
+    'sunset'
+]);
+
+/**
+ * Migration status for an API version
+ */
+export const zMigrationStatusResponse = z.object({
+    version: z.string(),
+    status: zMigrationStatus,
+    sunsetDate: z.string().datetime().optional(),
+    daysUntilSunset: z.number().int().optional(),
+    replacementVersion: z.string().optional(),
+    migrationGuideUrl: z.string().optional(),
+    breakingChanges: z.array(z.string()).optional(),
+    migrationChecklist: z.array(z.string()).optional()
+});
+
+/**
  * Pagination links for navigating through paginated results
  */
 export const zPaginationLinks = z.object({
@@ -486,31 +453,6 @@ export const zResponseMeta = z.object({
  */
 export const zActiveContextResponse = z.object({
     data: zActiveContext,
-    meta: zResponseMeta
-});
-
-/**
- * API key creation response (includes secret once)
- */
-export const zApiKeyCreatedResponse = z.object({
-    data: zApiKeyWithSecret,
-    meta: zResponseMeta
-});
-
-/**
- * API key list response
- */
-export const zApiKeyListResponse = z.object({
-    data: z.array(zApiKey),
-    pagination: zPagination,
-    meta: zResponseMeta
-});
-
-/**
- * API key response (without secret)
- */
-export const zApiKeyResponse = z.object({
-    data: zApiKey,
     meta: zResponseMeta
 });
 
@@ -726,16 +668,6 @@ export const zSwitchContextResponse = z.object({
 });
 
 /**
- * Request to update an API key
- */
-export const zUpdateApiKeyRequest = z.object({
-    name: z.string().min(1).max(100).optional(),
-    description: z.string().max(500).optional(),
-    permissions: z.array(z.string()).optional(),
-    isActive: z.boolean().optional()
-});
-
-/**
  * Request body for updating a comment
  */
 export const zUpdateExampleCommentRequest = z.object({
@@ -768,14 +700,6 @@ export const zUpdateRoleRequest = z.object({
 });
 
 /**
- * Request body for updating a user
- */
-export const zUpdateUserRequest = z.object({
-    name: z.string().optional(),
-    isActive: z.boolean().optional()
-});
-
-/**
  * Request to update a webhook
  */
 export const zUpdateWebhookRequest = z.object({
@@ -784,23 +708,6 @@ export const zUpdateWebhookRequest = z.object({
     description: z.string().max(500).optional(),
     events: z.array(z.string()).optional(),
     isActive: z.boolean().optional()
-});
-
-/**
- * User resource model
- */
-export const zUser = z.object({
-    id: z.string(),
-    email: z.string(),
-    name: z.string(),
-    isActive: z.boolean(),
-    isVerified: z.boolean(),
-    isDeleted: z.boolean(),
-    deletedAt: z.string().datetime().optional(),
-    deletedBy: z.string().optional(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-    lastLoginAt: z.string().datetime().optional()
 });
 
 /**
@@ -851,23 +758,6 @@ export const zUserEffectivePermissions = z.object({
  */
 export const zUserEffectivePermissionsResponse = z.object({
     data: zUserEffectivePermissions,
-    meta: zResponseMeta
-});
-
-/**
- * User collection response
- */
-export const zUserListResponse = z.object({
-    data: z.array(zUser),
-    pagination: zPagination,
-    meta: zResponseMeta
-});
-
-/**
- * Single user response
- */
-export const zUserResponse = z.object({
-    data: zUser,
     meta: zResponseMeta
 });
 
@@ -1113,103 +1003,16 @@ export const zHealthCheckResponse = z.object({
     }).optional()
 });
 
-export const zApiKeysListData = z.object({
+export const zMigrationGetStatusData = z.object({
     body: z.never().optional(),
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        isActive: z.boolean().optional()
-    }).optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zApiKeysListResponse = z.union([
-    zApiKeyListResponse,
-    zErrorResponse
-]);
-
-export const zApiKeysCreateData = z.object({
-    body: zCreateApiKeyRequest,
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-export const zApiKeysCreateResponse = z.union([
-    zErrorResponse,
-    zApiKeyCreatedResponse
-]);
-
-export const zApiKeysRevokeData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string(),
-        keyId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-export const zApiKeysRevokeResponse = z.union([
-    zErrorResponse,
-    z.void()
-]);
-
-export const zApiKeysGetData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string(),
-        keyId: z.string()
-    }),
+    path: z.never().optional(),
     query: z.never().optional()
 });
 
 /**
  * The request has succeeded.
  */
-export const zApiKeysGetResponse = z.union([
-    zApiKeyResponse,
-    zErrorResponse
-]);
-
-export const zApiKeysUpdateData = z.object({
-    body: zUpdateApiKeyRequest,
-    path: z.object({
-        orgId: z.string(),
-        keyId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zApiKeysUpdateResponse = z.union([
-    zApiKeyResponse,
-    zErrorResponse
-]);
-
-export const zApiKeysRotateData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string(),
-        keyId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zApiKeysRotateResponse = z.union([
-    zApiKeyCreatedResponse,
-    zErrorResponse
-]);
+export const zMigrationGetStatusResponse = zMigrationStatusResponse;
 
 export const zAuditLogsListData = z.object({
     body: z.never().optional(),
@@ -2052,255 +1855,6 @@ export const zTenantRolesUpdateData = z.object({
  */
 export const zTenantRolesUpdateResponse = z.union([
     zRoleResponse,
-    zErrorResponse
-]);
-
-export const zUsersListData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        orderBy: z.string().optional(),
-        fields: z.string().optional(),
-        include: z.string().optional(),
-        search: z.string().optional(),
-        status: z.string().optional(),
-        statusNe: z.string().optional(),
-        statusIn: z.string().optional(),
-        isVerified: z.boolean().optional(),
-        isActive: z.boolean().optional(),
-        role: z.string().optional(),
-        roleIn: z.string().optional(),
-        emailContains: z.string().optional(),
-        emailStartsWith: z.string().optional(),
-        emailEndsWith: z.string().optional(),
-        nameContains: z.string().optional(),
-        createdAfter: z.string().datetime().optional(),
-        createdBefore: z.string().datetime().optional(),
-        updatedAfter: z.string().datetime().optional(),
-        updatedBefore: z.string().datetime().optional(),
-        lastLoginAfter: z.string().datetime().optional(),
-        lastLoginBefore: z.string().datetime().optional()
-    }).optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersListResponse = z.union([
-    zUserListResponse,
-    zErrorResponse
-]);
-
-export const zUsersCreateData = z.object({
-    body: zCreateUserRequest,
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-export const zUsersCreateResponse = z.union([
-    zErrorResponse,
-    zUserResponse
-]);
-
-export const zUsersBatchUpdateData = z.object({
-    body: z.object({
-        users: z.array(z.object({
-            id: z.string(),
-            updates: zUpdateUserRequest
-        })).optional()
-    }),
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersBatchUpdateResponse = z.union([
-    z.object({
-        data: z.object({
-            updated: z.array(zUser),
-            failed: z.array(z.object({
-                id: z.string(),
-                error: zError
-            }))
-        }),
-        meta: zResponseMeta
-    }),
-    zErrorResponse
-]);
-
-export const zUsersBatchCreateData = z.object({
-    body: z.object({
-        users: z.array(zCreateUserRequest)
-    }),
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-export const zUsersBatchCreateResponse = z.union([
-    zErrorResponse,
-    z.object({
-        data: z.object({
-            created: z.array(zUser),
-            failed: z.array(z.object({
-                index: z.number().int(),
-                error: zError
-            }))
-        }),
-        meta: zResponseMeta
-    })
-]);
-
-export const zUsersBatchSoftDeleteData = z.object({
-    body: z.object({
-        ids: z.array(z.string())
-    }),
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersBatchSoftDeleteResponse = z.union([
-    z.object({
-        data: z.object({
-            deleted: z.array(z.object({
-                id: z.string(),
-                deletedAt: z.string().datetime()
-            })),
-            failed: z.array(z.object({
-                id: z.string(),
-                error: zError
-            }))
-        }),
-        meta: zResponseMeta
-    }),
-    zErrorResponse
-]);
-
-export const zUsersDeleteData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string(),
-        id: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersDeleteResponse = z.union([
-    zSoftDeleteResponse,
-    zErrorResponse
-]);
-
-export const zUsersGetData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string(),
-        id: z.string()
-    }),
-    query: z.object({
-        fields: z.string().optional(),
-        include: z.string().optional()
-    }).optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersGetResponse = z.union([
-    zUserResponse,
-    zErrorResponse
-]);
-
-export const zUsersUpdateData = z.object({
-    body: zUpdateUserRequest,
-    path: z.object({
-        orgId: z.string(),
-        id: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersUpdateResponse = z.union([
-    zUserResponse,
-    zErrorResponse
-]);
-
-export const zUsersResetPasswordData = z.object({
-    body: z.object({
-        email: z.string().optional(),
-        sendEmail: z.boolean().optional()
-    }),
-    path: z.object({
-        orgId: z.string(),
-        id: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersResetPasswordResponse = z.union([
-    z.object({
-        data: z.object({
-            userId: z.string(),
-            resetTokenSent: z.boolean(),
-            expiresAt: z.string().datetime()
-        }),
-        meta: zResponseMeta
-    }),
-    zErrorResponse
-]);
-
-export const zUsersDeletePermanentData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string(),
-        id: z.string()
-    }),
-    query: z.never().optional()
-});
-
-export const zUsersDeletePermanentResponse = z.union([
-    zErrorResponse,
-    z.void()
-]);
-
-export const zUsersRestoreData = z.object({
-    body: z.never().optional(),
-    path: z.object({
-        orgId: z.string(),
-        id: z.string()
-    }),
-    query: z.never().optional()
-});
-
-/**
- * The request has succeeded.
- */
-export const zUsersRestoreResponse = z.union([
-    zUserResponse,
     zErrorResponse
 ]);
 

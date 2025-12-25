@@ -207,7 +207,7 @@ inv_def456
 
 | Context | Term to Use | Example |
 |---------|-------------|---------|
-| URL paths | `orgId` | `/v1/orgs/{orgId}/users` |
+| URL paths | `orgId` | `/v1/orgs/{orgId}/posts` |
 | Path parameters | `orgId` | `req.params.orgId` |
 | Database columns | `tenantId` | `WHERE tenantId = ?` |
 | TypeScript variables | `tenantId` | `const tenantId = ...` |
@@ -384,7 +384,7 @@ Dataset size?
 **✅ GOOD:**
 ```markdown
 \```http
-POST /v1/orgs/{orgId}/users HTTP/1.1
+POST /v1/orgs/{orgId}/posts HTTP/1.1
 Content-Type: application/json
 
 {

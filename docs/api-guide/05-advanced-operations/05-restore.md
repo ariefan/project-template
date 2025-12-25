@@ -6,7 +6,7 @@
 
 **Endpoint:**
 ```
-POST /v1/orgs/{orgId}/users/{userId}/restore
+POST /v1/orgs/{orgId}/posts/{userId}/restore
 ```
 
 **Request:**
@@ -37,7 +37,7 @@ POST /v1/orgs/{orgId}/users/{userId}/restore
 
 **Endpoint:**
 ```
-POST /v1/orgs/{orgId}/users/batch/restore
+POST /v1/orgs/{orgId}/posts/batch/restore
 ```
 
 **Request:**

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { WebhookDeliveryRow, WebhookRow } from "@workspace/db/schema";
+import type { WebhookQueue } from "../queue/webhook-queue";
 import * as webhookRepository from "../repositories/webhook.repository";
 import * as webhookDeliveryRepository from "../repositories/webhook-delivery.repository";
 
@@ -17,6 +18,16 @@ const RETRY_DELAYS_MS = [
 ];
 
 const DELIVERY_TIMEOUT_MS = 10_000; // 10 seconds per API Guide
+
+// Optional queue instance - set via initQueue()
+let webhookQueue: WebhookQueue | null = null;
+
+/**
+ * Initialize the webhook queue for async processing
+ */
+export function initQueue(queue: WebhookQueue): void {
+  webhookQueue = queue;
+}
 
 /**
  * Generate a delivery ID
@@ -99,10 +110,11 @@ export async function queueEvent(
 
     deliveryIds.push(deliveryId);
 
-    // TODO: Queue with pg-boss for async processing
-    // For now, we'll process inline (not ideal for production)
-    // In production, this should be:
-    // await boss.send('webhook-delivery', { deliveryId });
+    // Queue for async processing if queue is available
+    if (webhookQueue) {
+      await webhookQueue.enqueue(deliveryId);
+    }
+    // If no queue, delivery will need to be triggered manually or via polling
   }
 
   return deliveryIds;
@@ -216,12 +228,10 @@ export async function executeDeliveryDirect(
     };
   } catch (err) {
     const durationMs = Date.now() - startTime;
-    const error =
-      err instanceof Error
-        ? err.name === "AbortError"
-          ? "Request timeout"
-          : err.message
-        : "Unknown error";
+    let error = "Unknown error";
+    if (err instanceof Error) {
+      error = err.name === "AbortError" ? "Request timeout" : err.message;
+    }
 
     return {
       success: false,

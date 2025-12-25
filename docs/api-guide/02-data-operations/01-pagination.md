@@ -37,7 +37,7 @@ Will you have > 100,000 records AND concurrent writes?
 
 **Request:**
 ```
-GET /v1/orgs/{orgId}/users?page=2&pageSize=50
+GET /v1/orgs/{orgId}/posts?page=2&pageSize=50
 ```
 
 **Response:**
@@ -52,10 +52,10 @@ GET /v1/orgs/{orgId}/users?page=2&pageSize=50
     "hasNext": true,
     "hasPrevious": true,
     "links": {
-      "first": "/v1/orgs/{orgId}/users?page=1&pageSize=50",
-      "previous": "/v1/orgs/{orgId}/users?page=1&pageSize=50",
-      "next": "/v1/orgs/{orgId}/users?page=3&pageSize=50",
-      "last": "/v1/orgs/{orgId}/users?page=10&pageSize=50"
+      "first": "/v1/orgs/{orgId}/posts?page=1&pageSize=50",
+      "previous": "/v1/orgs/{orgId}/posts?page=1&pageSize=50",
+      "next": "/v1/orgs/{orgId}/posts?page=3&pageSize=50",
+      "last": "/v1/orgs/{orgId}/posts?page=10&pageSize=50"
     }
   }
 }

@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { allUserRolesList, apiKeysCreate, apiKeysGet, apiKeysList, apiKeysRevoke, apiKeysRotate, apiKeysUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsGet, jobsList, type Options, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, usersBatchCreate, usersBatchSoftDelete, usersBatchUpdate, usersCreate, usersDelete, usersDeletePermanent, usersGet, usersList, usersResetPassword, usersRestore, usersUpdate, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
-import type { AllUserRolesListData, AllUserRolesListResponse, ApiKeysCreateData, ApiKeysCreateResponse, ApiKeysGetData, ApiKeysGetResponse, ApiKeysListData, ApiKeysListResponse, ApiKeysRevokeData, ApiKeysRevokeResponse, ApiKeysRotateData, ApiKeysRotateResponse, ApiKeysUpdateData, ApiKeysUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UsersBatchCreateData, UsersBatchCreateResponse, UsersBatchSoftDeleteData, UsersBatchSoftDeleteResponse, UsersBatchUpdateData, UsersBatchUpdateResponse, UsersCreateData, UsersCreateResponse, UsersDeleteData, UsersDeletePermanentData, UsersDeletePermanentResponse, UsersDeleteResponse, UsersGetData, UsersGetResponse, UsersListData, UsersListResponse, UsersResetPasswordData, UsersResetPasswordResponse, UsersRestoreData, UsersRestoreResponse, UsersUpdateData, UsersUpdateResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
+import { allUserRolesList, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsGet, jobsList, migrationGetStatus, type Options, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { AllUserRolesListData, AllUserRolesListResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, MigrationGetStatusData, MigrationGetStatusResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -60,18 +60,22 @@ export const healthCheckOptions = (options?: Options<HealthCheckData>) => queryO
     queryKey: healthCheckQueryKey(options)
 });
 
-export const apiKeysListQueryKey = (options: Options<ApiKeysListData>) => createQueryKey('apiKeysList', options);
+export const migrationGetStatusQueryKey = (options?: Options<MigrationGetStatusData>) => createQueryKey('migrationGetStatus', options);
 
 /**
- * List API keys
+ * Get API version migration status
  *
- * List all API keys in an organization
+ * Get migration status for the current API version
  *
- * Does not return the actual key secrets.
+ * Returns information about:
+ * - Current version status (current, deprecated, sunset)
+ * - Sunset date if deprecated
+ * - Replacement version to migrate to
+ * - Breaking changes and migration checklist
  */
-export const apiKeysListOptions = (options: Options<ApiKeysListData>) => queryOptions<ApiKeysListResponse, DefaultError, ApiKeysListResponse, ReturnType<typeof apiKeysListQueryKey>>({
+export const migrationGetStatusOptions = (options?: Options<MigrationGetStatusData>) => queryOptions<MigrationGetStatusResponse, DefaultError, MigrationGetStatusResponse, ReturnType<typeof migrationGetStatusQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await apiKeysList({
+        const { data } = await migrationGetStatus({
             ...options,
             ...queryKey[0],
             signal,
@@ -79,7 +83,30 @@ export const apiKeysListOptions = (options: Options<ApiKeysListData>) => queryOp
         });
         return data;
     },
-    queryKey: apiKeysListQueryKey(options)
+    queryKey: migrationGetStatusQueryKey(options)
+});
+
+export const auditLogsListQueryKey = (options: Options<AuditLogsListData>) => createQueryKey('auditLogsList', options);
+
+/**
+ * Query audit logs
+ *
+ * Query audit logs
+ *
+ * Search and filter audit events. Supports pagination.
+ * Results are sorted by timestamp descending (newest first).
+ */
+export const auditLogsListOptions = (options: Options<AuditLogsListData>) => queryOptions<AuditLogsListResponse, DefaultError, AuditLogsListResponse, ReturnType<typeof auditLogsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await auditLogsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: auditLogsListQueryKey(options)
 });
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
@@ -110,170 +137,6 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
     }
     return params as unknown as typeof page;
 };
-
-export const apiKeysListInfiniteQueryKey = (options: Options<ApiKeysListData>): QueryKey<Options<ApiKeysListData>> => createQueryKey('apiKeysList', options, true);
-
-/**
- * List API keys
- *
- * List all API keys in an organization
- *
- * Does not return the actual key secrets.
- */
-export const apiKeysListInfiniteOptions = (options: Options<ApiKeysListData>) => infiniteQueryOptions<ApiKeysListResponse, DefaultError, InfiniteData<ApiKeysListResponse>, QueryKey<Options<ApiKeysListData>>, number | Pick<QueryKey<Options<ApiKeysListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ApiKeysListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await apiKeysList({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: apiKeysListInfiniteQueryKey(options)
-});
-
-/**
- * Create API key
- *
- * Create a new API key
- *
- * The key secret is only returned once in the response.
- * Store it securely - it cannot be retrieved again.
- */
-export const apiKeysCreateMutation = (options?: Partial<Options<ApiKeysCreateData>>): UseMutationOptions<ApiKeysCreateResponse, DefaultError, Options<ApiKeysCreateData>> => {
-    const mutationOptions: UseMutationOptions<ApiKeysCreateResponse, DefaultError, Options<ApiKeysCreateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await apiKeysCreate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Revoke API key
- *
- * Revoke (delete) an API key
- *
- * The key will immediately stop working.
- * This action cannot be undone.
- */
-export const apiKeysRevokeMutation = (options?: Partial<Options<ApiKeysRevokeData>>): UseMutationOptions<ApiKeysRevokeResponse, DefaultError, Options<ApiKeysRevokeData>> => {
-    const mutationOptions: UseMutationOptions<ApiKeysRevokeResponse, DefaultError, Options<ApiKeysRevokeData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await apiKeysRevoke({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const apiKeysGetQueryKey = (options: Options<ApiKeysGetData>) => createQueryKey('apiKeysGet', options);
-
-/**
- * Get API key
- *
- * Get an API key by ID
- *
- * Does not return the actual key secret.
- */
-export const apiKeysGetOptions = (options: Options<ApiKeysGetData>) => queryOptions<ApiKeysGetResponse, DefaultError, ApiKeysGetResponse, ReturnType<typeof apiKeysGetQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await apiKeysGet({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: apiKeysGetQueryKey(options)
-});
-
-/**
- * Update API key
- *
- * Update an API key
- *
- * Can update name, description, permissions, and active status.
- * Cannot change the key secret - create a new key instead.
- */
-export const apiKeysUpdateMutation = (options?: Partial<Options<ApiKeysUpdateData>>): UseMutationOptions<ApiKeysUpdateResponse, DefaultError, Options<ApiKeysUpdateData>> => {
-    const mutationOptions: UseMutationOptions<ApiKeysUpdateResponse, DefaultError, Options<ApiKeysUpdateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await apiKeysUpdate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Rotate API key
- *
- * Rotate an API key
- *
- * Creates a new key secret while keeping the same key ID.
- * The old secret immediately stops working.
- */
-export const apiKeysRotateMutation = (options?: Partial<Options<ApiKeysRotateData>>): UseMutationOptions<ApiKeysRotateResponse, DefaultError, Options<ApiKeysRotateData>> => {
-    const mutationOptions: UseMutationOptions<ApiKeysRotateResponse, DefaultError, Options<ApiKeysRotateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await apiKeysRotate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const auditLogsListQueryKey = (options: Options<AuditLogsListData>) => createQueryKey('auditLogsList', options);
-
-/**
- * Query audit logs
- *
- * Query audit logs
- *
- * Search and filter audit events. Supports pagination.
- * Results are sorted by timestamp descending (newest first).
- */
-export const auditLogsListOptions = (options: Options<AuditLogsListData>) => queryOptions<AuditLogsListResponse, DefaultError, AuditLogsListResponse, ReturnType<typeof auditLogsListQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await auditLogsList({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: auditLogsListQueryKey(options)
-});
 
 export const auditLogsListInfiniteQueryKey = (options: Options<AuditLogsListData>): QueryKey<Options<AuditLogsListData>> => createQueryKey('auditLogsList', options, true);
 
@@ -1362,250 +1225,6 @@ export const tenantRolesUpdateMutation = (options?: Partial<Options<TenantRolesU
     const mutationOptions: UseMutationOptions<TenantRolesUpdateResponse, DefaultError, Options<TenantRolesUpdateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await tenantRolesUpdate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const usersListQueryKey = (options: Options<UsersListData>) => createQueryKey('usersList', options);
-
-/**
- * List users
- *
- * List users in an organization
- * Supports pagination, filtering, sorting, and field selection
- */
-export const usersListOptions = (options: Options<UsersListData>) => queryOptions<UsersListResponse, DefaultError, UsersListResponse, ReturnType<typeof usersListQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await usersList({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: usersListQueryKey(options)
-});
-
-export const usersListInfiniteQueryKey = (options: Options<UsersListData>): QueryKey<Options<UsersListData>> => createQueryKey('usersList', options, true);
-
-/**
- * List users
- *
- * List users in an organization
- * Supports pagination, filtering, sorting, and field selection
- */
-export const usersListInfiniteOptions = (options: Options<UsersListData>) => infiniteQueryOptions<UsersListResponse, DefaultError, InfiniteData<UsersListResponse>, QueryKey<Options<UsersListData>>, number | Pick<QueryKey<Options<UsersListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<UsersListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await usersList({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: usersListInfiniteQueryKey(options)
-});
-
-/**
- * Create user
- *
- * Create a new user
- */
-export const usersCreateMutation = (options?: Partial<Options<UsersCreateData>>): UseMutationOptions<UsersCreateResponse, DefaultError, Options<UsersCreateData>> => {
-    const mutationOptions: UseMutationOptions<UsersCreateResponse, DefaultError, Options<UsersCreateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersCreate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Batch update users
- *
- * Batch update users
- */
-export const usersBatchUpdateMutation = (options?: Partial<Options<UsersBatchUpdateData>>): UseMutationOptions<UsersBatchUpdateResponse, DefaultError, Options<UsersBatchUpdateData>> => {
-    const mutationOptions: UseMutationOptions<UsersBatchUpdateResponse, DefaultError, Options<UsersBatchUpdateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersBatchUpdate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Batch create users
- *
- * Batch create users
- */
-export const usersBatchCreateMutation = (options?: Partial<Options<UsersBatchCreateData>>): UseMutationOptions<UsersBatchCreateResponse, DefaultError, Options<UsersBatchCreateData>> => {
-    const mutationOptions: UseMutationOptions<UsersBatchCreateResponse, DefaultError, Options<UsersBatchCreateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersBatchCreate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Batch soft delete users
- *
- * Batch soft delete users
- */
-export const usersBatchSoftDeleteMutation = (options?: Partial<Options<UsersBatchSoftDeleteData>>): UseMutationOptions<UsersBatchSoftDeleteResponse, DefaultError, Options<UsersBatchSoftDeleteData>> => {
-    const mutationOptions: UseMutationOptions<UsersBatchSoftDeleteResponse, DefaultError, Options<UsersBatchSoftDeleteData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersBatchSoftDelete({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Soft delete user
- *
- * Soft delete a user (default delete behavior)
- * User is marked as deleted but can be restored
- */
-export const usersDeleteMutation = (options?: Partial<Options<UsersDeleteData>>): UseMutationOptions<UsersDeleteResponse, DefaultError, Options<UsersDeleteData>> => {
-    const mutationOptions: UseMutationOptions<UsersDeleteResponse, DefaultError, Options<UsersDeleteData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersDelete({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const usersGetQueryKey = (options: Options<UsersGetData>) => createQueryKey('usersGet', options);
-
-/**
- * Get user
- *
- * Get a single user by ID
- */
-export const usersGetOptions = (options: Options<UsersGetData>) => queryOptions<UsersGetResponse, DefaultError, UsersGetResponse, ReturnType<typeof usersGetQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await usersGet({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: usersGetQueryKey(options)
-});
-
-/**
- * Update user
- *
- * Update a user (partial update)
- */
-export const usersUpdateMutation = (options?: Partial<Options<UsersUpdateData>>): UseMutationOptions<UsersUpdateResponse, DefaultError, Options<UsersUpdateData>> => {
-    const mutationOptions: UseMutationOptions<UsersUpdateResponse, DefaultError, Options<UsersUpdateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersUpdate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Reset user password
- *
- * Custom action: Reset user password
- */
-export const usersResetPasswordMutation = (options?: Partial<Options<UsersResetPasswordData>>): UseMutationOptions<UsersResetPasswordResponse, DefaultError, Options<UsersResetPasswordData>> => {
-    const mutationOptions: UseMutationOptions<UsersResetPasswordResponse, DefaultError, Options<UsersResetPasswordData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersResetPassword({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Permanently delete user
- *
- * Permanently delete a user (hard delete)
- * User is permanently removed and cannot be restored
- */
-export const usersDeletePermanentMutation = (options?: Partial<Options<UsersDeletePermanentData>>): UseMutationOptions<UsersDeletePermanentResponse, DefaultError, Options<UsersDeletePermanentData>> => {
-    const mutationOptions: UseMutationOptions<UsersDeletePermanentResponse, DefaultError, Options<UsersDeletePermanentData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersDeletePermanent({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Restore user
- *
- * Restore a soft-deleted user
- */
-export const usersRestoreMutation = (options?: Partial<Options<UsersRestoreData>>): UseMutationOptions<UsersRestoreResponse, DefaultError, Options<UsersRestoreData>> => {
-    const mutationOptions: UseMutationOptions<UsersRestoreResponse, DefaultError, Options<UsersRestoreData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await usersRestore({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

@@ -22,7 +22,7 @@ Content-Type: application/json; charset=utf-8
 ### Basic Request
 
 ```http
-POST /v1/orgs/{orgId}/users HTTP/1.1
+POST /v1/orgs/{orgId}/posts HTTP/1.1
 Host: api.example.com
 Authorization: Bearer {token}
 Content-Type: application/json
@@ -94,10 +94,10 @@ Idempotency-Key: idem_abc123xyz
     "hasNext": true,
     "hasPrevious": false,
     "links": {
-      "first": "/v1/orgs/{orgId}/users?page=1",
+      "first": "/v1/orgs/{orgId}/posts?page=1",
       "previous": null,
-      "next": "/v1/orgs/{orgId}/users?page=2",
-      "last": "/v1/orgs/{orgId}/users?page=10"
+      "next": "/v1/orgs/{orgId}/posts?page=2",
+      "last": "/v1/orgs/{orgId}/posts?page=10"
     }
   },
   "meta": {
@@ -407,7 +407,7 @@ See [Pagination](../02-data-operations/01-pagination.md) for details.
 **With Location header and body:**
 ```http
 HTTP/1.1 201 Created
-Location: /v1/orgs/{orgId}/users/usr_abc123
+Location: /v1/orgs/{orgId}/posts/usr_abc123
 ```
 
 ```json

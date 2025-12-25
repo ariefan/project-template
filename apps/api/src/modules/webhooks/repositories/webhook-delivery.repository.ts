@@ -177,7 +177,9 @@ export async function incrementAttempts(
     .where(eq(webhookDeliveries.id, deliveryId))
     .limit(1);
 
-  if (!current) return null;
+  if (!current) {
+    return null;
+  }
 
   const [updated] = await db
     .update(webhookDeliveries)
@@ -197,7 +199,7 @@ export async function incrementAttempts(
 export async function findPendingRetries(): Promise<WebhookDeliveryRow[]> {
   const now = new Date();
 
-  return db
+  return await db
     .select()
     .from(webhookDeliveries)
     .where(

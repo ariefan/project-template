@@ -21,7 +21,7 @@ CREATE INDEX idx_users_not_deleted ON users(tenant_id) WHERE deleted_at IS NULL;
 
 **Endpoint:**
 ```
-DELETE /v1/orgs/{orgId}/users/{userId}
+DELETE /v1/orgs/{orgId}/posts/{userId}
 ```
 
 **Request:**
@@ -53,7 +53,7 @@ DELETE /v1/orgs/{orgId}/users/{userId}
 
 **Endpoint:**
 ```
-POST /v1/orgs/{orgId}/users/batch/soft-delete
+POST /v1/orgs/{orgId}/posts/batch/soft-delete
 ```
 
 **Request:**
@@ -123,7 +123,7 @@ const activeUsers = await db('users')
 
 **Endpoint:**
 ```
-GET /v1/orgs/{orgId}/users/deleted
+GET /v1/orgs/{orgId}/posts/deleted
 ```
 
 **Response:**

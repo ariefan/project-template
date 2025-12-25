@@ -23,7 +23,7 @@
 ### List Resources (GET Collection)
 
 ```http
-GET /v1/orgs/{orgId}/users HTTP/1.1
+GET /v1/orgs/{orgId}/posts HTTP/1.1
 ```
 
 **Response: 200 OK**
@@ -53,7 +53,7 @@ GET /v1/orgs/{orgId}/users HTTP/1.1
 ### Create Resource (POST Collection)
 
 ```http
-POST /v1/orgs/{orgId}/users HTTP/1.1
+POST /v1/orgs/{orgId}/posts HTTP/1.1
 Content-Type: application/json
 
 {
@@ -66,7 +66,7 @@ Content-Type: application/json
 **Response: 201 Created**
 ```http
 HTTP/1.1 201 Created
-Location: /v1/orgs/{orgId}/users/usr_abc123
+Location: /v1/orgs/{orgId}/posts/usr_abc123
 ```
 
 ```json
@@ -84,7 +84,7 @@ Location: /v1/orgs/{orgId}/users/usr_abc123
 ### Get Single Resource (GET Item)
 
 ```http
-GET /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
+GET /v1/orgs/{orgId}/posts/usr_abc123 HTTP/1.1
 ```
 
 **Response: 200 OK**
@@ -106,7 +106,7 @@ GET /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
 Replace **all** fields of the resource.
 
 ```http
-PUT /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
+PUT /v1/orgs/{orgId}/posts/usr_abc123 HTTP/1.1
 Content-Type: application/json
 
 {
@@ -138,7 +138,7 @@ Content-Type: application/json
 Update **only** specified fields.
 
 ```http
-PATCH /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
+PATCH /v1/orgs/{orgId}/posts/usr_abc123 HTTP/1.1
 Content-Type: application/json
 
 {
@@ -165,7 +165,7 @@ Content-Type: application/json
 ### Delete Resource (DELETE)
 
 ```http
-DELETE /v1/orgs/{orgId}/users/usr_abc123 HTTP/1.1
+DELETE /v1/orgs/{orgId}/posts/usr_abc123 HTTP/1.1
 ```
 
 **Response Rules (No Ambiguity):**
@@ -237,7 +237,7 @@ Content-Type: application/json
 
 **Reset Password:**
 ```http
-POST /v1/orgs/{orgId}/users/usr_123/actions/reset-password HTTP/1.1
+POST /v1/orgs/{orgId}/posts/usr_123/actions/reset-password HTTP/1.1
 Content-Type: application/json
 
 {
@@ -284,22 +284,22 @@ Use `/batch` for multiple operations.
 
 **Batch Create:**
 ```http
-POST /v1/orgs/{orgId}/users/batch
+POST /v1/orgs/{orgId}/posts/batch
 ```
 
 **Batch Update:**
 ```http
-PATCH /v1/orgs/{orgId}/users/batch
+PATCH /v1/orgs/{orgId}/posts/batch
 ```
 
 **Batch Delete:**
 ```http
-DELETE /v1/orgs/{orgId}/users/batch
+DELETE /v1/orgs/{orgId}/posts/batch
 ```
 
 **Batch Soft Delete:**
 ```http
-POST /v1/orgs/{orgId}/users/batch/soft-delete
+POST /v1/orgs/{orgId}/posts/batch/soft-delete
 ```
 
 See [Batch Operations](../05-advanced-operations/) for details.
@@ -386,9 +386,9 @@ See [Batch Operations](../05-advanced-operations/) for details.
 **GET, PUT, DELETE** - Multiple requests = same result
 
 ```http
-DELETE /v1/orgs/{orgId}/users/usr_123
-DELETE /v1/orgs/{orgId}/users/usr_123  ← Same result
-DELETE /v1/orgs/{orgId}/users/usr_123  ← Same result
+DELETE /v1/orgs/{orgId}/posts/usr_123
+DELETE /v1/orgs/{orgId}/posts/usr_123  ← Same result
+DELETE /v1/orgs/{orgId}/posts/usr_123  ← Same result
 ```
 
 First request: 200 OK (deleted)
@@ -399,9 +399,9 @@ Subsequent requests: 404 Not Found (already deleted)
 **POST, PATCH** - Multiple requests = different results
 
 ```http
-POST /v1/orgs/{orgId}/users
-POST /v1/orgs/{orgId}/users  ← Creates another user
-POST /v1/orgs/{orgId}/users  ← Creates another user
+POST /v1/orgs/{orgId}/posts
+POST /v1/orgs/{orgId}/posts  ← Creates another user
+POST /v1/orgs/{orgId}/posts  ← Creates another user
 ```
 
 **Solution:** Use [Idempotency Keys](../06-quality/02-idempotency.md)
