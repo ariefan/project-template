@@ -17,6 +17,7 @@ import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
 import { jobsModule } from "./modules/jobs";
 import { notificationsModule } from "./modules/notifications";
+import { webhooksModule } from "./modules/webhooks";
 import authorizationPlugin from "./plugins/authorization";
 import rateLimitPlugin from "./plugins/rate-limit";
 import securityHeadersPlugin from "./plugins/security-headers";
@@ -203,6 +204,7 @@ export async function buildApp() {
   await app.register(examplePostsModule, { prefix: "/v1/orgs" });
   await app.register(jobsModule, { prefix: "/v1/orgs" });
   await app.register(filesModule, { prefix: "/v1/orgs" });
+  await app.register(webhooksModule, { prefix: "/v1/orgs" });
   await app.register(notificationsModule, { prefix: "/v1" });
 
   return app;

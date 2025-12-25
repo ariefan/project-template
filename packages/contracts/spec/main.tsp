@@ -25,22 +25,23 @@
  * │   ├── responses.tsp     ← Envelope types, pagination, batch, async
  * │   └── errors.tsp        ← Error models and error codes
  * ├── models/
- * │   ├── user.tsp          ← User model (CRUD, batch, soft delete)
  * │   ├── file.tsp          ← File uploads (direct + presigned URL)
  * │   ├── role.tsp          ← RBAC roles and permissions
- * │   ├── api-key.tsp       ← Service account API keys
  * │   ├── audit-log.tsp     ← Audit trail events
  * │   ├── job.tsp           ← Async job tracking
  * │   └── webhook.tsp       ← Webhook configuration
  * └── routes/
  *     ├── health.tsp        ← Health check endpoint
- *     ├── users.tsp         ← User CRUD + batch operations
  *     ├── files.tsp         ← File upload/download
  *     ├── roles.tsp         ← Role management + user assignment
- *     ├── api-keys.tsp      ← API key CRUD + rotate
  *     ├── audit-logs.tsp    ← Audit log query + export
  *     ├── jobs.tsp          ← Async job status + cancel
  *     └── webhooks.tsp      ← Webhook management + deliveries
+ *
+ * NOTE: The following are handled by better-auth plugins:
+ * - Admin plugin: /api/auth/admin/* (platform user management)
+ * - Organization plugin: /api/auth/organization/* (member management)
+ * - API Key plugin: /api/auth/api-key/* (user-scoped API keys)
  *
  * ## API Design Principles
  *
@@ -75,10 +76,8 @@ import "./common/errors.tsp";
 // ============================================================================
 // Resource Models (add new models here)
 // ============================================================================
-import "./models/user.tsp";
 import "./models/file.tsp";
 import "./models/role.tsp";
-import "./models/api-key.tsp";
 import "./models/audit-log.tsp";
 import "./models/job.tsp";
 import "./models/webhook.tsp";
@@ -90,10 +89,8 @@ import "./models/example-comment.tsp";
 // Route Definitions (add new routes here)
 // ============================================================================
 import "./routes/health.tsp";
-import "./routes/users.tsp";
 import "./routes/files.tsp";
 import "./routes/roles.tsp";
-import "./routes/api-keys.tsp";
 import "./routes/audit-logs.tsp";
 import "./routes/jobs.tsp";
 import "./routes/webhooks.tsp";

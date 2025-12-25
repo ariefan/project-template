@@ -752,6 +752,13 @@ export const zUpdateExamplePostRequest = z.object({
 });
 
 /**
+ * Request to update file properties
+ */
+export const zUpdateFileRequest = z.object({
+    access: zFileAccess.optional()
+});
+
+/**
  * Request to update a role
  */
 export const zUpdateRoleRequest = z.object({
@@ -1862,6 +1869,23 @@ export const zFilesGetData = z.object({
  * The request has succeeded.
  */
 export const zFilesGetResponse = z.union([
+    zFileResponse,
+    zErrorResponse
+]);
+
+export const zFilesUpdateData = z.object({
+    body: zUpdateFileRequest,
+    path: z.object({
+        orgId: z.string(),
+        fileId: z.string()
+    }),
+    query: z.never().optional()
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zFilesUpdateResponse = z.union([
     zFileResponse,
     zErrorResponse
 ]);

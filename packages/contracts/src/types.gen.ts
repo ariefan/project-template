@@ -1471,6 +1471,16 @@ export type UpdateExamplePostRequest = {
 };
 
 /**
+ * Request to update file properties
+ */
+export type UpdateFileRequest = {
+    /**
+     * New access level
+     */
+    access?: FileAccess;
+};
+
+/**
  * Request to update a role
  */
 export type UpdateRoleRequest = {
@@ -3497,6 +3507,34 @@ export type FilesGetResponses = {
 };
 
 export type FilesGetResponse = FilesGetResponses[keyof FilesGetResponses];
+
+export type FilesUpdateData = {
+    /**
+     * Update request
+     */
+    body: UpdateFileRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * File ID
+         */
+        fileId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/files/{fileId}';
+};
+
+export type FilesUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: FileResponse | ErrorResponse;
+};
+
+export type FilesUpdateResponse = FilesUpdateResponses[keyof FilesUpdateResponses];
 
 export type FilesDownloadData = {
     body?: never;
