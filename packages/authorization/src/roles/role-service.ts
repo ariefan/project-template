@@ -1,4 +1,4 @@
-import { and, db, eq, isNull } from "@workspace/db";
+import { and, type Database, eq, isNull } from "@workspace/db";
 import { type NewRole, type Role, roles } from "@workspace/db/schema";
 import type { ConditionType } from "../functions/conditions";
 import type { Enforcer } from "../types";
@@ -62,9 +62,11 @@ function generateRoleId(): string {
  * of truth for authorization decisions.
  */
 export class RoleService {
-  private readonly enforcer: Enforcer;
+  readonly db: Database;
+  readonly enforcer: Enforcer;
 
-  constructor(enforcer: Enforcer) {
+  constructor(db: Database, enforcer: Enforcer) {
+    this.db = db;
     this.enforcer = enforcer;
   }
 
@@ -86,7 +88,7 @@ export class RoleService {
       createdBy: input.createdBy ?? null,
     };
 
-    const result = await db.insert(roles).values(newRole).returning();
+    const result = await this.db.insert(roles).values(newRole).returning();
     const role = result[0];
 
     if (!role) {
@@ -110,7 +112,7 @@ export class RoleService {
    * Get a role by ID
    */
   async getById(roleId: string): Promise<Role | null> {
-    const result = await db
+    const result = await this.db
       .select()
       .from(roles)
       .where(eq(roles.id, roleId))
@@ -138,7 +140,7 @@ export class RoleService {
       conditions.push(isNull(roles.tenantId));
     }
 
-    const result = await db
+    const result = await this.db
       .select()
       .from(roles)
       .where(and(...conditions))
@@ -151,7 +153,7 @@ export class RoleService {
    * List global roles for an application (no tenant)
    */
   listGlobalRoles(applicationId: string): Promise<Role[]> {
-    return db
+    return this.db
       .select()
       .from(roles)
       .where(
@@ -163,7 +165,7 @@ export class RoleService {
    * List tenant-scoped roles
    */
   listTenantRoles(applicationId: string, tenantId: string): Promise<Role[]> {
-    return db
+    return this.db
       .select()
       .from(roles)
       .where(
@@ -178,7 +180,7 @@ export class RoleService {
    * List all roles for an application (global + tenant)
    */
   listAllRoles(applicationId: string): Promise<Role[]> {
-    return db
+    return this.db
       .select()
       .from(roles)
       .where(eq(roles.applicationId, applicationId));
@@ -202,7 +204,7 @@ export class RoleService {
     const newName = input.name ?? existingRole.name;
 
     // Update role metadata
-    const result = await db
+    const result = await this.db
       .update(roles)
       .set({
         name: newName,
@@ -264,7 +266,7 @@ export class RoleService {
     }
 
     // Remove role from database
-    await db.delete(roles).where(eq(roles.id, roleId));
+    await this.db.delete(roles).where(eq(roles.id, roleId));
 
     // Remove all Casbin policies for this role
     await this.removePermissionsFromCasbin(

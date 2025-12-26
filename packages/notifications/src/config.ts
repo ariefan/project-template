@@ -1,56 +1,22 @@
-import { z } from "zod";
 import type { NotificationServiceConfig } from "./types";
 
-const envSchema = z.object({
-  // Email Configuration
-  EMAIL_PROVIDER: z.enum(["resend", "nodemailer"]).default("resend"),
-
-  // Resend
-  RESEND_API_KEY: z.string().optional(),
-
-  // Nodemailer (SMTP fallback)
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.coerce.number().optional(),
-  SMTP_SECURE: z
-    .enum(["true", "false"])
-    .transform((v) => v === "true")
-    .optional(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-
-  // Common email settings
-  EMAIL_FROM: z.string().default("noreply@example.com"),
-
-  // SMS/WhatsApp (Twilio)
-  TWILIO_ACCOUNT_SID: z.string().optional(),
-  TWILIO_AUTH_TOKEN: z.string().optional(),
-  TWILIO_SMS_FROM: z.string().optional(),
-  TWILIO_WHATSAPP_FROM: z.string().optional(),
-
-  // Telegram
-  TELEGRAM_BOT_TOKEN: z.string().optional(),
-
-  // Queue Configuration
-  DATABASE_URL: z.string(),
-  QUEUE_CONCURRENCY: z.coerce.number().default(10),
-  QUEUE_MAX_RETRIES: z.coerce.number().default(3),
-});
-
-export type NotificationEnvConfig = z.infer<typeof envSchema>;
-
-export function loadEnvConfig(): NotificationEnvConfig {
-  const parsed = envSchema.safeParse(process.env);
-
-  if (!parsed.success) {
-    console.error("Invalid notification configuration:");
-    for (const error of parsed.error.errors) {
-      console.error(`  ${error.path.join(".")}: ${error.message}`);
-    }
-    throw new Error("Invalid notification configuration");
-  }
-
-  return parsed.data;
-}
+export type NotificationEnvConfig = {
+  EMAIL_PROVIDER: "resend" | "nodemailer";
+  RESEND_API_KEY?: string;
+  SMTP_HOST?: string;
+  SMTP_PORT?: number;
+  SMTP_SECURE?: boolean;
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
+  EMAIL_FROM: string;
+  TWILIO_ACCOUNT_SID?: string;
+  TWILIO_AUTH_TOKEN?: string;
+  TWILIO_SMS_FROM?: string;
+  TWILIO_WHATSAPP_FROM?: string;
+  TELEGRAM_BOT_TOKEN?: string;
+  QUEUE_CONCURRENCY: number;
+  QUEUE_MAX_RETRIES: number;
+};
 
 export function buildServiceConfig(
   env: NotificationEnvConfig

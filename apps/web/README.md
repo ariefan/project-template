@@ -41,6 +41,30 @@ pnpm dev
 
 App starts at `http://localhost:3000`
 
+## Development Modes
+
+The web app supports two development modes:
+
+### Direct Mode (Default)
+Accessible at `http://localhost:3000` with the API at `http://localhost:3001`.
+
+### Caddy Mode (Recommended)
+All apps accessible through reverse proxy at `https://localhost`.
+
+**Benefits:**
+- Single origin (no CORS issues)
+- HTTPS locally (production-like environment)
+- Better Auth cookies work seamlessly
+- Test service workers and PWA features
+
+**Configuration:**
+Update `.env.local` for Caddy mode:
+```bash
+NEXT_PUBLIC_API_URL=https://localhost
+```
+
+See [Local Development Guide](../../docs/local-development.md) for details.
+
 ## Project Structure
 
 ```
@@ -163,13 +187,34 @@ export function LoginForm() {
 }
 ```
 
+## Port Configuration
+
+Port `3000` is centrally defined in [packages/utils/src/config.ts](../../packages/utils/src/config.ts). To change the web port:
+1. Update `PORTS.WEB` in the config file
+2. Update `.env.example` files across apps
+3. Update `Caddyfile` reverse proxy target
+
 ## Environment Variables
+
+See [src/env.ts](src/env.ts) for environment validation schema.
+
+### Direct Mode Configuration
 
 ```bash
 # .env.local
 NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+### Caddy Mode Configuration
+
+```bash
+# .env.local
+NEXT_PUBLIC_API_URL=https://localhost
+```
+
+**Key Difference:**
+- `NEXT_PUBLIC_API_URL` changes from `http://localhost:3001` to `https://localhost`
+- All API requests go through Caddy reverse proxy at `/api/*`
 
 ## Adding shadcn/ui Components
 

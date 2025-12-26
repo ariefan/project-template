@@ -6,29 +6,27 @@ import type { AuthorizationLog } from "@workspace/db/schema";
 import Fastify, { type FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the authorization package before any imports
-vi.mock("@workspace/authorization", () => {
-  const mockEnforcer = {
-    enforce: vi.fn(),
-    addPolicy: vi.fn(),
-    removePolicy: vi.fn(),
-    getFilteredPolicy: vi.fn(),
-    getRolesForUserInDomain: vi.fn(),
-    enableAutoSave: vi.fn(),
-  };
+// Create mock enforcer for use in tests
+const mockEnforcer = {
+  enforce: vi.fn(),
+  addPolicy: vi.fn(),
+  removePolicy: vi.fn(),
+  getFilteredPolicy: vi.fn(),
+  getRolesForUserInDomain: vi.fn(),
+  enableAutoSave: vi.fn(),
+};
 
-  return {
-    authorization: mockEnforcer,
-    AuthorizationAuditService: vi.fn(),
-    createViolationManager: vi.fn(() => ({
-      suspendPermission: vi.fn(),
-      restorePermission: vi.fn(),
-      suspendOrganization: vi.fn(),
-      restoreOrganization: vi.fn(),
-      getViolations: vi.fn(),
-    })),
-  };
-});
+// Mock the authorization package before any imports
+vi.mock("@workspace/authorization", () => ({
+  AuthorizationAuditService: vi.fn(),
+  createViolationManager: vi.fn(() => ({
+    suspendPermission: vi.fn(),
+    restorePermission: vi.fn(),
+    suspendOrganization: vi.fn(),
+    restoreOrganization: vi.fn(),
+    getViolations: vi.fn(),
+  })),
+}));
 
 // Mock the auth middleware
 vi.mock("../../auth/middleware", () => ({
@@ -120,6 +118,7 @@ describe("Audit Log Routes", () => {
 
     // Register authorization plugin
     await app.register(authorizationPlugin, {
+      enforcer: mockEnforcer as unknown as import("casbin").Enforcer,
       auditService: mockAuditService,
     });
 
@@ -453,7 +452,9 @@ describe("Audit Log Routes", () => {
       const appWithoutService = Fastify({ logger: false });
 
       // Register authorization plugin without audit service
-      await appWithoutService.register(authorizationPlugin, {});
+      await appWithoutService.register(authorizationPlugin, {
+        enforcer: mockEnforcer as unknown as import("casbin").Enforcer,
+      });
 
       await appWithoutService.register(
         async (instance) => {

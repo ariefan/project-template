@@ -6,6 +6,7 @@ import {
   type UpdateRoleInput,
 } from "@workspace/authorization";
 import type { ErrorResponse } from "@workspace/contracts";
+import { getDefaultDb } from "@workspace/db";
 import { DEFAULT_APPLICATION_ID } from "@workspace/db/schema";
 import type { FastifyInstance } from "fastify";
 import { handleError, NotFoundError, ValidationError } from "../../lib/errors";
@@ -123,7 +124,7 @@ function parsePermissions(
  * - DELETE /roles/:roleId      - Delete role
  */
 export function roleRoutes(app: FastifyInstance) {
-  const roleService = new RoleService(app.enforcer);
+  const roleService = new RoleService(getDefaultDb(), app.enforcer);
 
   // ==========================================
   // Global Roles (no tenant)

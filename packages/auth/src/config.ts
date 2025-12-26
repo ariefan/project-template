@@ -1,3 +1,4 @@
+import type { Database } from "@workspace/db";
 import type { EmailService } from "./services/email";
 import type { SmsService } from "./services/sms";
 
@@ -28,6 +29,11 @@ export type SocialProviders = {
  * Auth configuration for the factory function
  */
 export type AuthConfig = {
+  /**
+   * Database instance (injected by the app)
+   */
+  db: Database;
+
   /**
    * Base URL for the auth server (e.g., https://auth.example.com)
    */

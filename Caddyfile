@@ -1,16 +1,49 @@
-# Local development reverse proxy with HTTPS
-# Run with: caddy run
-# Or: caddy start (background)
+# ─────────────────────────────────────────────────────────────
+# Local Development Reverse Proxy
+# ─────────────────────────────────────────────────────────────
+# SETUP:
+#   1. Install Caddy: https://caddyserver.com/docs/install
+#   2. Start apps: pnpm dev:apps
+#   3. Start Caddy: pnpm dev:caddy (or caddy run)
+#   4. Access at: https://localhost
+#
+# FIRST RUN:
+#   Caddy will generate a local CA certificate and ask to install
+#   it in your system trust store. This is safe and enables HTTPS.
+#   You only need to do this once.
+#
+# MANAGEMENT:
+#   caddy run      # Start in foreground (see logs)
+#   caddy start    # Start in background
+#   caddy stop     # Stop background process
+#   caddy reload   # Reload config without downtime
+#
+# ROUTING:
+#   https://localhost/api/*  → API server (port 3001)
+#   https://localhost/*      → Web app (port 3000)
+#
+# BENEFITS:
+#   ✓ Single origin (no CORS issues)
+#   ✓ HTTPS locally (like production)
+#   ✓ Better Auth cookies work seamlessly
+#   ✓ Test service workers and PWA features
+#
+# PORT CONFIGURATION:
+#   Ports are defined in packages/utils/src/config.ts
+#   Update .env files with Caddy mode URLs (https://localhost)
+# ─────────────────────────────────────────────────────────────
 
 {
-	# Development mode - use local CA
+	# Development mode - generates local CA for HTTPS
 	local_certs
 }
 
 # Main development domain
 localhost {
-	# Web app (Next.js)
+	# API routes - proxy /api/* to API server
 	reverse_proxy /api/* localhost:3001
+
+	# Web app (default) - all other requests to Next.js
 	reverse_proxy localhost:3000
 }
 

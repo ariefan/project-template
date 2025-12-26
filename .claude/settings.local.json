@@ -58,7 +58,17 @@
       "Bash(pnpm tsc:*)",
       "Bash(yes:*)",
       "Bash(PGPASSWORD=postgres psql:*)",
-      "Bash(timeout 10 pnpm dev:*)"
+      "Bash(timeout 10 pnpm dev:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm turbo --help:*)",
+      "Bash(pnpm --filter=api typecheck:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill /F /PID 32812)",
+      "Bash(taskkill //F //PID 32812)",
+      "Bash(taskkill //F //PID 207388)",
+      "Bash(psql:*)",
+      "Bash(taskkill //F //PID 146724)"
     ]
   }
 }

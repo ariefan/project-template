@@ -18,7 +18,7 @@ export function applicationRoutes(app: FastifyInstance) {
   app.get(
     "/applications",
     { preHandler: [requireAuth] },
-    async (request, reply) => {
+    async (request, _reply) => {
       const query = request.query as { page?: string; pageSize?: string };
       const page = Math.max(1, Number(query.page) || 1);
       const pageSize = Math.min(100, Math.max(1, Number(query.pageSize) || 20));

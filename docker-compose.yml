@@ -1,0 +1,86 @@
+# ─────────────────────────────────────────────────────────────
+# Local Development Infrastructure
+# ─────────────────────────────────────────────────────────────
+# Services:
+#   - PostgreSQL (always starts)
+#   - Redis (optional: use --profile with-redis)
+#   - Caddy (optional: use --profile with-caddy)
+#
+# Quick Start:
+#   pnpm dev              # Start PostgreSQL + apps
+#   pnpm dev:caddy        # Add Caddy reverse proxy
+#   pnpm dev:full         # Everything (PostgreSQL + Redis + Caddy)
+#
+# Manual Control:
+#   pnpm infra:up         # Start all infrastructure
+#   pnpm infra:down       # Stop all infrastructure
+#   pnpm infra:reset      # Remove volumes and restart
+# ─────────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: project-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: project-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    profiles:
+      - with-redis
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: project-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:2019/config/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    profiles:
+      - with-caddy
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local

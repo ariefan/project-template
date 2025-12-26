@@ -20,6 +20,46 @@ pnpm test
 pnpm dlx ultracite fix
 ```
 
+## Development Modes
+
+This template supports two development modes:
+
+### Direct Mode (Default)
+
+Each app runs on its own port:
+- **API**: http://localhost:3001
+- **Web**: http://localhost:3000
+- **Mobile**: http://localhost:8081
+
+```bash
+pnpm dev
+```
+
+### Caddy Mode (Recommended)
+
+All apps accessible through a single HTTPS domain via reverse proxy:
+- **All apps**: https://localhost
+
+```bash
+pnpm dev:caddy
+```
+
+**Benefits:**
+- ✓ Single origin (no CORS issues)
+- ✓ HTTPS locally (like production)
+- ✓ Better Auth cookies work seamlessly
+- ✓ Test service workers and PWA features
+
+**Available Scripts:**
+- `pnpm dev` - PostgreSQL + apps (direct mode)
+- `pnpm dev:caddy` - Add Caddy reverse proxy (HTTPS)
+- `pnpm dev:redis` - Add Redis cache
+- `pnpm dev:full` - Everything (PostgreSQL + Redis + Caddy)
+- `pnpm dev:apps` - Just apps (no infrastructure)
+- `pnpm infra:up` - Start Docker services only
+
+See [Local Development Guide](docs/local-development.md) for detailed setup instructions.
+
 ## Stack Overview
 
 | Layer | Technology |

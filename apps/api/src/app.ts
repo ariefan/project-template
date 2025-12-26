@@ -5,6 +5,8 @@ import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import scalarApiReference from "@scalar/fastify-api-reference";
+import type { Auth } from "@workspace/auth";
+import type { Authorization } from "@workspace/authorization";
 import { createNotificationSystem } from "@workspace/notifications";
 import { createStorageProvider } from "@workspace/storage";
 import Fastify from "fastify";
@@ -23,6 +25,11 @@ import { webhooksModule } from "./modules/webhooks";
 import authorizationPlugin from "./plugins/authorization";
 import rateLimitPlugin from "./plugins/rate-limit";
 import securityHeadersPlugin from "./plugins/security-headers";
+
+export type AppConfig = {
+  auth: Auth;
+  enforcer: Authorization;
+};
 
 const require = createRequire(import.meta.url);
 
@@ -111,8 +118,11 @@ function buildStorageConfig() {
   };
 }
 
-export async function buildApp() {
+export async function buildApp(config: AppConfig) {
   const app = Fastify({ logger: true });
+
+  // Decorate Fastify with auth instance for use in routes
+  app.decorate("auth", config.auth);
 
   // Security Headers
   await app.register(securityHeadersPlugin);
@@ -143,7 +153,7 @@ export async function buildApp() {
   await app.register(rateLimitPlugin);
 
   // Authorization
-  await app.register(authorizationPlugin);
+  await app.register(authorizationPlugin, { enforcer: config.enforcer });
 
   // Idempotency (for POST/PATCH operations)
   // As documented in docs/api-guide/06-quality/02-idempotency.md
@@ -231,7 +241,6 @@ export async function buildApp() {
   const openApiSpec = loadOpenApiSpec();
   app.get("/openapi.json", async () => openApiSpec);
 
-  // Scalar API Reference
   await app.register(scalarApiReference, {
     routePrefix: "/docs",
     configuration: {

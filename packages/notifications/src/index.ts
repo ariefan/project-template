@@ -59,7 +59,8 @@ export function createNotificationSystem(
   };
 }
 
-export { buildServiceConfig, loadEnvConfig } from "./config";
+export type { NotificationEnvConfig } from "./config";
+export { buildServiceConfig } from "./config";
 export { createProviderRegistry } from "./providers";
 export { createPgBossQueue } from "./queue/pg-boss";
 export type { NotificationQueue } from "./queue/types";

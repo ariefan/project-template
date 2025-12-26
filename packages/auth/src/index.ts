@@ -1,6 +1,5 @@
 import { passkey } from "@better-auth/passkey";
 import { sso } from "@better-auth/sso";
-import { db } from "@workspace/db";
 import bcrypt from "bcrypt";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -19,7 +18,6 @@ import {
 } from "better-auth/plugins";
 import { organization } from "better-auth/plugins/organization";
 import { type AuthConfig, getCookieDomain } from "./config";
-import { createConsoleEmailService, createConsoleSmsService } from "./services";
 
 export type { AuthConfig, OIDCClient, SocialProviders } from "./config";
 export {
@@ -30,10 +28,28 @@ export {
 } from "./services";
 
 /**
- * Create a fully configured better-auth instance
+ * Create a fully configured better-auth instance.
+ *
+ * Apps must create their own auth instance by calling this factory function
+ * with the required configuration including a database instance.
+ *
+ * @example
+ * ```ts
+ * import { createAuth, createConsoleEmailService, createConsoleSmsService } from "@workspace/auth";
+ * import { getDefaultDb } from "@workspace/db";
+ *
+ * const auth = createAuth({
+ *   db: getDefaultDb(),
+ *   baseUrl: env.BETTER_AUTH_URL,
+ *   emailService: createConsoleEmailService(),
+ *   smsService: createConsoleSmsService(),
+ *   environment: env.NODE_ENV,
+ * });
+ * ```
  */
 export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
   const {
+    db,
     baseUrl,
     emailService,
     smsService,
@@ -218,20 +234,16 @@ export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
   });
 }
 
-/**
- * Default auth instance for simple setups
- * Uses console logging for email/sms (development only)
- */
-export const auth = createAuth({
-  baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3001",
-  emailService: createConsoleEmailService(),
-  smsService: createConsoleSmsService(),
-  environment:
-    (process.env.NODE_ENV as "development" | "production" | "test") ||
-    "development",
-});
-
 // Export types for use across the app
 export type Auth = ReturnType<typeof createAuth>;
-export type Session = typeof auth.$Infer.Session;
-export type User = typeof auth.$Infer.Session.user;
+
+/**
+ * Session and User types - use with your auth instance:
+ * @example
+ * ```ts
+ * const auth = createAuth({ ... });
+ * type MySession = typeof auth.$Infer.Session;
+ * type MyUser = typeof auth.$Infer.Session.user;
+ * ```
+ */
+export type { Session, User } from "better-auth";

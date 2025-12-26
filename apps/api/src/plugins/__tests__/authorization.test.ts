@@ -1,44 +1,31 @@
 import type { AuthorizationAuditService } from "@workspace/authorization";
 import type { CacheProvider } from "@workspace/cache";
+import type { Enforcer } from "casbin";
 import Fastify, { type FastifyInstance } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-// Mock the authorization module before importing the plugin
-vi.mock("@workspace/authorization", () => {
-  // Create a mock enforcer
-  const mockEnforcer = {
-    enforce: vi.fn(),
-    addPolicy: vi.fn(),
-    removePolicy: vi.fn(),
-    getFilteredPolicy: vi.fn(),
-    getRolesForUserInDomain: vi.fn(),
-    enableAutoSave: vi.fn(),
-  };
-
-  return {
-    authorization: mockEnforcer,
-    AuthorizationAuditService: {
-      extractContext: vi.fn(() => ({
-        actorId: "test",
-        actorIp: "127.0.0.1",
-      })),
-    },
-  };
-});
-
-// Import plugin after mocking
-const { default: authorizationPlugin } = await import("../authorization");
+import authorizationPlugin from "../authorization";
 
 describe("Authorization Plugin", () => {
   let app: FastifyInstance;
   let mockCache: CacheProvider;
   let mockAuditService: AuthorizationAuditService;
+  let mockEnforcer: Enforcer;
 
   beforeEach(() => {
     // Clear all mocks before each test
     vi.clearAllMocks();
 
     app = Fastify({ logger: false });
+
+    // Create mock enforcer
+    mockEnforcer = {
+      enforce: vi.fn(),
+      addPolicy: vi.fn(),
+      removePolicy: vi.fn(),
+      getFilteredPolicy: vi.fn(),
+      getRolesForUserInDomain: vi.fn(),
+      enableAutoSave: vi.fn(),
+    } as unknown as Enforcer;
 
     // Create mock cache provider
     mockCache = {
@@ -67,7 +54,7 @@ describe("Authorization Plugin", () => {
 
   describe("Plugin Registration", () => {
     it("should register plugin successfully", async () => {
-      await app.register(authorizationPlugin);
+      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
 
       expect(app.enforcer).toBeDefined();
       expect(app.authorize).toBeDefined();
@@ -77,6 +64,7 @@ describe("Authorization Plugin", () => {
 
     it("should register with cache provider", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         cache: mockCache,
       });
 
@@ -85,6 +73,7 @@ describe("Authorization Plugin", () => {
 
     it("should register with audit service", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         auditService: mockAuditService,
       });
 
@@ -94,7 +83,7 @@ describe("Authorization Plugin", () => {
 
   describe("authorize() method", () => {
     it("should return false when enforcer denies", async () => {
-      await app.register(authorizationPlugin);
+      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
 
       // Mock enforcer to deny
       vi.spyOn(app.enforcer, "enforce").mockResolvedValue(false);
@@ -105,7 +94,7 @@ describe("Authorization Plugin", () => {
     });
 
     it("should return true when enforcer allows", async () => {
-      await app.register(authorizationPlugin);
+      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
 
       // Mock enforcer to allow
       vi.spyOn(app.enforcer, "enforce").mockResolvedValue(true);
@@ -117,6 +106,7 @@ describe("Authorization Plugin", () => {
 
     it("should check cache first when cache is enabled", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         cache: mockCache,
       });
 
@@ -138,6 +128,7 @@ describe("Authorization Plugin", () => {
 
     it("should call enforcer on cache miss", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         cache: mockCache,
       });
 
@@ -165,6 +156,7 @@ describe("Authorization Plugin", () => {
 
     it("should log permission denials when audit logging is enabled", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         auditService: mockAuditService,
         logPermissionDenials: true,
       });
@@ -187,6 +179,7 @@ describe("Authorization Plugin", () => {
 
     it("should NOT log permission denials when flag is disabled", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         auditService: mockAuditService,
         logPermissionDenials: false,
       });
@@ -200,7 +193,7 @@ describe("Authorization Plugin", () => {
     });
 
     it("should return false on error", async () => {
-      await app.register(authorizationPlugin);
+      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
 
       // Mock enforcer to throw error
       vi.spyOn(app.enforcer, "enforce").mockRejectedValue(
@@ -216,6 +209,7 @@ describe("Authorization Plugin", () => {
   describe("invalidateAuthzCache()", () => {
     it("should invalidate user cache with orgId", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         cache: mockCache,
       });
 
@@ -230,6 +224,7 @@ describe("Authorization Plugin", () => {
 
     it("should invalidate all user cache without orgId", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         cache: mockCache,
       });
 
@@ -243,7 +238,7 @@ describe("Authorization Plugin", () => {
     });
 
     it("should do nothing when cache is not enabled", async () => {
-      await app.register(authorizationPlugin);
+      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
 
       // Should not throw
       await app.invalidateAuthzCache("user1", "org1");
@@ -256,6 +251,7 @@ describe("Authorization Plugin", () => {
   describe("invalidateOrgAuthzCache()", () => {
     it("should invalidate organization cache", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         cache: mockCache,
       });
 
@@ -269,7 +265,7 @@ describe("Authorization Plugin", () => {
     });
 
     it("should do nothing when cache is not enabled", async () => {
-      await app.register(authorizationPlugin);
+      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
 
       // Should not throw
       await app.invalidateOrgAuthzCache("org1");
@@ -281,6 +277,7 @@ describe("Authorization Plugin", () => {
   describe("Custom TTL", () => {
     it("should use custom cache TTL when provided", async () => {
       await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
         cache: mockCache,
         cacheTtlSeconds: 600, // 10 minutes
       });

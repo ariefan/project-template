@@ -3,6 +3,7 @@ import {
   UserRoleService,
 } from "@workspace/authorization";
 import type { ErrorResponse } from "@workspace/contracts";
+import { getDefaultDb } from "@workspace/db";
 import { DEFAULT_APPLICATION_ID } from "@workspace/db/schema";
 import type { FastifyInstance } from "fastify";
 import { ForbiddenError, handleError, NotFoundError } from "../../lib/errors";
@@ -43,7 +44,7 @@ type AssignRoleBody = {
  * - DELETE /orgs/:orgId/users/:userId/roles/:roleId - Remove role from user
  */
 export function userRoleRoutes(app: FastifyInstance) {
-  const userRoleService = new UserRoleService(app.enforcer);
+  const userRoleService = new UserRoleService(getDefaultDb(), app.enforcer);
 
   // Get user's roles in a tenant
   app.get<{

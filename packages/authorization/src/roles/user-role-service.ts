@@ -1,4 +1,4 @@
-import { and, db, eq, isNull } from "@workspace/db";
+import { and, type Database, eq, isNull } from "@workspace/db";
 import {
   type NewUserRoleAssignment,
   type Role,
@@ -37,9 +37,11 @@ function generateAssignmentId(): string {
  * Casbin grouping policy format: g(userId, roleName, appId, tenantId)
  */
 export class UserRoleService {
-  private readonly enforcer: Enforcer;
+  readonly db: Database;
+  readonly enforcer: Enforcer;
 
-  constructor(enforcer: Enforcer) {
+  constructor(db: Database, enforcer: Enforcer) {
+    this.db = db;
     this.enforcer = enforcer;
   }
 
@@ -90,7 +92,7 @@ export class UserRoleService {
       assignedBy: input.assignedBy ?? null,
     };
 
-    const result = await db
+    const result = await this.db
       .insert(userRoleAssignments)
       .values(assignment)
       .returning();
@@ -142,7 +144,7 @@ export class UserRoleService {
       conditions.push(isNull(userRoleAssignments.tenantId));
     }
 
-    const result = await db
+    const result = await this.db
       .delete(userRoleAssignments)
       .where(and(...conditions))
       .returning();
@@ -183,7 +185,7 @@ export class UserRoleService {
       }
     }
 
-    const assignments = await db
+    const assignments = await this.db
       .select({
         assignment: userRoleAssignments,
         role: roles,
@@ -235,7 +237,7 @@ export class UserRoleService {
       }
     }
 
-    return db
+    return this.db
       .select()
       .from(userRoleAssignments)
       .where(and(...conditions));
@@ -326,7 +328,7 @@ export class UserRoleService {
    * Get role by ID from database
    */
   private async getRole(roleId: string): Promise<Role | null> {
-    const result = await db
+    const result = await this.db
       .select()
       .from(roles)
       .where(eq(roles.id, roleId))
@@ -356,7 +358,7 @@ export class UserRoleService {
       conditions.push(isNull(userRoleAssignments.tenantId));
     }
 
-    const result = await db
+    const result = await this.db
       .select()
       .from(userRoleAssignments)
       .where(and(...conditions))

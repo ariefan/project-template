@@ -1,4 +1,4 @@
-import { and, db, eq, inArray } from "@workspace/db";
+import { and, type Database, eq, inArray } from "@workspace/db";
 import { casbinRules } from "@workspace/db/schema";
 import type { Adapter, Model } from "casbin";
 
@@ -39,11 +39,17 @@ function loadPolicyLine(
 }
 
 export class CasbinDrizzleAdapter implements Adapter {
+  readonly db: Database;
+
+  constructor(db: Database) {
+    this.db = db;
+  }
+
   /**
    * Load all policies from the database into the Casbin model
    */
   async loadPolicy(model: Model): Promise<void> {
-    const rules = await db.select().from(casbinRules);
+    const rules = await this.db.select().from(casbinRules);
 
     for (const rule of rules) {
       loadPolicyLine(rule.ptype, rule, model);
@@ -57,7 +63,7 @@ export class CasbinDrizzleAdapter implements Adapter {
    */
   async savePolicy(model: Model): Promise<boolean> {
     // 1. Load existing policies from database
-    const existingRules = await db.select().from(casbinRules);
+    const existingRules = await this.db.select().from(casbinRules);
 
     // 2. Extract desired policies from Casbin model
     const desiredRules: Array<{
@@ -106,11 +112,13 @@ export class CasbinDrizzleAdapter implements Adapter {
     if (toDelete.length > 0) {
       // Delete by IDs for efficiency
       const deleteIds = toDelete.map((r) => r.id);
-      await db.delete(casbinRules).where(inArray(casbinRules.id, deleteIds));
+      await this.db
+        .delete(casbinRules)
+        .where(inArray(casbinRules.id, deleteIds));
     }
 
     if (toAdd.length > 0) {
-      await db.insert(casbinRules).values(toAdd);
+      await this.db.insert(casbinRules).values(toAdd);
     }
 
     return true;
@@ -174,7 +182,7 @@ export class CasbinDrizzleAdapter implements Adapter {
    * Add a single policy to the database
    */
   async addPolicy(_sec: string, ptype: string, rule: string[]): Promise<void> {
-    await db.insert(casbinRules).values({
+    await this.db.insert(casbinRules).values({
       ptype,
       ...this.ruleToObject(rule),
     });
@@ -189,7 +197,7 @@ export class CasbinDrizzleAdapter implements Adapter {
     rule: string[]
   ): Promise<void> {
     const conditions = this.buildWhereConditions(ptype, rule);
-    await db.delete(casbinRules).where(and(...conditions));
+    await this.db.delete(casbinRules).where(and(...conditions));
   }
 
   /**
@@ -206,7 +214,7 @@ export class CasbinDrizzleAdapter implements Adapter {
     }));
 
     if (values.length > 0) {
-      await db.insert(casbinRules).values(values);
+      await this.db.insert(casbinRules).values(values);
     }
 
     return true;
@@ -272,7 +280,7 @@ export class CasbinDrizzleAdapter implements Adapter {
       }
     }
 
-    await db.delete(casbinRules).where(and(...conditions));
+    await this.db.delete(casbinRules).where(and(...conditions));
   }
 
   /**

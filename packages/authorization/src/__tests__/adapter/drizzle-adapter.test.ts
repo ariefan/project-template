@@ -1,33 +1,24 @@
-import type * as dbModule from "@workspace/db";
+import type { Database } from "@workspace/db";
 import { type Model, newModelFromString } from "casbin";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CasbinDrizzleAdapter } from "../../adapter/drizzle-adapter";
 
-// Mock the database module
-vi.mock("@workspace/db", async () => {
-  const actual = await vi.importActual<typeof dbModule>("@workspace/db");
-  return {
-    ...actual,
-    db: {
-      select: vi.fn().mockReturnThis(),
-      from: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      values: vi.fn().mockResolvedValue(undefined),
-      delete: vi.fn().mockReturnThis(),
-      where: vi.fn().mockResolvedValue(undefined),
-    },
-  };
-});
-
-// Import after mocking
-const { db } = await import("@workspace/db");
+// Create a typed mock database
+const mockDb = {
+  select: vi.fn().mockReturnThis(),
+  from: vi.fn().mockReturnThis(),
+  insert: vi.fn().mockReturnThis(),
+  values: vi.fn().mockResolvedValue(undefined),
+  delete: vi.fn().mockReturnThis(),
+  where: vi.fn().mockResolvedValue(undefined),
+} as unknown as Database;
 
 describe("Casbin Drizzle Adapter", () => {
   let adapter: CasbinDrizzleAdapter;
   let model: Model;
 
   beforeEach(() => {
-    adapter = new CasbinDrizzleAdapter();
+    adapter = new CasbinDrizzleAdapter(mockDb);
 
     // Create a basic RBAC model for testing
     const modelText = `
@@ -77,7 +68,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
         },
       ];
 
-      vi.mocked(db.select().from).mockResolvedValue(mockRules);
+      vi.mocked(mockDb.select().from).mockResolvedValue(mockRules);
 
       await adapter.loadPolicy(model);
 
@@ -111,7 +102,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
         },
       ];
 
-      vi.mocked(db.select().from).mockResolvedValue(mockRules);
+      vi.mocked(mockDb.select().from).mockResolvedValue(mockRules);
 
       await adapter.loadPolicy(model);
 
@@ -124,7 +115,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
     });
 
     it("should handle empty database", async () => {
-      vi.mocked(db.select().from).mockResolvedValue([]);
+      vi.mocked(mockDb.select().from).mockResolvedValue([]);
 
       await adapter.loadPolicy(model);
 
@@ -151,7 +142,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
         },
       ];
 
-      vi.mocked(db.select().from).mockResolvedValue(existingRules);
+      vi.mocked(mockDb.select().from).mockResolvedValue(existingRules);
 
       // Add new policy to model
       const pModel = model.model.get("p");
@@ -159,7 +150,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
       pModel?.get("p")?.policy.push(["editor", "org1", "posts", "read"]); // New
 
       const insertMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.insert).mockReturnValue({ values: insertMock } as any);
+      vi.mocked(mockDb.insert).mockReturnValue({ values: insertMock } as any);
 
       await adapter.savePolicy(model);
 
@@ -204,19 +195,19 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
         },
       ];
 
-      vi.mocked(db.select().from).mockResolvedValue(existingRules);
+      vi.mocked(mockDb.select().from).mockResolvedValue(existingRules);
 
       // Model only has one policy (the other should be deleted)
       const pModel = model.model.get("p");
       pModel?.get("p")?.policy.push(["admin", "org1", "posts", "write"]);
 
       const whereMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.delete).mockReturnValue({ where: whereMock } as any);
+      vi.mocked(mockDb.delete).mockReturnValue({ where: whereMock } as any);
 
       await adapter.savePolicy(model);
 
       // Should delete the removed policy
-      expect(db.delete).toHaveBeenCalled();
+      expect(mockDb.delete).toHaveBeenCalled();
       expect(whereMock).toHaveBeenCalled();
     });
 
@@ -235,7 +226,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
         },
       ];
 
-      vi.mocked(db.select().from).mockResolvedValue(existingRules);
+      vi.mocked(mockDb.select().from).mockResolvedValue(existingRules);
 
       const pModel = model.model.get("p");
       pModel?.get("p")?.policy.push(["admin", "org1", "posts", "write"]);
@@ -243,15 +234,15 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
       await adapter.savePolicy(model);
 
       // Should not call insert or delete
-      expect(db.insert).not.toHaveBeenCalled();
-      expect(db.delete).not.toHaveBeenCalled();
+      expect(mockDb.insert).not.toHaveBeenCalled();
+      expect(mockDb.delete).not.toHaveBeenCalled();
     });
   });
 
   describe("addPolicy", () => {
     it("should add a single policy rule", async () => {
       const insertMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.insert).mockReturnValue({ values: insertMock } as any);
+      vi.mocked(mockDb.insert).mockReturnValue({ values: insertMock } as any);
 
       await adapter.addPolicy("p", "p", ["admin", "org1", "posts", "write"]);
 
@@ -269,7 +260,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
 
     it("should add a role assignment rule", async () => {
       const insertMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.insert).mockReturnValue({ values: insertMock } as any);
+      vi.mocked(mockDb.insert).mockReturnValue({ values: insertMock } as any);
 
       await adapter.addPolicy("g", "g", ["user1", "admin", "org1"]);
 
@@ -289,11 +280,11 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
   describe("removePolicy", () => {
     it("should remove a single policy rule", async () => {
       const whereMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.delete).mockReturnValue({ where: whereMock } as any);
+      vi.mocked(mockDb.delete).mockReturnValue({ where: whereMock } as any);
 
       await adapter.removePolicy("p", "p", ["admin", "org1", "posts", "write"]);
 
-      expect(db.delete).toHaveBeenCalled();
+      expect(mockDb.delete).toHaveBeenCalled();
       expect(whereMock).toHaveBeenCalled();
     });
   });
@@ -301,7 +292,7 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
   describe("addPolicies", () => {
     it("should add multiple policies at once", async () => {
       const insertMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.insert).mockReturnValue({ values: insertMock } as any);
+      vi.mocked(mockDb.insert).mockReturnValue({ values: insertMock } as any);
 
       const result = await adapter.addPolicies("p", "p", [
         ["admin", "org1", "posts", "write"],
@@ -337,14 +328,14 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
       const result = await adapter.addPolicies("p", "p", []);
 
       expect(result).toBe(true);
-      expect(db.insert).not.toHaveBeenCalled();
+      expect(mockDb.insert).not.toHaveBeenCalled();
     });
   });
 
   describe("removePolicies", () => {
     it("should remove multiple policies", async () => {
       const whereMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.delete).mockReturnValue({ where: whereMock } as any);
+      vi.mocked(mockDb.delete).mockReturnValue({ where: whereMock } as any);
 
       const result = await adapter.removePolicies("p", "p", [
         ["admin", "org1", "posts", "write"],
@@ -352,30 +343,30 @@ m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
       ]);
 
       expect(result).toBe(true);
-      expect(db.delete).toHaveBeenCalledTimes(2);
+      expect(mockDb.delete).toHaveBeenCalledTimes(2);
     });
   });
 
   describe("removeFilteredPolicy", () => {
     it("should remove policies matching filter", async () => {
       const whereMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.delete).mockReturnValue({ where: whereMock } as any);
+      vi.mocked(mockDb.delete).mockReturnValue({ where: whereMock } as any);
 
       // Remove all policies for org1
       await adapter.removeFilteredPolicy("p", "p", 1, "org1");
 
-      expect(db.delete).toHaveBeenCalled();
+      expect(mockDb.delete).toHaveBeenCalled();
       expect(whereMock).toHaveBeenCalled();
     });
 
     it("should handle multiple filter values", async () => {
       const whereMock = vi.fn().mockResolvedValue(undefined);
-      vi.mocked(db.delete).mockReturnValue({ where: whereMock } as any);
+      vi.mocked(mockDb.delete).mockReturnValue({ where: whereMock } as any);
 
       // Remove all policies for org1 + posts resource
       await adapter.removeFilteredPolicy("p", "p", 1, "org1", "posts");
 
-      expect(db.delete).toHaveBeenCalled();
+      expect(mockDb.delete).toHaveBeenCalled();
       expect(whereMock).toHaveBeenCalled();
     });
   });

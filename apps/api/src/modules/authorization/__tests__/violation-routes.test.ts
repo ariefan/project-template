@@ -11,36 +11,33 @@ const mockViolationManager = {
   getViolations: vi.fn(),
 };
 
-// Mock the authorization package before any imports
-vi.mock("@workspace/authorization", () => {
-  // Create a mock enforcer
-  const mockEnforcer = {
-    enforce: vi.fn(),
-    addPolicy: vi.fn(),
-    removePolicy: vi.fn(),
-    getFilteredPolicy: vi.fn(),
-    getRolesForUserInDomain: vi.fn(),
-    enableAutoSave: vi.fn(),
-  };
+// Create mock enforcer for use in tests
+const mockEnforcer = {
+  enforce: vi.fn(),
+  addPolicy: vi.fn(),
+  removePolicy: vi.fn(),
+  getFilteredPolicy: vi.fn(),
+  getRolesForUserInDomain: vi.fn(),
+  enableAutoSave: vi.fn(),
+};
 
-  return {
-    authorization: mockEnforcer,
-    AuthorizationAuditService: {
-      extractContext: vi.fn(() => ({
-        actorId: "admin1",
-        actorIp: "127.0.0.1",
-        actorUserAgent: "test-agent",
-      })),
-    },
-    createViolationManager: vi.fn(() => mockViolationManager),
-    ViolationSeverity: {
-      WARNING: "warning",
-      MINOR: "minor",
-      MAJOR: "major",
-      CRITICAL: "critical",
-    },
-  };
-});
+// Mock the authorization package before any imports
+vi.mock("@workspace/authorization", () => ({
+  AuthorizationAuditService: {
+    extractContext: vi.fn(() => ({
+      actorId: "admin1",
+      actorIp: "127.0.0.1",
+      actorUserAgent: "test-agent",
+    })),
+  },
+  createViolationManager: vi.fn(() => mockViolationManager),
+  ViolationSeverity: {
+    WARNING: "warning",
+    MINOR: "minor",
+    MAJOR: "major",
+    CRITICAL: "critical",
+  },
+}));
 
 // Mock the auth middleware
 vi.mock("../../auth/middleware", () => ({
@@ -92,6 +89,7 @@ describe("Violation Routes", () => {
 
     // Register authorization plugin
     await app.register(authorizationPlugin, {
+      enforcer: mockEnforcer as unknown as import("casbin").Enforcer,
       auditService: mockAuditService,
     });
 

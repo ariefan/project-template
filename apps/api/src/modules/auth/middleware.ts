@@ -1,10 +1,10 @@
-import { auth } from "@workspace/auth";
+import type { Auth, Session, User } from "@workspace/auth";
 import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-// Infer types from auth instance
-type AuthSession = typeof auth.$Infer.Session.session;
-type AuthUser = typeof auth.$Infer.Session.user;
+// Use better-auth's exported types for session/user
+type AuthSession = Session;
+type AuthUser = User;
 
 // Extend Fastify request to include session data
 declare module "fastify" {
@@ -13,6 +13,11 @@ declare module "fastify" {
   interface FastifyRequest {
     session: AuthSession | null;
     user: AuthUser | null;
+  }
+
+  // biome-ignore lint/style/useConsistentTypeDefinitions: Module augmentation requires interface
+  interface FastifyInstance {
+    auth: Auth;
   }
 }
 
@@ -23,6 +28,7 @@ declare module "fastify" {
 export async function getSession(
   request: FastifyRequest
 ): Promise<{ session: AuthSession; user: AuthUser } | null> {
+  const auth = request.server.auth;
   const session = await auth.api.getSession({
     headers: fromNodeHeaders(request.headers),
   });
@@ -91,6 +97,7 @@ export function requireOrgMembership(orgIdParam = "orgId") {
     }
 
     // Check org membership using better-auth organization plugin
+    const auth = request.server.auth;
     // Type assertion needed because plugin methods aren't visible on base type
     type OrgApi = {
       getFullOrganization: (opts: {

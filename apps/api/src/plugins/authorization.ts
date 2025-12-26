@@ -1,7 +1,4 @@
-import {
-  type AuthorizationAuditService,
-  authorization,
-} from "@workspace/authorization";
+import type { AuthorizationAuditService } from "@workspace/authorization";
 import {
   buildAuthzKey,
   buildAuthzPatternForOrg,
@@ -197,7 +194,8 @@ declare module "fastify" {
  */
 function authorizationPlugin(
   fastify: FastifyInstance,
-  opts?: {
+  opts: {
+    enforcer: casbin.Enforcer;
     cache?: CacheProvider | null;
     cacheTtlSeconds?: number;
     auditService?: AuthorizationAuditService | null;
@@ -205,16 +203,16 @@ function authorizationPlugin(
   }
 ): void {
   const deps: AuthorizationDeps = {
-    enforcer: authorization,
-    cache: opts?.cache ?? null,
-    cacheTtl: opts?.cacheTtlSeconds ?? 300, // 5 minutes default
-    auditService: opts?.auditService ?? null,
-    logPermissionDenials: opts?.logPermissionDenials ?? false,
+    enforcer: opts.enforcer,
+    cache: opts.cache ?? null,
+    cacheTtl: opts.cacheTtlSeconds ?? 300, // 5 minutes default
+    auditService: opts.auditService ?? null,
+    logPermissionDenials: opts.logPermissionDenials ?? false,
     log: fastify.log,
   };
 
   // Decorate fastify with enforcer instance
-  fastify.decorate("enforcer", authorization);
+  fastify.decorate("enforcer", opts.enforcer);
 
   // Decorate fastify with cache provider instance
   fastify.decorate("authzCache", deps.cache);

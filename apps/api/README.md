@@ -50,6 +50,30 @@ pnpm dev
 
 Server starts at `http://localhost:3001`
 
+## Development Modes
+
+The API supports two development modes:
+
+### Direct Mode (Default)
+Accessible at `http://localhost:3001` with individual port allocation.
+
+### Caddy Mode (Recommended)
+All apps accessible through reverse proxy at `https://localhost`. API routes are served at `https://localhost/api/*`.
+
+**Benefits:**
+- Single origin (no CORS configuration needed)
+- HTTPS locally (production-like environment)
+- Better Auth cookies work seamlessly
+
+**Configuration:**
+Update `.env` for Caddy mode:
+```bash
+CORS_ORIGIN=https://localhost
+BETTER_AUTH_URL=https://localhost
+```
+
+See [Local Development Guide](../../docs/local-development.md) for details.
+
 ## API Documentation
 
 - **Scalar UI**: http://localhost:3001/docs
@@ -197,9 +221,18 @@ Health check for load balancers.
 GET    /health                        # Returns { status: "ok" }
 ```
 
+## Port Configuration
+
+Port `3001` is centrally defined in [packages/utils/src/config.ts](../../packages/utils/src/config.ts). To change the API port:
+1. Update `PORTS.API` in the config file
+2. Update `.env.example` files across apps
+3. Update `Caddyfile` reverse proxy target
+
 ## Environment Variables
 
-See `src/env.ts` for full schema. Key variables:
+See [src/env.ts](src/env.ts) for full schema validation.
+
+### Direct Mode Configuration
 
 ```bash
 # Server
@@ -207,13 +240,13 @@ PORT=3001
 NODE_ENV=development
 
 # Database
-DATABASE_URL=postgres://user:pass@localhost:5432/db
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mydb
 
-# Auth
-BETTER_AUTH_SECRET=...
+# Auth (generate secret: openssl rand -base64 32)
+BETTER_AUTH_SECRET=your-secret-key-minimum-32-characters-long
 BETTER_AUTH_URL=http://localhost:3001
 
-# CORS
+# CORS - Web app origin
 CORS_ORIGIN=http://localhost:3000
 
 # Storage
@@ -225,9 +258,35 @@ CACHE_PROVIDER=memory   # or "redis"
 REDIS_URL=redis://localhost:6379
 
 # Notifications (optional)
+EMAIL_PROVIDER=resend
 RESEND_API_KEY=...
 TWILIO_ACCOUNT_SID=...
 ```
+
+### Caddy Mode Configuration
+
+```bash
+# Server (same as direct mode)
+PORT=3001
+NODE_ENV=development
+
+# Database (same as direct mode)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mydb
+
+# Auth (same secret, different URL)
+BETTER_AUTH_SECRET=your-secret-key-minimum-32-characters-long
+BETTER_AUTH_URL=https://localhost  # ← Changed for Caddy
+
+# CORS - Single origin via reverse proxy
+CORS_ORIGIN=https://localhost  # ← Changed for Caddy
+
+# All other variables same as direct mode
+```
+
+**Key Differences:**
+- `BETTER_AUTH_URL` changes from `http://localhost:3001` to `https://localhost`
+- `CORS_ORIGIN` changes from `http://localhost:3000` to `https://localhost`
+- Single HTTPS origin eliminates CORS complexity
 
 ## Adding a New Module
 
