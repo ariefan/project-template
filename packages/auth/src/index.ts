@@ -216,7 +216,7 @@ export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
       multiSession(),
 
       // OpenAPI documentation
-      openAPI({ path: "/api/auth/docs" }),
+      openAPI({ path: "/docs" }),
     ],
 
     // Advanced configuration for cross-domain SSO

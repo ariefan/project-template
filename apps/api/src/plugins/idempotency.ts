@@ -151,7 +151,8 @@ function idempotencyPlugin(app: FastifyInstance, options: IdempotencyConfig) {
   // After response is serialized, cache it if idempotency key was provided
   app.addHook(
     "onSend",
-    (request: FastifyRequest, reply: FastifyReply, payload: unknown) => {
+    // biome-ignore lint/suspicious/useAwait: async required for Fastify hook signature
+    async (request: FastifyRequest, reply: FastifyReply, payload: unknown) => {
       const idempotencyKey = request.idempotencyKey;
       const cacheKey = request.idempotencyCacheKey;
 

@@ -68,7 +68,8 @@
       "Bash(taskkill //F //PID 32812)",
       "Bash(taskkill //F //PID 207388)",
       "Bash(psql:*)",
-      "Bash(taskkill //F //PID 146724)"
+      "Bash(taskkill //F //PID 146724)",
+      "Bash(taskkill //F //PID 62652)"
     ]
   }
 }
