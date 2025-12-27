@@ -78,7 +78,11 @@
       "Bash(pnpm --filter web typecheck:*)",
       "Bash(pnpm --filter web dlx ultracite check)",
       "Bash(pnpm --filter web dlx ultracite fix:*)",
-      "Bash(pnpm --filter web add @react-three/fiber @react-three/drei three --force)"
+      "Bash(pnpm --filter web add @react-three/fiber @react-three/drei three --force)",
+      "Bash(pnpm ultracite fix:*)",
+      "Bash(pnpm ultracite check:*)",
+      "Bash(pnpm lefthook:*)",
+      "Bash(git reset:*)"
     ]
   }
 }

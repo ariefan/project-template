@@ -34,3 +34,7 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+# Claude Code
+.claude/settings.local.json
+.claude/plans/
