@@ -18,9 +18,9 @@
     "db:studio": "pnpm --filter @workspace/db db:studio",
     "test": "turbo test",
     "typecheck": "turbo typecheck",
-    "lint": "ultracite check",
-    "check": "turbo typecheck && ultracite fix",
-    "fix": "ultracite fix",
+    "lint": "biome check",
+    "check": "turbo typecheck && biome check --write",
+    "fix": "biome check --write",
     "generate": "plop",
     "prepare": "lefthook install"
   },
