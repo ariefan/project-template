@@ -23,7 +23,7 @@
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.8",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.0"
   },
   "exports": {
     ".": "./src/index.ts",

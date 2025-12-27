@@ -8,8 +8,8 @@ import { z } from 'zod';
 export const zActiveContext = z.object({
     userId: z.string(),
     activeApplicationId: z.string(),
-    activeTenantId: z.string().optional(),
-    updatedAt: z.string().datetime()
+    activeTenantId: z.optional(z.string()),
+    updatedAt: z.iso.datetime()
 });
 
 /**
@@ -34,9 +34,9 @@ export const zAuditActorType = z.enum([
 export const zAuditActor = z.object({
     type: zAuditActorType,
     id: z.string(),
-    email: z.string().optional(),
-    ipAddress: z.string().optional(),
-    userAgent: z.string().optional()
+    email: z.optional(z.string()),
+    ipAddress: z.optional(z.string()),
+    userAgent: z.optional(z.string())
 });
 
 /**
@@ -51,10 +51,10 @@ export const zAuditChange = z.object({
  * Additional metadata for the audit event
  */
 export const zAuditMetadata = z.object({
-    requestId: z.string().optional(),
-    sessionId: z.string().optional(),
-    reason: z.string().optional(),
-    extra: z.record(z.unknown()).optional()
+    requestId: z.optional(z.string()),
+    sessionId: z.optional(z.string()),
+    reason: z.optional(z.string()),
+    extra: z.optional(z.record(z.string(), z.unknown()))
 });
 
 /**
@@ -63,8 +63,8 @@ export const zAuditMetadata = z.object({
 export const zAuditResource = z.object({
     type: z.string(),
     id: z.string(),
-    endpoint: z.string().optional(),
-    method: z.string().optional()
+    endpoint: z.optional(z.string()),
+    method: z.optional(z.string())
 });
 
 /**
@@ -75,61 +75,61 @@ export const zAuditResource = z.object({
 export const zAuditLog = z.object({
     eventId: z.string(),
     eventType: z.string(),
-    timestamp: z.string().datetime(),
+    timestamp: z.iso.datetime(),
     tenantId: z.string(),
     actor: zAuditActor,
     resource: zAuditResource,
-    changes: z.record(zAuditChange).optional(),
-    resourceBefore: z.record(z.unknown()).optional(),
-    resourceAfter: z.record(z.unknown()).optional(),
-    metadata: zAuditMetadata.optional()
+    changes: z.optional(z.record(z.string(), zAuditChange)),
+    resourceBefore: z.optional(z.record(z.string(), z.unknown())),
+    resourceAfter: z.optional(z.record(z.string(), z.unknown())),
+    metadata: z.optional(zAuditMetadata)
 });
 
 /**
  * Batch delete result (soft delete)
  */
 export const zBatchDeleteResult = z.object({
-    index: z.number().int(),
+    index: z.int(),
     status: z.enum([
         'success',
         'error',
         'skipped'
     ]),
-    data: z.object({
+    data: z.optional(z.object({
         id: z.string(),
-        deletedAt: z.string().datetime()
-    }).optional(),
-    error: z.object({
+        deletedAt: z.iso.datetime()
+    })),
+    error: z.optional(z.object({
         code: z.string(),
         message: z.string()
-    }).optional()
+    }))
 });
 
 /**
  * Options for batch operations
  */
 export const zBatchOptions = z.object({
-    atomic: z.boolean().optional(),
-    returnRecords: z.boolean().optional(),
-    skipDuplicates: z.boolean().optional(),
-    validateOnly: z.boolean().optional()
+    atomic: z.optional(z.boolean()),
+    returnRecords: z.optional(z.boolean()),
+    skipDuplicates: z.optional(z.boolean()),
+    validateOnly: z.optional(z.boolean())
 });
 
 /**
  * Summary of batch operation results
  */
 export const zBatchSummary = z.object({
-    total: z.number().int(),
-    successful: z.number().int(),
-    failed: z.number().int(),
-    skipped: z.number().int()
+    total: z.int(),
+    successful: z.int(),
+    failed: z.int(),
+    skipped: z.int()
 });
 
 /**
  * Request to confirm an upload completed successfully
  */
 export const zConfirmUploadRequest = z.object({
-    etag: z.string().optional()
+    etag: z.optional(z.string())
 });
 
 /**
@@ -144,18 +144,18 @@ export const zCreateExampleCommentRequest = z.object({
  * Request to create a webhook
  */
 export const zCreateWebhookRequest = z.object({
-    url: z.string().url(),
-    name: z.string().max(100).optional(),
-    description: z.string().max(500).optional(),
+    url: z.url(),
+    name: z.optional(z.string().max(100)),
+    description: z.optional(z.string().max(500)),
     events: z.array(z.string()).min(1),
-    isActive: z.boolean().optional()
+    isActive: z.optional(z.boolean())
 });
 
 /**
  * Cursor-based pagination for large datasets or real-time data
  */
 export const zCursorPagination = z.object({
-    limit: z.number().int(),
+    limit: z.int(),
     hasNext: z.boolean(),
     nextCursor: z.union([
         z.string(),
@@ -174,7 +174,7 @@ export const zErrorDetail = z.object({
     field: z.string(),
     code: z.string(),
     message: z.string(),
-    metadata: z.record(z.unknown()).optional()
+    metadata: z.optional(z.record(z.string(), z.unknown()))
 });
 
 /**
@@ -183,9 +183,9 @@ export const zErrorDetail = z.object({
 export const zError = z.object({
     code: z.string(),
     message: z.string(),
-    details: z.array(zErrorDetail).optional(),
+    details: z.optional(z.array(zErrorDetail)),
     requestId: z.string(),
-    documentationUrl: z.string().optional()
+    documentationUrl: z.optional(z.string())
 });
 
 /**
@@ -210,10 +210,10 @@ export const zExampleComment = z.object({
     content: z.string(),
     authorId: z.string(),
     isDeleted: z.boolean(),
-    deletedAt: z.string().datetime().optional(),
-    deletedBy: z.string().optional(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime()
+    deletedAt: z.optional(z.iso.datetime()),
+    deletedBy: z.optional(z.string()),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
 });
 
 /**
@@ -232,7 +232,7 @@ export const zCreateExamplePostRequest = z.object({
     title: z.string(),
     content: z.string(),
     authorId: z.string(),
-    status: zExamplePostStatus.optional()
+    status: z.optional(zExamplePostStatus)
 });
 
 /**
@@ -250,12 +250,12 @@ export const zExamplePost = z.object({
     content: z.string(),
     authorId: z.string(),
     status: zExamplePostStatus,
-    publishedAt: z.string().datetime().optional(),
+    publishedAt: z.optional(z.iso.datetime()),
     isDeleted: z.boolean(),
-    deletedAt: z.string().datetime().optional(),
-    deletedBy: z.string().optional(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime()
+    deletedAt: z.optional(z.iso.datetime()),
+    deletedBy: z.optional(z.string()),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
 });
 
 /**
@@ -270,7 +270,7 @@ export const zInitiateUploadRequest = z.object({
     filename: z.string().min(1).max(255),
     contentType: z.string(),
     size: z.coerce.bigint().gte(BigInt(1)),
-    metadata: z.record(z.string()).optional()
+    metadata: z.optional(z.record(z.string(), z.string()))
 });
 
 /**
@@ -294,19 +294,19 @@ export const zJob = z.object({
     tenantId: z.string(),
     type: z.string(),
     status: zJobStatus,
-    progress: z.number().int().gte(0).lte(100).optional(),
-    message: z.string().optional(),
-    result: z.record(z.unknown()).optional(),
-    error: z.object({
+    progress: z.optional(z.int().gte(0).lte(100)),
+    message: z.optional(z.string()),
+    result: z.optional(z.record(z.string(), z.unknown())),
+    error: z.optional(z.object({
         code: z.string(),
         message: z.string(),
-        details: z.record(z.unknown()).optional()
-    }).optional(),
+        details: z.optional(z.record(z.string(), z.unknown()))
+    })),
     createdBy: z.string(),
-    createdAt: z.string().datetime(),
-    startedAt: z.string().datetime().optional(),
-    completedAt: z.string().datetime().optional(),
-    estimatedCompletion: z.string().datetime().optional()
+    createdAt: z.iso.datetime(),
+    startedAt: z.optional(z.iso.datetime()),
+    completedAt: z.optional(z.iso.datetime()),
+    estimatedCompletion: z.optional(z.iso.datetime())
 });
 
 /**
@@ -324,12 +324,12 @@ export const zMigrationStatus = z.enum([
 export const zMigrationStatusResponse = z.object({
     version: z.string(),
     status: zMigrationStatus,
-    sunsetDate: z.string().datetime().optional(),
-    daysUntilSunset: z.number().int().optional(),
-    replacementVersion: z.string().optional(),
-    migrationGuideUrl: z.string().optional(),
-    breakingChanges: z.array(z.string()).optional(),
-    migrationChecklist: z.array(z.string()).optional()
+    sunsetDate: z.optional(z.iso.datetime()),
+    daysUntilSunset: z.optional(z.int()),
+    replacementVersion: z.optional(z.string()),
+    migrationGuideUrl: z.optional(z.string()),
+    breakingChanges: z.optional(z.array(z.string())),
+    migrationChecklist: z.optional(z.array(z.string()))
 });
 
 /**
@@ -358,14 +358,14 @@ export const zPaginationLinks = z.object({
  * Page-based pagination metadata for collection responses
  */
 export const zPagination = z.object({
-    page: z.number().int(),
-    pageSize: z.number().int(),
-    totalPages: z.number().int(),
-    totalCount: z.number().int(),
+    page: z.int(),
+    pageSize: z.int(),
+    totalPages: z.int(),
+    totalCount: z.int(),
     hasNext: z.boolean(),
     hasPrevious: z.boolean(),
-    links: zPaginationLinks.optional(),
-    requestedPageSize: z.number().int().optional()
+    links: z.optional(zPaginationLinks),
+    requestedPageSize: z.optional(z.int())
 });
 
 /**
@@ -414,7 +414,7 @@ export const zPermission = z.object({
         z.string()
     ]),
     effect: zPermissionEffect,
-    condition: zPermissionCondition.optional()
+    condition: z.optional(zPermissionCondition)
 });
 
 /**
@@ -423,8 +423,8 @@ export const zPermission = z.object({
 export const zPermissionInput = z.object({
     resource: z.string(),
     action: z.string(),
-    effect: zPermissionEffect.optional(),
-    condition: zPermissionCondition.optional()
+    effect: z.optional(zPermissionEffect),
+    condition: z.optional(zPermissionCondition)
 });
 
 /**
@@ -432,7 +432,7 @@ export const zPermissionInput = z.object({
  */
 export const zCreateRoleRequest = z.object({
     name: z.string().min(1).max(100),
-    description: z.string().max(500).optional(),
+    description: z.optional(z.string().max(500)),
     permissions: z.array(zPermissionInput).min(1)
 });
 
@@ -441,11 +441,11 @@ export const zCreateRoleRequest = z.object({
  */
 export const zResponseMeta = z.object({
     requestId: z.string(),
-    timestamp: z.string().datetime(),
-    apiVersion: z.string().optional(),
-    tenantId: z.string().optional(),
-    tenantName: z.string().optional(),
-    durationMs: z.number().int().optional()
+    timestamp: z.iso.datetime(),
+    apiVersion: z.optional(z.string()),
+    tenantId: z.optional(z.string()),
+    tenantName: z.optional(z.string()),
+    durationMs: z.optional(z.int())
 });
 
 /**
@@ -468,7 +468,7 @@ export const zAsyncJobResponse = z.object({
         'failed'
     ]),
     statusUrl: z.string(),
-    estimatedCompletion: z.string().datetime().optional(),
+    estimatedCompletion: z.optional(z.iso.datetime()),
     meta: zResponseMeta
 });
 
@@ -549,7 +549,7 @@ export const zExamplePostResponse = z.object({
 export const zFileDeleteResponse = z.object({
     data: z.object({
         id: z.string(),
-        deletedAt: z.string().datetime(),
+        deletedAt: z.iso.datetime(),
         deletedBy: z.string()
     }),
     meta: zResponseMeta
@@ -563,8 +563,8 @@ export const zInitiateUploadResponse = z.object({
         uploadId: z.string(),
         presignedUrl: z.string(),
         method: z.enum(['PUT']),
-        headers: z.record(z.string()),
-        expiresAt: z.string().datetime(),
+        headers: z.record(z.string(), z.string()),
+        expiresAt: z.iso.datetime(),
         maxSize: z.coerce.bigint()
     }),
     meta: zResponseMeta
@@ -600,15 +600,15 @@ export const zJobResponse = z.object({
 export const zRole = z.object({
     id: z.string(),
     applicationId: z.string(),
-    tenantId: z.string().optional(),
+    tenantId: z.optional(z.string()),
     name: z.string(),
-    description: z.string().optional(),
+    description: z.optional(z.string()),
     permissions: z.array(zPermission),
     isSystemRole: z.boolean(),
     isGlobalRole: z.boolean(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-    createdBy: z.string().optional()
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    createdBy: z.optional(z.string())
 });
 
 /**
@@ -636,11 +636,11 @@ export const zRoleResponse = z.object({
 export const zSoftDeleteResponse = z.object({
     data: z.object({
         id: z.string(),
-        deletedAt: z.string().datetime(),
+        deletedAt: z.iso.datetime(),
         deletedBy: z.string(),
-        deletionReason: z.string().optional(),
+        deletionReason: z.optional(z.string()),
         canRestore: z.boolean(),
-        restoreUntil: z.string().datetime().optional()
+        restoreUntil: z.optional(z.iso.datetime())
     }),
     meta: zResponseMeta
 });
@@ -649,8 +649,8 @@ export const zSoftDeleteResponse = z.object({
  * Request to switch active context (application and/or tenant)
  */
 export const zSwitchContextRequest = z.object({
-    applicationId: z.string().optional(),
-    tenantId: z.string().optional()
+    applicationId: z.optional(z.string()),
+    tenantId: z.optional(z.string())
 });
 
 /**
@@ -659,8 +659,8 @@ export const zSwitchContextRequest = z.object({
 export const zSwitchContextResponse = z.object({
     data: z.object({
         applicationId: z.string(),
-        tenantId: z.string().optional(),
-        tenantName: z.string().optional(),
+        tenantId: z.optional(z.string()),
+        tenantName: z.optional(z.string()),
         roles: z.array(z.string()),
         permissions: z.array(zPermission)
     }),
@@ -671,43 +671,43 @@ export const zSwitchContextResponse = z.object({
  * Request body for updating a comment
  */
 export const zUpdateExampleCommentRequest = z.object({
-    content: z.string().optional()
+    content: z.optional(z.string())
 });
 
 /**
  * Request body for updating a post
  */
 export const zUpdateExamplePostRequest = z.object({
-    title: z.string().optional(),
-    content: z.string().optional(),
-    status: zExamplePostStatus.optional()
+    title: z.optional(z.string()),
+    content: z.optional(z.string()),
+    status: z.optional(zExamplePostStatus)
 });
 
 /**
  * Request to update file properties
  */
 export const zUpdateFileRequest = z.object({
-    access: zFileAccess.optional()
+    access: z.optional(zFileAccess)
 });
 
 /**
  * Request to update a role
  */
 export const zUpdateRoleRequest = z.object({
-    name: z.string().min(1).max(100).optional(),
-    description: z.string().max(500).optional(),
-    permissions: z.array(zPermissionInput).optional()
+    name: z.optional(z.string().min(1).max(100)),
+    description: z.optional(z.string().max(500)),
+    permissions: z.optional(z.array(zPermissionInput))
 });
 
 /**
  * Request to update a webhook
  */
 export const zUpdateWebhookRequest = z.object({
-    url: z.string().url().optional(),
-    name: z.string().max(100).optional(),
-    description: z.string().max(500).optional(),
-    events: z.array(z.string()).optional(),
-    isActive: z.boolean().optional()
+    url: z.optional(z.url()),
+    name: z.optional(z.string().max(100)),
+    description: z.optional(z.string().max(500)),
+    events: z.optional(z.array(z.string())),
+    isActive: z.optional(z.boolean())
 });
 
 /**
@@ -738,7 +738,7 @@ export const zUserContextListResponse = z.object({
 export const zUserEffectivePermissions = z.object({
     userId: z.string(),
     applicationId: z.string(),
-    tenantId: z.string().optional(),
+    tenantId: z.optional(z.string()),
     globalRoles: z.array(z.object({
         id: z.string(),
         name: z.string(),
@@ -771,12 +771,12 @@ export const zUserRoleAssignment = z.object({
     id: z.string(),
     userId: z.string(),
     applicationId: z.string(),
-    tenantId: z.string().optional(),
+    tenantId: z.optional(z.string()),
     roleId: z.string(),
     roleName: z.string(),
     isGlobalRole: z.boolean(),
-    assignedAt: z.string().datetime(),
-    assignedBy: z.string().optional()
+    assignedAt: z.iso.datetime(),
+    assignedBy: z.optional(z.string())
 });
 
 /**
@@ -817,16 +817,16 @@ export const zFile = z.object({
     size: z.coerce.bigint(),
     mimeType: z.string(),
     storagePath: z.string(),
-    url: z.string().optional(),
-    metadata: z.record(z.string()).optional(),
+    url: z.optional(z.string()),
+    metadata: z.optional(z.record(z.string(), z.string())),
     uploadedBy: z.string(),
-    uploadedAt: z.string().datetime(),
+    uploadedAt: z.iso.datetime(),
     virusScanStatus: zVirusScanStatus,
-    virusScanCompletedAt: z.string().datetime().optional(),
+    virusScanCompletedAt: z.optional(z.iso.datetime()),
     access: zFileAccess,
     isDeleted: z.boolean(),
-    deletedAt: z.string().datetime().optional(),
-    deletedBy: z.string().optional()
+    deletedAt: z.optional(z.iso.datetime()),
+    deletedBy: z.optional(z.string())
 });
 
 /**
@@ -855,18 +855,18 @@ export const zWebhook = z.object({
     id: z.string(),
     tenantId: z.string(),
     url: z.string(),
-    name: z.string().optional(),
-    description: z.string().optional(),
+    name: z.optional(z.string()),
+    description: z.optional(z.string()),
     events: z.array(z.string()),
     secret: z.string(),
     isActive: z.boolean(),
-    consecutiveFailures: z.number().int(),
-    lastTriggeredAt: z.string().datetime().optional(),
-    lastSuccessAt: z.string().datetime().optional(),
-    lastFailureAt: z.string().datetime().optional(),
+    consecutiveFailures: z.int(),
+    lastTriggeredAt: z.optional(z.iso.datetime()),
+    lastSuccessAt: z.optional(z.iso.datetime()),
+    lastFailureAt: z.optional(z.iso.datetime()),
     createdBy: z.string(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime()
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
 });
 
 /**
@@ -890,15 +890,15 @@ export const zWebhookDelivery = z.object({
     eventId: z.string(),
     eventType: z.string(),
     status: zWebhookDeliveryStatus,
-    attemptCount: z.number().int(),
-    httpStatus: z.number().int().optional(),
-    responseBody: z.string().optional(),
-    errorMessage: z.string().optional(),
-    durationMs: z.number().int().optional(),
-    nextRetryAt: z.string().datetime().optional(),
-    createdAt: z.string().datetime(),
-    lastAttemptAt: z.string().datetime().optional(),
-    completedAt: z.string().datetime().optional()
+    attemptCount: z.int(),
+    httpStatus: z.optional(z.int()),
+    responseBody: z.optional(z.string()),
+    errorMessage: z.optional(z.string()),
+    durationMs: z.optional(z.int()),
+    nextRetryAt: z.optional(z.iso.datetime()),
+    createdAt: z.iso.datetime(),
+    lastAttemptAt: z.optional(z.iso.datetime()),
+    completedAt: z.optional(z.iso.datetime())
 });
 
 /**
@@ -923,7 +923,7 @@ export const zWebhookDeliveryResponse = z.object({
  */
 export const zWebhookEventTypesResponse = z.object({
     data: z.object({
-        eventTypes: z.record(z.array(z.string()))
+        eventTypes: z.record(z.string(), z.array(z.string()))
     }),
     meta: zResponseMeta
 });
@@ -952,11 +952,11 @@ export const zWebhookWithSecret = z.object({
     id: z.string(),
     tenantId: z.string(),
     url: z.string(),
-    name: z.string().optional(),
+    name: z.optional(z.string()),
     events: z.array(z.string()),
     secret: z.string(),
     isActive: z.boolean(),
-    createdAt: z.string().datetime()
+    createdAt: z.iso.datetime()
 });
 
 /**
@@ -968,9 +968,9 @@ export const zWebhookCreatedResponse = z.object({
 });
 
 export const zHealthCheckData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: z.never().optional()
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
 });
 
 /**
@@ -982,31 +982,31 @@ export const zHealthCheckResponse = z.object({
         'degraded',
         'down'
     ]),
-    timestamp: z.string().datetime(),
-    version: z.string().optional(),
-    services: z.object({
-        database: z.enum([
+    timestamp: z.iso.datetime(),
+    version: z.optional(z.string()),
+    services: z.optional(z.object({
+        database: z.optional(z.enum([
             'ok',
             'degraded',
             'down'
-        ]).optional(),
-        cache: z.enum([
+        ])),
+        cache: z.optional(z.enum([
             'ok',
             'degraded',
             'down'
-        ]).optional(),
-        storage: z.enum([
+        ])),
+        storage: z.optional(z.enum([
             'ok',
             'degraded',
             'down'
-        ]).optional()
-    }).optional()
+        ]))
+    }))
 });
 
 export const zMigrationGetStatusData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: z.never().optional()
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
 });
 
 /**
@@ -1015,23 +1015,23 @@ export const zMigrationGetStatusData = z.object({
 export const zMigrationGetStatusResponse = zMigrationStatusResponse;
 
 export const zAuditLogsListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        eventType: z.string().optional(),
-        actorId: z.string().optional(),
-        actorType: zAuditActorType.optional(),
-        resourceType: z.string().optional(),
-        resourceId: z.string().optional(),
-        timestampAfter: z.string().datetime().optional(),
-        timestampBefore: z.string().datetime().optional(),
-        ipAddress: z.string().optional(),
-        requestId: z.string().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        eventType: z.optional(z.string()),
+        actorId: z.optional(z.string()),
+        actorType: z.optional(zAuditActorType),
+        resourceType: z.optional(z.string()),
+        resourceId: z.optional(z.string()),
+        timestampAfter: z.optional(z.iso.datetime()),
+        timestampBefore: z.optional(z.iso.datetime()),
+        ipAddress: z.optional(z.string()),
+        requestId: z.optional(z.string())
+    }))
 });
 
 /**
@@ -1045,14 +1045,14 @@ export const zAuditLogsListResponse = z.union([
 export const zAuditLogsExportData = z.object({
     body: z.object({
         format: z.enum(['csv', 'json']),
-        timestampAfter: z.string().datetime().optional(),
-        timestampBefore: z.string().datetime().optional(),
-        eventTypes: z.array(z.string()).optional()
+        timestampAfter: z.optional(z.iso.datetime()),
+        timestampBefore: z.optional(z.iso.datetime()),
+        eventTypes: z.optional(z.array(z.string()))
     }),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zAuditLogsExportResponse = z.union([
@@ -1060,8 +1060,8 @@ export const zAuditLogsExportResponse = z.union([
         z.object({
             data: z.object({
                 downloadUrl: z.string(),
-                eventCount: z.number().int(),
-                expiresAt: z.string().datetime()
+                eventCount: z.int(),
+                expiresAt: z.iso.datetime()
             }),
             meta: zResponseMeta
         }),
@@ -1071,12 +1071,12 @@ export const zAuditLogsExportResponse = z.union([
 ]);
 
 export const zAuditLogsGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         eventId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1088,28 +1088,28 @@ export const zAuditLogsGetResponse = z.union([
 ]);
 
 export const zExamplePostsListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        orderBy: z.string().optional(),
-        fields: z.string().optional(),
-        include: z.string().optional(),
-        search: z.string().optional(),
-        status: zExamplePostStatus.optional(),
-        statusNe: z.string().optional(),
-        statusIn: z.string().optional(),
-        authorId: z.string().optional(),
-        titleContains: z.string().optional(),
-        contentContains: z.string().optional(),
-        createdAfter: z.string().datetime().optional(),
-        createdBefore: z.string().datetime().optional(),
-        publishedAfter: z.string().datetime().optional(),
-        publishedBefore: z.string().datetime().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        fields: z.optional(z.string()),
+        include: z.optional(z.string()),
+        search: z.optional(z.string()),
+        status: z.optional(zExamplePostStatus),
+        statusNe: z.optional(z.string()),
+        statusIn: z.optional(z.string()),
+        authorId: z.optional(z.string()),
+        titleContains: z.optional(z.string()),
+        contentContains: z.optional(z.string()),
+        createdAfter: z.optional(z.iso.datetime()),
+        createdBefore: z.optional(z.iso.datetime()),
+        publishedAfter: z.optional(z.iso.datetime()),
+        publishedBefore: z.optional(z.iso.datetime())
+    }))
 });
 
 /**
@@ -1125,7 +1125,7 @@ export const zExamplePostsCreateData = z.object({
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zExamplePostsCreateResponse = z.union([
@@ -1135,16 +1135,16 @@ export const zExamplePostsCreateResponse = z.union([
 
 export const zExamplePostsBatchUpdateData = z.object({
     body: z.object({
-        items: z.array(z.object({
+        items: z.optional(z.array(z.object({
             id: z.string(),
             updates: zUpdateExamplePostRequest
-        })).optional(),
-        options: zBatchOptions.optional()
+        }))),
+        options: z.optional(zBatchOptions)
     }),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1153,18 +1153,18 @@ export const zExamplePostsBatchUpdateData = z.object({
 export const zExamplePostsBatchUpdateResponse = z.union([
     z.object({
         results: z.array(z.object({
-            index: z.number().int(),
+            index: z.int(),
             status: z.enum([
                 'success',
                 'error',
                 'skipped'
             ]),
-            data: zExamplePost.optional(),
-            error: z.object({
+            data: z.optional(zExamplePost),
+            error: z.optional(z.object({
                 code: z.string(),
                 message: z.string()
-            }).optional(),
-            input: z.record(z.unknown()).optional()
+            })),
+            input: z.optional(z.record(z.string(), z.unknown()))
         })),
         summary: zBatchSummary,
         meta: zResponseMeta
@@ -1175,30 +1175,30 @@ export const zExamplePostsBatchUpdateResponse = z.union([
 export const zExamplePostsBatchCreateData = z.object({
     body: z.object({
         items: z.array(zCreateExamplePostRequest),
-        options: zBatchOptions.optional()
+        options: z.optional(zBatchOptions)
     }),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zExamplePostsBatchCreateResponse = z.union([
     zErrorResponse,
     z.object({
         results: z.array(z.object({
-            index: z.number().int(),
+            index: z.int(),
             status: z.enum([
                 'success',
                 'error',
                 'skipped'
             ]),
-            data: zExamplePost.optional(),
-            error: z.object({
+            data: z.optional(zExamplePost),
+            error: z.optional(z.object({
                 code: z.string(),
                 message: z.string()
-            }).optional(),
-            input: z.record(z.unknown()).optional()
+            })),
+            input: z.optional(z.record(z.string(), z.unknown()))
         })),
         summary: zBatchSummary,
         meta: zResponseMeta
@@ -1208,12 +1208,12 @@ export const zExamplePostsBatchCreateResponse = z.union([
 export const zExamplePostsBatchRestoreData = z.object({
     body: z.object({
         ids: z.array(z.string()),
-        options: zBatchOptions.optional()
+        options: z.optional(zBatchOptions)
     }),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1222,18 +1222,18 @@ export const zExamplePostsBatchRestoreData = z.object({
 export const zExamplePostsBatchRestoreResponse = z.union([
     z.object({
         results: z.array(z.object({
-            index: z.number().int(),
+            index: z.int(),
             status: z.enum([
                 'success',
                 'error',
                 'skipped'
             ]),
-            data: zExamplePost.optional(),
-            error: z.object({
+            data: z.optional(zExamplePost),
+            error: z.optional(z.object({
                 code: z.string(),
                 message: z.string()
-            }).optional(),
-            input: z.record(z.unknown()).optional()
+            })),
+            input: z.optional(z.record(z.string(), z.unknown()))
         })),
         summary: zBatchSummary,
         meta: zResponseMeta
@@ -1244,12 +1244,12 @@ export const zExamplePostsBatchRestoreResponse = z.union([
 export const zExamplePostsBatchSoftDeleteData = z.object({
     body: z.object({
         ids: z.array(z.string()),
-        options: zBatchOptions.optional()
+        options: z.optional(zBatchOptions)
     }),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1261,18 +1261,18 @@ export const zExamplePostsBatchSoftDeleteResponse = z.union([
 ]);
 
 export const zExamplePostsListCursorData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        cursor: z.string().optional(),
-        limit: z.number().int().optional().default(50),
-        orderBy: z.string().optional(),
-        status: zExamplePostStatus.optional(),
-        authorId: z.string().optional(),
-        search: z.string().optional()
-    }).optional()
+    query: z.optional(z.object({
+        cursor: z.optional(z.string()),
+        limit: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        status: z.optional(zExamplePostStatus),
+        authorId: z.optional(z.string()),
+        search: z.optional(z.string())
+    }))
 });
 
 /**
@@ -1284,14 +1284,14 @@ export const zExamplePostsListCursorResponse = z.union([
 ]);
 
 export const zExamplePostsListDeletedData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50)
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50)
+    }))
 });
 
 /**
@@ -1303,12 +1303,12 @@ export const zExamplePostsListDeletedResponse = z.union([
 ]);
 
 export const zExamplePostsDeleteData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1320,15 +1320,15 @@ export const zExamplePostsDeleteResponse = z.union([
 ]);
 
 export const zExamplePostsGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         id: z.string()
     }),
-    query: z.object({
-        fields: z.string().optional(),
-        include: z.string().optional()
-    }).optional()
+    query: z.optional(z.object({
+        fields: z.optional(z.string()),
+        include: z.optional(z.string())
+    }))
 });
 
 /**
@@ -1345,7 +1345,7 @@ export const zExamplePostsUpdateData = z.object({
         orgId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1357,12 +1357,12 @@ export const zExamplePostsUpdateResponse = z.union([
 ]);
 
 export const zExamplePostsDeletePermanentData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zExamplePostsDeletePermanentResponse = z.union([
@@ -1371,12 +1371,12 @@ export const zExamplePostsDeletePermanentResponse = z.union([
 ]);
 
 export const zExamplePostsRestoreData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1388,21 +1388,21 @@ export const zExamplePostsRestoreResponse = z.union([
 ]);
 
 export const zExampleCommentsListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         postId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        orderBy: z.string().optional(),
-        fields: z.string().optional(),
-        authorId: z.string().optional(),
-        contentContains: z.string().optional(),
-        createdAfter: z.string().datetime().optional(),
-        createdBefore: z.string().datetime().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        fields: z.optional(z.string()),
+        authorId: z.optional(z.string()),
+        contentContains: z.optional(z.string()),
+        createdAfter: z.optional(z.iso.datetime()),
+        createdBefore: z.optional(z.iso.datetime())
+    }))
 });
 
 /**
@@ -1419,7 +1419,7 @@ export const zExampleCommentsCreateData = z.object({
         orgId: z.string(),
         postId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zExampleCommentsCreateResponse = z.union([
@@ -1430,31 +1430,31 @@ export const zExampleCommentsCreateResponse = z.union([
 export const zExampleCommentsBatchCreateData = z.object({
     body: z.object({
         items: z.array(zCreateExampleCommentRequest),
-        options: zBatchOptions.optional()
+        options: z.optional(zBatchOptions)
     }),
     path: z.object({
         orgId: z.string(),
         postId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zExampleCommentsBatchCreateResponse = z.union([
     zErrorResponse,
     z.object({
         results: z.array(z.object({
-            index: z.number().int(),
+            index: z.int(),
             status: z.enum([
                 'success',
                 'error',
                 'skipped'
             ]),
-            data: zExampleComment.optional(),
-            error: z.object({
+            data: z.optional(zExampleComment),
+            error: z.optional(z.object({
                 code: z.string(),
                 message: z.string()
-            }).optional(),
-            input: z.record(z.unknown()).optional()
+            })),
+            input: z.optional(z.record(z.string(), z.unknown()))
         })),
         summary: zBatchSummary,
         meta: zResponseMeta
@@ -1464,13 +1464,13 @@ export const zExampleCommentsBatchCreateResponse = z.union([
 export const zExampleCommentsBatchSoftDeleteData = z.object({
     body: z.object({
         ids: z.array(z.string()),
-        options: zBatchOptions.optional()
+        options: z.optional(zBatchOptions)
     }),
     path: z.object({
         orgId: z.string(),
         postId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1482,13 +1482,13 @@ export const zExampleCommentsBatchSoftDeleteResponse = z.union([
 ]);
 
 export const zExampleCommentsDeleteData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         postId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1500,15 +1500,15 @@ export const zExampleCommentsDeleteResponse = z.union([
 ]);
 
 export const zExampleCommentsGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         postId: z.string(),
         id: z.string()
     }),
-    query: z.object({
-        fields: z.string().optional()
-    }).optional()
+    query: z.optional(z.object({
+        fields: z.optional(z.string())
+    }))
 });
 
 /**
@@ -1526,7 +1526,7 @@ export const zExampleCommentsUpdateData = z.object({
         postId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1538,13 +1538,13 @@ export const zExampleCommentsUpdateResponse = z.union([
 ]);
 
 export const zExampleCommentsDeletePermanentData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         postId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zExampleCommentsDeletePermanentResponse = z.union([
@@ -1553,13 +1553,13 @@ export const zExampleCommentsDeletePermanentResponse = z.union([
 ]);
 
 export const zExampleCommentsRestoreData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         postId: z.string(),
         id: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1571,22 +1571,22 @@ export const zExampleCommentsRestoreResponse = z.union([
 ]);
 
 export const zFilesListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        orderBy: z.string().optional(),
-        fields: z.string().optional(),
-        mimeType: z.string().optional(),
-        virusScanStatus: zVirusScanStatus.optional(),
-        access: zFileAccess.optional(),
-        uploadedAfter: z.string().datetime().optional(),
-        uploadedBefore: z.string().datetime().optional(),
-        uploadedBy: z.string().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        fields: z.optional(z.string()),
+        mimeType: z.optional(z.string()),
+        virusScanStatus: z.optional(zVirusScanStatus),
+        access: z.optional(zFileAccess),
+        uploadedAfter: z.optional(z.iso.datetime()),
+        uploadedBefore: z.optional(z.iso.datetime()),
+        uploadedBy: z.optional(z.string())
+    }))
 });
 
 /**
@@ -1598,11 +1598,11 @@ export const zFilesListResponse = z.union([
 ]);
 
 export const zFilesDirectUploadData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zFilesDirectUploadResponse = z.union([
@@ -1615,7 +1615,7 @@ export const zFilesInitiateUploadData = z.object({
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1632,7 +1632,7 @@ export const zFilesConfirmUploadData = z.object({
         orgId: z.string(),
         uploadId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zFilesConfirmUploadResponse = z.union([
@@ -1641,12 +1641,12 @@ export const zFilesConfirmUploadResponse = z.union([
 ]);
 
 export const zFilesDeleteData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         fileId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1658,14 +1658,14 @@ export const zFilesDeleteResponse = z.union([
 ]);
 
 export const zFilesGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         fileId: z.string()
     }),
-    query: z.object({
-        fields: z.string().optional()
-    }).optional()
+    query: z.optional(z.object({
+        fields: z.optional(z.string())
+    }))
 });
 
 /**
@@ -1682,7 +1682,7 @@ export const zFilesUpdateData = z.object({
         orgId: z.string(),
         fileId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1694,12 +1694,12 @@ export const zFilesUpdateResponse = z.union([
 ]);
 
 export const zFilesDownloadData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         fileId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1708,12 +1708,12 @@ export const zFilesDownloadData = z.object({
 export const zFilesDownloadResponse = zErrorResponse;
 
 export const zFilesDeletePermanentData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         fileId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zFilesDeletePermanentResponse = z.union([
@@ -1722,17 +1722,17 @@ export const zFilesDeletePermanentResponse = z.union([
 ]);
 
 export const zJobsListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        status: zJobStatus.optional(),
-        type: z.string().optional(),
-        createdAfter: z.string().datetime().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        status: z.optional(zJobStatus),
+        type: z.optional(z.string()),
+        createdAfter: z.optional(z.iso.datetime())
+    }))
 });
 
 /**
@@ -1744,12 +1744,12 @@ export const zJobsListResponse = z.union([
 ]);
 
 export const zJobsGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         jobId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1761,12 +1761,12 @@ export const zJobsGetResponse = z.union([
 ]);
 
 export const zJobsCancelData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         jobId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1778,15 +1778,15 @@ export const zJobsCancelResponse = z.union([
 ]);
 
 export const zTenantRolesListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        isSystemRole: z.boolean().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        isSystemRole: z.optional(z.boolean())
+    }))
 });
 
 /**
@@ -1802,7 +1802,7 @@ export const zTenantRolesCreateData = z.object({
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zTenantRolesCreateResponse = z.union([
@@ -1811,12 +1811,12 @@ export const zTenantRolesCreateResponse = z.union([
 ]);
 
 export const zTenantRolesDeleteData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         roleId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zTenantRolesDeleteResponse = z.union([
@@ -1825,12 +1825,12 @@ export const zTenantRolesDeleteResponse = z.union([
 ]);
 
 export const zTenantRolesGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         roleId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1847,7 +1847,7 @@ export const zTenantRolesUpdateData = z.object({
         orgId: z.string(),
         roleId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1859,12 +1859,12 @@ export const zTenantRolesUpdateResponse = z.union([
 ]);
 
 export const zUserPermissionsGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         userId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1876,12 +1876,12 @@ export const zUserPermissionsGetResponse = z.union([
 ]);
 
 export const zUserTenantRolesListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         userId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1898,7 +1898,7 @@ export const zUserTenantRolesAssignData = z.object({
         orgId: z.string(),
         userId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zUserTenantRolesAssignResponse = z.union([
@@ -1907,13 +1907,13 @@ export const zUserTenantRolesAssignResponse = z.union([
 ]);
 
 export const zUserTenantRolesRemoveData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         userId: z.string(),
         roleId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zUserTenantRolesRemoveResponse = z.union([
@@ -1922,15 +1922,15 @@ export const zUserTenantRolesRemoveResponse = z.union([
 ]);
 
 export const zWebhooksListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        isActive: z.boolean().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        isActive: z.optional(z.boolean())
+    }))
 });
 
 /**
@@ -1946,7 +1946,7 @@ export const zWebhooksCreateData = z.object({
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zWebhooksCreateResponse = z.union([
@@ -1955,11 +1955,11 @@ export const zWebhooksCreateResponse = z.union([
 ]);
 
 export const zWebhooksListEventTypesData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -1971,12 +1971,12 @@ export const zWebhooksListEventTypesResponse = z.union([
 ]);
 
 export const zWebhooksDeleteData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         webhookId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zWebhooksDeleteResponse = z.union([
@@ -1985,12 +1985,12 @@ export const zWebhooksDeleteResponse = z.union([
 ]);
 
 export const zWebhooksGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         webhookId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2007,7 +2007,7 @@ export const zWebhooksUpdateData = z.object({
         orgId: z.string(),
         webhookId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2019,18 +2019,18 @@ export const zWebhooksUpdateResponse = z.union([
 ]);
 
 export const zWebhooksListDeliveriesData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         webhookId: z.string()
     }),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        status: zWebhookDeliveryStatus.optional(),
-        eventType: z.string().optional(),
-        createdAfter: z.string().datetime().optional()
-    }).optional()
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        status: z.optional(zWebhookDeliveryStatus),
+        eventType: z.optional(z.string()),
+        createdAfter: z.optional(z.iso.datetime())
+    }))
 });
 
 /**
@@ -2042,13 +2042,13 @@ export const zWebhooksListDeliveriesResponse = z.union([
 ]);
 
 export const zWebhooksGetDeliveryData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         webhookId: z.string(),
         deliveryId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2060,13 +2060,13 @@ export const zWebhooksGetDeliveryResponse = z.union([
 ]);
 
 export const zWebhooksRetryDeliveryData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         webhookId: z.string(),
         deliveryId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2078,12 +2078,12 @@ export const zWebhooksRetryDeliveryResponse = z.union([
 ]);
 
 export const zWebhooksRotateSecretData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         webhookId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2095,12 +2095,12 @@ export const zWebhooksRotateSecretResponse = z.union([
 ]);
 
 export const zWebhooksTestData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         orgId: z.string(),
         webhookId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2110,9 +2110,9 @@ export const zWebhooksTestResponse = z.union([
     z.object({
         data: z.object({
             success: z.boolean(),
-            httpStatus: z.number().int().optional(),
-            durationMs: z.number().int().optional(),
-            error: z.string().optional()
+            httpStatus: z.optional(z.int()),
+            durationMs: z.optional(z.int()),
+            error: z.optional(z.string())
         }),
         meta: zResponseMeta
     }),
@@ -2120,13 +2120,13 @@ export const zWebhooksTestResponse = z.union([
 ]);
 
 export const zGlobalRolesListData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: z.object({
-        page: z.number().int().optional().default(1),
-        pageSize: z.number().int().optional().default(50),
-        isSystemRole: z.boolean().optional()
-    }).optional()
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        isSystemRole: z.optional(z.boolean())
+    }))
 });
 
 /**
@@ -2139,8 +2139,8 @@ export const zGlobalRolesListResponse = z.union([
 
 export const zGlobalRolesCreateData = z.object({
     body: zCreateRoleRequest,
-    path: z.never().optional(),
-    query: z.never().optional()
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
 });
 
 export const zGlobalRolesCreateResponse = z.union([
@@ -2149,11 +2149,11 @@ export const zGlobalRolesCreateResponse = z.union([
 ]);
 
 export const zGlobalRolesDeleteData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         roleId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 export const zGlobalRolesDeleteResponse = z.union([
@@ -2162,11 +2162,11 @@ export const zGlobalRolesDeleteResponse = z.union([
 ]);
 
 export const zGlobalRolesGetData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         roleId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2182,7 +2182,7 @@ export const zGlobalRolesUpdateData = z.object({
     path: z.object({
         roleId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**
@@ -2194,9 +2194,9 @@ export const zGlobalRolesUpdateResponse = z.union([
 ]);
 
 export const zAvailableContextsListData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: z.never().optional()
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
 });
 
 /**
@@ -2208,9 +2208,9 @@ export const zAvailableContextsListResponse = z.union([
 ]);
 
 export const zCurrentUserContextGetData = z.object({
-    body: z.never().optional(),
-    path: z.never().optional(),
-    query: z.never().optional()
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
 });
 
 /**
@@ -2223,8 +2223,8 @@ export const zCurrentUserContextGetResponse = z.union([
 
 export const zContextSwitchSwitchData = z.object({
     body: zSwitchContextRequest,
-    path: z.never().optional(),
-    query: z.never().optional()
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
 });
 
 /**
@@ -2236,11 +2236,11 @@ export const zContextSwitchSwitchResponse = z.union([
 ]);
 
 export const zAllUserRolesListData = z.object({
-    body: z.never().optional(),
+    body: z.optional(z.never()),
     path: z.object({
         userId: z.string()
     }),
-    query: z.never().optional()
+    query: z.optional(z.never())
 });
 
 /**

@@ -38,13 +38,13 @@
     "ioredis": "^5.4.2",
     "pg-boss": "^10.1.5",
     "yaml": "^2.8.2",
-    "zod": "^3.25.76"
+    "zod": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.25",
     "@workspace/typescript-config": "workspace:*",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.0"
   }
 }

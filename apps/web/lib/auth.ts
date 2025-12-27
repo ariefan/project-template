@@ -2,7 +2,7 @@ import {
   type AuthClient,
   createAuthClientInstance,
 } from "@workspace/auth/client";
-import { env } from "@/src/env";
+import { env } from "@/lib/env";
 
 /**
  * Auth client instance for the web app.

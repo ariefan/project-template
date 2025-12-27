@@ -30,7 +30,7 @@
     "nativewind": "^4.1.23",
     "react-native": "^0.76.9",
     "typescript": "^5.9.2",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.0"
   },
   "exports": {
     "./lib/*": "./src/lib/*.ts",

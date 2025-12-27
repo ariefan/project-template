@@ -88,7 +88,7 @@ export function commentsRoutes(app: FastifyInstance) {
       if (!parseResult.success) {
         const error = new ValidationError(
           "Invalid request body",
-          parseResult.error.errors.map((e) => ({
+          parseResult.error.issues.map((e) => ({
             field: e.path.join("."),
             code: e.code,
             message: e.message,
@@ -154,7 +154,7 @@ export function commentsRoutes(app: FastifyInstance) {
       if (!parseResult.success) {
         const error = new ValidationError(
           "Invalid request body",
-          parseResult.error.errors.map((e) => ({
+          parseResult.error.issues.map((e) => ({
             field: e.path.join("."),
             code: e.code,
             message: e.message,

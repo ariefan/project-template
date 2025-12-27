@@ -69,7 +69,16 @@
       "Bash(taskkill //F //PID 207388)",
       "Bash(psql:*)",
       "Bash(taskkill //F //PID 146724)",
-      "Bash(taskkill //F //PID 62652)"
+      "Bash(taskkill //F //PID 62652)",
+      "Bash(pnpm update:*)",
+      "Bash(pnpm --filter api typecheck:*)",
+      "Bash(pnpm --filter @workspace/contracts typecheck:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm --filter @workspace/web typecheck:*)",
+      "Bash(pnpm --filter web typecheck:*)",
+      "Bash(pnpm --filter web dlx ultracite check)",
+      "Bash(pnpm --filter web dlx ultracite fix:*)",
+      "Bash(pnpm --filter web add @react-three/fiber @react-three/drei three --force)"
     ]
   }
 }

@@ -118,6 +118,10 @@ export default function Page() {
 }
 ```
 
+## Breadcrumbs
+
+Pages in the `(app)` route group should return `<Breadcrumb>` as their first child. See [app/(app)/dashboard/page.tsx](app/(app)/dashboard/page.tsx) for example.
+
 ## Data Fetching
 
 ### Server Components (Recommended)

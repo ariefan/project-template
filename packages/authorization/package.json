@@ -9,14 +9,14 @@
     "test": "vitest"
   },
   "dependencies": {
-    "casbin": "^5.30.0",
-    "@workspace/db": "workspace:*"
+    "@workspace/db": "workspace:*",
+    "casbin": "^5.30.0"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.8",
-    "@types/node": "^22.0.0"
+    "vitest": "^4.0.0"
   },
   "exports": {
     ".": "./src/index.ts",
