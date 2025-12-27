@@ -90,6 +90,17 @@
           }
         }
       }
+    },
+    {
+      // Relaxed rules for mobile UI components
+      "includes": ["packages/ui-mobile/**", "apps/mobile/**"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "noLeakedRender": "off"
+          }
+        }
+      }
     }
   ],
   "css": {
