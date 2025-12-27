@@ -59,7 +59,7 @@ export function Features({ className }: FeaturesProps) {
             const Icon = feature.icon;
             return (
               <Card
-                className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-xl"
+                className="group hover:-translate-y-1 relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-md transition-all duration-300 hover:border-border hover:shadow-xl"
                 key={feature.title}
               >
                 <CardHeader>
