@@ -18,6 +18,10 @@
   },
   "linter": {
     "rules": {
+      "nursery": {
+        // Enable Tailwind CSS class sorting
+        "useSortedClasses": "error"
+      },
       "performance": {
         // Radix UI / shadcn/ui requires namespace imports
         "noNamespaceImport": "off",
