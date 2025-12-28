@@ -82,7 +82,9 @@
       "Bash(pnpm ultracite fix:*)",
       "Bash(pnpm ultracite check:*)",
       "Bash(pnpm lefthook:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(pnpm --filter mobile update expo@~54.0.30 expo-linking@~8.0.11 expo-router@~6.0.21 expo-splash-screen@~31.0.13 @types/react@~19.1.10)",
+      "Bash(pnpm --filter mobile update:*)"
     ]
   }
 }
