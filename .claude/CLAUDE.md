@@ -121,3 +121,29 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 ---
 
 Most formatting and common issues are automatically fixed by Biome. Run `pnpm dlx ultracite fix` before committing to ensure compliance.
+
+---
+
+## AI-Assisted Development
+
+**Auto-fix is disabled on save** to prevent linter issues during AI coding.
+
+### The Problem
+```typescript
+// Step 1: AI adds import
+import { foo } from './bar';  // ← Auto-fix removes this (unused)
+
+// Step 2: AI tries to use it
+const x = foo();  // ← Error! Import was removed
+```
+
+### The Solution
+In `.vscode/settings.json`:
+```json
+"editor.codeActionsOnSave": {
+  "source.fixAll.biome": "never",
+  "source.organizeImports.biome": "never"
+}
+```
+
+Now AI can add imports incrementally without them being removed. Run `pnpm dlx ultracite fix` manually when ready to clean up.

@@ -1,6 +1,13 @@
 {
+  // ============================================================================
+  // TAILWIND & FORMATTING
+  // ============================================================================
   "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // ============================================================================
+  // BIOME FORMATTING (per file type)
+  // ============================================================================
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
@@ -25,12 +32,20 @@
   "[graphql]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
+
+  // AI-FRIENDLY: Disable auto-fix on save to prevent linter issues during AI coding
+  // This prevents "unused import" removal during incremental AI edits
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
-  "emmet.showExpandedAbbreviation": "never",
   "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
-  }
+    "source.fixAll.biome": "never",
+    "source.organizeImports.biome": "never"
+  },
+
+  // TypeScript
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // Editor
+  "emmet.showExpandedAbbreviation": "never"
 }
