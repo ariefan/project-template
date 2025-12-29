@@ -44,9 +44,12 @@ export const dentalProcedureTypeEnum = pgEnum("dental_procedure_type", [
 ]);
 
 // Type exports
-export type VaccinationStatus = (typeof vaccinationStatusEnum.enumValues)[number];
-export type ParasiticControlType = (typeof parasiticControlTypeEnum.enumValues)[number];
-export type DentalProcedureType = (typeof dentalProcedureTypeEnum.enumValues)[number];
+export type VaccinationStatus =
+  (typeof vaccinationStatusEnum.enumValues)[number];
+export type ParasiticControlType =
+  (typeof parasiticControlTypeEnum.enumValues)[number];
+export type DentalProcedureType =
+  (typeof dentalProcedureTypeEnum.enumValues)[number];
 
 // ============================================================================
 // TABLES
@@ -172,8 +175,12 @@ export const parasiticControlRecords = pgTable(
   },
   (table) => [
     index("vet_parasitic_control_records_animal_id_idx").on(table.animalId),
-    index("vet_parasitic_control_records_control_type_idx").on(table.controlType),
-    index("vet_parasitic_control_records_next_due_date_idx").on(table.nextDueDate),
+    index("vet_parasitic_control_records_control_type_idx").on(
+      table.controlType
+    ),
+    index("vet_parasitic_control_records_next_due_date_idx").on(
+      table.nextDueDate
+    ),
   ]
 );
 
@@ -314,7 +321,9 @@ export const dentalRecords = pgTable(
 
     // Home care recommendations
     homeCareInstructions: text("home_care_instructions"),
-    dentalProductsRecommended: json("dental_products_recommended").$type<string[]>(),
+    dentalProductsRecommended: json("dental_products_recommended").$type<
+      string[]
+    >(),
 
     // Follow-up
     nextDentalExamDue: date("next_dental_exam_due"),
@@ -343,27 +352,33 @@ export const dentalRecords = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const vaccinationRecordsRelations = relations(vaccinationRecords, ({ one }) => ({
-  appointment: one(appointments, {
-    fields: [vaccinationRecords.appointmentId],
-    references: [appointments.id],
-  }),
-  veterinarian: one(veterinarians, {
-    fields: [vaccinationRecords.veterinarianId],
-    references: [veterinarians.id],
-  }),
-}));
+export const vaccinationRecordsRelations = relations(
+  vaccinationRecords,
+  ({ one }) => ({
+    appointment: one(appointments, {
+      fields: [vaccinationRecords.appointmentId],
+      references: [appointments.id],
+    }),
+    veterinarian: one(veterinarians, {
+      fields: [vaccinationRecords.veterinarianId],
+      references: [veterinarians.id],
+    }),
+  })
+);
 
-export const parasiticControlRecordsRelations = relations(parasiticControlRecords, ({ one }) => ({
-  appointment: one(appointments, {
-    fields: [parasiticControlRecords.appointmentId],
-    references: [appointments.id],
-  }),
-  veterinarian: one(veterinarians, {
-    fields: [parasiticControlRecords.veterinarianId],
-    references: [veterinarians.id],
-  }),
-}));
+export const parasiticControlRecordsRelations = relations(
+  parasiticControlRecords,
+  ({ one }) => ({
+    appointment: one(appointments, {
+      fields: [parasiticControlRecords.appointmentId],
+      references: [appointments.id],
+    }),
+    veterinarian: one(veterinarians, {
+      fields: [parasiticControlRecords.veterinarianId],
+      references: [veterinarians.id],
+    }),
+  })
+);
 
 export const wellnessExamsRelations = relations(wellnessExams, ({ one }) => ({
   appointment: one(appointments, {
@@ -394,8 +409,10 @@ export const dentalRecordsRelations = relations(dentalRecords, ({ one }) => ({
 export type VaccinationRecordRow = typeof vaccinationRecords.$inferSelect;
 export type NewVaccinationRecordRow = typeof vaccinationRecords.$inferInsert;
 
-export type ParasiticControlRecordRow = typeof parasiticControlRecords.$inferSelect;
-export type NewParasiticControlRecordRow = typeof parasiticControlRecords.$inferInsert;
+export type ParasiticControlRecordRow =
+  typeof parasiticControlRecords.$inferSelect;
+export type NewParasiticControlRecordRow =
+  typeof parasiticControlRecords.$inferInsert;
 
 export type WellnessExamRow = typeof wellnessExams.$inferSelect;
 export type NewWellnessExamRow = typeof wellnessExams.$inferInsert;

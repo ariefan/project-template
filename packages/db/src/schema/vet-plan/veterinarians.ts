@@ -16,26 +16,29 @@ import { clinics } from "./clinics";
 // ENUMS
 // ============================================================================
 
-export const veterinarianSpecializationEnum = pgEnum("veterinarian_specialization", [
-  "general_practice",
-  "internal_medicine",
-  "surgery",
-  "emergency_critical_care",
-  "cardiology",
-  "oncology",
-  "dermatology",
-  "ophthalmology",
-  "dentistry",
-  "orthopedics",
-  "neurology",
-  "radiology",
-  "anesthesiology",
-  "exotic_animals",
-  "large_animal",
-  "equine",
-  "poultry",
-  "aquatic",
-]);
+export const veterinarianSpecializationEnum = pgEnum(
+  "veterinarian_specialization",
+  [
+    "general_practice",
+    "internal_medicine",
+    "surgery",
+    "emergency_critical_care",
+    "cardiology",
+    "oncology",
+    "dermatology",
+    "ophthalmology",
+    "dentistry",
+    "orthopedics",
+    "neurology",
+    "radiology",
+    "anesthesiology",
+    "exotic_animals",
+    "large_animal",
+    "equine",
+    "poultry",
+    "aquatic",
+  ]
+);
 
 export const licenseStatusEnum = pgEnum("license_status", [
   "active",
@@ -46,7 +49,8 @@ export const licenseStatusEnum = pgEnum("license_status", [
 ]);
 
 // Type exports
-export type VeterinarianSpecialization = (typeof veterinarianSpecializationEnum.enumValues)[number];
+export type VeterinarianSpecialization =
+  (typeof veterinarianSpecializationEnum.enumValues)[number];
 export type LicenseStatus = (typeof licenseStatusEnum.enumValues)[number];
 
 // ============================================================================
@@ -71,8 +75,12 @@ export const veterinarians = pgTable(
     phone: text("phone"),
 
     // Specialization
-    primarySpecialization: veterinarianSpecializationEnum("primary_specialization"),
-    secondarySpecializations: json("secondary_specializations").$type<VeterinarianSpecialization[]>(),
+    primarySpecialization: veterinarianSpecializationEnum(
+      "primary_specialization"
+    ),
+    secondarySpecializations: json("secondary_specializations").$type<
+      VeterinarianSpecialization[]
+    >(),
 
     // Biography
     bio: text("bio"),
@@ -125,7 +133,9 @@ export const veterinarianLicenses = pgTable(
 
     // Controlled substances (DEA)
     deaRegistration: text("dea_registration"),
-    controlledSubstanceSchedules: json("controlled_substance_schedules").$type<string[]>(),
+    controlledSubstanceSchedules: json("controlled_substance_schedules").$type<
+      string[]
+    >(),
 
     // Documentation
     documentUrl: text("document_url"),
@@ -165,7 +175,10 @@ export const veterinarianClinicAssignments = pgTable(
     isPrimary: boolean("is_primary").default(false).notNull(),
 
     // Schedule
-    workSchedule: json("work_schedule").$type<Record<string, { start: string; end: string } | null>>(),
+    workSchedule:
+      json("work_schedule").$type<
+        Record<string, { start: string; end: string } | null>
+      >(),
 
     // Status
     isActive: boolean("is_active").default(true).notNull(),
@@ -198,12 +211,15 @@ export const veterinariansRelations = relations(veterinarians, ({ many }) => ({
   clinicAssignments: many(veterinarianClinicAssignments),
 }));
 
-export const veterinarianLicensesRelations = relations(veterinarianLicenses, ({ one }) => ({
-  veterinarian: one(veterinarians, {
-    fields: [veterinarianLicenses.veterinarianId],
-    references: [veterinarians.id],
-  }),
-}));
+export const veterinarianLicensesRelations = relations(
+  veterinarianLicenses,
+  ({ one }) => ({
+    veterinarian: one(veterinarians, {
+      fields: [veterinarianLicenses.veterinarianId],
+      references: [veterinarians.id],
+    }),
+  })
+);
 
 export const veterinarianClinicAssignmentsRelations = relations(
   veterinarianClinicAssignments,
@@ -227,7 +243,10 @@ export type VeterinarianRow = typeof veterinarians.$inferSelect;
 export type NewVeterinarianRow = typeof veterinarians.$inferInsert;
 
 export type VeterinarianLicenseRow = typeof veterinarianLicenses.$inferSelect;
-export type NewVeterinarianLicenseRow = typeof veterinarianLicenses.$inferInsert;
+export type NewVeterinarianLicenseRow =
+  typeof veterinarianLicenses.$inferInsert;
 
-export type VeterinarianClinicAssignmentRow = typeof veterinarianClinicAssignments.$inferSelect;
-export type NewVeterinarianClinicAssignmentRow = typeof veterinarianClinicAssignments.$inferInsert;
+export type VeterinarianClinicAssignmentRow =
+  typeof veterinarianClinicAssignments.$inferSelect;
+export type NewVeterinarianClinicAssignmentRow =
+  typeof veterinarianClinicAssignments.$inferInsert;

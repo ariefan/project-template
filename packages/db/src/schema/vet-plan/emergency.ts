@@ -51,7 +51,8 @@ export const dispositionEnum = pgEnum("disposition", [
 
 // Type exports
 export type TriageLevel = (typeof triageLevelEnum.enumValues)[number];
-export type EmergencyCategory = (typeof emergencyCategoryEnum.enumValues)[number];
+export type EmergencyCategory =
+  (typeof emergencyCategoryEnum.enumValues)[number];
 export type Disposition = (typeof dispositionEnum.enumValues)[number];
 
 // ============================================================================
@@ -102,9 +103,12 @@ export const emergencyCases = pgTable(
     triageNotes: text("triage_notes"),
 
     // Treatment
-    assignedVeterinarianId: uuid("assigned_veterinarian_id").references(() => veterinarians.id, {
-      onDelete: "set null",
-    }),
+    assignedVeterinarianId: uuid("assigned_veterinarian_id").references(
+      () => veterinarians.id,
+      {
+        onDelete: "set null",
+      }
+    ),
     treatmentStartedAt: timestamp("treatment_started_at"),
     treatmentSummary: text("treatment_summary"),
 
@@ -188,14 +192,15 @@ export const criticalCareRecords = pgTable(
     urineOutputMl: decimal("urine_output_ml", { precision: 8, scale: 2 }),
 
     // Interventions
-    interventions: json("interventions").$type<
-      Array<{
-        time: string;
-        intervention: string;
-        performedBy: string;
-        notes: string;
-      }>
-    >(),
+    interventions:
+      json("interventions").$type<
+        Array<{
+          time: string;
+          intervention: string;
+          performedBy: string;
+          notes: string;
+        }>
+      >(),
 
     // Clinical notes
     notes: text("notes"),
@@ -208,7 +213,9 @@ export const criticalCareRecords = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
-    index("vet_critical_care_records_emergency_case_id_idx").on(table.emergencyCaseId),
+    index("vet_critical_care_records_emergency_case_id_idx").on(
+      table.emergencyCaseId
+    ),
     index("vet_critical_care_records_animal_id_idx").on(table.animalId),
     index("vet_critical_care_records_recorded_at_idx").on(table.recordedAt),
   ]
@@ -218,28 +225,34 @@ export const criticalCareRecords = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const emergencyCasesRelations = relations(emergencyCases, ({ one, many }) => ({
-  appointment: one(appointments, {
-    fields: [emergencyCases.appointmentId],
-    references: [appointments.id],
-  }),
-  clinic: one(clinics, {
-    fields: [emergencyCases.clinicId],
-    references: [clinics.id],
-  }),
-  assignedVeterinarian: one(veterinarians, {
-    fields: [emergencyCases.assignedVeterinarianId],
-    references: [veterinarians.id],
-  }),
-  criticalCareRecords: many(criticalCareRecords),
-}));
+export const emergencyCasesRelations = relations(
+  emergencyCases,
+  ({ one, many }) => ({
+    appointment: one(appointments, {
+      fields: [emergencyCases.appointmentId],
+      references: [appointments.id],
+    }),
+    clinic: one(clinics, {
+      fields: [emergencyCases.clinicId],
+      references: [clinics.id],
+    }),
+    assignedVeterinarian: one(veterinarians, {
+      fields: [emergencyCases.assignedVeterinarianId],
+      references: [veterinarians.id],
+    }),
+    criticalCareRecords: many(criticalCareRecords),
+  })
+);
 
-export const criticalCareRecordsRelations = relations(criticalCareRecords, ({ one }) => ({
-  emergencyCase: one(emergencyCases, {
-    fields: [criticalCareRecords.emergencyCaseId],
-    references: [emergencyCases.id],
-  }),
-}));
+export const criticalCareRecordsRelations = relations(
+  criticalCareRecords,
+  ({ one }) => ({
+    emergencyCase: one(emergencyCases, {
+      fields: [criticalCareRecords.emergencyCaseId],
+      references: [emergencyCases.id],
+    }),
+  })
+);
 
 // ============================================================================
 // TYPE EXPORTS

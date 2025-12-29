@@ -265,19 +265,25 @@ export const patientsRelations = relations(patients, ({ one, many }) => ({
   documents: many(patientDocuments),
 }));
 
-export const patientWeightHistoryRelations = relations(patientWeightHistory, ({ one }) => ({
-  patient: one(patients, {
-    fields: [patientWeightHistory.patientId],
-    references: [patients.id],
-  }),
-}));
+export const patientWeightHistoryRelations = relations(
+  patientWeightHistory,
+  ({ one }) => ({
+    patient: one(patients, {
+      fields: [patientWeightHistory.patientId],
+      references: [patients.id],
+    }),
+  })
+);
 
-export const patientDocumentsRelations = relations(patientDocuments, ({ one }) => ({
-  patient: one(patients, {
-    fields: [patientDocuments.patientId],
-    references: [patients.id],
-  }),
-}));
+export const patientDocumentsRelations = relations(
+  patientDocuments,
+  ({ one }) => ({
+    patient: one(patients, {
+      fields: [patientDocuments.patientId],
+      references: [patients.id],
+    }),
+  })
+);
 
 // ============================================================================
 // TYPE EXPORTS
@@ -287,7 +293,8 @@ export type PatientRow = typeof patients.$inferSelect;
 export type NewPatientRow = typeof patients.$inferInsert;
 
 export type PatientWeightHistoryRow = typeof patientWeightHistory.$inferSelect;
-export type NewPatientWeightHistoryRow = typeof patientWeightHistory.$inferInsert;
+export type NewPatientWeightHistoryRow =
+  typeof patientWeightHistory.$inferInsert;
 
 export type PatientDocumentRow = typeof patientDocuments.$inferSelect;
 export type NewPatientDocumentRow = typeof patientDocuments.$inferInsert;

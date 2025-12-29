@@ -1,6 +1,5 @@
 import { relations } from "drizzle-orm";
 import {
-  decimal,
   index,
   json,
   pgEnum,
@@ -49,7 +48,8 @@ export const resultStatusEnum = pgEnum("result_status", [
 ]);
 
 // Type exports
-export type DiagnosticTestType = (typeof diagnosticTestTypeEnum.enumValues)[number];
+export type DiagnosticTestType =
+  (typeof diagnosticTestTypeEnum.enumValues)[number];
 export type TestStatus = (typeof testStatusEnum.enumValues)[number];
 export type ResultStatus = (typeof resultStatusEnum.enumValues)[number];
 
@@ -133,15 +133,16 @@ export const testResults = pgTable(
     interpretation: text("interpretation"),
 
     // Values
-    testValues: json("test_values").$type<
-      Array<{
-        parameter: string;
-        value: string;
-        unit: string;
-        referenceRange: string;
-        status: "normal" | "low" | "high" | "critical";
-      }>
-    >(),
+    testValues:
+      json("test_values").$type<
+        Array<{
+          parameter: string;
+          value: string;
+          unit: string;
+          referenceRange: string;
+          status: "normal" | "low" | "high" | "critical";
+        }>
+      >(),
 
     // Images and attachments
     imageUrls: json("image_urls").$type<string[]>(),
@@ -214,14 +215,15 @@ export const imagingStudies = pgTable(
     impression: text("impression"),
 
     // Measurements
-    measurements: json("measurements").$type<
-      Array<{
-        name: string;
-        value: number;
-        unit: string;
-        location: string;
-      }>
-    >(),
+    measurements:
+      json("measurements").$type<
+        Array<{
+          name: string;
+          value: number;
+          unit: string;
+          location: string;
+        }>
+      >(),
 
     // Metadata
     metadata: json("metadata").$type<Record<string, unknown>>(),
@@ -244,17 +246,20 @@ export const imagingStudies = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const diagnosticTestsRelations = relations(diagnosticTests, ({ one, many }) => ({
-  appointment: one(appointments, {
-    fields: [diagnosticTests.appointmentId],
-    references: [appointments.id],
-  }),
-  veterinarian: one(veterinarians, {
-    fields: [diagnosticTests.veterinarianId],
-    references: [veterinarians.id],
-  }),
-  results: many(testResults),
-}));
+export const diagnosticTestsRelations = relations(
+  diagnosticTests,
+  ({ one, many }) => ({
+    appointment: one(appointments, {
+      fields: [diagnosticTests.appointmentId],
+      references: [appointments.id],
+    }),
+    veterinarian: one(veterinarians, {
+      fields: [diagnosticTests.veterinarianId],
+      references: [veterinarians.id],
+    }),
+    results: many(testResults),
+  })
+);
 
 export const testResultsRelations = relations(testResults, ({ one }) => ({
   diagnosticTest: one(diagnosticTests, {

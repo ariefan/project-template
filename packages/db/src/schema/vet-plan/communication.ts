@@ -58,10 +58,13 @@ export const messageTemplateTypeEnum = pgEnum("message_template_type", [
 ]);
 
 // Type exports
-export type CommunicationType = (typeof communicationTypeEnum.enumValues)[number];
-export type CommunicationStatus = (typeof communicationStatusEnum.enumValues)[number];
+export type CommunicationType =
+  (typeof communicationTypeEnum.enumValues)[number];
+export type CommunicationStatus =
+  (typeof communicationStatusEnum.enumValues)[number];
 export type ReminderType = (typeof reminderTypeEnum.enumValues)[number];
-export type MessageTemplateType = (typeof messageTemplateTypeEnum.enumValues)[number];
+export type MessageTemplateType =
+  (typeof messageTemplateTypeEnum.enumValues)[number];
 
 // ============================================================================
 // TABLES
@@ -73,8 +76,12 @@ export const communicationLogs = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     // Recipient
-    clientId: uuid("client_id").references(() => clients.id, { onDelete: "cascade" }),
-    patientId: uuid("patient_id").references(() => patients.id, { onDelete: "set null" }),
+    clientId: uuid("client_id").references(() => clients.id, {
+      onDelete: "cascade",
+    }),
+    patientId: uuid("patient_id").references(() => patients.id, {
+      onDelete: "set null",
+    }),
 
     // Communication details
     communicationType: communicationTypeEnum("communication_type").notNull(),
@@ -144,7 +151,9 @@ export const reminders = pgTable(
     clientId: uuid("client_id")
       .notNull()
       .references(() => clients.id, { onDelete: "cascade" }),
-    patientId: uuid("patient_id").references(() => patients.id, { onDelete: "cascade" }),
+    patientId: uuid("patient_id").references(() => patients.id, {
+      onDelete: "cascade",
+    }),
 
     // Reminder details
     reminderType: reminderTypeEnum("reminder_type").notNull(),
@@ -236,7 +245,9 @@ export const messageTemplates = pgTable(
   },
   (table) => [
     index("vet_message_templates_type_idx").on(table.templateType),
-    index("vet_message_templates_communication_type_idx").on(table.communicationType),
+    index("vet_message_templates_communication_type_idx").on(
+      table.communicationType
+    ),
   ]
 );
 
@@ -328,20 +339,23 @@ export const patientNotes = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const communicationLogsRelations = relations(communicationLogs, ({ one }) => ({
-  client: one(clients, {
-    fields: [communicationLogs.clientId],
-    references: [clients.id],
-  }),
-  patient: one(patients, {
-    fields: [communicationLogs.patientId],
-    references: [patients.id],
-  }),
-  appointment: one(appointments, {
-    fields: [communicationLogs.appointmentId],
-    references: [appointments.id],
-  }),
-}));
+export const communicationLogsRelations = relations(
+  communicationLogs,
+  ({ one }) => ({
+    client: one(clients, {
+      fields: [communicationLogs.clientId],
+      references: [clients.id],
+    }),
+    patient: one(patients, {
+      fields: [communicationLogs.patientId],
+      references: [patients.id],
+    }),
+    appointment: one(appointments, {
+      fields: [communicationLogs.appointmentId],
+      references: [appointments.id],
+    }),
+  })
+);
 
 export const remindersRelations = relations(reminders, ({ one }) => ({
   client: one(clients, {

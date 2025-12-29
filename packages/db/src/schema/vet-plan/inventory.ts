@@ -172,7 +172,9 @@ export const inventoryBatches = pgTable(
       .notNull(),
   },
   (table) => [
-    index("vet_inventory_batches_inventory_item_id_idx").on(table.inventoryItemId),
+    index("vet_inventory_batches_inventory_item_id_idx").on(
+      table.inventoryItemId
+    ),
     index("vet_inventory_batches_expiry_date_idx").on(table.expiryDate),
     index("vet_inventory_batches_batch_number_idx").on(table.batchNumber),
   ]
@@ -187,7 +189,9 @@ export const inventoryTransactions = pgTable(
       .notNull()
       .references(() => inventoryItems.id, { onDelete: "cascade" }),
 
-    batchId: uuid("batch_id").references(() => inventoryBatches.id, { onDelete: "set null" }),
+    batchId: uuid("batch_id").references(() => inventoryBatches.id, {
+      onDelete: "set null",
+    }),
 
     // Transaction details
     transactionType: transactionTypeEnum("transaction_type").notNull(),
@@ -200,12 +204,18 @@ export const inventoryTransactions = pgTable(
     referenceId: uuid("reference_id"),
 
     // Location
-    fromLocationId: uuid("from_location_id").references(() => inventoryLocations.id, {
-      onDelete: "set null",
-    }),
-    toLocationId: uuid("to_location_id").references(() => inventoryLocations.id, {
-      onDelete: "set null",
-    }),
+    fromLocationId: uuid("from_location_id").references(
+      () => inventoryLocations.id,
+      {
+        onDelete: "set null",
+      }
+    ),
+    toLocationId: uuid("to_location_id").references(
+      () => inventoryLocations.id,
+      {
+        onDelete: "set null",
+      }
+    ),
 
     // Transaction date
     transactionDate: timestamp("transaction_date").defaultNow().notNull(),
@@ -227,10 +237,15 @@ export const inventoryTransactions = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
-    index("vet_inventory_transactions_inventory_item_id_idx").on(table.inventoryItemId),
+    index("vet_inventory_transactions_inventory_item_id_idx").on(
+      table.inventoryItemId
+    ),
     index("vet_inventory_transactions_type_idx").on(table.transactionType),
     index("vet_inventory_transactions_date_idx").on(table.transactionDate),
-    index("vet_inventory_transactions_reference_idx").on(table.referenceType, table.referenceId),
+    index("vet_inventory_transactions_reference_idx").on(
+      table.referenceType,
+      table.referenceId
+    ),
   ]
 );
 
@@ -258,19 +273,22 @@ export const purchaseOrders = pgTable(
     // Amounts
     subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull(),
     taxAmount: decimal("tax_amount", { precision: 12, scale: 2 }).default("0"),
-    shippingCost: decimal("shipping_cost", { precision: 12, scale: 2 }).default("0"),
+    shippingCost: decimal("shipping_cost", { precision: 12, scale: 2 }).default(
+      "0"
+    ),
     totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
 
     // Items (stored as JSON for flexibility)
-    items: json("items").$type<
-      Array<{
-        productId: string;
-        productName: string;
-        quantity: number;
-        unitCost: number;
-        totalCost: number;
-      }>
-    >(),
+    items:
+      json("items").$type<
+        Array<{
+          productId: string;
+          productName: string;
+          quantity: number;
+          unitCost: number;
+          totalCost: number;
+        }>
+      >(),
 
     // Dates
     orderDate: date("order_date").notNull(),
@@ -278,9 +296,12 @@ export const purchaseOrders = pgTable(
     receivedDate: date("received_date"),
 
     // Delivery location
-    deliveryLocationId: uuid("delivery_location_id").references(() => inventoryLocations.id, {
-      onDelete: "set null",
-    }),
+    deliveryLocationId: uuid("delivery_location_id").references(
+      () => inventoryLocations.id,
+      {
+        onDelete: "set null",
+      }
+    ),
 
     // Created by
     createdBy: uuid("created_by"), // Staff member ID
@@ -309,58 +330,70 @@ export const purchaseOrders = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const inventoryLocationsRelations = relations(inventoryLocations, ({ one, many }) => ({
-  clinic: one(clinics, {
-    fields: [inventoryLocations.clinicId],
-    references: [clinics.id],
-  }),
-  inventoryItems: many(inventoryItems),
-}));
+export const inventoryLocationsRelations = relations(
+  inventoryLocations,
+  ({ one, many }) => ({
+    clinic: one(clinics, {
+      fields: [inventoryLocations.clinicId],
+      references: [clinics.id],
+    }),
+    inventoryItems: many(inventoryItems),
+  })
+);
 
-export const inventoryItemsRelations = relations(inventoryItems, ({ one, many }) => ({
-  product: one(products, {
-    fields: [inventoryItems.productId],
-    references: [products.id],
-  }),
-  clinic: one(clinics, {
-    fields: [inventoryItems.clinicId],
-    references: [clinics.id],
-  }),
-  location: one(inventoryLocations, {
-    fields: [inventoryItems.locationId],
-    references: [inventoryLocations.id],
-  }),
-  batches: many(inventoryBatches),
-  transactions: many(inventoryTransactions),
-}));
+export const inventoryItemsRelations = relations(
+  inventoryItems,
+  ({ one, many }) => ({
+    product: one(products, {
+      fields: [inventoryItems.productId],
+      references: [products.id],
+    }),
+    clinic: one(clinics, {
+      fields: [inventoryItems.clinicId],
+      references: [clinics.id],
+    }),
+    location: one(inventoryLocations, {
+      fields: [inventoryItems.locationId],
+      references: [inventoryLocations.id],
+    }),
+    batches: many(inventoryBatches),
+    transactions: many(inventoryTransactions),
+  })
+);
 
-export const inventoryBatchesRelations = relations(inventoryBatches, ({ one }) => ({
-  inventoryItem: one(inventoryItems, {
-    fields: [inventoryBatches.inventoryItemId],
-    references: [inventoryItems.id],
-  }),
-}));
+export const inventoryBatchesRelations = relations(
+  inventoryBatches,
+  ({ one }) => ({
+    inventoryItem: one(inventoryItems, {
+      fields: [inventoryBatches.inventoryItemId],
+      references: [inventoryItems.id],
+    }),
+  })
+);
 
-export const inventoryTransactionsRelations = relations(inventoryTransactions, ({ one }) => ({
-  inventoryItem: one(inventoryItems, {
-    fields: [inventoryTransactions.inventoryItemId],
-    references: [inventoryItems.id],
-  }),
-  batch: one(inventoryBatches, {
-    fields: [inventoryTransactions.batchId],
-    references: [inventoryBatches.id],
-  }),
-  fromLocation: one(inventoryLocations, {
-    fields: [inventoryTransactions.fromLocationId],
-    references: [inventoryLocations.id],
-    relationName: "fromLocation",
-  }),
-  toLocation: one(inventoryLocations, {
-    fields: [inventoryTransactions.toLocationId],
-    references: [inventoryLocations.id],
-    relationName: "toLocation",
-  }),
-}));
+export const inventoryTransactionsRelations = relations(
+  inventoryTransactions,
+  ({ one }) => ({
+    inventoryItem: one(inventoryItems, {
+      fields: [inventoryTransactions.inventoryItemId],
+      references: [inventoryItems.id],
+    }),
+    batch: one(inventoryBatches, {
+      fields: [inventoryTransactions.batchId],
+      references: [inventoryBatches.id],
+    }),
+    fromLocation: one(inventoryLocations, {
+      fields: [inventoryTransactions.fromLocationId],
+      references: [inventoryLocations.id],
+      relationName: "fromLocation",
+    }),
+    toLocation: one(inventoryLocations, {
+      fields: [inventoryTransactions.toLocationId],
+      references: [inventoryLocations.id],
+      relationName: "toLocation",
+    }),
+  })
+);
 
 export const purchaseOrdersRelations = relations(purchaseOrders, ({ one }) => ({
   clinic: one(clinics, {
@@ -387,7 +420,8 @@ export type InventoryBatchRow = typeof inventoryBatches.$inferSelect;
 export type NewInventoryBatchRow = typeof inventoryBatches.$inferInsert;
 
 export type InventoryTransactionRow = typeof inventoryTransactions.$inferSelect;
-export type NewInventoryTransactionRow = typeof inventoryTransactions.$inferInsert;
+export type NewInventoryTransactionRow =
+  typeof inventoryTransactions.$inferInsert;
 
 export type PurchaseOrderRow = typeof purchaseOrders.$inferSelect;
 export type NewPurchaseOrderRow = typeof purchaseOrders.$inferInsert;

@@ -58,7 +58,8 @@ export const asaClassificationEnum = pgEnum("asa_classification", [
 export type SurgeryType = (typeof surgeryTypeEnum.enumValues)[number];
 export type SurgeryStatus = (typeof surgeryStatusEnum.enumValues)[number];
 export type AnesthesiaType = (typeof anesthesiaTypeEnum.enumValues)[number];
-export type AsaClassification = (typeof asaClassificationEnum.enumValues)[number];
+export type AsaClassification =
+  (typeof asaClassificationEnum.enumValues)[number];
 
 // ============================================================================
 // TABLES
@@ -88,12 +89,18 @@ export const surgeries = pgTable(
     primarySurgeonId: uuid("primary_surgeon_id")
       .notNull()
       .references(() => veterinarians.id, { onDelete: "cascade" }),
-    assistingSurgeonId: uuid("assisting_surgeon_id").references(() => veterinarians.id, {
-      onDelete: "set null",
-    }),
-    anesthesiologistId: uuid("anesthesiologist_id").references(() => veterinarians.id, {
-      onDelete: "set null",
-    }),
+    assistingSurgeonId: uuid("assisting_surgeon_id").references(
+      () => veterinarians.id,
+      {
+        onDelete: "set null",
+      }
+    ),
+    anesthesiologistId: uuid("anesthesiologist_id").references(
+      () => veterinarians.id,
+      {
+        onDelete: "set null",
+      }
+    ),
 
     // Scheduling
     scheduledAt: timestamp("scheduled_at").notNull(),
@@ -158,7 +165,10 @@ export const anesthesiaRecords = pgTable(
 
     // Pre-anesthetic assessment
     asaClassification: asaClassificationEnum("asa_classification"),
-    preAnestheticWeight: decimal("pre_anesthetic_weight", { precision: 6, scale: 2 }), // kg
+    preAnestheticWeight: decimal("pre_anesthetic_weight", {
+      precision: 6,
+      scale: 2,
+    }), // kg
     preAnestheticAssessment: text("pre_anesthetic_assessment"),
 
     // Anesthesia protocol
@@ -238,12 +248,15 @@ export const surgeriesRelations = relations(surgeries, ({ one, many }) => ({
   anesthesiaRecord: one(anesthesiaRecords),
 }));
 
-export const anesthesiaRecordsRelations = relations(anesthesiaRecords, ({ one }) => ({
-  surgery: one(surgeries, {
-    fields: [anesthesiaRecords.surgeryId],
-    references: [surgeries.id],
-  }),
-}));
+export const anesthesiaRecordsRelations = relations(
+  anesthesiaRecords,
+  ({ one }) => ({
+    surgery: one(surgeries, {
+      fields: [anesthesiaRecords.surgeryId],
+      references: [surgeries.id],
+    }),
+  })
+);
 
 // ============================================================================
 // TYPE EXPORTS

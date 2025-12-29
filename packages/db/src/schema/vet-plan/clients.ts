@@ -41,7 +41,8 @@ export const preferredContactMethodEnum = pgEnum("preferred_contact_method", [
 // Type exports
 export type ClientType = (typeof clientTypeEnum.enumValues)[number];
 export type ClientStatus = (typeof clientStatusEnum.enumValues)[number];
-export type PreferredContactMethod = (typeof preferredContactMethodEnum.enumValues)[number];
+export type PreferredContactMethod =
+  (typeof preferredContactMethodEnum.enumValues)[number];
 
 // ============================================================================
 // TABLES
@@ -71,7 +72,9 @@ export const clients = pgTable(
     alternatePhone: text("alternate_phone"),
 
     // Preferred contact
-    preferredContactMethod: preferredContactMethodEnum("preferred_contact_method").default("email"),
+    preferredContactMethod: preferredContactMethodEnum(
+      "preferred_contact_method"
+    ).default("email"),
     preferredLanguage: text("preferred_language").default("id"),
 
     // Address
@@ -107,7 +110,9 @@ export const clients = pgTable(
     notes: text("notes"),
 
     // Financial
-    accountBalance: decimal("account_balance", { precision: 12, scale: 2 }).default("0").notNull(),
+    accountBalance: decimal("account_balance", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
     creditLimit: decimal("credit_limit", { precision: 12, scale: 2 }),
 
     // Important dates
@@ -150,9 +155,15 @@ export const clientRelationships = pgTable(
     relationshipType: text("relationship_type").notNull(), // e.g., "spouse", "partner", "family_member", "co-owner"
 
     // Permissions
-    canViewMedicalRecords: boolean("can_view_medical_records").default(false).notNull(),
-    canMakeAppointments: boolean("can_make_appointments").default(false).notNull(),
-    canAuthorizePayments: boolean("can_authorize_payments").default(false).notNull(),
+    canViewMedicalRecords: boolean("can_view_medical_records")
+      .default(false)
+      .notNull(),
+    canMakeAppointments: boolean("can_make_appointments")
+      .default(false)
+      .notNull(),
+    canAuthorizePayments: boolean("can_authorize_payments")
+      .default(false)
+      .notNull(),
     canPickUpPet: boolean("can_pick_up_pet").default(false).notNull(),
 
     // Notes
@@ -184,18 +195,21 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   }),
 }));
 
-export const clientRelationshipsRelations = relations(clientRelationships, ({ one }) => ({
-  primaryClient: one(clients, {
-    fields: [clientRelationships.primaryClientId],
-    references: [clients.id],
-    relationName: "primaryClient",
-  }),
-  relatedClient: one(clients, {
-    fields: [clientRelationships.relatedClientId],
-    references: [clients.id],
-    relationName: "relatedClient",
-  }),
-}));
+export const clientRelationshipsRelations = relations(
+  clientRelationships,
+  ({ one }) => ({
+    primaryClient: one(clients, {
+      fields: [clientRelationships.primaryClientId],
+      references: [clients.id],
+      relationName: "primaryClient",
+    }),
+    relatedClient: one(clients, {
+      fields: [clientRelationships.relatedClientId],
+      references: [clients.id],
+      relationName: "relatedClient",
+    }),
+  })
+);
 
 // ============================================================================
 // TYPE EXPORTS

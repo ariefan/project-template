@@ -113,20 +113,25 @@ export const staff = pgTable(
     payFrequency: text("pay_frequency"), // e.g., "hourly", "monthly", "biweekly"
 
     // Work schedule
-    workSchedule: json("work_schedule").$type<
-      Record<string, { start: string; end: string; isWorkday: boolean } | null>
-    >(),
+    workSchedule:
+      json("work_schedule").$type<
+        Record<
+          string,
+          { start: string; end: string; isWorkday: boolean } | null
+        >
+      >(),
 
     // Certifications and licenses
-    certifications: json("certifications").$type<
-      Array<{
-        name: string;
-        issuingOrganization: string;
-        issueDate: string;
-        expiryDate?: string;
-        certificateNumber?: string;
-      }>
-    >(),
+    certifications:
+      json("certifications").$type<
+        Array<{
+          name: string;
+          issuingOrganization: string;
+          issueDate: string;
+          expiryDate?: string;
+          certificateNumber?: string;
+        }>
+      >(),
 
     // Skills and specializations
     skills: json("skills").$type<string[]>(),
@@ -134,9 +139,15 @@ export const staff = pgTable(
     languages: json("languages").$type<string[]>(),
 
     // Access and permissions
-    canAccessMedicalRecords: boolean("can_access_medical_records").default(false).notNull(),
-    canProcessPayments: boolean("can_process_payments").default(false).notNull(),
-    canPrescribeMedication: boolean("can_prescribe_medication").default(false).notNull(),
+    canAccessMedicalRecords: boolean("can_access_medical_records")
+      .default(false)
+      .notNull(),
+    canProcessPayments: boolean("can_process_payments")
+      .default(false)
+      .notNull(),
+    canPrescribeMedication: boolean("can_prescribe_medication")
+      .default(false)
+      .notNull(),
     canPerformSurgery: boolean("can_perform_surgery").default(false).notNull(),
 
     // Photo
@@ -219,7 +230,9 @@ export const staffAttendance = pgTable(
     clockOutTime: timestamp("clock_out_time"),
 
     // Location
-    clinicId: uuid("clinic_id").references(() => clinics.id, { onDelete: "set null" }),
+    clinicId: uuid("clinic_id").references(() => clinics.id, {
+      onDelete: "set null",
+    }),
 
     // Hours worked
     totalHours: decimal("total_hours", { precision: 5, scale: 2 }),
@@ -312,34 +325,43 @@ export const staffRelations = relations(staff, ({ many }) => ({
   leaveRequests: many(staffLeaveRequests),
 }));
 
-export const staffClinicAssignmentsRelations = relations(staffClinicAssignments, ({ one }) => ({
-  staff: one(staff, {
-    fields: [staffClinicAssignments.staffId],
-    references: [staff.id],
-  }),
-  clinic: one(clinics, {
-    fields: [staffClinicAssignments.clinicId],
-    references: [clinics.id],
-  }),
-}));
+export const staffClinicAssignmentsRelations = relations(
+  staffClinicAssignments,
+  ({ one }) => ({
+    staff: one(staff, {
+      fields: [staffClinicAssignments.staffId],
+      references: [staff.id],
+    }),
+    clinic: one(clinics, {
+      fields: [staffClinicAssignments.clinicId],
+      references: [clinics.id],
+    }),
+  })
+);
 
-export const staffAttendanceRelations = relations(staffAttendance, ({ one }) => ({
-  staff: one(staff, {
-    fields: [staffAttendance.staffId],
-    references: [staff.id],
-  }),
-  clinic: one(clinics, {
-    fields: [staffAttendance.clinicId],
-    references: [clinics.id],
-  }),
-}));
+export const staffAttendanceRelations = relations(
+  staffAttendance,
+  ({ one }) => ({
+    staff: one(staff, {
+      fields: [staffAttendance.staffId],
+      references: [staff.id],
+    }),
+    clinic: one(clinics, {
+      fields: [staffAttendance.clinicId],
+      references: [clinics.id],
+    }),
+  })
+);
 
-export const staffLeaveRequestsRelations = relations(staffLeaveRequests, ({ one }) => ({
-  staff: one(staff, {
-    fields: [staffLeaveRequests.staffId],
-    references: [staff.id],
-  }),
-}));
+export const staffLeaveRequestsRelations = relations(
+  staffLeaveRequests,
+  ({ one }) => ({
+    staff: one(staff, {
+      fields: [staffLeaveRequests.staffId],
+      references: [staff.id],
+    }),
+  })
+);
 
 // ============================================================================
 // TYPE EXPORTS
@@ -348,8 +370,10 @@ export const staffLeaveRequestsRelations = relations(staffLeaveRequests, ({ one 
 export type StaffRow = typeof staff.$inferSelect;
 export type NewStaffRow = typeof staff.$inferInsert;
 
-export type StaffClinicAssignmentRow = typeof staffClinicAssignments.$inferSelect;
-export type NewStaffClinicAssignmentRow = typeof staffClinicAssignments.$inferInsert;
+export type StaffClinicAssignmentRow =
+  typeof staffClinicAssignments.$inferSelect;
+export type NewStaffClinicAssignmentRow =
+  typeof staffClinicAssignments.$inferInsert;
 
 export type StaffAttendanceRow = typeof staffAttendance.$inferSelect;
 export type NewStaffAttendanceRow = typeof staffAttendance.$inferInsert;

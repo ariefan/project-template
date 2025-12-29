@@ -57,7 +57,8 @@ export const visitReasonEnum = pgEnum("visit_reason", [
 
 // Type exports
 export type AppointmentType = (typeof appointmentTypeEnum.enumValues)[number];
-export type AppointmentStatus = (typeof appointmentStatusEnum.enumValues)[number];
+export type AppointmentStatus =
+  (typeof appointmentStatusEnum.enumValues)[number];
 export type VisitReason = (typeof visitReasonEnum.enumValues)[number];
 
 // ============================================================================
@@ -178,24 +179,29 @@ export const consultations = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [index("vet_consultations_appointment_id_idx").on(table.appointmentId)]
+  (table) => [
+    index("vet_consultations_appointment_id_idx").on(table.appointmentId),
+  ]
 );
 
 // ============================================================================
 // RELATIONS
 // ============================================================================
 
-export const appointmentsRelations = relations(appointments, ({ one, many }) => ({
-  clinic: one(clinics, {
-    fields: [appointments.clinicId],
-    references: [clinics.id],
-  }),
-  veterinarian: one(veterinarians, {
-    fields: [appointments.veterinarianId],
-    references: [veterinarians.id],
-  }),
-  consultation: one(consultations),
-}));
+export const appointmentsRelations = relations(
+  appointments,
+  ({ one, many }) => ({
+    clinic: one(clinics, {
+      fields: [appointments.clinicId],
+      references: [clinics.id],
+    }),
+    veterinarian: one(veterinarians, {
+      fields: [appointments.veterinarianId],
+      references: [veterinarians.id],
+    }),
+    consultation: one(consultations),
+  })
+);
 
 export const consultationsRelations = relations(consultations, ({ one }) => ({
   appointment: one(appointments, {

@@ -119,13 +119,17 @@ export const services = pgTable(
 
     // Duration and capacity
     estimatedDuration: integer("estimated_duration"), // minutes
-    requiresAppointment: boolean("requires_appointment").default(true).notNull(),
+    requiresAppointment: boolean("requires_appointment")
+      .default(true)
+      .notNull(),
 
     // Species applicability
     applicableSpecies: json("applicable_species").$type<string[]>(),
 
     // Requirements
-    requiresVeterinarian: boolean("requires_veterinarian").default(true).notNull(),
+    requiresVeterinarian: boolean("requires_veterinarian")
+      .default(true)
+      .notNull(),
     requiredEquipment: json("required_equipment").$type<string[]>(),
     prerequisites: json("prerequisites").$type<string[]>(),
 
@@ -182,7 +186,9 @@ export const servicePriceTiers = pgTable(
     // Timestamps
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("vet_service_price_tiers_service_id_idx").on(table.serviceId)]
+  (table) => [
+    index("vet_service_price_tiers_service_id_idx").on(table.serviceId),
+  ]
 );
 
 export const servicePackages = pgTable(
@@ -196,7 +202,10 @@ export const servicePackages = pgTable(
     description: text("description"),
 
     // Pricing
-    packagePrice: decimal("package_price", { precision: 12, scale: 2 }).notNull(),
+    packagePrice: decimal("package_price", {
+      precision: 12,
+      scale: 2,
+    }).notNull(),
     regularPrice: decimal("regular_price", { precision: 12, scale: 2 }), // Sum of individual services
     savings: decimal("savings", { precision: 12, scale: 2 }), // Discount amount
 
@@ -205,12 +214,13 @@ export const servicePackages = pgTable(
     usageLimit: integer("usage_limit"), // Max number of times can be used
 
     // Services included (JSON array of service IDs)
-    includedServices: json("included_services").$type<
-      Array<{
-        serviceId: string;
-        quantity: number;
-      }>
-    >(),
+    includedServices:
+      json("included_services").$type<
+        Array<{
+          serviceId: string;
+          quantity: number;
+        }>
+      >(),
 
     // Applicability
     applicableSpecies: json("applicable_species").$type<string[]>(),
@@ -273,7 +283,9 @@ export const products = pgTable(
     unitOfMeasure: text("unit_of_measure").default("piece").notNull(), // piece, box, bottle, kg, etc.
 
     // Prescription required
-    requiresPrescription: boolean("requires_prescription").default(false).notNull(),
+    requiresPrescription: boolean("requires_prescription")
+      .default(false)
+      .notNull(),
 
     // Expiry tracking
     hasExpiryDate: boolean("has_expiry_date").default(false).notNull(),
@@ -307,17 +319,20 @@ export const products = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const serviceCategoriesRelations = relations(serviceCategories, ({ one, many }) => ({
-  parentCategory: one(serviceCategories, {
-    fields: [serviceCategories.parentCategoryId],
-    references: [serviceCategories.id],
-    relationName: "subcategories",
-  }),
-  subcategories: many(serviceCategories, {
-    relationName: "subcategories",
-  }),
-  services: many(services),
-}));
+export const serviceCategoriesRelations = relations(
+  serviceCategories,
+  ({ one, many }) => ({
+    parentCategory: one(serviceCategories, {
+      fields: [serviceCategories.parentCategoryId],
+      references: [serviceCategories.id],
+      relationName: "subcategories",
+    }),
+    subcategories: many(serviceCategories, {
+      relationName: "subcategories",
+    }),
+    services: many(services),
+  })
+);
 
 export const servicesRelations = relations(services, ({ one, many }) => ({
   category: one(serviceCategories, {
@@ -327,12 +342,15 @@ export const servicesRelations = relations(services, ({ one, many }) => ({
   priceTiers: many(servicePriceTiers),
 }));
 
-export const servicePriceTiersRelations = relations(servicePriceTiers, ({ one }) => ({
-  service: one(services, {
-    fields: [servicePriceTiers.serviceId],
-    references: [services.id],
-  }),
-}));
+export const servicePriceTiersRelations = relations(
+  servicePriceTiers,
+  ({ one }) => ({
+    service: one(services, {
+      fields: [servicePriceTiers.serviceId],
+      references: [services.id],
+    }),
+  })
+);
 
 // ============================================================================
 // TYPE EXPORTS

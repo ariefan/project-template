@@ -60,7 +60,8 @@ export const deaScheduleEnum = pgEnum("dea_schedule", [
 
 // Type exports
 export type TreatmentType = (typeof treatmentTypeEnum.enumValues)[number];
-export type PrescriptionStatus = (typeof prescriptionStatusEnum.enumValues)[number];
+export type PrescriptionStatus =
+  (typeof prescriptionStatusEnum.enumValues)[number];
 export type MedicationRoute = (typeof medicationRouteEnum.enumValues)[number];
 export type DeaSchedule = (typeof deaScheduleEnum.enumValues)[number];
 
@@ -145,8 +146,12 @@ export const prescriptions = pgTable(
     genericName: text("generic_name"),
 
     // DEA controlled substance
-    deaSchedule: deaScheduleEnum("dea_schedule").default("non_controlled").notNull(),
-    isControlledSubstance: boolean("is_controlled_substance").default(false).notNull(),
+    deaSchedule: deaScheduleEnum("dea_schedule")
+      .default("non_controlled")
+      .notNull(),
+    isControlledSubstance: boolean("is_controlled_substance")
+      .default(false)
+      .notNull(),
 
     // Dosage instructions
     dosage: decimal("dosage", { precision: 10, scale: 3 }).notNull(),
@@ -198,7 +203,9 @@ export const prescriptions = pgTable(
     index("vet_prescriptions_animal_id_idx").on(table.animalId),
     index("vet_prescriptions_owner_id_idx").on(table.ownerId),
     index("vet_prescriptions_status_idx").on(table.status),
-    index("vet_prescriptions_prescription_number_idx").on(table.prescriptionNumber),
+    index("vet_prescriptions_prescription_number_idx").on(
+      table.prescriptionNumber
+    ),
   ]
 );
 
@@ -254,17 +261,20 @@ export const treatmentsRelations = relations(treatments, ({ one }) => ({
   }),
 }));
 
-export const prescriptionsRelations = relations(prescriptions, ({ one, many }) => ({
-  appointment: one(appointments, {
-    fields: [prescriptions.appointmentId],
-    references: [appointments.id],
-  }),
-  veterinarian: one(veterinarians, {
-    fields: [prescriptions.veterinarianId],
-    references: [veterinarians.id],
-  }),
-  administrationRecords: many(medicationAdministrationRecords),
-}));
+export const prescriptionsRelations = relations(
+  prescriptions,
+  ({ one, many }) => ({
+    appointment: one(appointments, {
+      fields: [prescriptions.appointmentId],
+      references: [appointments.id],
+    }),
+    veterinarian: one(veterinarians, {
+      fields: [prescriptions.veterinarianId],
+      references: [veterinarians.id],
+    }),
+    administrationRecords: many(medicationAdministrationRecords),
+  })
+);
 
 export const medicationAdministrationRecordsRelations = relations(
   medicationAdministrationRecords,
@@ -286,5 +296,7 @@ export type NewTreatmentRow = typeof treatments.$inferInsert;
 export type PrescriptionRow = typeof prescriptions.$inferSelect;
 export type NewPrescriptionRow = typeof prescriptions.$inferInsert;
 
-export type MedicationAdministrationRecordRow = typeof medicationAdministrationRecords.$inferSelect;
-export type NewMedicationAdministrationRecordRow = typeof medicationAdministrationRecords.$inferInsert;
+export type MedicationAdministrationRecordRow =
+  typeof medicationAdministrationRecords.$inferSelect;
+export type NewMedicationAdministrationRecordRow =
+  typeof medicationAdministrationRecords.$inferInsert;

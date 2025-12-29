@@ -78,7 +78,9 @@ export const invoices = pgTable(
     clientId: uuid("client_id")
       .notNull()
       .references(() => clients.id, { onDelete: "cascade" }),
-    patientId: uuid("patient_id").references(() => patients.id, { onDelete: "set null" }),
+    patientId: uuid("patient_id").references(() => patients.id, {
+      onDelete: "set null",
+    }),
 
     // Related appointment
     appointmentId: uuid("appointment_id").references(() => appointments.id, {
@@ -92,14 +94,22 @@ export const invoices = pgTable(
 
     // Amounts
     subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull(),
-    discountAmount: decimal("discount_amount", { precision: 12, scale: 2 }).default("0"),
-    discountPercentage: decimal("discount_percentage", { precision: 5, scale: 2 }),
+    discountAmount: decimal("discount_amount", {
+      precision: 12,
+      scale: 2,
+    }).default("0"),
+    discountPercentage: decimal("discount_percentage", {
+      precision: 5,
+      scale: 2,
+    }),
     taxAmount: decimal("tax_amount", { precision: 12, scale: 2 }).default("0"),
     taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("0"), // e.g., 11% PPN in Indonesia
     totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
 
     // Payment tracking
-    amountPaid: decimal("amount_paid", { precision: 12, scale: 2 }).default("0").notNull(),
+    amountPaid: decimal("amount_paid", { precision: 12, scale: 2 })
+      .default("0")
+      .notNull(),
     amountDue: decimal("amount_due", { precision: 12, scale: 2 }).notNull(),
 
     // Tax
@@ -154,8 +164,14 @@ export const invoiceItems = pgTable(
     unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
 
     // Discount
-    discountAmount: decimal("discount_amount", { precision: 12, scale: 2 }).default("0"),
-    discountPercentage: decimal("discount_percentage", { precision: 5, scale: 2 }),
+    discountAmount: decimal("discount_amount", {
+      precision: 12,
+      scale: 2,
+    }).default("0"),
+    discountPercentage: decimal("discount_percentage", {
+      precision: 5,
+      scale: 2,
+    }),
 
     // Tax
     taxable: text("taxable").default("true"),
@@ -233,7 +249,10 @@ export const payments = pgTable(
     notes: text("notes"),
 
     // Refund tracking
-    refundedAmount: decimal("refunded_amount", { precision: 12, scale: 2 }).default("0"),
+    refundedAmount: decimal("refunded_amount", {
+      precision: 12,
+      scale: 2,
+    }).default("0"),
     refundedAt: timestamp("refunded_at"),
     refundReason: text("refund_reason"),
 
@@ -271,7 +290,9 @@ export const estimates = pgTable(
     clientId: uuid("client_id")
       .notNull()
       .references(() => clients.id, { onDelete: "cascade" }),
-    patientId: uuid("patient_id").references(() => patients.id, { onDelete: "set null" }),
+    patientId: uuid("patient_id").references(() => patients.id, {
+      onDelete: "set null",
+    }),
 
     // Estimate details
     title: text("title").notNull(),
@@ -290,22 +311,26 @@ export const estimates = pgTable(
     expiryDate: timestamp("expiry_date"),
 
     // Items (stored as JSON for flexibility)
-    items: json("items").$type<
-      Array<{
-        description: string;
-        quantity: number;
-        unitPrice: number;
-        totalAmount: number;
-      }>
-    >(),
+    items:
+      json("items").$type<
+        Array<{
+          description: string;
+          quantity: number;
+          unitPrice: number;
+          totalAmount: number;
+        }>
+      >(),
 
     // Notes
     notes: text("notes"),
 
     // Conversion tracking
-    convertedToInvoiceId: uuid("converted_to_invoice_id").references(() => invoices.id, {
-      onDelete: "set null",
-    }),
+    convertedToInvoiceId: uuid("converted_to_invoice_id").references(
+      () => invoices.id,
+      {
+        onDelete: "set null",
+      }
+    ),
     convertedAt: timestamp("converted_at"),
 
     // Created by

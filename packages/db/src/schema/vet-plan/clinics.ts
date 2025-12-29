@@ -67,11 +67,19 @@ export const clinics = pgTable(
     longitude: text("longitude"),
 
     // Operating hours (JSON format: { monday: { open: "08:00", close: "18:00" }, ... })
-    operatingHours: json("operating_hours").$type<Record<string, { open: string; close: string } | null>>(),
+    operatingHours:
+      json("operating_hours").$type<
+        Record<string, { open: string; close: string } | null>
+      >(),
 
     // Emergency services
-    providesEmergencyService: boolean("provides_emergency_service").default(false).notNull(),
-    emergencyHours: json("emergency_hours").$type<Record<string, { open: string; close: string } | null>>(),
+    providesEmergencyService: boolean("provides_emergency_service")
+      .default(false)
+      .notNull(),
+    emergencyHours:
+      json("emergency_hours").$type<
+        Record<string, { open: string; close: string } | null>
+      >(),
 
     // Licensing and accreditation
     licenseNumber: text("license_number"),
@@ -142,12 +150,15 @@ export const clinicsRelations = relations(clinics, ({ many }) => ({
   facilities: many(clinicFacilities),
 }));
 
-export const clinicFacilitiesRelations = relations(clinicFacilities, ({ one }) => ({
-  clinic: one(clinics, {
-    fields: [clinicFacilities.clinicId],
-    references: [clinics.id],
-  }),
-}));
+export const clinicFacilitiesRelations = relations(
+  clinicFacilities,
+  ({ one }) => ({
+    clinic: one(clinics, {
+      fields: [clinicFacilities.clinicId],
+      references: [clinics.id],
+    }),
+  })
+);
 
 // ============================================================================
 // TYPE EXPORTS

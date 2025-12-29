@@ -8,39 +8,29 @@
  * See README.md in this folder for more details.
  */
 
-// Core business entities
-export * from "./clients";
-export * from "./patients";
-
-// Clinic & staff management
-export * from "./clinics";
-export * from "./veterinarians";
-export * from "./staff";
-
-// Services & products
-export * from "./services";
-export * from "./inventory";
-
-// Billing & payments
-export * from "./billing";
-
 // Appointment & consultation
 export * from "./appointments";
-
-// Diagnostics & testing
-export * from "./diagnostics";
-
-// Treatment & medications
-export * from "./treatments";
-
-// Surgical procedures
-export * from "./surgeries";
-
-// Emergency care
-export * from "./emergency";
-
-// Preventive care
-export * from "./preventive";
-
+// Billing & payments
+export * from "./billing";
+// Core business entities
+export * from "./clients";
+// Clinic & staff management
+export * from "./clinics";
 // Communication & reminders
 export * from "./communication";
+// Diagnostics & testing
+export * from "./diagnostics";
+// Emergency care
+export * from "./emergency";
+export * from "./inventory";
+export * from "./patients";
+// Preventive care
+export * from "./preventive";
+// Services & products
+export * from "./services";
+export * from "./staff";
+// Surgical procedures
+export * from "./surgeries";
+// Treatment & medications
+export * from "./treatments";
+export * from "./veterinarians";
