@@ -9,8 +9,10 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { clients } from "./clients";
 import { clinics } from "./clinics";
 import { medicalEncounters } from "./medical-records";
+import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
 // ============================================================================
@@ -80,9 +82,13 @@ export const appointments = pgTable(
       .notNull()
       .references(() => veterinarians.id, { onDelete: "cascade" }),
 
-    // Patient (animal) reference - isolated, no FK
-    animalId: uuid("animal_id").notNull(),
-    ownerId: uuid("owner_id").notNull(), // Pet owner user ID
+    // Patient and client references with FK constraints
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
 
     // Appointment details
     appointmentType: appointmentTypeEnum("appointment_type").notNull(),
@@ -205,6 +211,14 @@ export const appointmentsRelations = relations(
     veterinarian: one(veterinarians, {
       fields: [appointments.veterinarianId],
       references: [veterinarians.id],
+    }),
+    patient: one(patients, {
+      fields: [appointments.animalId],
+      references: [patients.id],
+    }),
+    client: one(clients, {
+      fields: [appointments.ownerId],
+      references: [clients.id],
     }),
     consultation: one(consultations),
   })
