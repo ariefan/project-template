@@ -1,233 +1,313 @@
 # @workspace/ui-mobile
 
-**React Native component library for mobile applications**
+**Complete React Native Reusables component library for mobile applications**
 
-This package contains shared UI components for React Native/Expo apps, following the same copy-paste philosophy as shadcn/ui. Built with NativeWind for Tailwind-style styling.
+A comprehensive collection of 32 beautiful, accessible UI components built with React Native Reusables patterns. Perfect for Expo and React Native apps in your monorepo.
 
-## Architecture
+## 🎨 Built With
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                       @workspace/ui-mobile                           │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Components                                                          │
-│  ├── Button - Primary action button                                 │
-│  ├── Card - Container component                                     │
-│  ├── Input - Text input                                             │
-│  ├── Label - Form labels                                            │
-│  └── Text - Typography component                                    │
-│                                                                      │
-│  Built on:                                                          │
-│  ├── React Native                                                    │
-│  ├── NativeWind (Tailwind for RN)                                  │
-│  ├── @rn-primitives (accessible primitives)                        │
-│  └── class-variance-authority (variants)                           │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+- **React Native Reusables** - Component patterns and architecture
+- **@rn-primitives** - Accessible, unstyled primitive components
+- **NativeWind v4** - Tailwind CSS for React Native
+- **class-variance-authority** - Component variant management
+- **lucide-react-native** - Beautiful, consistent icons
 
-## Exports
+## 📦 Components (32 Total)
 
-```typescript
-// Components
-import { Button } from "@workspace/ui-mobile/components/button";
-import { Card } from "@workspace/ui-mobile/components/card";
-import { Input } from "@workspace/ui-mobile/components/input";
-import { Label } from "@workspace/ui-mobile/components/label";
-import { Text } from "@workspace/ui-mobile/components/text";
+### Foundation (5)
+- **Button** - Pressable button with 6 variants (default, secondary, destructive, outline, ghost, link)
+- **Card** - Container with header, title, description, content, and footer sub-components
+- **Input** - Text input field with NativeWind styling
+- **Label** - Accessible form label with press handling
+- **Text** - Typography component with 11 variants (h1-h4, p, blockquote, code, lead, large, small, muted)
 
-// Utilities
-import { cn } from "@workspace/ui-mobile/lib/utils";
-```
+### Form Components (7)
+- **Checkbox** - Accessible checkbox with indeterminate state
+- **Radio Group** - Radio button group with keyboard navigation
+- **Select** - Native and custom dropdown select
+- **Switch** - Toggle switch with smooth animations
+- **Textarea** - Multi-line text input
+- **Toggle** - Binary toggle button
+- **Toggle Group** - Multiple toggle buttons (single or multiple selection)
 
-## Usage
+### Layout & Display (8)
+- **Alert** - Notification banner with variants (default, destructive)
+- **Aspect Ratio** - Container that maintains aspect ratio
+- **Avatar** - User avatar with image, fallback, and initials
+- **Badge** - Status badge with 4 variants
+- **Progress** - Progress bar indicator
+- **Separator** - Horizontal or vertical divider
+- **Skeleton** - Loading placeholder animations
+- **Icon** - Icon wrapper with Lucide icons integration
 
-### Basic Components
+### Interactive Overlays (8)
+- **Alert Dialog** - Modal confirmation dialog with actions
+- **Context Menu** - Right-click/long-press context menu
+- **Dialog** - Modal dialog with portal rendering
+- **Dropdown Menu** - Dropdown menu with sub-menus
+- **Hover Card** - Hover preview card (web-focused)
+- **Popover** - Popover overlay with positioning
+- **Tooltip** - Tooltip on hover/long-press
+- **Navigation Menu** - Complex navigation menu structure
+
+### Complex Components (4)
+- **Accordion** - Collapsible sections with single/multiple expansion
+- **Collapsible** - Simple expandable content
+- **Menubar** - Horizontal menu bar
+- **Tabs** - Tabbed interface with content panels
+- **Table** - Data table structure
+
+## 🚀 Quick Start
 
 ```tsx
-import { View } from "react-native";
 import { Button } from "@workspace/ui-mobile/components/button";
 import { Card } from "@workspace/ui-mobile/components/card";
-import { Input } from "@workspace/ui-mobile/components/input";
-import { Label } from "@workspace/ui-mobile/components/label";
 import { Text } from "@workspace/ui-mobile/components/text";
+import { View } from "react-native";
 
-function LoginScreen() {
+export default function MyScreen() {
   return (
-    <View className="flex-1 p-4">
-      <Card className="p-6">
-        <Text className="text-2xl font-bold mb-4">Sign In</Text>
-
-        <View className="space-y-4">
-          <View>
-            <Label>Email</Label>
-            <Input
-              placeholder="email@example.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View>
-            <Label>Password</Label>
-            <Input
-              placeholder="Password"
-              secureTextEntry
-            />
-          </View>
-
-          <Button onPress={handleLogin}>
-            <Text className="text-white font-medium">Sign In</Text>
-          </Button>
-        </View>
+    <View className="flex-1 p-4 bg-background">
+      <Card className="p-4">
+        <Text variant="h2">Welcome!</Text>
+        <Text variant="p" className="text-muted-foreground">
+          Beautiful components, ready to use
+        </Text>
+        <Button className="mt-4">
+          <Text>Get Started</Text>
+        </Button>
       </Card>
     </View>
   );
 }
 ```
 
-### Button Variants
+## 💡 Usage Examples
+
+### Buttons
 
 ```tsx
 import { Button } from "@workspace/ui-mobile/components/button";
 import { Text } from "@workspace/ui-mobile/components/text";
 
-<Button variant="default">
-  <Text>Default</Text>
-</Button>
+// Variants
+<Button variant="default"><Text>Default</Text></Button>
+<Button variant="secondary"><Text>Secondary</Text></Button>
+<Button variant="destructive"><Text>Destructive</Text></Button>
+<Button variant="outline"><Text>Outline</Text></Button>
+<Button variant="ghost"><Text>Ghost</Text></Button>
 
-<Button variant="secondary">
-  <Text>Secondary</Text>
-</Button>
-
-<Button variant="destructive">
-  <Text>Destructive</Text>
-</Button>
-
-<Button variant="outline">
-  <Text>Outline</Text>
-</Button>
-
-<Button variant="ghost">
-  <Text>Ghost</Text>
-</Button>
-
-<Button size="sm">
-  <Text>Small</Text>
-</Button>
-
-<Button size="lg">
-  <Text>Large</Text>
-</Button>
+// Sizes
+<Button size="sm"><Text>Small</Text></Button>
+<Button size="lg"><Text>Large</Text></Button>
+<Button size="icon"><Icon /></Button>
 ```
 
-### Text Variants
+### Form with Validation
 
 ```tsx
-import { Text } from "@workspace/ui-mobile/components/text";
+import { Input } from "@workspace/ui-mobile/components/input";
+import { Label } from "@workspace/ui-mobile/components/label";
+import { Checkbox } from "@workspace/ui-mobile/components/checkbox";
+import { Button } from "@workspace/ui-mobile/components/button";
 
-<Text className="text-3xl font-bold">Heading 1</Text>
-<Text className="text-2xl font-semibold">Heading 2</Text>
-<Text className="text-xl font-medium">Heading 3</Text>
-<Text className="text-base">Body text</Text>
-<Text className="text-sm text-muted-foreground">Secondary text</Text>
-```
+<View className="gap-4">
+  <View className="gap-2">
+    <Label nativeID="email">Email</Label>
+    <Input
+      placeholder="email@example.com"
+      keyboardType="email-address"
+      aria-labelledby="email"
+    />
+  </View>
 
-## Component List
+  <View className="flex-row items-center gap-2">
+    <Checkbox checked={agreed} onCheckedChange={setAgreed} />
+    <Label onPress={() => setAgreed(!agreed)}>
+      I agree to the terms
+    </Label>
+  </View>
 
-| Component | Description |
-|-----------|-------------|
-| `Button` | Pressable button with variants |
-| `Card` | Container with rounded corners and shadow |
-| `Input` | Text input with NativeWind styling |
-| `Label` | Accessible form label |
-| `Text` | Typography component |
-
-## Adding New Components
-
-Create new components in `src/components/`:
-
-```tsx
-// src/components/badge.tsx
-import { View } from "react-native";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "../lib/utils";
-import { Text } from "./text";
-
-const badgeVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary",
-        secondary: "bg-secondary",
-        destructive: "bg-destructive",
-        outline: "border border-input",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-);
-
-type BadgeProps = VariantProps<typeof badgeVariants> & {
-  children: React.ReactNode;
-  className?: string;
-};
-
-export function Badge({ variant, className, children }: BadgeProps) {
-  return (
-    <View className={cn(badgeVariants({ variant }), className)}>
-      <Text className="text-xs font-semibold">{children}</Text>
-    </View>
-  );
-}
-```
-
-## Styling with NativeWind
-
-Components use NativeWind (Tailwind CSS for React Native):
-
-```tsx
-// Same Tailwind classes as web
-<View className="flex-1 bg-background p-4">
-  <Text className="text-foreground font-bold">Hello</Text>
+  <Button><Text>Submit</Text></Button>
 </View>
 ```
 
-## Utility: cn()
+### Cards
 
-Same utility as web for merging classes:
+```tsx
+import { Card } from "@workspace/ui-mobile/components/card";
+import { Avatar } from "@workspace/ui-mobile/components/avatar";
+import { Badge } from "@workspace/ui-mobile/components/badge";
 
-```typescript
+<Card className="p-4">
+  <View className="flex-row items-center gap-3">
+    <Avatar alt="User" className="h-12 w-12" />
+    <View className="flex-1">
+      <Text variant="h4">John Doe</Text>
+      <Text variant="small" className="text-muted-foreground">
+        @johndoe
+      </Text>
+    </View>
+    <Badge variant="secondary">
+      <Text className="text-xs">Pro</Text>
+    </Badge>
+  </View>
+</Card>
+```
+
+### Loading States
+
+```tsx
+import { Skeleton } from "@workspace/ui-mobile/components/skeleton";
+
+<View className="gap-3">
+  <View className="flex-row items-center gap-3">
+    <Skeleton className="h-12 w-12 rounded-full" />
+    <View className="flex-1 gap-2">
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
+    </View>
+  </View>
+  <Skeleton className="h-24 w-full" />
+</View>
+```
+
+### Dialog Example
+
+```tsx
+import { AlertDialog } from "@workspace/ui-mobile/components/alert-dialog";
+import { Button } from "@workspace/ui-mobile/components/button";
+
+<AlertDialog>
+  <AlertDialog.Trigger asChild>
+    <Button variant="destructive">
+      <Text>Delete Account</Text>
+    </Button>
+  </AlertDialog.Trigger>
+
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Are you sure?</AlertDialog.Title>
+      <AlertDialog.Description>
+        This action cannot be undone.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel><Text>Cancel</Text></AlertDialog.Cancel>
+      <AlertDialog.Action onPress={handleDelete}>
+        <Text>Delete</Text>
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog>
+```
+
+## 🎨 Theming
+
+Components use CSS variables defined in your app's `global.css`:
+
+```css
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  /* ...more variables */
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  /* ...dark mode */
+}
+```
+
+## 🔧 Utilities
+
+### cn() - Class Name Utility
+
+```tsx
 import { cn } from "@workspace/ui-mobile/lib/utils";
 
 <View className={cn(
-  "base-class",
-  isActive && "active-class",
+  "flex-1 p-4",
+  isActive && "bg-primary",
   className
 )} />
 ```
 
-## Dependencies
+### Theme Access
 
-- `nativewind` - Tailwind CSS for React Native
-- `@rn-primitives/*` - Accessible primitives
-- `class-variance-authority` - Variant management
-- `tailwind-merge` - Class merging
+```tsx
+import { NAV_THEME } from "@workspace/ui-mobile/lib/theme";
 
-## Peer Dependencies
+const theme = colorScheme === "dark" ? NAV_THEME.dark : NAV_THEME.light;
+```
 
-Your app must install:
-- `react-native >= 0.74.0`
-- `nativewind ^4.0.0`
-- `@rn-primitives/slot`
-- `@rn-primitives/label`
+## 📱 Platform Support
 
-## Related
+- ✅ **iOS** - Native iOS apps
+- ✅ **Android** - Native Android apps
+- ✅ **Web** - React Native Web
 
-- [@workspace/ui](../ui/README.md) - Web UI components
-- [NativeWind](https://www.nativewind.dev/)
+Platform-specific optimizations built-in (hover states, focus rings, etc.).
+
+## ♿ Accessibility
+
+All components include:
+- ARIA attributes
+- Screen reader support
+- Keyboard navigation
+- Focus management
+
+```tsx
+<Button aria-label="Close dialog">
+  <Icon name="x" />
+</Button>
+
+<Input
+  aria-labelledby="email-label"
+  aria-invalid={hasError}
+/>
+```
+
+## 📦 Dependencies
+
+**Peer Dependencies** (install in your app):
+```bash
+pnpm add @rn-primitives/accordion @rn-primitives/alert-dialog
+pnpm add @rn-primitives/aspect-ratio @rn-primitives/avatar
+pnpm add @rn-primitives/checkbox @rn-primitives/collapsible
+pnpm add @rn-primitives/context-menu @rn-primitives/dialog
+pnpm add @rn-primitives/dropdown-menu @rn-primitives/hover-card
+pnpm add @rn-primitives/label @rn-primitives/menubar
+pnpm add @rn-primitives/navigation-menu @rn-primitives/popover
+pnpm add @rn-primitives/portal @rn-primitives/progress
+pnpm add @rn-primitives/radio-group @rn-primitives/select
+pnpm add @rn-primitives/separator @rn-primitives/slot
+pnpm add @rn-primitives/switch @rn-primitives/table
+pnpm add @rn-primitives/tabs @rn-primitives/toggle
+pnpm add @rn-primitives/toggle-group @rn-primitives/toolbar
+pnpm add @rn-primitives/tooltip
+pnpm add lucide-react-native nativewind
+pnpm add react-native-reanimated react-native-svg
+pnpm add react-native-screens @react-navigation/native
+```
+
+## 📖 Examples
+
+Live demos in the mobile app:
+- `apps/mobile/app/(tabs)/index.tsx` - Component showcase
+- `apps/mobile/app/(tabs)/two.tsx` - Form components demo
+
+## 🔗 Related
+
 - [React Native Reusables](https://rnr-docs.vercel.app/)
+- [NativeWind](https://www.nativewind.dev/)
+- [@rn-primitives](https://github.com/roninoss/rn-primitives)
+- [Lucide Icons](https://lucide.dev/)
+
+---
+
+**Built with ❤️ using React Native Reusables**

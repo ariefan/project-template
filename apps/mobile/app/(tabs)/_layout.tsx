@@ -2,7 +2,6 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
 import type React from "react";
 import { Pressable } from "react-native";
-import Colors from "@/constants/Colors";
 import { useClientOnlyValue } from "@/hooks/use-client-only-value";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
@@ -20,7 +19,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: colorScheme === "dark" ? "#fff" : "#2f95dc",
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
@@ -36,7 +35,7 @@ export default function TabLayout() {
               <Pressable>
                 {({ pressed }) => (
                   <FontAwesome
-                    color={Colors[colorScheme ?? "light"].text}
+                    color={colorScheme === "dark" ? "#fff" : "#000"}
                     name="info-circle"
                     size={25}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}

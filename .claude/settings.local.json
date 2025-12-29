@@ -84,7 +84,12 @@
       "Bash(pnpm lefthook:*)",
       "Bash(git reset:*)",
       "Bash(pnpm --filter mobile update expo@~54.0.30 expo-linking@~8.0.11 expo-router@~6.0.21 expo-splash-screen@~31.0.13 @types/react@~19.1.10)",
-      "Bash(pnpm --filter mobile update:*)"
+      "Bash(pnpm --filter mobile update:*)",
+      "Bash(xargs cat:*)",
+      "Bash(pnpm expo start:*)",
+      "Bash(timeout:*)",
+      "Bash(pnpm --filter mobile typecheck:*)",
+      "Bash(taskkill //F //PID 147528)"
     ]
   }
 }
