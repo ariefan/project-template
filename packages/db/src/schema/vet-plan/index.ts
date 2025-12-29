@@ -23,6 +23,8 @@ export * from "./diagnostics";
 // Emergency care
 export * from "./emergency";
 export * from "./inventory";
+// Medical records & encounters
+export * from "./medical-records";
 export * from "./patients";
 // Preventive care
 export * from "./preventive";

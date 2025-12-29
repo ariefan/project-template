@@ -10,6 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clinics } from "./clinics";
+import { medicalEncounters } from "./medical-records";
 import { veterinarians } from "./veterinarians";
 
 // ============================================================================
@@ -137,6 +138,11 @@ export const consultations = pgTable(
       .notNull()
       .references(() => appointments.id, { onDelete: "cascade" }),
 
+    // Link to medical encounter (parent record for this clinical activity)
+    encounterId: uuid("encounter_id").references(() => medicalEncounters.id, {
+      onDelete: "set null",
+    }),
+
     // SOAP notes structure
     // S - Subjective (what the owner reports)
     subjective: text("subjective"),
@@ -181,6 +187,7 @@ export const consultations = pgTable(
   },
   (table) => [
     index("vet_consultations_appointment_id_idx").on(table.appointmentId),
+    index("vet_consultations_encounter_id_idx").on(table.encounterId),
   ]
 );
 
@@ -207,6 +214,10 @@ export const consultationsRelations = relations(consultations, ({ one }) => ({
   appointment: one(appointments, {
     fields: [consultations.appointmentId],
     references: [appointments.id],
+  }),
+  encounter: one(medicalEncounters, {
+    fields: [consultations.encounterId],
+    references: [medicalEncounters.id],
   }),
 }));
 
