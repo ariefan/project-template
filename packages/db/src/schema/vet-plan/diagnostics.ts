@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   index,
   json,
   pgEnum,
@@ -149,7 +150,7 @@ export const testResults = pgTable(
     documentUrls: json("document_urls").$type<string[]>(),
 
     // Critical values notification
-    isCritical: text("is_critical"),
+    isCritical: boolean("is_critical").default(false).notNull(),
     criticalNotifiedAt: timestamp("critical_notified_at"),
 
     // Reviewed by

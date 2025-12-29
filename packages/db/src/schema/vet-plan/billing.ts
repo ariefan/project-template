@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   decimal,
   index,
   integer,
@@ -174,7 +175,7 @@ export const invoiceItems = pgTable(
     }),
 
     // Tax
-    taxable: text("taxable").default("true"),
+    taxable: boolean("taxable").default(true).notNull(),
     taxAmount: decimal("tax_amount", { precision: 12, scale: 2 }).default("0"),
 
     // Total

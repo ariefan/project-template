@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   index,
   json,
   pgEnum,
@@ -224,8 +225,8 @@ export const messageTemplates = pgTable(
     availableVariables: json("available_variables").$type<string[]>(),
 
     // Status
-    isActive: text("is_active").default("true"),
-    isDefault: text("is_default").default("false"),
+    isActive: boolean("is_active").default(true).notNull(),
+    isDefault: boolean("is_default").default(false).notNull(),
 
     // Language
     language: text("language").default("id"),
@@ -267,11 +268,11 @@ export const clientNotes = pgTable(
     content: text("content").notNull(),
 
     // Importance
-    isPinned: text("is_pinned").default("false"),
-    isImportant: text("is_important").default("false"),
+    isPinned: boolean("is_pinned").default(false).notNull(),
+    isImportant: boolean("is_important").default(false).notNull(),
 
     // Visibility
-    isPrivate: text("is_private").default("false"), // Only visible to creator
+    isPrivate: boolean("is_private").default(false).notNull(), // Only visible to creator
 
     // Created by
     createdBy: uuid("created_by").notNull(), // Staff member ID
@@ -309,11 +310,11 @@ export const patientNotes = pgTable(
     content: text("content").notNull(),
 
     // Importance
-    isPinned: text("is_pinned").default("false"),
-    isAlert: text("is_alert").default("false"), // Show as alert/warning
+    isPinned: boolean("is_pinned").default(false).notNull(),
+    isAlert: boolean("is_alert").default(false).notNull(), // Show as alert/warning
 
     // Visibility
-    showOnRecords: text("show_on_records").default("true"), // Show on medical records
+    showOnRecords: boolean("show_on_records").default(true).notNull(), // Show on medical records
 
     // Created by
     createdBy: uuid("created_by").notNull(), // Staff member ID

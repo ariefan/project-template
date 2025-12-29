@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   decimal,
   index,
   json,
@@ -113,7 +114,7 @@ export const emergencyCases = pgTable(
     treatmentSummary: text("treatment_summary"),
 
     // Stabilization
-    isStabilized: text("is_stabilized"),
+    isStabilized: boolean("is_stabilized").default(false).notNull(),
     stabilizedAt: timestamp("stabilized_at"),
 
     // Disposition
