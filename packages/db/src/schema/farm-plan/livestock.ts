@@ -100,10 +100,12 @@ export const livestock = pgTable(
     photo: json("photo").$type<string[] | null>(),
 
     // Parentage - now with proper foreign keys
-    sireId: uuid("sire_id").references((): unknown => livestock.id, {
+    // biome-ignore lint/suspicious/noExplicitAny: self-referencing table requires any
+    sireId: uuid("sire_id").references((): any => livestock.id, {
       onDelete: "set null",
     }),
-    damId: uuid("dam_id").references((): unknown => livestock.id, {
+    // biome-ignore lint/suspicious/noExplicitAny: self-referencing table requires any
+    damId: uuid("dam_id").references((): any => livestock.id, {
       onDelete: "set null",
     }),
 
