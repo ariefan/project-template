@@ -1,6 +1,7 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   decimal,
   index,
   integer,
@@ -12,6 +13,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { clients } from "./clients";
+import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
 // ============================================================================
@@ -83,7 +86,9 @@ export const treatments = pgTable(
       .references(() => veterinarians.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Treatment information
     treatmentType: treatmentTypeEnum("treatment_type").notNull(),
@@ -137,8 +142,12 @@ export const prescriptions = pgTable(
       .references(() => veterinarians.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
-    ownerId: uuid("owner_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
 
     // Prescription details
     prescriptionNumber: text("prescription_number").notNull().unique(),
@@ -206,6 +215,12 @@ export const prescriptions = pgTable(
     index("vet_prescriptions_prescription_number_idx").on(
       table.prescriptionNumber
     ),
+    check(
+      "end_date_after_start_date",
+      sql`${table.endDate} > ${table.startDate} OR ${table.endDate} IS NULL OR ${table.startDate} IS NULL`
+    ),
+    check("dosage_positive", sql`${table.dosage} >= 0`),
+    check("quantity_positive", sql`${table.quantity} >= 0`),
   ]
 );
 
@@ -219,7 +234,9 @@ export const medicationAdministrationRecords = pgTable(
       .references(() => prescriptions.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Administration details
     administeredAt: timestamp("administered_at").notNull(),
@@ -255,6 +272,10 @@ export const treatmentsRelations = relations(treatments, ({ one }) => ({
     fields: [treatments.appointmentId],
     references: [appointments.id],
   }),
+  patient: one(patients, {
+    fields: [treatments.animalId],
+    references: [patients.id],
+  }),
   veterinarian: one(veterinarians, {
     fields: [treatments.veterinarianId],
     references: [veterinarians.id],
@@ -267,6 +288,14 @@ export const prescriptionsRelations = relations(
     appointment: one(appointments, {
       fields: [prescriptions.appointmentId],
       references: [appointments.id],
+    }),
+    patient: one(patients, {
+      fields: [prescriptions.animalId],
+      references: [patients.id],
+    }),
+    client: one(clients, {
+      fields: [prescriptions.ownerId],
+      references: [clients.id],
     }),
     veterinarian: one(veterinarians, {
       fields: [prescriptions.veterinarianId],
@@ -282,6 +311,10 @@ export const medicationAdministrationRecordsRelations = relations(
     prescription: one(prescriptions, {
       fields: [medicationAdministrationRecords.prescriptionId],
       references: [prescriptions.id],
+    }),
+    patient: one(patients, {
+      fields: [medicationAdministrationRecords.animalId],
+      references: [patients.id],
     }),
   })
 );

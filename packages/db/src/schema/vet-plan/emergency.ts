@@ -11,7 +11,9 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { clients } from "./clients";
 import { clinics } from "./clinics";
+import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
 // ============================================================================
@@ -74,8 +76,12 @@ export const emergencyCases = pgTable(
       .references(() => clinics.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
-    ownerId: uuid("owner_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
 
     // Emergency details
     emergencyCategory: emergencyCategoryEnum("emergency_category"),
@@ -163,7 +169,9 @@ export const criticalCareRecords = pgTable(
       .references(() => emergencyCases.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Monitoring period
     recordedAt: timestamp("recorded_at").notNull(),
@@ -237,6 +245,14 @@ export const emergencyCasesRelations = relations(
       fields: [emergencyCases.clinicId],
       references: [clinics.id],
     }),
+    patient: one(patients, {
+      fields: [emergencyCases.animalId],
+      references: [patients.id],
+    }),
+    client: one(clients, {
+      fields: [emergencyCases.ownerId],
+      references: [clients.id],
+    }),
     assignedVeterinarian: one(veterinarians, {
       fields: [emergencyCases.assignedVeterinarianId],
       references: [veterinarians.id],
@@ -251,6 +267,10 @@ export const criticalCareRecordsRelations = relations(
     emergencyCase: one(emergencyCases, {
       fields: [criticalCareRecords.emergencyCaseId],
       references: [emergencyCases.id],
+    }),
+    patient: one(patients, {
+      fields: [criticalCareRecords.animalId],
+      references: [patients.id],
     }),
   })
 );

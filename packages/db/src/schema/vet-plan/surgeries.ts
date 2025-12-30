@@ -1,5 +1,6 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
+  check,
   decimal,
   index,
   json,
@@ -10,6 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
 // ============================================================================
@@ -75,7 +77,9 @@ export const surgeries = pgTable(
       .references(() => appointments.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Surgery details
     surgeryType: surgeryTypeEnum("surgery_type").notNull(),
@@ -148,6 +152,14 @@ export const surgeries = pgTable(
     index("vet_surgeries_animal_id_idx").on(table.animalId),
     index("vet_surgeries_status_idx").on(table.status),
     index("vet_surgeries_scheduled_at_idx").on(table.scheduledAt),
+    check(
+      "surgery_completion_after_start",
+      sql`${table.surgeryCompletedAt} > ${table.surgeryStartedAt} OR ${table.surgeryCompletedAt} IS NULL OR ${table.surgeryStartedAt} IS NULL`
+    ),
+    check(
+      "recovery_completion_after_start",
+      sql`${table.recoveryCompletedAt} > ${table.recoveryStartedAt} OR ${table.recoveryCompletedAt} IS NULL OR ${table.recoveryStartedAt} IS NULL`
+    ),
   ]
 );
 
@@ -161,7 +173,9 @@ export const anesthesiaRecords = pgTable(
       .references(() => surgeries.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Pre-anesthetic assessment
     asaClassification: asaClassificationEnum("asa_classification"),
@@ -236,10 +250,14 @@ export const anesthesiaRecords = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const surgeriesRelations = relations(surgeries, ({ one, many }) => ({
+export const surgeriesRelations = relations(surgeries, ({ one }) => ({
   appointment: one(appointments, {
     fields: [surgeries.appointmentId],
     references: [appointments.id],
+  }),
+  patient: one(patients, {
+    fields: [surgeries.animalId],
+    references: [patients.id],
   }),
   primarySurgeon: one(veterinarians, {
     fields: [surgeries.primarySurgeonId],
@@ -254,6 +272,10 @@ export const anesthesiaRecordsRelations = relations(
     surgery: one(surgeries, {
       fields: [anesthesiaRecords.surgeryId],
       references: [surgeries.id],
+    }),
+    patient: one(patients, {
+      fields: [anesthesiaRecords.animalId],
+      references: [patients.id],
     }),
   })
 );

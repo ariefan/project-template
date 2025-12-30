@@ -13,6 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
 // ============================================================================
@@ -69,7 +70,9 @@ export const vaccinationRecords = pgTable(
     }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Vaccine information
     vaccineName: text("vaccine_name").notNull(),
@@ -135,7 +138,9 @@ export const parasiticControlRecords = pgTable(
     }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Treatment type
     controlType: parasiticControlTypeEnum("control_type").notNull(),
@@ -198,7 +203,9 @@ export const wellnessExams = pgTable(
       .references(() => veterinarians.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Exam date
     examDate: date("exam_date").notNull(),
@@ -274,7 +281,9 @@ export const dentalRecords = pgTable(
       .references(() => veterinarians.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Exam date
     examDate: date("exam_date").notNull(),
@@ -359,6 +368,10 @@ export const vaccinationRecordsRelations = relations(
       fields: [vaccinationRecords.appointmentId],
       references: [appointments.id],
     }),
+    patient: one(patients, {
+      fields: [vaccinationRecords.animalId],
+      references: [patients.id],
+    }),
     veterinarian: one(veterinarians, {
       fields: [vaccinationRecords.veterinarianId],
       references: [veterinarians.id],
@@ -373,6 +386,10 @@ export const parasiticControlRecordsRelations = relations(
       fields: [parasiticControlRecords.appointmentId],
       references: [appointments.id],
     }),
+    patient: one(patients, {
+      fields: [parasiticControlRecords.animalId],
+      references: [patients.id],
+    }),
     veterinarian: one(veterinarians, {
       fields: [parasiticControlRecords.veterinarianId],
       references: [veterinarians.id],
@@ -385,6 +402,10 @@ export const wellnessExamsRelations = relations(wellnessExams, ({ one }) => ({
     fields: [wellnessExams.appointmentId],
     references: [appointments.id],
   }),
+  patient: one(patients, {
+    fields: [wellnessExams.animalId],
+    references: [patients.id],
+  }),
   veterinarian: one(veterinarians, {
     fields: [wellnessExams.veterinarianId],
     references: [veterinarians.id],
@@ -395,6 +416,10 @@ export const dentalRecordsRelations = relations(dentalRecords, ({ one }) => ({
   appointment: one(appointments, {
     fields: [dentalRecords.appointmentId],
     references: [appointments.id],
+  }),
+  patient: one(patients, {
+    fields: [dentalRecords.animalId],
+    references: [patients.id],
   }),
   veterinarian: one(veterinarians, {
     fields: [dentalRecords.veterinarianId],

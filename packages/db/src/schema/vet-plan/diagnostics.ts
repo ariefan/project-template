@@ -10,6 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
 // ============================================================================
@@ -72,7 +73,9 @@ export const diagnosticTests = pgTable(
       .references(() => veterinarians.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Test information
     testType: diagnosticTestTypeEnum("test_type").notNull(),
@@ -188,7 +191,9 @@ export const imagingStudies = pgTable(
       .references(() => veterinarians.id, { onDelete: "cascade" }),
 
     // Patient reference
-    animalId: uuid("animal_id").notNull(),
+    animalId: uuid("animal_id")
+      .notNull()
+      .references(() => patients.id, { onDelete: "cascade" }),
 
     // Study information
     studyType: text("study_type").notNull(), // e.g., "X-Ray", "Ultrasound", "CT"
@@ -254,6 +259,10 @@ export const diagnosticTestsRelations = relations(
       fields: [diagnosticTests.appointmentId],
       references: [appointments.id],
     }),
+    patient: one(patients, {
+      fields: [diagnosticTests.animalId],
+      references: [patients.id],
+    }),
     veterinarian: one(veterinarians, {
       fields: [diagnosticTests.veterinarianId],
       references: [veterinarians.id],
@@ -273,6 +282,10 @@ export const imagingStudiesRelations = relations(imagingStudies, ({ one }) => ({
   appointment: one(appointments, {
     fields: [imagingStudies.appointmentId],
     references: [appointments.id],
+  }),
+  patient: one(patients, {
+    fields: [imagingStudies.animalId],
+    references: [patients.id],
   }),
   veterinarian: one(veterinarians, {
     fields: [imagingStudies.veterinarianId],
