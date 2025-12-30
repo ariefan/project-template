@@ -2,7 +2,7 @@
  * Email service interface for auth operations
  * Implementations should use the notification system
  */
-export type EmailService = {
+export interface EmailService {
   sendPasswordReset(email: string, resetUrl: string): Promise<void>;
   sendEmailVerification(email: string, verificationUrl: string): Promise<void>;
   sendMagicLink(email: string, magicLinkUrl: string): Promise<void>;
@@ -13,7 +13,7 @@ export type EmailService = {
     invitationLink: string
   ): Promise<void>;
   sendTwoFactorCode(email: string, code: string): Promise<void>;
-};
+}
 
 /**
  * Creates a no-op email service that logs to console

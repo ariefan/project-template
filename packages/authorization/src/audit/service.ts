@@ -8,7 +8,7 @@ import {
 /**
  * Filters for querying audit logs
  */
-export type AuditLogFilters = {
+export interface AuditLogFilters {
   eventType?: string;
   actorId?: string;
   resourceType?: string;
@@ -16,12 +16,12 @@ export type AuditLogFilters = {
   timestampAfter?: Date;
   timestampBefore?: Date;
   ipAddress?: string;
-};
+}
 
 /**
  * Result of a paginated audit log query
  */
-export type AuditLogQueryResult = {
+export interface AuditLogQueryResult {
   data: AuthorizationLog[];
   pagination: {
     page: number;
@@ -30,25 +30,25 @@ export type AuditLogQueryResult = {
     totalPages: number;
     hasMore: boolean;
   };
-};
+}
 
 /**
  * Context information for audit logging
  */
-export type AuditContext = {
+export interface AuditContext {
   actorId: string;
   actorIp?: string;
   actorUserAgent?: string;
-};
+}
 
 /**
  * Request-like object with necessary properties for extracting audit context
  */
-type RequestContext = {
+interface RequestContext {
   user?: { id?: string } | null;
   ip?: string;
   headers?: { "user-agent"?: string };
-};
+}
 
 /**
  * Service for logging authorization events to an append-only audit log

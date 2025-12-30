@@ -938,6 +938,19 @@ export type JobResponse = {
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
 
 /**
+ * Mark all as read response
+ */
+export type MarkAllReadResponse = {
+    data: {
+        /**
+         * Number of notifications marked as read
+         */
+        markedCount: number;
+    };
+    meta: ResponseMeta;
+};
+
+/**
  * Version lifecycle status
  */
 export type MigrationStatus = 'current' | 'deprecated' | 'sunset';
@@ -979,6 +992,276 @@ export type MigrationStatusResponse = {
      */
     migrationChecklist?: Array<string>;
 };
+
+/**
+ * Notification resource model
+ */
+export type Notification = {
+    /**
+     * Unique notification identifier
+     */
+    id: string;
+    /**
+     * User ID who should receive this notification
+     */
+    userId?: string;
+    /**
+     * Notification channel
+     */
+    channel: NotificationChannel;
+    /**
+     * Notification category
+     */
+    category: NotificationCategory;
+    /**
+     * Notification priority
+     */
+    priority: NotificationPriority;
+    /**
+     * Current notification status
+     */
+    status: NotificationStatus;
+    /**
+     * Email address this was sent to
+     */
+    recipientEmail?: string;
+    /**
+     * Phone number this was sent to
+     */
+    recipientPhone?: string;
+    /**
+     * Telegram ID this was sent to
+     */
+    recipientTelegramId?: string;
+    /**
+     * Template ID used (if any)
+     */
+    templateId?: string;
+    /**
+     * Subject line (for email)
+     */
+    subject?: string;
+    /**
+     * Plain text body
+     */
+    body?: string;
+    /**
+     * HTML body (for email)
+     */
+    bodyHtml?: string;
+    /**
+     * Template data used for rendering
+     */
+    templateData?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Campaign ID for bulk sends
+     */
+    campaignId?: string;
+    /**
+     * Provider used to send (e.g., "nodemailer", "twilio")
+     */
+    provider?: string;
+    /**
+     * Provider's message ID
+     */
+    providerMessageId?: string;
+    /**
+     * Timestamp when notification was sent
+     */
+    sentAt?: string;
+    /**
+     * Timestamp when notification was delivered
+     */
+    deliveredAt?: string;
+    /**
+     * Timestamp when notification failed
+     */
+    failedAt?: string;
+    /**
+     * Timestamp when notification was read by user
+     */
+    readAt?: string;
+    /**
+     * Timestamp when notification was soft deleted
+     */
+    deletedAt?: string;
+    /**
+     * Number of retry attempts
+     */
+    retryCount: number;
+    /**
+     * Maximum retry attempts allowed
+     */
+    maxRetries: number;
+    /**
+     * Next retry timestamp
+     */
+    nextRetryAt?: string;
+    /**
+     * Status message (error details if failed)
+     */
+    statusMessage?: string;
+    /**
+     * Metadata for custom data
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Timestamp when notification was created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when notification was last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Notification category enum
+ */
+export type NotificationCategory = 'transactional' | 'marketing' | 'security' | 'system';
+
+/**
+ * Notification channel enum
+ */
+export type NotificationChannel = 'email' | 'sms' | 'whatsapp' | 'telegram' | 'push';
+
+/**
+ * Notification collection response
+ */
+export type NotificationListResponse = {
+    data: Array<Notification>;
+    meta: ResponseMeta;
+};
+
+/**
+ * Notification preferences model
+ */
+export type NotificationPreferences = {
+    /**
+     * User ID
+     */
+    userId: string;
+    /**
+     * Email notifications enabled
+     */
+    emailEnabled: boolean;
+    /**
+     * SMS notifications enabled
+     */
+    smsEnabled: boolean;
+    /**
+     * WhatsApp notifications enabled
+     */
+    whatsappEnabled: boolean;
+    /**
+     * Telegram notifications enabled
+     */
+    telegramEnabled: boolean;
+    /**
+     * Push notifications enabled
+     */
+    pushEnabled: boolean;
+    /**
+     * Marketing notifications enabled
+     */
+    marketingEnabled: boolean;
+    /**
+     * Transactional notifications enabled
+     */
+    transactionalEnabled: boolean;
+    /**
+     * Security notifications enabled
+     */
+    securityEnabled: boolean;
+    /**
+     * System notifications enabled
+     */
+    systemEnabled: boolean;
+    /**
+     * Preferred email address
+     */
+    preferredEmail?: string;
+    /**
+     * Preferred phone number
+     */
+    preferredPhone?: string;
+    /**
+     * Preferred Telegram ID
+     */
+    preferredTelegramId?: string;
+    /**
+     * Quiet hours enabled
+     */
+    quietHoursEnabled: boolean;
+    /**
+     * Quiet hours start time (HH:mm format)
+     */
+    quietHoursStart?: string;
+    /**
+     * Quiet hours end time (HH:mm format)
+     */
+    quietHoursEnd?: string;
+    /**
+     * Quiet hours timezone (IANA format)
+     */
+    quietHoursTimezone?: string;
+    /**
+     * Timestamp when created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Notification preferences response
+ */
+export type NotificationPreferencesResponse = {
+    data: NotificationPreferences;
+    meta: ResponseMeta;
+};
+
+/**
+ * Notification priority enum
+ */
+export type NotificationPriority = 'urgent' | 'high' | 'normal' | 'low';
+
+/**
+ * Notification recipient information
+ */
+export type NotificationRecipient = {
+    /**
+     * Email address (required for email channel)
+     */
+    email?: string;
+    /**
+     * Phone number in E.164 format (required for SMS/WhatsApp)
+     */
+    phone?: string;
+    /**
+     * Telegram chat ID (required for Telegram channel)
+     */
+    telegramId?: string;
+};
+
+/**
+ * Single notification response
+ */
+export type NotificationResponse = {
+    data: Notification;
+    meta: ResponseMeta;
+};
+
+/**
+ * Notification status enum
+ */
+export type NotificationStatus = 'pending' | 'queued' | 'processing' | 'sent' | 'delivered' | 'failed' | 'bounced';
 
 /**
  * Page-based pagination metadata for collection responses
@@ -1214,6 +1497,73 @@ export type RoleResponse = {
 };
 
 /**
+ * Request body for sending a notification
+ */
+export type SendNotificationRequest = {
+    /**
+     * Notification channel
+     */
+    channel: NotificationChannel;
+    /**
+     * Notification category
+     */
+    category: NotificationCategory;
+    /**
+     * Notification priority (default: normal)
+     */
+    priority?: NotificationPriority;
+    /**
+     * Recipient information
+     */
+    recipient: NotificationRecipient;
+    /**
+     * Template ID to use for rendering
+     */
+    templateId?: string;
+    /**
+     * Data for template rendering
+     */
+    templateData?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Subject line (for email, required if not using template)
+     */
+    subject?: string;
+    /**
+     * Plain text body (required if not using template)
+     */
+    body?: string;
+    /**
+     * HTML body (for email)
+     */
+    bodyHtml?: string;
+    /**
+     * Custom metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * Send notification success response
+ */
+export type SendNotificationResponse = {
+    data: {
+        /**
+         * Message ID assigned to the notification
+         */
+        messageId: string;
+        /**
+         * Provider used to send
+         */
+        provider: string;
+    };
+    meta: ResponseMeta;
+};
+
+/**
  * Response for soft delete operations
  *
  * Includes resource ID, deletion metadata, and restore information
@@ -1295,6 +1645,19 @@ export type SwitchContextResponse = {
 };
 
 /**
+ * Unread count response
+ */
+export type UnreadCountResponse = {
+    data: {
+        /**
+         * Number of unread notifications
+         */
+        unreadCount: number;
+    };
+    meta: ResponseMeta;
+};
+
+/**
  * Request body for updating a comment
  */
 export type UpdateExampleCommentRequest = {
@@ -1330,6 +1693,76 @@ export type UpdateFileRequest = {
      * New access level
      */
     access?: FileAccess;
+};
+
+/**
+ * Request body for updating notification preferences
+ */
+export type UpdatePreferencesRequest = {
+    /**
+     * Email notifications enabled
+     */
+    emailEnabled?: boolean;
+    /**
+     * SMS notifications enabled
+     */
+    smsEnabled?: boolean;
+    /**
+     * WhatsApp notifications enabled
+     */
+    whatsappEnabled?: boolean;
+    /**
+     * Telegram notifications enabled
+     */
+    telegramEnabled?: boolean;
+    /**
+     * Push notifications enabled
+     */
+    pushEnabled?: boolean;
+    /**
+     * Marketing notifications enabled
+     */
+    marketingEnabled?: boolean;
+    /**
+     * Transactional notifications enabled
+     */
+    transactionalEnabled?: boolean;
+    /**
+     * Security notifications enabled
+     */
+    securityEnabled?: boolean;
+    /**
+     * System notifications enabled
+     */
+    systemEnabled?: boolean;
+    /**
+     * Preferred email address
+     */
+    preferredEmail?: string;
+    /**
+     * Preferred phone number
+     */
+    preferredPhone?: string;
+    /**
+     * Preferred Telegram ID
+     */
+    preferredTelegramId?: string;
+    /**
+     * Quiet hours enabled
+     */
+    quietHoursEnabled?: boolean;
+    /**
+     * Quiet hours start time (HH:mm format)
+     */
+    quietHoursStart?: string;
+    /**
+     * Quiet hours end time (HH:mm format)
+     */
+    quietHoursEnd?: string;
+    /**
+     * Quiet hours timezone (IANA format)
+     */
+    quietHoursTimezone?: string;
 };
 
 /**
@@ -1832,6 +2265,197 @@ export type MigrationGetStatusResponses = {
 };
 
 export type MigrationGetStatusResponse = MigrationGetStatusResponses[keyof MigrationGetStatusResponses];
+
+export type NotificationsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Number of items to return (max: 100)
+         */
+        limit?: number;
+        /**
+         * Number of items to skip
+         */
+        offset?: number;
+        /**
+         * Filter by notification channel
+         */
+        channel?: NotificationChannel;
+        /**
+         * Filter by notification category
+         */
+        category?: NotificationCategory;
+        /**
+         * Filter by notification status
+         */
+        status?: NotificationStatus;
+    };
+    url: '/v1/notifications';
+};
+
+export type NotificationsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: NotificationListResponse | ErrorResponse;
+};
+
+export type NotificationsListResponse = NotificationsListResponses[keyof NotificationsListResponses];
+
+export type NotificationsMarkAllReadData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/notifications/mark-all-read';
+};
+
+export type NotificationsMarkAllReadResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: MarkAllReadResponse | ErrorResponse;
+};
+
+export type NotificationsMarkAllReadResponse = NotificationsMarkAllReadResponses[keyof NotificationsMarkAllReadResponses];
+
+export type NotificationsSendData = {
+    body: SendNotificationRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/notifications/send';
+};
+
+export type NotificationsSendResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SendNotificationResponse | ErrorResponse;
+};
+
+export type NotificationsSendResponse = NotificationsSendResponses[keyof NotificationsSendResponses];
+
+export type NotificationsGetUnreadCountData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/notifications/unread/count';
+};
+
+export type NotificationsGetUnreadCountResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: UnreadCountResponse | ErrorResponse;
+};
+
+export type NotificationsGetUnreadCountResponse = NotificationsGetUnreadCountResponses[keyof NotificationsGetUnreadCountResponses];
+
+export type NotificationsDeleteData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/notifications/{id}';
+};
+
+export type NotificationsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type NotificationsDeleteResponse = NotificationsDeleteResponses[keyof NotificationsDeleteResponses];
+
+export type NotificationsGetData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/notifications/{id}';
+};
+
+export type NotificationsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: NotificationResponse | ErrorResponse;
+};
+
+export type NotificationsGetResponse = NotificationsGetResponses[keyof NotificationsGetResponses];
+
+export type NotificationsMarkReadData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/notifications/{id}/read';
+};
+
+export type NotificationsMarkReadResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type NotificationsMarkReadResponse = NotificationsMarkReadResponses[keyof NotificationsMarkReadResponses];
+
+export type NotificationsRestoreData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/notifications/{id}/restore';
+};
+
+export type NotificationsRestoreResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type NotificationsRestoreResponse = NotificationsRestoreResponses[keyof NotificationsRestoreResponses];
+
+export type NotificationsMarkUnreadData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/notifications/{id}/unread';
+};
+
+export type NotificationsMarkUnreadResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type NotificationsMarkUnreadResponse = NotificationsMarkUnreadResponses[keyof NotificationsMarkUnreadResponses];
 
 export type AuditLogsListData = {
     body?: never;
@@ -3897,6 +4521,38 @@ export type WebhooksTestResponses = {
 };
 
 export type WebhooksTestResponse = WebhooksTestResponses[keyof WebhooksTestResponses];
+
+export type NotificationPreferencesRoutesGetPreferencesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/preferences';
+};
+
+export type NotificationPreferencesRoutesGetPreferencesResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: NotificationPreferencesResponse | ErrorResponse;
+};
+
+export type NotificationPreferencesRoutesGetPreferencesResponse = NotificationPreferencesRoutesGetPreferencesResponses[keyof NotificationPreferencesRoutesGetPreferencesResponses];
+
+export type NotificationPreferencesRoutesUpdatePreferencesData = {
+    body: UpdatePreferencesRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/preferences';
+};
+
+export type NotificationPreferencesRoutesUpdatePreferencesResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: NotificationPreferencesResponse | ErrorResponse;
+};
+
+export type NotificationPreferencesRoutesUpdatePreferencesResponse = NotificationPreferencesRoutesUpdatePreferencesResponses[keyof NotificationPreferencesRoutesUpdatePreferencesResponses];
 
 export type GlobalRolesListData = {
     body?: never;

@@ -4,49 +4,49 @@ import { requireAuth } from "../../auth/middleware";
 import * as webhookService from "../services/webhook.service";
 import * as webhookDeliveryService from "../services/webhook-delivery.service";
 
-type OrgParams = {
+interface OrgParams {
   orgId: string;
-};
+}
 
-type WebhookParams = {
+interface WebhookParams {
   orgId: string;
   webhookId: string;
-};
+}
 
-type DeliveryParams = {
+interface DeliveryParams {
   orgId: string;
   webhookId: string;
   deliveryId: string;
-};
+}
 
-type ListWebhooksQuery = {
+interface ListWebhooksQuery {
   page?: number;
   pageSize?: number;
   isActive?: string; // Query params come as strings
-};
+}
 
-type ListDeliveriesQuery = {
+interface ListDeliveriesQuery {
   page?: number;
   pageSize?: number;
   status?: WebhookDeliveryStatus;
   eventType?: string;
   createdAfter?: string;
-};
+}
 
-type CreateWebhookBody = {
+interface CreateWebhookBody {
   name: string;
   url: string;
   events: string[];
   description?: string;
-};
+}
 
-type UpdateWebhookBody = {
+interface UpdateWebhookBody {
   name?: string;
   url?: string;
   events?: string[];
   isActive?: boolean;
   description?: string;
-};
+}
 
 /**
  * Webhooks routes

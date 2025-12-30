@@ -26,8 +26,6 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { env } from "../env";
 
 declare module "fastify" {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Required for module augmentation
-  // biome-ignore lint/nursery/noShadow: Required for module augmentation
   interface FastifyRequest {
     metricsStartTime?: [number, number];
   }

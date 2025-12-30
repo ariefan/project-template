@@ -2,11 +2,11 @@ import twilio from "twilio";
 import type { SendResult, SmsPayload } from "../../types";
 import type { SmsProvider } from "../types";
 
-export type TwilioSmsConfig = {
+export interface TwilioSmsConfig {
   accountSid: string;
   authToken: string;
   fromNumber: string;
-};
+}
 
 export function createTwilioSmsProvider(config: TwilioSmsConfig): SmsProvider {
   const client = twilio(config.accountSid, config.authToken);

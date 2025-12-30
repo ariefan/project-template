@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AllUserRolesListData, AllUserRolesListResponses, AuditLogsExportData, AuditLogsExportResponses, AuditLogsGetData, AuditLogsGetResponses, AuditLogsListData, AuditLogsListResponses, AvailableContextsListData, AvailableContextsListResponses, ContextSwitchSwitchData, ContextSwitchSwitchResponses, CurrentUserContextGetData, CurrentUserContextGetResponses, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponses, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponses, ExampleCommentsCreateData, ExampleCommentsCreateResponses, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponses, ExampleCommentsDeleteResponses, ExampleCommentsGetData, ExampleCommentsGetResponses, ExampleCommentsListData, ExampleCommentsListResponses, ExampleCommentsRestoreData, ExampleCommentsRestoreResponses, ExampleCommentsUpdateData, ExampleCommentsUpdateResponses, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponses, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponses, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponses, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponses, ExamplePostsCreateData, ExamplePostsCreateResponses, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponses, ExamplePostsDeleteResponses, ExamplePostsGetData, ExamplePostsGetResponses, ExamplePostsListCursorData, ExamplePostsListCursorResponses, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponses, ExamplePostsListResponses, ExamplePostsRestoreData, ExamplePostsRestoreResponses, ExamplePostsUpdateData, ExamplePostsUpdateResponses, FilesConfirmUploadData, FilesConfirmUploadResponses, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponses, FilesDeleteResponses, FilesDirectUploadData, FilesDirectUploadResponses, FilesDownloadData, FilesDownloadResponses, FilesGetData, FilesGetResponses, FilesInitiateUploadData, FilesInitiateUploadResponses, FilesListData, FilesListResponses, FilesUpdateData, FilesUpdateResponses, GlobalRolesCreateData, GlobalRolesCreateResponses, GlobalRolesDeleteData, GlobalRolesDeleteResponses, GlobalRolesGetData, GlobalRolesGetResponses, GlobalRolesListData, GlobalRolesListResponses, GlobalRolesUpdateData, GlobalRolesUpdateResponses, HealthCheckData, HealthCheckResponses, JobsCancelData, JobsCancelResponses, JobsGetData, JobsGetResponses, JobsListData, JobsListResponses, MigrationGetStatusData, MigrationGetStatusResponses, TenantRolesCreateData, TenantRolesCreateResponses, TenantRolesDeleteData, TenantRolesDeleteResponses, TenantRolesGetData, TenantRolesGetResponses, TenantRolesListData, TenantRolesListResponses, TenantRolesUpdateData, TenantRolesUpdateResponses, UserPermissionsGetData, UserPermissionsGetResponses, UserTenantRolesAssignData, UserTenantRolesAssignResponses, UserTenantRolesListData, UserTenantRolesListResponses, UserTenantRolesRemoveData, UserTenantRolesRemoveResponses, WebhooksCreateData, WebhooksCreateResponses, WebhooksDeleteData, WebhooksDeleteResponses, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponses, WebhooksGetResponses, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponses, WebhooksListEventTypesData, WebhooksListEventTypesResponses, WebhooksListResponses, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponses, WebhooksRotateSecretData, WebhooksRotateSecretResponses, WebhooksTestData, WebhooksTestResponses, WebhooksUpdateData, WebhooksUpdateResponses } from './types.gen';
-import { zAllUserRolesListData, zAllUserRolesListResponse, zAuditLogsExportData, zAuditLogsExportResponse, zAuditLogsGetData, zAuditLogsGetResponse, zAuditLogsListData, zAuditLogsListResponse, zAvailableContextsListData, zAvailableContextsListResponse, zContextSwitchSwitchData, zContextSwitchSwitchResponse, zCurrentUserContextGetData, zCurrentUserContextGetResponse, zExampleCommentsBatchCreateData, zExampleCommentsBatchCreateResponse, zExampleCommentsBatchSoftDeleteData, zExampleCommentsBatchSoftDeleteResponse, zExampleCommentsCreateData, zExampleCommentsCreateResponse, zExampleCommentsDeleteData, zExampleCommentsDeletePermanentData, zExampleCommentsDeletePermanentResponse, zExampleCommentsDeleteResponse, zExampleCommentsGetData, zExampleCommentsGetResponse, zExampleCommentsListData, zExampleCommentsListResponse, zExampleCommentsRestoreData, zExampleCommentsRestoreResponse, zExampleCommentsUpdateData, zExampleCommentsUpdateResponse, zExamplePostsBatchCreateData, zExamplePostsBatchCreateResponse, zExamplePostsBatchRestoreData, zExamplePostsBatchRestoreResponse, zExamplePostsBatchSoftDeleteData, zExamplePostsBatchSoftDeleteResponse, zExamplePostsBatchUpdateData, zExamplePostsBatchUpdateResponse, zExamplePostsCreateData, zExamplePostsCreateResponse, zExamplePostsDeleteData, zExamplePostsDeletePermanentData, zExamplePostsDeletePermanentResponse, zExamplePostsDeleteResponse, zExamplePostsGetData, zExamplePostsGetResponse, zExamplePostsListCursorData, zExamplePostsListCursorResponse, zExamplePostsListData, zExamplePostsListDeletedData, zExamplePostsListDeletedResponse, zExamplePostsListResponse, zExamplePostsRestoreData, zExamplePostsRestoreResponse, zExamplePostsUpdateData, zExamplePostsUpdateResponse, zFilesConfirmUploadData, zFilesConfirmUploadResponse, zFilesDeleteData, zFilesDeletePermanentData, zFilesDeletePermanentResponse, zFilesDeleteResponse, zFilesDirectUploadData, zFilesDirectUploadResponse, zFilesDownloadData, zFilesDownloadResponse, zFilesGetData, zFilesGetResponse, zFilesInitiateUploadData, zFilesInitiateUploadResponse, zFilesListData, zFilesListResponse, zFilesUpdateData, zFilesUpdateResponse, zGlobalRolesCreateData, zGlobalRolesCreateResponse, zGlobalRolesDeleteData, zGlobalRolesDeleteResponse, zGlobalRolesGetData, zGlobalRolesGetResponse, zGlobalRolesListData, zGlobalRolesListResponse, zGlobalRolesUpdateData, zGlobalRolesUpdateResponse, zHealthCheckData, zHealthCheckResponse, zJobsCancelData, zJobsCancelResponse, zJobsGetData, zJobsGetResponse, zJobsListData, zJobsListResponse, zMigrationGetStatusData, zMigrationGetStatusResponse, zTenantRolesCreateData, zTenantRolesCreateResponse, zTenantRolesDeleteData, zTenantRolesDeleteResponse, zTenantRolesGetData, zTenantRolesGetResponse, zTenantRolesListData, zTenantRolesListResponse, zTenantRolesUpdateData, zTenantRolesUpdateResponse, zUserPermissionsGetData, zUserPermissionsGetResponse, zUserTenantRolesAssignData, zUserTenantRolesAssignResponse, zUserTenantRolesListData, zUserTenantRolesListResponse, zUserTenantRolesRemoveData, zUserTenantRolesRemoveResponse, zWebhooksCreateData, zWebhooksCreateResponse, zWebhooksDeleteData, zWebhooksDeleteResponse, zWebhooksGetData, zWebhooksGetDeliveryData, zWebhooksGetDeliveryResponse, zWebhooksGetResponse, zWebhooksListData, zWebhooksListDeliveriesData, zWebhooksListDeliveriesResponse, zWebhooksListEventTypesData, zWebhooksListEventTypesResponse, zWebhooksListResponse, zWebhooksRetryDeliveryData, zWebhooksRetryDeliveryResponse, zWebhooksRotateSecretData, zWebhooksRotateSecretResponse, zWebhooksTestData, zWebhooksTestResponse, zWebhooksUpdateData, zWebhooksUpdateResponse } from './zod.gen';
+import type { AllUserRolesListData, AllUserRolesListResponses, AuditLogsExportData, AuditLogsExportResponses, AuditLogsGetData, AuditLogsGetResponses, AuditLogsListData, AuditLogsListResponses, AvailableContextsListData, AvailableContextsListResponses, ContextSwitchSwitchData, ContextSwitchSwitchResponses, CurrentUserContextGetData, CurrentUserContextGetResponses, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponses, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponses, ExampleCommentsCreateData, ExampleCommentsCreateResponses, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponses, ExampleCommentsDeleteResponses, ExampleCommentsGetData, ExampleCommentsGetResponses, ExampleCommentsListData, ExampleCommentsListResponses, ExampleCommentsRestoreData, ExampleCommentsRestoreResponses, ExampleCommentsUpdateData, ExampleCommentsUpdateResponses, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponses, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponses, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponses, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponses, ExamplePostsCreateData, ExamplePostsCreateResponses, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponses, ExamplePostsDeleteResponses, ExamplePostsGetData, ExamplePostsGetResponses, ExamplePostsListCursorData, ExamplePostsListCursorResponses, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponses, ExamplePostsListResponses, ExamplePostsRestoreData, ExamplePostsRestoreResponses, ExamplePostsUpdateData, ExamplePostsUpdateResponses, FilesConfirmUploadData, FilesConfirmUploadResponses, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponses, FilesDeleteResponses, FilesDirectUploadData, FilesDirectUploadResponses, FilesDownloadData, FilesDownloadResponses, FilesGetData, FilesGetResponses, FilesInitiateUploadData, FilesInitiateUploadResponses, FilesListData, FilesListResponses, FilesUpdateData, FilesUpdateResponses, GlobalRolesCreateData, GlobalRolesCreateResponses, GlobalRolesDeleteData, GlobalRolesDeleteResponses, GlobalRolesGetData, GlobalRolesGetResponses, GlobalRolesListData, GlobalRolesListResponses, GlobalRolesUpdateData, GlobalRolesUpdateResponses, HealthCheckData, HealthCheckResponses, JobsCancelData, JobsCancelResponses, JobsGetData, JobsGetResponses, JobsListData, JobsListResponses, MigrationGetStatusData, MigrationGetStatusResponses, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponses, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponses, NotificationsDeleteData, NotificationsDeleteResponses, NotificationsGetData, NotificationsGetResponses, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponses, NotificationsListData, NotificationsListResponses, NotificationsMarkAllReadData, NotificationsMarkAllReadResponses, NotificationsMarkReadData, NotificationsMarkReadResponses, NotificationsMarkUnreadData, NotificationsMarkUnreadResponses, NotificationsRestoreData, NotificationsRestoreResponses, NotificationsSendData, NotificationsSendResponses, TenantRolesCreateData, TenantRolesCreateResponses, TenantRolesDeleteData, TenantRolesDeleteResponses, TenantRolesGetData, TenantRolesGetResponses, TenantRolesListData, TenantRolesListResponses, TenantRolesUpdateData, TenantRolesUpdateResponses, UserPermissionsGetData, UserPermissionsGetResponses, UserTenantRolesAssignData, UserTenantRolesAssignResponses, UserTenantRolesListData, UserTenantRolesListResponses, UserTenantRolesRemoveData, UserTenantRolesRemoveResponses, WebhooksCreateData, WebhooksCreateResponses, WebhooksDeleteData, WebhooksDeleteResponses, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponses, WebhooksGetResponses, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponses, WebhooksListEventTypesData, WebhooksListEventTypesResponses, WebhooksListResponses, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponses, WebhooksRotateSecretData, WebhooksRotateSecretResponses, WebhooksTestData, WebhooksTestResponses, WebhooksUpdateData, WebhooksUpdateResponses } from './types.gen';
+import { zAllUserRolesListData, zAllUserRolesListResponse, zAuditLogsExportData, zAuditLogsExportResponse, zAuditLogsGetData, zAuditLogsGetResponse, zAuditLogsListData, zAuditLogsListResponse, zAvailableContextsListData, zAvailableContextsListResponse, zContextSwitchSwitchData, zContextSwitchSwitchResponse, zCurrentUserContextGetData, zCurrentUserContextGetResponse, zExampleCommentsBatchCreateData, zExampleCommentsBatchCreateResponse, zExampleCommentsBatchSoftDeleteData, zExampleCommentsBatchSoftDeleteResponse, zExampleCommentsCreateData, zExampleCommentsCreateResponse, zExampleCommentsDeleteData, zExampleCommentsDeletePermanentData, zExampleCommentsDeletePermanentResponse, zExampleCommentsDeleteResponse, zExampleCommentsGetData, zExampleCommentsGetResponse, zExampleCommentsListData, zExampleCommentsListResponse, zExampleCommentsRestoreData, zExampleCommentsRestoreResponse, zExampleCommentsUpdateData, zExampleCommentsUpdateResponse, zExamplePostsBatchCreateData, zExamplePostsBatchCreateResponse, zExamplePostsBatchRestoreData, zExamplePostsBatchRestoreResponse, zExamplePostsBatchSoftDeleteData, zExamplePostsBatchSoftDeleteResponse, zExamplePostsBatchUpdateData, zExamplePostsBatchUpdateResponse, zExamplePostsCreateData, zExamplePostsCreateResponse, zExamplePostsDeleteData, zExamplePostsDeletePermanentData, zExamplePostsDeletePermanentResponse, zExamplePostsDeleteResponse, zExamplePostsGetData, zExamplePostsGetResponse, zExamplePostsListCursorData, zExamplePostsListCursorResponse, zExamplePostsListData, zExamplePostsListDeletedData, zExamplePostsListDeletedResponse, zExamplePostsListResponse, zExamplePostsRestoreData, zExamplePostsRestoreResponse, zExamplePostsUpdateData, zExamplePostsUpdateResponse, zFilesConfirmUploadData, zFilesConfirmUploadResponse, zFilesDeleteData, zFilesDeletePermanentData, zFilesDeletePermanentResponse, zFilesDeleteResponse, zFilesDirectUploadData, zFilesDirectUploadResponse, zFilesDownloadData, zFilesDownloadResponse, zFilesGetData, zFilesGetResponse, zFilesInitiateUploadData, zFilesInitiateUploadResponse, zFilesListData, zFilesListResponse, zFilesUpdateData, zFilesUpdateResponse, zGlobalRolesCreateData, zGlobalRolesCreateResponse, zGlobalRolesDeleteData, zGlobalRolesDeleteResponse, zGlobalRolesGetData, zGlobalRolesGetResponse, zGlobalRolesListData, zGlobalRolesListResponse, zGlobalRolesUpdateData, zGlobalRolesUpdateResponse, zHealthCheckData, zHealthCheckResponse, zJobsCancelData, zJobsCancelResponse, zJobsGetData, zJobsGetResponse, zJobsListData, zJobsListResponse, zMigrationGetStatusData, zMigrationGetStatusResponse, zNotificationPreferencesRoutesGetPreferencesData, zNotificationPreferencesRoutesGetPreferencesResponse, zNotificationPreferencesRoutesUpdatePreferencesData, zNotificationPreferencesRoutesUpdatePreferencesResponse, zNotificationsDeleteData, zNotificationsDeleteResponse, zNotificationsGetData, zNotificationsGetResponse, zNotificationsGetUnreadCountData, zNotificationsGetUnreadCountResponse, zNotificationsListData, zNotificationsListResponse, zNotificationsMarkAllReadData, zNotificationsMarkAllReadResponse, zNotificationsMarkReadData, zNotificationsMarkReadResponse, zNotificationsMarkUnreadData, zNotificationsMarkUnreadResponse, zNotificationsRestoreData, zNotificationsRestoreResponse, zNotificationsSendData, zNotificationsSendResponse, zTenantRolesCreateData, zTenantRolesCreateResponse, zTenantRolesDeleteData, zTenantRolesDeleteResponse, zTenantRolesGetData, zTenantRolesGetResponse, zTenantRolesListData, zTenantRolesListResponse, zTenantRolesUpdateData, zTenantRolesUpdateResponse, zUserPermissionsGetData, zUserPermissionsGetResponse, zUserTenantRolesAssignData, zUserTenantRolesAssignResponse, zUserTenantRolesListData, zUserTenantRolesListResponse, zUserTenantRolesRemoveData, zUserTenantRolesRemoveResponse, zWebhooksCreateData, zWebhooksCreateResponse, zWebhooksDeleteData, zWebhooksDeleteResponse, zWebhooksGetData, zWebhooksGetDeliveryData, zWebhooksGetDeliveryResponse, zWebhooksGetResponse, zWebhooksListData, zWebhooksListDeliveriesData, zWebhooksListDeliveriesResponse, zWebhooksListEventTypesData, zWebhooksListEventTypesResponse, zWebhooksListResponse, zWebhooksRetryDeliveryData, zWebhooksRetryDeliveryResponse, zWebhooksRotateSecretData, zWebhooksRotateSecretResponse, zWebhooksTestData, zWebhooksTestResponse, zWebhooksUpdateData, zWebhooksUpdateResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -47,6 +47,128 @@ export const migrationGetStatus = <ThrowOnError extends boolean = false>(options
     requestValidator: async (data) => await zMigrationGetStatusData.parseAsync(data),
     responseValidator: async (data) => await zMigrationGetStatusResponse.parseAsync(data),
     url: '/v1/migration/status',
+    ...options
+});
+
+/**
+ * List notifications
+ *
+ * List user's notification history
+ * Returns notifications for the authenticated user, excluding soft-deleted ones
+ */
+export const notificationsList = <ThrowOnError extends boolean = false>(options?: Options<NotificationsListData, ThrowOnError>) => (options?.client ?? client).get<NotificationsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsListData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsListResponse.parseAsync(data),
+    url: '/v1/notifications',
+    ...options
+});
+
+/**
+ * Mark all notifications as read
+ *
+ * Mark all notifications as read for the current user
+ * Returns the count of notifications that were marked as read
+ */
+export const notificationsMarkAllRead = <ThrowOnError extends boolean = false>(options?: Options<NotificationsMarkAllReadData, ThrowOnError>) => (options?.client ?? client).post<NotificationsMarkAllReadResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsMarkAllReadData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsMarkAllReadResponse.parseAsync(data),
+    url: '/v1/notifications/mark-all-read',
+    ...options
+});
+
+/**
+ * Send notification
+ *
+ * Send a notification
+ * Queues the notification for delivery through the specified channel
+ * Requires authentication. Consider adding authorization for production use.
+ */
+export const notificationsSend = <ThrowOnError extends boolean = false>(options: Options<NotificationsSendData, ThrowOnError>) => (options.client ?? client).post<NotificationsSendResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsSendData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsSendResponse.parseAsync(data),
+    url: '/v1/notifications/send',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get unread notification count
+ *
+ * Get count of unread notifications
+ * Returns the number of unread notifications for the current user
+ */
+export const notificationsGetUnreadCount = <ThrowOnError extends boolean = false>(options?: Options<NotificationsGetUnreadCountData, ThrowOnError>) => (options?.client ?? client).get<NotificationsGetUnreadCountResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsGetUnreadCountData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsGetUnreadCountResponse.parseAsync(data),
+    url: '/v1/notifications/unread/count',
+    ...options
+});
+
+/**
+ * Delete notification
+ *
+ * Soft delete a notification
+ * Marks the notification as deleted without actually removing it
+ */
+export const notificationsDelete = <ThrowOnError extends boolean = false>(options: Options<NotificationsDeleteData, ThrowOnError>) => (options.client ?? client).delete<NotificationsDeleteResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsDeleteData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsDeleteResponse.parseAsync(data),
+    url: '/v1/notifications/{id}',
+    ...options
+});
+
+/**
+ * Get notification by ID
+ *
+ * Get a specific notification by ID
+ * Only returns notifications owned by the authenticated user
+ */
+export const notificationsGet = <ThrowOnError extends boolean = false>(options: Options<NotificationsGetData, ThrowOnError>) => (options.client ?? client).get<NotificationsGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsGetData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsGetResponse.parseAsync(data),
+    url: '/v1/notifications/{id}',
+    ...options
+});
+
+/**
+ * Mark notification as read
+ *
+ * Mark a notification as read
+ * Updates the readAt timestamp for the notification
+ */
+export const notificationsMarkRead = <ThrowOnError extends boolean = false>(options: Options<NotificationsMarkReadData, ThrowOnError>) => (options.client ?? client).patch<NotificationsMarkReadResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsMarkReadData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsMarkReadResponse.parseAsync(data),
+    url: '/v1/notifications/{id}/read',
+    ...options
+});
+
+/**
+ * Restore notification
+ *
+ * Restore a soft-deleted notification
+ * Clears the deletedAt timestamp to restore the notification
+ */
+export const notificationsRestore = <ThrowOnError extends boolean = false>(options: Options<NotificationsRestoreData, ThrowOnError>) => (options.client ?? client).post<NotificationsRestoreResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsRestoreData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsRestoreResponse.parseAsync(data),
+    url: '/v1/notifications/{id}/restore',
+    ...options
+});
+
+/**
+ * Mark notification as unread
+ *
+ * Mark a notification as unread
+ * Clears the readAt timestamp for the notification
+ */
+export const notificationsMarkUnread = <ThrowOnError extends boolean = false>(options: Options<NotificationsMarkUnreadData, ThrowOnError>) => (options.client ?? client).patch<NotificationsMarkUnreadResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationsMarkUnreadData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationsMarkUnreadResponse.parseAsync(data),
+    url: '/v1/notifications/{id}/unread',
     ...options
 });
 
@@ -886,6 +1008,36 @@ export const webhooksTest = <ThrowOnError extends boolean = false>(options: Opti
     responseValidator: async (data) => await zWebhooksTestResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/webhooks/{webhookId}/test',
     ...options
+});
+
+/**
+ * Get notification preferences
+ *
+ * Get notification preferences for the current user
+ * Returns default values if no preferences are set
+ */
+export const notificationPreferencesRoutesGetPreferences = <ThrowOnError extends boolean = false>(options?: Options<NotificationPreferencesRoutesGetPreferencesData, ThrowOnError>) => (options?.client ?? client).get<NotificationPreferencesRoutesGetPreferencesResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationPreferencesRoutesGetPreferencesData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationPreferencesRoutesGetPreferencesResponse.parseAsync(data),
+    url: '/v1/preferences',
+    ...options
+});
+
+/**
+ * Update notification preferences
+ *
+ * Update notification preferences for the current user
+ * Supports partial updates - only provided fields will be updated
+ */
+export const notificationPreferencesRoutesUpdatePreferences = <ThrowOnError extends boolean = false>(options: Options<NotificationPreferencesRoutesUpdatePreferencesData, ThrowOnError>) => (options.client ?? client).patch<NotificationPreferencesRoutesUpdatePreferencesResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zNotificationPreferencesRoutesUpdatePreferencesData.parseAsync(data),
+    responseValidator: async (data) => await zNotificationPreferencesRoutesUpdatePreferencesResponse.parseAsync(data),
+    url: '/v1/preferences',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

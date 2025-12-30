@@ -89,7 +89,11 @@
       "Bash(pnpm expo start:*)",
       "Bash(timeout:*)",
       "Bash(pnpm --filter mobile typecheck:*)",
-      "Bash(taskkill //F //PID 147528)"
+      "Bash(taskkill //F //PID 147528)",
+      "Bash(pnpm --filter @workspace/db typecheck:*)",
+      "Bash(column -t -s'|':*)",
+      "Bash(test:*)",
+      "Bash(pnpm --filter @workspace/notifications typecheck:*)"
     ]
   }
 }

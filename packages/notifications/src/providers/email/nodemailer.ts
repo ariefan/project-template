@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import type { EmailPayload, SendResult } from "../../types";
 import type { EmailProvider } from "../types";
 
-export type NodemailerConfig = {
+export interface NodemailerConfig {
   host: string;
   port: number;
   secure: boolean;
@@ -10,7 +10,7 @@ export type NodemailerConfig = {
     user: string;
     pass: string;
   };
-};
+}
 
 export function createNodemailerProvider(
   config: NodemailerConfig,

@@ -7,9 +7,9 @@ import {
 import { cn } from "@workspace/ui/lib/utils";
 import { Code, Headphones, Shield, Zap } from "lucide-react";
 
-type FeaturesProps = {
+interface FeaturesProps {
   className?: string;
-};
+}
 
 const features = [
   {
@@ -59,11 +59,11 @@ export function Features({ className }: FeaturesProps) {
             const Icon = feature.icon;
             return (
               <Card
-                className="group hover:-translate-y-1 relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-md transition-all duration-300 hover:border-border hover:shadow-xl"
+                className="group relative overflow-hidden border-border/50 bg-card/50 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-xl"
                 key={feature.title}
               >
                 <CardHeader>
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-[oklch(0.7_0.15_260)] to-[oklch(0.65_0.12_320)]">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-linear-to-br from-[oklch(0.7_0.15_260)] to-[oklch(0.65_0.12_320)]">
                     <Icon className="h-6 w-6 text-white" />
                   </div>
                   <CardTitle className="text-xl">{feature.title}</CardTitle>

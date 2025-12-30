@@ -46,10 +46,10 @@ export type Role = (typeof ROLES)[keyof typeof ROLES];
 /**
  * Result of an authorization check
  */
-export type AuthorizationResult = {
+export interface AuthorizationResult {
   allowed: boolean;
   resource: string;
   action: string;
   subject: string;
   domain: string;
-};
+}

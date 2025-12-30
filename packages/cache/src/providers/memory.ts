@@ -1,9 +1,9 @@
 import type { CacheProvider } from "../types";
 
-type MemoryEntry = {
+interface MemoryEntry {
   value: unknown;
   expiresAt: number | null;
-};
+}
 
 /**
  * In-memory cache provider with LRU eviction

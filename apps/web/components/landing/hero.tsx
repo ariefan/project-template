@@ -3,9 +3,9 @@ import { cn } from "@workspace/ui/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-type HeroProps = {
+interface HeroProps {
   className?: string;
-};
+}
 
 export function Hero({ className }: HeroProps) {
   return (
@@ -16,8 +16,8 @@ export function Hero({ className }: HeroProps) {
       )}
     >
       {/* Background gradient effects */}
-      <div className="-z-10 absolute inset-0">
-        <div className="-translate-x-1/2 -translate-y-1/2 absolute top-0 left-1/2">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="h-[500px] w-[500px] rounded-full bg-[oklch(0.7_0.08_280_/_0.15)] blur-3xl" />
         </div>
         <div className="absolute top-1/4 right-1/4">

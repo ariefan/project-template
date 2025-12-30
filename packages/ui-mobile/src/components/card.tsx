@@ -1,6 +1,6 @@
-import { Text, TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { View, type ViewProps } from "react-native";
+import { cn } from "../lib/utils";
+import { Text, TextClassContext } from "./text";
 
 function Card({ className, ...props }: ViewProps & React.RefAttributes<View>) {
   return (

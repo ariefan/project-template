@@ -13,16 +13,16 @@ import { executeDelivery } from "../services/webhook-delivery.service";
 
 const QUEUE_NAME = "webhook-delivery";
 
-export type WebhookQueueConfig = {
+export interface WebhookQueueConfig {
   connectionString: string;
   concurrency?: number;
-};
+}
 
-export type WebhookJobData = {
+export interface WebhookJobData {
   deliveryId: string;
-};
+}
 
-export type WebhookQueue = {
+export interface WebhookQueue {
   start(): Promise<void>;
   stop(): Promise<void>;
   enqueue(deliveryId: string): Promise<string>;
@@ -32,7 +32,7 @@ export type WebhookQueue = {
     completed: number;
     failed: number;
   }>;
-};
+}
 
 async function scheduleRetryIfNeeded(
   boss: PgBoss,

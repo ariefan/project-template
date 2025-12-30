@@ -96,6 +96,12 @@ export const notifications = pgTable(
     deliveredAt: timestamp("delivered_at"),
     failedAt: timestamp("failed_at"),
 
+    // User engagement tracking
+    readAt: timestamp("read_at"),
+
+    // Soft delete
+    deletedAt: timestamp("deleted_at"),
+
     // Retry handling
     retryCount: integer("retry_count").notNull().default(0),
     maxRetries: integer("max_retries").notNull().default(3),
@@ -118,6 +124,8 @@ export const notifications = pgTable(
     index("notifications_channel_idx").on(table.channel),
     index("notifications_created_at_idx").on(table.createdAt),
     index("notifications_campaign_id_idx").on(table.campaignId),
+    index("notifications_read_at_idx").on(table.readAt),
+    index("notifications_deleted_at_idx").on(table.deletedAt),
   ]
 );
 

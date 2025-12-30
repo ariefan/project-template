@@ -1,11 +1,11 @@
-export type MockOrganization = {
+export interface MockOrganization {
   id: string;
   name: string;
   slug: string;
   logo: string | null;
   createdAt: Date;
   metadata: Record<string, unknown> | null;
-};
+}
 
 let orgCounter = 0;
 

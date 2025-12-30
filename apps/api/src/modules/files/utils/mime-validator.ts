@@ -42,11 +42,11 @@ export const ALLOWED_MIME_TYPES: Record<
  */
 export const DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-export type MimeValidationResult = {
+export interface MimeValidationResult {
   valid: boolean;
   error?: string;
   maxSize?: number;
-};
+}
 
 /**
  * Validate a MIME type against the whitelist

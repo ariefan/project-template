@@ -3,9 +3,9 @@ import { cn } from "@workspace/ui/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-type FinalCTAProps = {
+interface FinalCTAProps {
   className?: string;
-};
+}
 
 export function FinalCTA({ className }: FinalCTAProps) {
   return (
@@ -17,11 +17,11 @@ export function FinalCTA({ className }: FinalCTAProps) {
       id="cta"
     >
       {/* Background gradient */}
-      <div className="-z-10 absolute inset-0 bg-gradient-to-br from-[oklch(0.3_0.05_260)] to-[oklch(0.25_0.03_320)]" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[oklch(0.3_0.05_260)] to-[oklch(0.25_0.03_320)]" />
 
       {/* Glow effects */}
-      <div className="-z-10 absolute inset-0">
-        <div className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="h-[600px] w-[600px] rounded-full bg-[oklch(0.6_0.2_280_/_0.2)] blur-3xl" />
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { View } from "react-native";
+import { cn } from "../lib/utils";
 
 function Skeleton({
   className,

@@ -33,7 +33,7 @@ function toExampleComment(
   };
 }
 
-export type ListExampleCommentsOptions = {
+export interface ListExampleCommentsOptions {
   page: number;
   pageSize: number;
   orderBy?: string;
@@ -42,12 +42,12 @@ export type ListExampleCommentsOptions = {
   contentContains?: string;
   createdAfter?: Date;
   createdBefore?: Date;
-};
+}
 
-export type ListExampleCommentsResult = {
+export interface ListExampleCommentsResult {
   comments: ExampleComment[];
   totalCount: number;
-};
+}
 
 export async function listExampleComments(
   orgId: string,

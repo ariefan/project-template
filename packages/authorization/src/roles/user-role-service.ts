@@ -11,13 +11,13 @@ import type { Enforcer } from "../types";
 /**
  * Input for assigning a role to a user
  */
-export type AssignRoleInput = {
+export interface AssignRoleInput {
   userId: string;
   roleId: string;
   applicationId: string;
   tenantId?: string | null;
   assignedBy?: string;
-};
+}
 
 /**
  * Generate an assignment ID with prefix

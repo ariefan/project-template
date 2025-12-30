@@ -1,17 +1,17 @@
 /**
  * Presigned URL response for uploads
  */
-export type PresignedUploadUrl = {
+export interface PresignedUploadUrl {
   url: string;
   method: "PUT";
   headers: Record<string, string>;
   expiresAt: Date;
-};
+}
 
 /**
  * Storage provider configuration
  */
-export type StorageConfig = {
+export interface StorageConfig {
   type: "local" | "s3";
 
   // Local provider options
@@ -23,13 +23,13 @@ export type StorageConfig = {
   s3Bucket?: string;
   s3AccessKeyId?: string;
   s3SecretAccessKey?: string;
-};
+}
 
 /**
  * Storage provider type
  * Abstracts file storage operations for different backends
  */
-export type StorageProvider = {
+export interface StorageProvider {
   /** Provider name for logging */
   readonly name: string;
 
@@ -84,14 +84,14 @@ export type StorageProvider = {
    * @param path - Storage path
    */
   getMetadata(path: string): Promise<FileMetadata | null>;
-};
+}
 
 /**
  * File metadata
  */
-export type FileMetadata = {
+export interface FileMetadata {
   size: number;
   contentType: string;
   lastModified: Date;
   etag?: string;
-};
+}

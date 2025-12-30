@@ -10,11 +10,11 @@ import {
   Text,
 } from "@react-email/components";
 
-export type VerificationEmailProps = {
+export interface VerificationEmailProps {
   userName: string;
   verificationUrl: string;
   expiresIn?: string;
-};
+}
 
 export function VerificationEmail({
   userName,

@@ -18,19 +18,19 @@ function generateSecret(): string {
   return `whsec_${crypto.randomBytes(24).toString("base64url")}`;
 }
 
-export type CreateWebhookInput = {
+export interface CreateWebhookInput {
   orgId: string;
   name: string;
   url: string;
   events: string[];
   description?: string;
   createdBy: string;
-};
+}
 
-export type CreateWebhookResult = {
+export interface CreateWebhookResult {
   webhook: WebhookRow;
   secret: string; // Only returned on create
-};
+}
 
 /**
  * Create a new webhook
@@ -86,13 +86,13 @@ export function listWebhooks(
   return webhookRepository.findByOrg(orgId, options);
 }
 
-export type UpdateWebhookInput = {
+export interface UpdateWebhookInput {
   name?: string;
   url?: string;
   events?: string[];
   isActive?: boolean;
   description?: string;
-};
+}
 
 /**
  * Update a webhook

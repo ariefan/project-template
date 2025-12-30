@@ -169,6 +169,33 @@ Use **camelCase** for all JSON field names.
 }
 ```
 
+## Error Codes
+
+Use **camelCase** for error codes to match JSON field naming convention.
+
+**Examples:**
+```json
+{
+  "error": {
+    "code": "validationError",
+    "message": "The request data is invalid",
+    "details": [
+      {
+        "field": "email",
+        "code": "invalidFormat",
+        "message": "Email address is not valid"
+      }
+    ]
+  }
+}
+```
+
+**Standard error codes:** `badRequest`, `validationError`, `unauthorized`, `forbidden`, `notFound`, `conflict`, `rateLimitExceeded`, `internalError`
+
+**Validation codes:** `required`, `invalidFormat`, `invalidType`, `outOfRange`, `tooShort`, `tooLong`, `alreadyExists`
+
+**See:** [Error Codes](../04-error-handling/02-error-codes.md)
+
 ## Boolean Fields
 
 Prefix with `is`, `has`, `can`, or `should` for clarity (using camelCase).

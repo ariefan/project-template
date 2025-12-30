@@ -1,8 +1,4 @@
 import * as DropdownMenuPrimitive from "@rn-primitives/dropdown-menu";
-import { Icon } from "@workspace/ui-mobile/components/icon";
-import { NativeOnlyAnimatedView } from "@workspace/ui-mobile/components/native-only-animated-view";
-import { TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import {
   Check,
   ChevronDown,
@@ -21,6 +17,10 @@ import {
 } from "react-native";
 import { FadeIn } from "react-native-reanimated";
 import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens";
+import { cn } from "../lib/utils";
+import { Icon } from "./icon";
+import { NativeOnlyAnimatedView } from "./native-only-animated-view";
+import { TextClassContext } from "./text";
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -47,11 +47,13 @@ function DropdownMenuSubTrigger({
     inset?: boolean;
   }) {
   const { open } = DropdownMenuPrimitive.useSubContext();
-  let icon = ChevronDown;
+  let icon: typeof ChevronRight;
   if (Platform.OS === "web") {
     icon = ChevronRight;
   } else if (open) {
     icon = ChevronUp;
+  } else {
+    icon = ChevronDown;
   }
   return (
     <TextClassContext.Provider

@@ -3,20 +3,20 @@ import { createUser, type MockUser } from "../factories/user";
 import { createMockCache, type MockCacheProvider } from "../mocks/cache";
 import { createMockDb, type MockDb } from "../mocks/db";
 
-export type TestAppOptions = {
+export interface TestAppOptions {
   /** Use mock database instead of real one */
   mockDb?: boolean;
   /** Use mock cache instead of real one */
   mockCache?: boolean;
   /** Use mock authentication (user will be logged in) */
   mockAuth?: boolean | MockUser;
-};
+}
 
-export type TestAppContext = {
+export interface TestAppContext {
   mockDb: MockDb | null;
   mockCache: MockCacheProvider | null;
   mockUser: MockUser | null;
-};
+}
 
 /**
  * Create a test Fastify application with mocked dependencies

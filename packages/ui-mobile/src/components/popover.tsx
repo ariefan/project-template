@@ -1,11 +1,11 @@
 import * as PopoverPrimitive from "@rn-primitives/popover";
-import { NativeOnlyAnimatedView } from "@workspace/ui-mobile/components/native-only-animated-view";
-import { TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import * as React from "react";
 import { Platform, StyleSheet } from "react-native";
 import { FadeIn, FadeOut } from "react-native-reanimated";
 import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens";
+import { cn } from "../lib/utils";
+import { NativeOnlyAnimatedView } from "./native-only-animated-view";
+import { TextClassContext } from "./text";
 
 const Popover = PopoverPrimitive.Root;
 

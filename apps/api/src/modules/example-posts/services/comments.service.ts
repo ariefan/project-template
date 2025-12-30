@@ -8,7 +8,7 @@ import { generateId } from "../../../lib/response";
 import * as commentsRepo from "../repositories/comments.repository";
 import * as postsRepo from "../repositories/posts.repository";
 
-export type PaginatedExampleComments = {
+export interface PaginatedExampleComments {
   comments: ExampleComment[];
   page: number;
   pageSize: number;
@@ -16,9 +16,9 @@ export type PaginatedExampleComments = {
   totalPages: number;
   hasNext: boolean;
   hasPrevious: boolean;
-};
+}
 
-export type ListExampleCommentsOptions = {
+export interface ListExampleCommentsOptions {
   page: number;
   pageSize: number;
   orderBy?: string;
@@ -26,7 +26,7 @@ export type ListExampleCommentsOptions = {
   contentContains?: string;
   createdAfter?: string;
   createdBefore?: string;
-};
+}
 
 export async function listExampleComments(
   orgId: string,
@@ -128,13 +128,13 @@ export async function updateExampleComment(
   return updated;
 }
 
-export type SoftDeleteResult = {
+export interface SoftDeleteResult {
   id: string;
   deletedAt: string;
   deletedBy: string;
   canRestore: boolean;
   restoreUntil: string;
-};
+}
 
 export async function softDeleteExampleComment(
   id: string,
@@ -205,7 +205,7 @@ export async function permanentDeleteExampleComment(
   }
 }
 
-export type BatchCreateResult = {
+export interface BatchCreateResult {
   results: Array<{
     index: number;
     status: "success" | "error";
@@ -219,7 +219,7 @@ export type BatchCreateResult = {
     failed: number;
     skipped: number;
   };
-};
+}
 
 export async function batchCreateExampleComments(
   orgId: string,
@@ -276,7 +276,7 @@ export async function batchCreateExampleComments(
   };
 }
 
-export type BatchSoftDeleteResult = {
+export interface BatchSoftDeleteResult {
   results: Array<{
     index: number;
     status: "success" | "error";
@@ -289,15 +289,15 @@ export type BatchSoftDeleteResult = {
     failed: number;
     skipped: number;
   };
-};
+}
 
-export type BatchSoftDeleteOptions = {
+export interface BatchSoftDeleteOptions {
   orgId: string;
   postId: string;
   ids: string[];
   deletedBy: string;
   atomic?: boolean;
-};
+}
 
 export async function batchSoftDeleteExampleComments(
   options: BatchSoftDeleteOptions

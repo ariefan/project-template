@@ -3,9 +3,9 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Github, Linkedin, Twitter } from "lucide-react";
 import Link from "next/link";
 
-type FooterProps = {
+interface FooterProps {
   className?: string;
-};
+}
 
 const footerLinks = {
   product: [

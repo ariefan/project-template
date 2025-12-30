@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-type ChainableQuery<_T = unknown> = {
+interface ChainableQuery<_T = unknown> {
   from: ReturnType<typeof vi.fn>;
   where: ReturnType<typeof vi.fn>;
   orderBy: ReturnType<typeof vi.fn>;
@@ -12,9 +12,9 @@ type ChainableQuery<_T = unknown> = {
   returning: ReturnType<typeof vi.fn>;
   values: ReturnType<typeof vi.fn>;
   set: ReturnType<typeof vi.fn>;
-};
+}
 
-export type MockDb = {
+export interface MockDb {
   select: ReturnType<typeof vi.fn> & {
     mockQueryResult: (data: unknown[]) => void;
   };
@@ -28,7 +28,7 @@ export type MockDb = {
     mockDeleteResult: (count: number) => void;
   };
   transaction: ReturnType<typeof vi.fn>;
-};
+}
 
 function createChainableQuery<T>(resolveWith: T): ChainableQuery<T> {
   const chain: ChainableQuery<T> = {

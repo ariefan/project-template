@@ -8,14 +8,11 @@ type AuthUser = User;
 
 // Extend Fastify request to include session data
 declare module "fastify" {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Module augmentation requires interface
-  // biome-ignore lint/nursery/noShadow: Intentionally extending FastifyRequest
   interface FastifyRequest {
     session: AuthSession | null;
     user: AuthUser | null;
   }
 
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Module augmentation requires interface
   interface FastifyInstance {
     auth: Auth;
   }
@@ -99,12 +96,12 @@ export function requireOrgMembership(orgIdParam = "orgId") {
     // Check org membership using better-auth organization plugin
     const auth = request.server.auth;
     // Type assertion needed because plugin methods aren't visible on base type
-    type OrgApi = {
+    interface OrgApi {
       getFullOrganization: (opts: {
         headers: Headers;
         query: { organizationId: string };
       }) => Promise<{ id: string; members: unknown[] } | null>;
-    };
+    }
     const membership = await (
       auth.api as unknown as OrgApi
     ).getFullOrganization({

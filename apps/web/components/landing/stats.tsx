@@ -1,8 +1,8 @@
 import { cn } from "@workspace/ui/lib/utils";
 
-type StatsProps = {
+interface StatsProps {
   className?: string;
-};
+}
 
 const stats = [
   {

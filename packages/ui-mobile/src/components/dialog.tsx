@@ -1,12 +1,12 @@
 import * as DialogPrimitive from "@rn-primitives/dialog";
-import { Icon } from "@workspace/ui-mobile/components/icon";
-import { NativeOnlyAnimatedView } from "@workspace/ui-mobile/components/native-only-animated-view";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { X } from "lucide-react-native";
 import * as React from "react";
 import { Platform, Text, View, type ViewProps } from "react-native";
 import { FadeIn, FadeOut } from "react-native-reanimated";
 import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens";
+import { cn } from "../lib/utils";
+import { Icon } from "./icon";
+import { NativeOnlyAnimatedView } from "./native-only-animated-view";
 
 const Dialog = DialogPrimitive.Root;
 

@@ -1,7 +1,10 @@
 import {
+  and,
+  count,
   db,
   eq,
   inArray,
+  isNull,
   type Notification,
   notifications,
   users,
@@ -25,7 +28,7 @@ import {
   type PreferenceService,
 } from "./preference.service";
 
-export type NotificationService = {
+export interface NotificationService {
   send(request: SendNotificationRequest): Promise<SendResult>;
   sendBulk(
     request: SendBulkRequest
@@ -35,13 +38,19 @@ export type NotificationService = {
     options?: { limit?: number; offset?: number }
   ): Promise<Notification[]>;
   getById(id: string): Promise<Notification | null>;
-};
+  markAsRead(notificationId: string, userId: string): Promise<void>;
+  markAsUnread(notificationId: string, userId: string): Promise<void>;
+  markAllAsRead(userId: string): Promise<number>;
+  getUnreadCount(userId: string): Promise<number>;
+  deleteNotification(notificationId: string, userId: string): Promise<void>;
+  restoreNotification(notificationId: string, userId: string): Promise<void>;
+}
 
-export type NotificationServiceDeps = {
+export interface NotificationServiceDeps {
   providers: ProviderRegistry;
   queue?: NotificationQueue;
   preferenceService?: PreferenceService;
-};
+}
 
 type AnyPayload =
   | EmailPayload
@@ -377,7 +386,9 @@ export function createNotificationService(
       return db
         .select()
         .from(notifications)
-        .where(eq(notifications.userId, userId))
+        .where(
+          and(eq(notifications.userId, userId), isNull(notifications.deletedAt))
+        )
         .orderBy(notifications.createdAt)
         .limit(options?.limit ?? 50)
         .offset(options?.offset ?? 0);
@@ -391,6 +402,93 @@ export function createNotificationService(
         .limit(1);
 
       return notification ?? null;
+    },
+
+    async markAsRead(notificationId: string, userId: string): Promise<void> {
+      await db
+        .update(notifications)
+        .set({ readAt: new Date(), updatedAt: new Date() })
+        .where(
+          and(
+            eq(notifications.id, notificationId),
+            eq(notifications.userId, userId),
+            isNull(notifications.deletedAt)
+          )
+        );
+    },
+
+    async markAsUnread(notificationId: string, userId: string): Promise<void> {
+      await db
+        .update(notifications)
+        .set({ readAt: null, updatedAt: new Date() })
+        .where(
+          and(
+            eq(notifications.id, notificationId),
+            eq(notifications.userId, userId),
+            isNull(notifications.deletedAt)
+          )
+        );
+    },
+
+    async markAllAsRead(userId: string): Promise<number> {
+      const result = await db
+        .update(notifications)
+        .set({ readAt: new Date(), updatedAt: new Date() })
+        .where(
+          and(
+            eq(notifications.userId, userId),
+            isNull(notifications.readAt),
+            isNull(notifications.deletedAt)
+          )
+        );
+
+      return result.rowCount ?? 0;
+    },
+
+    async getUnreadCount(userId: string): Promise<number> {
+      const [result] = await db
+        .select({ count: count() })
+        .from(notifications)
+        .where(
+          and(
+            eq(notifications.userId, userId),
+            isNull(notifications.readAt),
+            isNull(notifications.deletedAt)
+          )
+        );
+
+      return result?.count ?? 0;
+    },
+
+    async deleteNotification(
+      notificationId: string,
+      userId: string
+    ): Promise<void> {
+      await db
+        .update(notifications)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
+        .where(
+          and(
+            eq(notifications.id, notificationId),
+            eq(notifications.userId, userId),
+            isNull(notifications.deletedAt)
+          )
+        );
+    },
+
+    async restoreNotification(
+      notificationId: string,
+      userId: string
+    ): Promise<void> {
+      await db
+        .update(notifications)
+        .set({ deletedAt: null, updatedAt: new Date() })
+        .where(
+          and(
+            eq(notifications.id, notificationId),
+            eq(notifications.userId, userId)
+          )
+        );
     },
   };
 }

@@ -3,33 +3,33 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import { requireAuth } from "../../auth/middleware";
 import * as filesService from "../services/files.service";
 
-type FileParams = {
+interface FileParams {
   orgId: string;
   fileId: string;
-};
+}
 
-type UploadParams = {
+interface UploadParams {
   orgId: string;
   uploadId: string;
-};
+}
 
-type ListFilesQuery = {
+interface ListFilesQuery {
   page?: number;
   pageSize?: number;
   mimeType?: string;
   access?: FileAccess;
-};
+}
 
-type InitiateUploadBody = {
+interface InitiateUploadBody {
   filename: string;
   contentType: string;
   size: number;
   metadata?: Record<string, unknown>;
-};
+}
 
-type UpdateAccessBody = {
+interface UpdateAccessBody {
   access: FileAccess;
-};
+}
 
 /**
  * Files routes

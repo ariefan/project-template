@@ -1,7 +1,4 @@
 import * as AccordionPrimitive from "@rn-primitives/accordion";
-import { Icon } from "@workspace/ui-mobile/components/icon";
-import { TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { ChevronDown } from "lucide-react-native";
 import { Platform, Pressable, View } from "react-native";
 import Animated, {
@@ -12,6 +9,9 @@ import Animated, {
   useDerivedValue,
   withTiming,
 } from "react-native-reanimated";
+import { cn } from "../lib/utils";
+import { Icon } from "./icon";
+import { TextClassContext } from "./text";
 
 function Accordion({
   children,

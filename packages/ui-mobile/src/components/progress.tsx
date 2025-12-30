@@ -1,5 +1,4 @@
 import * as ProgressPrimitive from "@rn-primitives/progress";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { Platform, View } from "react-native";
 import Animated, {
   Extrapolation,
@@ -8,6 +7,7 @@ import Animated, {
   useDerivedValue,
   withSpring,
 } from "react-native-reanimated";
+import { cn } from "../lib/utils";
 
 function Progress({
   className,
@@ -39,10 +39,10 @@ const Indicator = Platform.select({
   default: NullIndicator,
 });
 
-type IndicatorProps = {
+interface IndicatorProps {
   value: number | undefined | null;
   className?: string;
-};
+}
 
 function WebIndicator({ value, className }: IndicatorProps) {
   if (Platform.OS !== "web") {

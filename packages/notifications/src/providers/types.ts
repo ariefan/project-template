@@ -9,9 +9,9 @@ import type {
 } from "../types";
 
 // Provider type - all providers must implement this
-export type NotificationProvider<
+export interface NotificationProvider<
   T extends NotificationPayload = NotificationPayload,
-> = {
+> {
   readonly name: string;
   readonly channel: NotificationChannel;
 
@@ -23,7 +23,7 @@ export type NotificationProvider<
     status: "pending" | "delivered" | "failed" | "unknown";
     updatedAt: Date;
   }>;
-};
+}
 
 // Typed provider interfaces
 export type EmailProvider = NotificationProvider<EmailPayload>;
@@ -32,9 +32,9 @@ export type WhatsAppProvider = NotificationProvider<WhatsAppPayload>;
 export type TelegramProvider = NotificationProvider<TelegramPayload>;
 
 // Provider registry
-export type ProviderRegistry = {
+export interface ProviderRegistry {
   email: EmailProvider | null;
   sms: SmsProvider | null;
   whatsapp: WhatsAppProvider | null;
   telegram: TelegramProvider | null;
-};
+}

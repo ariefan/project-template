@@ -1,5 +1,5 @@
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { Platform, TextInput, type TextInputProps } from "react-native";
+import { cn } from "../lib/utils";
 
 function Textarea({
   className,

@@ -22,7 +22,7 @@ import type { CacheProvider } from "@workspace/cache";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 
-type IdempotencyConfig = {
+interface IdempotencyConfig {
   /** Cache provider for storing idempotency results */
   cacheProvider: CacheProvider;
   /** TTL in seconds (default: 86400 = 24 hours) */
@@ -31,14 +31,14 @@ type IdempotencyConfig = {
   headerName?: string;
   /** Key prefix for cache storage (default: "idempotency:") */
   keyPrefix?: string;
-};
+}
 
-type CachedResponse = {
+interface CachedResponse {
   statusCode: number;
   headers: Record<string, string>;
   body: unknown;
   createdAt: string;
-};
+}
 
 const DEFAULT_TTL_SECONDS = 86_400; // 24 hours
 const DEFAULT_HEADER_NAME = "idempotency-key";
@@ -216,8 +216,6 @@ function idempotencyPlugin(app: FastifyInstance, options: IdempotencyConfig) {
 
 // Extend FastifyRequest type (module augmentation requires interface)
 declare module "fastify" {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Module augmentation requires interface
-  // biome-ignore lint/nursery/noShadow: Required for Fastify declaration merging
   interface FastifyRequest {
     idempotencyKey?: string;
     idempotencyCacheKey?: string;

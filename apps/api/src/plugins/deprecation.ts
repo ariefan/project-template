@@ -22,7 +22,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 
-export type DeprecationConfig = {
+export interface DeprecationConfig {
   /** Whether this endpoint/version is deprecated */
   deprecated: boolean;
   /** ISO date string when the endpoint will be removed */
@@ -33,15 +33,15 @@ export type DeprecationConfig = {
   alternative?: string;
   /** Custom deprecation message */
   message?: string;
-};
+}
 
-export type DeprecationWarning = {
+export interface DeprecationWarning {
   code: "endpointDeprecated" | "versionDeprecated" | "fieldDeprecated";
   message: string;
   sunsetDate?: string;
   alternative?: string;
   documentationUrl?: string;
-};
+}
 
 // Registry of deprecated routes
 const deprecatedRoutes: Record<string, DeprecationConfig> = {
@@ -193,13 +193,10 @@ function injectWarnings(
 }
 
 declare module "fastify" {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Required for module augmentation
   interface FastifyContextConfig {
     deprecation?: DeprecationConfig;
   }
 
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Required for module augmentation
-  // biome-ignore lint/nursery/noShadow: Required for module augmentation
   interface FastifyReply {
     deprecationWarnings?: DeprecationWarning[];
   }

@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-export type MockCacheProvider = {
+export interface MockCacheProvider {
   name: string;
   get: ReturnType<typeof vi.fn>;
   set: ReturnType<typeof vi.fn>;
@@ -14,7 +14,7 @@ export type MockCacheProvider = {
   _storage: Map<string, unknown>;
   /** Helper to preset cached values */
   _preset: (key: string, value: unknown) => void;
-};
+}
 
 /**
  * Create a mock cache provider that simulates @workspace/cache behavior

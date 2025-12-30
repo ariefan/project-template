@@ -1,7 +1,7 @@
 import * as TabsPrimitive from "@rn-primitives/tabs";
-import { TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { Platform } from "react-native";
+import { cn } from "../lib/utils";
+import { TextClassContext } from "./text";
 
 function Tabs({
   className,

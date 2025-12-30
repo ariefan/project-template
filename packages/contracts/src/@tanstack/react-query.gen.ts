@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { allUserRolesList, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsGet, jobsList, migrationGetStatus, type Options, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
-import type { AllUserRolesListData, AllUserRolesListResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, MigrationGetStatusData, MigrationGetStatusResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
+import { allUserRolesList, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsGet, jobsList, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsRestore, notificationsSend, type Options, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { AllUserRolesListData, AllUserRolesListResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -86,19 +86,17 @@ export const migrationGetStatusOptions = (options?: Options<MigrationGetStatusDa
     queryKey: migrationGetStatusQueryKey(options)
 });
 
-export const auditLogsListQueryKey = (options: Options<AuditLogsListData>) => createQueryKey('auditLogsList', options);
+export const notificationsListQueryKey = (options?: Options<NotificationsListData>) => createQueryKey('notificationsList', options);
 
 /**
- * Query audit logs
+ * List notifications
  *
- * Query audit logs
- *
- * Search and filter audit events. Supports pagination.
- * Results are sorted by timestamp descending (newest first).
+ * List user's notification history
+ * Returns notifications for the authenticated user, excluding soft-deleted ones
  */
-export const auditLogsListOptions = (options: Options<AuditLogsListData>) => queryOptions<AuditLogsListResponse, DefaultError, AuditLogsListResponse, ReturnType<typeof auditLogsListQueryKey>>({
+export const notificationsListOptions = (options?: Options<NotificationsListData>) => queryOptions<NotificationsListResponse, DefaultError, NotificationsListResponse, ReturnType<typeof notificationsListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await auditLogsList({
+        const { data } = await notificationsList({
             ...options,
             ...queryKey[0],
             signal,
@@ -106,7 +104,7 @@ export const auditLogsListOptions = (options: Options<AuditLogsListData>) => que
         });
         return data;
     },
-    queryKey: auditLogsListQueryKey(options)
+    queryKey: notificationsListQueryKey(options)
 });
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
@@ -137,6 +135,222 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
     }
     return params as unknown as typeof page;
 };
+
+export const notificationsListInfiniteQueryKey = (options?: Options<NotificationsListData>): QueryKey<Options<NotificationsListData>> => createQueryKey('notificationsList', options, true);
+
+/**
+ * List notifications
+ *
+ * List user's notification history
+ * Returns notifications for the authenticated user, excluding soft-deleted ones
+ */
+export const notificationsListInfiniteOptions = (options?: Options<NotificationsListData>) => infiniteQueryOptions<NotificationsListResponse, DefaultError, InfiniteData<NotificationsListResponse>, QueryKey<Options<NotificationsListData>>, number | Pick<QueryKey<Options<NotificationsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<NotificationsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await notificationsList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsListInfiniteQueryKey(options)
+});
+
+/**
+ * Mark all notifications as read
+ *
+ * Mark all notifications as read for the current user
+ * Returns the count of notifications that were marked as read
+ */
+export const notificationsMarkAllReadMutation = (options?: Partial<Options<NotificationsMarkAllReadData>>): UseMutationOptions<NotificationsMarkAllReadResponse, DefaultError, Options<NotificationsMarkAllReadData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsMarkAllReadResponse, DefaultError, Options<NotificationsMarkAllReadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsMarkAllRead({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Send notification
+ *
+ * Send a notification
+ * Queues the notification for delivery through the specified channel
+ * Requires authentication. Consider adding authorization for production use.
+ */
+export const notificationsSendMutation = (options?: Partial<Options<NotificationsSendData>>): UseMutationOptions<NotificationsSendResponse, DefaultError, Options<NotificationsSendData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsSendResponse, DefaultError, Options<NotificationsSendData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsSend({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const notificationsGetUnreadCountQueryKey = (options?: Options<NotificationsGetUnreadCountData>) => createQueryKey('notificationsGetUnreadCount', options);
+
+/**
+ * Get unread notification count
+ *
+ * Get count of unread notifications
+ * Returns the number of unread notifications for the current user
+ */
+export const notificationsGetUnreadCountOptions = (options?: Options<NotificationsGetUnreadCountData>) => queryOptions<NotificationsGetUnreadCountResponse, DefaultError, NotificationsGetUnreadCountResponse, ReturnType<typeof notificationsGetUnreadCountQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsGetUnreadCount({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsGetUnreadCountQueryKey(options)
+});
+
+/**
+ * Delete notification
+ *
+ * Soft delete a notification
+ * Marks the notification as deleted without actually removing it
+ */
+export const notificationsDeleteMutation = (options?: Partial<Options<NotificationsDeleteData>>): UseMutationOptions<NotificationsDeleteResponse, DefaultError, Options<NotificationsDeleteData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsDeleteResponse, DefaultError, Options<NotificationsDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const notificationsGetQueryKey = (options: Options<NotificationsGetData>) => createQueryKey('notificationsGet', options);
+
+/**
+ * Get notification by ID
+ *
+ * Get a specific notification by ID
+ * Only returns notifications owned by the authenticated user
+ */
+export const notificationsGetOptions = (options: Options<NotificationsGetData>) => queryOptions<NotificationsGetResponse, DefaultError, NotificationsGetResponse, ReturnType<typeof notificationsGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationsGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationsGetQueryKey(options)
+});
+
+/**
+ * Mark notification as read
+ *
+ * Mark a notification as read
+ * Updates the readAt timestamp for the notification
+ */
+export const notificationsMarkReadMutation = (options?: Partial<Options<NotificationsMarkReadData>>): UseMutationOptions<NotificationsMarkReadResponse, DefaultError, Options<NotificationsMarkReadData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsMarkReadResponse, DefaultError, Options<NotificationsMarkReadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsMarkRead({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Restore notification
+ *
+ * Restore a soft-deleted notification
+ * Clears the deletedAt timestamp to restore the notification
+ */
+export const notificationsRestoreMutation = (options?: Partial<Options<NotificationsRestoreData>>): UseMutationOptions<NotificationsRestoreResponse, DefaultError, Options<NotificationsRestoreData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsRestoreResponse, DefaultError, Options<NotificationsRestoreData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsRestore({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mark notification as unread
+ *
+ * Mark a notification as unread
+ * Clears the readAt timestamp for the notification
+ */
+export const notificationsMarkUnreadMutation = (options?: Partial<Options<NotificationsMarkUnreadData>>): UseMutationOptions<NotificationsMarkUnreadResponse, DefaultError, Options<NotificationsMarkUnreadData>> => {
+    const mutationOptions: UseMutationOptions<NotificationsMarkUnreadResponse, DefaultError, Options<NotificationsMarkUnreadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationsMarkUnread({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const auditLogsListQueryKey = (options: Options<AuditLogsListData>) => createQueryKey('auditLogsList', options);
+
+/**
+ * Query audit logs
+ *
+ * Query audit logs
+ *
+ * Search and filter audit events. Supports pagination.
+ * Results are sorted by timestamp descending (newest first).
+ */
+export const auditLogsListOptions = (options: Options<AuditLogsListData>) => queryOptions<AuditLogsListResponse, DefaultError, AuditLogsListResponse, ReturnType<typeof auditLogsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await auditLogsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: auditLogsListQueryKey(options)
+});
 
 export const auditLogsListInfiniteQueryKey = (options: Options<AuditLogsListData>): QueryKey<Options<AuditLogsListData>> => createQueryKey('auditLogsList', options, true);
 
@@ -1595,6 +1809,47 @@ export const webhooksTestMutation = (options?: Partial<Options<WebhooksTestData>
     const mutationOptions: UseMutationOptions<WebhooksTestResponse, DefaultError, Options<WebhooksTestData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await webhooksTest({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const notificationPreferencesRoutesGetPreferencesQueryKey = (options?: Options<NotificationPreferencesRoutesGetPreferencesData>) => createQueryKey('notificationPreferencesRoutesGetPreferences', options);
+
+/**
+ * Get notification preferences
+ *
+ * Get notification preferences for the current user
+ * Returns default values if no preferences are set
+ */
+export const notificationPreferencesRoutesGetPreferencesOptions = (options?: Options<NotificationPreferencesRoutesGetPreferencesData>) => queryOptions<NotificationPreferencesRoutesGetPreferencesResponse, DefaultError, NotificationPreferencesRoutesGetPreferencesResponse, ReturnType<typeof notificationPreferencesRoutesGetPreferencesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await notificationPreferencesRoutesGetPreferences({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: notificationPreferencesRoutesGetPreferencesQueryKey(options)
+});
+
+/**
+ * Update notification preferences
+ *
+ * Update notification preferences for the current user
+ * Supports partial updates - only provided fields will be updated
+ */
+export const notificationPreferencesRoutesUpdatePreferencesMutation = (options?: Partial<Options<NotificationPreferencesRoutesUpdatePreferencesData>>): UseMutationOptions<NotificationPreferencesRoutesUpdatePreferencesResponse, DefaultError, Options<NotificationPreferencesRoutesUpdatePreferencesData>> => {
+    const mutationOptions: UseMutationOptions<NotificationPreferencesRoutesUpdatePreferencesResponse, DefaultError, Options<NotificationPreferencesRoutesUpdatePreferencesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await notificationPreferencesRoutesUpdatePreferences({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

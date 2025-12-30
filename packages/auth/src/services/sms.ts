@@ -2,10 +2,10 @@
  * SMS service interface for auth operations
  * Implementations should use the notification system
  */
-export type SmsService = {
+export interface SmsService {
   sendOTP(phoneNumber: string, code: string): Promise<void>;
   sendVerification(phoneNumber: string, code: string): Promise<void>;
-};
+}
 
 /**
  * Creates a no-op SMS service that logs to console

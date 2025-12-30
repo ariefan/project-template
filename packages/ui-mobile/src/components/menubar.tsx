@@ -1,9 +1,5 @@
 import * as MenubarPrimitive from "@rn-primitives/menubar";
 import { Portal } from "@rn-primitives/portal";
-import { Icon } from "@workspace/ui-mobile/components/icon";
-import { NativeOnlyAnimatedView } from "@workspace/ui-mobile/components/native-only-animated-view";
-import { TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import {
   Check,
   ChevronDown,
@@ -23,6 +19,10 @@ import {
 } from "react-native";
 import { FadeIn } from "react-native-reanimated";
 import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens";
+import { cn } from "../lib/utils";
+import { Icon } from "./icon";
+import { NativeOnlyAnimatedView } from "./native-only-animated-view";
+import { TextClassContext } from "./text";
 
 const MenubarMenu = MenubarPrimitive.Menu;
 
@@ -117,11 +117,13 @@ function MenubarSubTrigger({
     inset?: boolean;
   }) {
   const { open } = MenubarPrimitive.useSubContext();
-  let icon = ChevronDown;
+  let icon: typeof ChevronRight;
   if (Platform.OS === "web") {
     icon = ChevronRight;
   } else if (open) {
     icon = ChevronUp;
+  } else {
+    icon = ChevronDown;
   }
   return (
     <TextClassContext.Provider

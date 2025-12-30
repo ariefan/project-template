@@ -25,7 +25,7 @@
     "prepare": "lefthook install"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.8",
+    "@biomejs/biome": "2.3.10",
     "@vitest/coverage-v8": "^4.0.16",
     "@workspace/typescript-config": "workspace:*",
     "lefthook": "^2.0.12",
@@ -39,8 +39,14 @@
   "pnpm": {
     "overrides": {
       "csstype": "^3.2.3",
-      "@types/react": "^19.1.0",
-      "@types/react-dom": "^19.1.0"
+      "mobile>react": "19.1.0",
+      "mobile>react-dom": "19.1.0",
+      "mobile>@types/react": "~19.1.10",
+      "mobile>@types/react-dom": "~19.1.10",
+      "@workspace/ui-mobile>react": "19.1.0",
+      "@workspace/ui-mobile>react-dom": "19.1.0",
+      "@workspace/ui-mobile>@types/react": "~19.1.10",
+      "@workspace/ui-mobile>@types/react-dom": "~19.1.10"
     }
   },
   "engines": {

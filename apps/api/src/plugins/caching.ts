@@ -22,7 +22,7 @@ import { createHash } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
 
-export type CacheConfig = {
+export interface CacheConfig {
   /** Cache-Control directive */
   cacheControl?: string;
   /** Whether to generate ETags for this route */
@@ -31,7 +31,7 @@ export type CacheConfig = {
   maxAge?: number;
   /** Whether this is private (user-specific) content */
   private?: boolean;
-};
+}
 
 // Route-specific cache configurations
 const routeCacheConfig: Record<string, CacheConfig> = {
@@ -173,7 +173,6 @@ function handleETag(
 }
 
 declare module "fastify" {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Required for module augmentation
   interface FastifyContextConfig {
     cache?: CacheConfig;
   }

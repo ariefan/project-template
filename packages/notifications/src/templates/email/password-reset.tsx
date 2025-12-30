@@ -10,11 +10,11 @@ import {
   Text,
 } from "@react-email/components";
 
-export type PasswordResetEmailProps = {
+export interface PasswordResetEmailProps {
   userName: string;
   resetUrl: string;
   expiresIn?: string;
-};
+}
 
 export function PasswordResetEmail({
   userName,

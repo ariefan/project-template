@@ -6,13 +6,13 @@ import {
 } from "@workspace/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 
-export type ListWebhooksOptions = {
+export interface ListWebhooksOptions {
   page?: number;
   pageSize?: number;
   isActive?: boolean;
-};
+}
 
-export type ListWebhooksResult = {
+export interface ListWebhooksResult {
   data: WebhookRow[];
   pagination: {
     page: number;
@@ -22,7 +22,7 @@ export type ListWebhooksResult = {
     hasNext: boolean;
     hasPrevious: boolean;
   };
-};
+}
 
 /**
  * Create a new webhook

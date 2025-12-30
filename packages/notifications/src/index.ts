@@ -12,12 +12,12 @@ export type NotificationSystemConfig = NotificationServiceConfig & {
   };
 };
 
-export type NotificationSystem = {
+export interface NotificationSystem {
   start(): Promise<void>;
   stop(): Promise<void>;
   notification: ReturnType<typeof createNotificationService>;
   preferences: ReturnType<typeof createPreferenceService>;
-};
+}
 
 export function createNotificationSystem(
   config: NotificationSystemConfig

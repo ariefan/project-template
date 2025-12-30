@@ -13,7 +13,7 @@ import { requireAuth } from "../auth/middleware";
 /**
  * Response types for context endpoints
  */
-type UserContextResponse = {
+interface UserContextResponse {
   data: {
     userId: string;
     activeApplicationId: string | null;
@@ -21,9 +21,9 @@ type UserContextResponse = {
     updatedAt: string;
   };
   meta: { requestId: string };
-};
+}
 
-type AvailableContextsResponse = {
+interface AvailableContextsResponse {
   data: {
     userId: string;
     contexts: Array<{
@@ -34,12 +34,12 @@ type AvailableContextsResponse = {
     }>;
   };
   meta: { requestId: string };
-};
+}
 
-type SwitchContextBody = {
+interface SwitchContextBody {
   applicationId?: string;
   tenantId?: string;
-};
+}
 
 /**
  * Check if user is a member of the specified tenant

@@ -16,14 +16,14 @@ export type ViolationSeverity =
 /**
  * Violation control options
  */
-export type ViolationControl = {
+export interface ViolationControl {
   orgId: string;
   resource: string;
   action: string;
   severity: ViolationSeverity;
   reason: string;
   expiresAt?: Date;
-};
+}
 
 /**
  * Helper functions for managing tenant violations using deny policies

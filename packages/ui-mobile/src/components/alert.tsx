@@ -1,9 +1,9 @@
-import { Icon } from "@workspace/ui-mobile/components/icon";
-import { Text, TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import type { LucideIcon } from "lucide-react-native";
 import * as React from "react";
 import { View, type ViewProps } from "react-native";
+import { cn } from "../lib/utils";
+import { Icon } from "./icon";
+import { Text, TextClassContext } from "./text";
 
 function Alert({
   className,

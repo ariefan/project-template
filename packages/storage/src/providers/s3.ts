@@ -12,13 +12,13 @@ import type {
   StorageProvider,
 } from "../types";
 
-type S3ProviderConfig = {
+interface S3ProviderConfig {
   endpoint?: string;
   region: string;
   bucket: string;
   accessKeyId: string;
   secretAccessKey: string;
-};
+}
 
 /**
  * S3-compatible storage provider

@@ -7,15 +7,15 @@ import {
 } from "@workspace/db/schema";
 import { and, desc, eq, gte } from "drizzle-orm";
 
-export type ListJobsOptions = {
+export interface ListJobsOptions {
   page?: number;
   pageSize?: number;
   status?: JobStatus;
   type?: string;
   createdAfter?: Date;
-};
+}
 
-export type ListJobsResult = {
+export interface ListJobsResult {
   data: JobRow[];
   pagination: {
     page: number;
@@ -25,7 +25,7 @@ export type ListJobsResult = {
     hasNext: boolean;
     hasPrevious: boolean;
   };
-};
+}
 
 /**
  * Create a new job

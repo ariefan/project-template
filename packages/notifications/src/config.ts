@@ -1,6 +1,6 @@
 import type { NotificationServiceConfig } from "./types";
 
-export type NotificationEnvConfig = {
+export interface NotificationEnvConfig {
   EMAIL_PROVIDER: "resend" | "nodemailer";
   RESEND_API_KEY?: string;
   SMTP_HOST?: string;
@@ -16,7 +16,7 @@ export type NotificationEnvConfig = {
   TELEGRAM_BOT_TOKEN?: string;
   QUEUE_CONCURRENCY: number;
   QUEUE_MAX_RETRIES: number;
-};
+}
 
 export function buildServiceConfig(
   env: NotificationEnvConfig

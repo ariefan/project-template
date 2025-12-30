@@ -9,20 +9,20 @@ function generateJobId(): string {
   return `job_${randomBytes(12).toString("hex")}`;
 }
 
-export type CreateJobInput = {
+export interface CreateJobInput {
   orgId: string;
   type: string;
   createdBy: string;
   estimatedCompletion?: Date;
-};
+}
 
-export type ListJobsInput = {
+export interface ListJobsInput {
   page?: number;
   pageSize?: number;
   status?: JobStatus;
   type?: string;
   createdAfter?: Date;
-};
+}
 
 /**
  * Create a new job
@@ -138,10 +138,10 @@ export function failJob(
 /**
  * Job processor helpers for use in job handlers
  */
-export type JobHelpers = {
+export interface JobHelpers {
   updateProgress: (progress: number, message?: string) => Promise<void>;
   log: (message: string) => Promise<void>;
-};
+}
 
 /**
  * Create job helpers for a specific job

@@ -12,7 +12,7 @@ Validate all input before processing.
 ```json
 {
   "error": {
-    "code": "validation_error",
+    "code": "validationError",
     "details": [
       {
         "field": "email",
@@ -30,7 +30,7 @@ Validate all input before processing.
   "details": [
     {
       "field": "email",
-      "code": "invalid_format",
+      "code": "invalidFormat",
       "message": "Email must be a valid email address",
       "metadata": {
         "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
@@ -46,7 +46,7 @@ Validate all input before processing.
   "details": [
     {
       "field": "age",
-      "code": "out_of_range",
+      "code": "outOfRange",
       "message": "Age must be between 18 and 120",
       "metadata": {
         "min": 18,
@@ -73,7 +73,7 @@ function validateUser(data: any) {
   } else if (!isValidEmail(data.email)) {
     errors.push({
       field: 'email',
-      code: 'invalid_format',
+      code: 'invalidFormat',
       message: 'Email must be a valid email address'
     });
   }
@@ -81,7 +81,7 @@ function validateUser(data: any) {
   if (data.age && (data.age < 18 || data.age > 120)) {
     errors.push({
       field: 'age',
-      code: 'out_of_range',
+      code: 'outOfRange',
       message: 'Age must be between 18 and 120',
       metadata: { min: 18, max: 120, actual: data.age }
     });

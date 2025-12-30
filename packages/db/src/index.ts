@@ -6,18 +6,18 @@ import * as schema from "./schema";
 // Types
 // ─────────────────────────────────────────────────────────────
 
-export type DatabaseConfig = {
+export interface DatabaseConfig {
   connectionString: string;
   max?: number;
   idleTimeoutMillis?: number;
-};
+}
 
 export type Database = ReturnType<typeof drizzle<typeof schema>>;
 
-export type DatabaseConnection = {
+export interface DatabaseConnection {
   db: Database;
   pool: Pool;
-};
+}
 
 // ─────────────────────────────────────────────────────────────
 // PRIMARY: Pure factory - apps own the lifecycle

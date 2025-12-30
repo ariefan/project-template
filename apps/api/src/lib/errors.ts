@@ -55,7 +55,7 @@ export class BadRequestError extends AppError {
   }
 }
 
-export type ErrorResult = {
+export interface ErrorResult {
   statusCode: number;
   response: {
     error: {
@@ -65,7 +65,7 @@ export type ErrorResult = {
       requestId: string;
     };
   };
-};
+}
 
 export function handleError(error: unknown, requestId: string): ErrorResult {
   if (error instanceof ValidationError) {

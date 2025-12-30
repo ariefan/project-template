@@ -166,7 +166,7 @@ function toPartialExamplePost(
   return result;
 }
 
-export type ListExamplePostsOptions = {
+export interface ListExamplePostsOptions {
   page: number;
   pageSize: number;
   orderBy?: string;
@@ -183,12 +183,12 @@ export type ListExamplePostsOptions = {
   createdBefore?: Date;
   publishedAfter?: Date;
   publishedBefore?: Date;
-};
+}
 
-export type ListExamplePostsResult = {
+export interface ListExamplePostsResult {
   posts: Partial<ExamplePost>[];
   totalCount: number;
-};
+}
 
 /**
  * Build WHERE conditions for listExamplePosts query.
@@ -542,21 +542,21 @@ export async function batchRestoreExamplePosts(
  * As documented in docs/api-guide/02-data-operations/01-pagination.md
  * Best for large datasets (>100K records) or real-time data.
  */
-export type CursorListOptions = {
+export interface CursorListOptions {
   cursor?: string;
   limit: number;
   orderBy?: string;
   status?: string;
   authorId?: string;
   search?: string;
-};
+}
 
-export type CursorListResult = {
+export interface CursorListResult {
   posts: ExamplePost[];
   hasNext: boolean;
   nextCursor: string | null;
   previousCursor: string | null;
-};
+}
 
 /**
  * List posts using cursor-based pagination.

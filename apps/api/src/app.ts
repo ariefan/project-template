@@ -26,10 +26,10 @@ import authorizationPlugin from "./plugins/authorization";
 import rateLimitPlugin from "./plugins/rate-limit";
 import securityHeadersPlugin from "./plugins/security-headers";
 
-export type AppConfig = {
+export interface AppConfig {
   auth: Auth;
   enforcer: Authorization;
-};
+}
 
 const require = createRequire(import.meta.url);
 

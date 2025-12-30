@@ -1,8 +1,4 @@
 import * as SelectPrimitive from "@rn-primitives/select";
-import { Icon } from "@workspace/ui-mobile/components/icon";
-import { NativeOnlyAnimatedView } from "@workspace/ui-mobile/components/native-only-animated-view";
-import { TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import {
   Check,
   ChevronDown,
@@ -13,6 +9,10 @@ import * as React from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { FadeIn, FadeOut } from "react-native-reanimated";
 import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens";
+import { cn } from "../lib/utils";
+import { Icon } from "./icon";
+import { NativeOnlyAnimatedView } from "./native-only-animated-view";
+import { TextClassContext } from "./text";
 
 type Option = SelectPrimitive.Option;
 

@@ -9,21 +9,21 @@ import type * as casbin from "casbin";
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
-type AuthorizeParams = {
+interface AuthorizeParams {
   userId: string;
   orgId: string;
   resource: string;
   action: string;
-};
+}
 
-type AuthorizationDeps = {
+interface AuthorizationDeps {
   enforcer: casbin.Enforcer;
   cache: CacheProvider | null;
   cacheTtl: number;
   auditService: AuthorizationAuditService | null;
   logPermissionDenials: boolean;
   log: FastifyInstance["log"];
-};
+}
 
 /**
  * Check cache for authorization result
@@ -137,8 +137,6 @@ async function performAuthorizationCheck(
 }
 
 declare module "fastify" {
-  // biome-ignore lint/nursery/noShadow: Module augmentation requires shadowing
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Module augmentation requires interface
   interface FastifyInstance {
     /**
      * Casbin enforcer instance for manual authorization checks

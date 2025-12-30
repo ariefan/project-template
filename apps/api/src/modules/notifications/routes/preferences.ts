@@ -1,5 +1,10 @@
 import type { FastifyInstance } from "fastify";
+import { validateBody } from "../../../lib/validation";
 import { requireAuth } from "../../auth";
+import {
+  type UpdatePreferencesBody,
+  UpdatePreferencesBodySchema,
+} from "../schemas/preference.schema";
 
 export function preferenceRoutes(app: FastifyInstance) {
   app.get(
@@ -37,9 +42,11 @@ export function preferenceRoutes(app: FastifyInstance) {
           smsEnabled: true,
           whatsappEnabled: true,
           telegramEnabled: true,
+          pushEnabled: true,
           marketingEnabled: true,
           transactionalEnabled: true,
           securityEnabled: true,
+          systemEnabled: true,
         },
       };
     }
@@ -47,7 +54,9 @@ export function preferenceRoutes(app: FastifyInstance) {
 
   app.patch(
     "/preferences",
-    { preHandler: [requireAuth] },
+    {
+      preHandler: [requireAuth, validateBody(UpdatePreferencesBodySchema)],
+    },
     async (request, reply) => {
       const notifications = app.notifications;
       if (!notifications) {
@@ -71,21 +80,7 @@ export function preferenceRoutes(app: FastifyInstance) {
         });
       }
 
-      const body = request.body as {
-        emailEnabled?: boolean;
-        smsEnabled?: boolean;
-        whatsappEnabled?: boolean;
-        telegramEnabled?: boolean;
-        marketingEnabled?: boolean;
-        transactionalEnabled?: boolean;
-        securityEnabled?: boolean;
-        preferredEmail?: string;
-        preferredPhone?: string;
-        preferredTelegramId?: string;
-        quietHoursStart?: string;
-        quietHoursEnd?: string;
-        quietHoursTimezone?: string;
-      };
+      const body = request.body as UpdatePreferencesBody;
 
       const updated = await notifications.preferences.upsertPreferences(
         userId,

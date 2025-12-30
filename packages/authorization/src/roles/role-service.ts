@@ -16,17 +16,17 @@ export type Effect = (typeof Effect)[keyof typeof Effect];
 /**
  * Permission definition for a role
  */
-export type RolePermission = {
+export interface RolePermission {
   resource: string;
   action: string;
   effect: Effect;
   condition?: ConditionType;
-};
+}
 
 /**
  * Input for creating a role
  */
-export type CreateRoleInput = {
+export interface CreateRoleInput {
   applicationId: string;
   tenantId?: string | null;
   name: string;
@@ -34,16 +34,16 @@ export type CreateRoleInput = {
   isSystemRole?: boolean;
   createdBy?: string;
   permissions?: RolePermission[];
-};
+}
 
 /**
  * Input for updating a role
  */
-export type UpdateRoleInput = {
+export interface UpdateRoleInput {
   name?: string;
   description?: string;
   permissions?: RolePermission[];
-};
+}
 
 /**
  * Generate a role ID with prefix

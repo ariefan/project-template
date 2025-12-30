@@ -1,3 +1,4 @@
+import { db, eq, notifications } from "@workspace/db";
 import PgBoss from "pg-boss";
 import type { ProviderRegistry } from "../providers/types";
 import type {
@@ -16,6 +17,53 @@ import type {
 
 const QUEUE_NAME = "notifications";
 
+async function updateNotificationStatus(
+  notificationId: string,
+  result: NotificationJobResult
+): Promise<void> {
+  await db
+    .update(notifications)
+    .set({
+      status: result.success ? "sent" : "failed",
+      sentAt: result.success ? new Date() : undefined,
+      failedAt: result.success ? undefined : new Date(),
+      statusMessage: result.error?.message,
+      provider: result.provider,
+      providerMessageId: result.messageId,
+      updatedAt: new Date(),
+    })
+    .where(eq(notifications.id, notificationId));
+}
+
+function logJobResult(
+  job: NotificationJobData,
+  result: NotificationJobResult,
+  maxRetries: number
+): void {
+  if (result.success) {
+    console.log(
+      `[Notifications] Successfully sent notification ${job.id} via ${result.provider} (channel: ${job.channel})`
+    );
+  } else {
+    console.error(`[Notifications] Failed to send notification ${job.id}:`, {
+      error: result.error,
+      channel: job.channel,
+      category: job.category,
+      retryCount: job.retryCount,
+      maxRetries: job.maxRetries,
+    });
+
+    if (
+      result.error?.retryable &&
+      job.retryCount < (job.maxRetries ?? maxRetries)
+    ) {
+      console.log(
+        `[Notifications] Retrying notification ${job.id} (attempt ${job.retryCount + 1}/${job.maxRetries})`
+      );
+    }
+  }
+}
+
 const PRIORITY_MAP = {
   urgent: 1,
   high: 2,
@@ -23,12 +71,12 @@ const PRIORITY_MAP = {
   low: 4,
 };
 
-export type PgBossQueueConfig = {
+export interface PgBossQueueConfig {
   connectionString: string;
   concurrency?: number;
   maxRetries?: number;
   retryBackoff?: boolean;
-};
+}
 
 function processJobData(
   data: NotificationJobData,
@@ -132,14 +180,29 @@ export function createPgBossQueue(
         { batchSize: concurrency },
         async (jobs) => {
           for (const job of jobs) {
-            const result = await processJobData(job.data, providers);
+            try {
+              const result = await processJobData(job.data, providers);
 
-            if (
-              !result.success &&
-              result.error?.retryable &&
-              job.data.retryCount < (job.data.maxRetries ?? maxRetries)
-            ) {
-              throw new Error(result.error.message);
+              // Update notification status in database
+              await updateNotificationStatus(job.data.id, result);
+
+              // Log the result
+              logJobResult(job.data, result, maxRetries);
+
+              // Retry if needed
+              if (
+                !result.success &&
+                result.error?.retryable &&
+                job.data.retryCount < (job.data.maxRetries ?? maxRetries)
+              ) {
+                throw new Error(result.error.message);
+              }
+            } catch (error) {
+              console.error(
+                `[Notifications] Error processing notification job ${job.data.id}:`,
+                error
+              );
+              throw error;
             }
           }
         }

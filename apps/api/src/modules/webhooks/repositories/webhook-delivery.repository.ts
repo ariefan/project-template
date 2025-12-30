@@ -7,15 +7,15 @@ import {
 } from "@workspace/db/schema";
 import { and, desc, eq, lte } from "drizzle-orm";
 
-export type ListDeliveriesOptions = {
+export interface ListDeliveriesOptions {
   page?: number;
   pageSize?: number;
   status?: WebhookDeliveryStatus;
   eventType?: string;
   createdAfter?: Date;
-};
+}
 
-export type ListDeliveriesResult = {
+export interface ListDeliveriesResult {
   data: WebhookDeliveryRow[];
   pagination: {
     page: number;
@@ -25,7 +25,7 @@ export type ListDeliveriesResult = {
     hasNext: boolean;
     hasPrevious: boolean;
   };
-};
+}
 
 /**
  * Create a new delivery record

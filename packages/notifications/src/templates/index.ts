@@ -20,17 +20,17 @@ export type TemplateId =
   | "verification"
   | "security-alert";
 
-export type TemplatePropsMap = {
+export interface TemplatePropsMap {
   welcome: WelcomeEmailProps;
   "password-reset": PasswordResetEmailProps;
   verification: VerificationEmailProps;
   "security-alert": SecurityAlertEmailProps;
-};
+}
 
-type TemplateConfig<T extends TemplateId> = {
+interface TemplateConfig<T extends TemplateId> {
   component: React.ComponentType<TemplatePropsMap[T]>;
   defaultSubject: string;
-};
+}
 
 const templates: { [K in TemplateId]: TemplateConfig<K> } = {
   welcome: {
@@ -51,11 +51,11 @@ const templates: { [K in TemplateId]: TemplateConfig<K> } = {
   },
 };
 
-export type RenderedEmail = {
+export interface RenderedEmail {
   html: string;
   text: string;
   subject: string;
-};
+}
 
 export async function renderTemplate(
   templateId: TemplateId,

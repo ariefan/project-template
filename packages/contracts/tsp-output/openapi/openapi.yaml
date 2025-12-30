@@ -25,6 +25,8 @@ tags:
   - name: Migration
   - name: ExamplePosts
   - name: ExampleComments
+  - name: Notifications
+  - name: Notification Preferences
 paths:
   /health:
     get:
@@ -105,6 +107,247 @@ paths:
                 $ref: '#/components/schemas/MigrationStatusResponse'
       tags:
         - Migration
+  /v1/notifications:
+    get:
+      operationId: Notifications_list
+      summary: List notifications
+      description: |-
+        List user's notification history
+        Returns notifications for the authenticated user, excluding soft-deleted ones
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: 'Number of items to return (max: 100)'
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: offset
+          in: query
+          required: false
+          description: Number of items to skip
+          schema:
+            type: integer
+            format: int32
+            default: 0
+          explode: false
+        - name: channel
+          in: query
+          required: false
+          description: Filter by notification channel
+          schema:
+            $ref: '#/components/schemas/NotificationChannel'
+          explode: false
+        - name: category
+          in: query
+          required: false
+          description: Filter by notification category
+          schema:
+            $ref: '#/components/schemas/NotificationCategory'
+          explode: false
+        - name: status
+          in: query
+          required: false
+          description: Filter by notification status
+          schema:
+            $ref: '#/components/schemas/NotificationStatus'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/NotificationListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notifications
+  /v1/notifications/mark-all-read:
+    post:
+      operationId: Notifications_markAllRead
+      summary: Mark all notifications as read
+      description: |-
+        Mark all notifications as read for the current user
+        Returns the count of notifications that were marked as read
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/MarkAllReadResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notifications
+  /v1/notifications/send:
+    post:
+      operationId: Notifications_send
+      summary: Send notification
+      description: |-
+        Send a notification
+        Queues the notification for delivery through the specified channel
+        Requires authentication. Consider adding authorization for production use.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SendNotificationResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendNotificationRequest'
+  /v1/notifications/unread/count:
+    get:
+      operationId: Notifications_getUnreadCount
+      summary: Get unread notification count
+      description: |-
+        Get count of unread notifications
+        Returns the number of unread notifications for the current user
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/UnreadCountResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notifications
+  /v1/notifications/{id}:
+    get:
+      operationId: Notifications_get
+      summary: Get notification by ID
+      description: |-
+        Get a specific notification by ID
+        Only returns notifications owned by the authenticated user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/NotificationResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notifications
+    delete:
+      operationId: Notifications_delete
+      summary: Delete notification
+      description: |-
+        Soft delete a notification
+        Marks the notification as deleted without actually removing it
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Notifications
+  /v1/notifications/{id}/read:
+    patch:
+      operationId: Notifications_markRead
+      summary: Mark notification as read
+      description: |-
+        Mark a notification as read
+        Updates the readAt timestamp for the notification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Notifications
+  /v1/notifications/{id}/restore:
+    post:
+      operationId: Notifications_restore
+      summary: Restore notification
+      description: |-
+        Restore a soft-deleted notification
+        Clears the deletedAt timestamp to restore the notification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Notifications
+  /v1/notifications/{id}/unread:
+    patch:
+      operationId: Notifications_markUnread
+      summary: Mark notification as unread
+      description: |-
+        Mark a notification as unread
+        Clears the readAt timestamp for the notification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Notifications
   /v1/orgs/{orgId}/audit-logs:
     get:
       operationId: AuditLogs_list
@@ -2912,6 +3155,49 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Webhooks
+  /v1/preferences:
+    get:
+      operationId: NotificationPreferencesRoutes_getPreferences
+      summary: Get notification preferences
+      description: |-
+        Get notification preferences for the current user
+        Returns default values if no preferences are set
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/NotificationPreferencesResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notification Preferences
+    patch:
+      operationId: NotificationPreferencesRoutes_updatePreferences
+      summary: Update notification preferences
+      description: |-
+        Update notification preferences for the current user
+        Supports partial updates - only provided fields will be updated
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/NotificationPreferencesResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notification Preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePreferencesRequest'
   /v1/roles:
     get:
       operationId: GlobalRoles_list
@@ -4220,6 +4506,24 @@ components:
         - failed
         - cancelled
       description: Job status
+    MarkAllReadResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            markedCount:
+              type: integer
+              format: int32
+              description: Number of notifications marked as read
+          required:
+            - markedCount
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Mark all as read response
     MigrationStatus:
       type: string
       enum:
@@ -4265,6 +4569,289 @@ components:
             type: string
           description: Steps to complete the migration
       description: Migration status for an API version
+    Notification:
+      type: object
+      required:
+        - id
+        - channel
+        - category
+        - priority
+        - status
+        - retryCount
+        - maxRetries
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique notification identifier
+          example: notif_abc123
+        userId:
+          type: string
+          description: User ID who should receive this notification
+          example: usr_xyz789
+        channel:
+          allOf:
+            - $ref: '#/components/schemas/NotificationChannel'
+          description: Notification channel
+        category:
+          allOf:
+            - $ref: '#/components/schemas/NotificationCategory'
+          description: Notification category
+        priority:
+          allOf:
+            - $ref: '#/components/schemas/NotificationPriority'
+          description: Notification priority
+        status:
+          allOf:
+            - $ref: '#/components/schemas/NotificationStatus'
+          description: Current notification status
+        recipientEmail:
+          type: string
+          description: Email address this was sent to
+        recipientPhone:
+          type: string
+          description: Phone number this was sent to
+        recipientTelegramId:
+          type: string
+          description: Telegram ID this was sent to
+        templateId:
+          type: string
+          description: Template ID used (if any)
+        subject:
+          type: string
+          description: Subject line (for email)
+        body:
+          type: string
+          description: Plain text body
+        bodyHtml:
+          type: string
+          description: HTML body (for email)
+        templateData:
+          type: object
+          additionalProperties: {}
+          description: Template data used for rendering
+        campaignId:
+          type: string
+          description: Campaign ID for bulk sends
+        provider:
+          type: string
+          description: Provider used to send (e.g., "nodemailer", "twilio")
+        providerMessageId:
+          type: string
+          description: Provider's message ID
+        sentAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification was sent
+        deliveredAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification was delivered
+        failedAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification failed
+        readAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification was read by user
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification was soft deleted
+        retryCount:
+          type: integer
+          format: int32
+          description: Number of retry attempts
+        maxRetries:
+          type: integer
+          format: int32
+          description: Maximum retry attempts allowed
+        nextRetryAt:
+          type: string
+          format: date-time
+          description: Next retry timestamp
+        statusMessage:
+          type: string
+          description: Status message (error details if failed)
+        metadata:
+          type: object
+          additionalProperties: {}
+          description: Metadata for custom data
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when notification was last updated
+      description: Notification resource model
+    NotificationCategory:
+      type: string
+      enum:
+        - transactional
+        - marketing
+        - security
+        - system
+      description: Notification category enum
+    NotificationChannel:
+      type: string
+      enum:
+        - email
+        - sms
+        - whatsapp
+        - telegram
+        - push
+      description: Notification channel enum
+    NotificationListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Notification collection response
+    NotificationPreferences:
+      type: object
+      required:
+        - userId
+        - emailEnabled
+        - smsEnabled
+        - whatsappEnabled
+        - telegramEnabled
+        - pushEnabled
+        - marketingEnabled
+        - transactionalEnabled
+        - securityEnabled
+        - systemEnabled
+        - quietHoursEnabled
+        - createdAt
+        - updatedAt
+      properties:
+        userId:
+          type: string
+          description: User ID
+        emailEnabled:
+          type: boolean
+          description: Email notifications enabled
+        smsEnabled:
+          type: boolean
+          description: SMS notifications enabled
+        whatsappEnabled:
+          type: boolean
+          description: WhatsApp notifications enabled
+        telegramEnabled:
+          type: boolean
+          description: Telegram notifications enabled
+        pushEnabled:
+          type: boolean
+          description: Push notifications enabled
+        marketingEnabled:
+          type: boolean
+          description: Marketing notifications enabled
+        transactionalEnabled:
+          type: boolean
+          description: Transactional notifications enabled
+        securityEnabled:
+          type: boolean
+          description: Security notifications enabled
+        systemEnabled:
+          type: boolean
+          description: System notifications enabled
+        preferredEmail:
+          type: string
+          description: Preferred email address
+        preferredPhone:
+          type: string
+          description: Preferred phone number
+        preferredTelegramId:
+          type: string
+          description: Preferred Telegram ID
+        quietHoursEnabled:
+          type: boolean
+          description: Quiet hours enabled
+        quietHoursStart:
+          type: string
+          description: Quiet hours start time (HH:mm format)
+        quietHoursEnd:
+          type: string
+          description: Quiet hours end time (HH:mm format)
+        quietHoursTimezone:
+          type: string
+          description: Quiet hours timezone (IANA format)
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when last updated
+      description: Notification preferences model
+    NotificationPreferencesResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/NotificationPreferences'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Notification preferences response
+    NotificationPriority:
+      type: string
+      enum:
+        - urgent
+        - high
+        - normal
+        - low
+      description: Notification priority enum
+    NotificationRecipient:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email address (required for email channel)
+          example: user@example.com
+        phone:
+          type: string
+          description: Phone number in E.164 format (required for SMS/WhatsApp)
+          example: '+1234567890'
+        telegramId:
+          type: string
+          description: Telegram chat ID (required for Telegram channel)
+          example: '123456789'
+      description: Notification recipient information
+    NotificationResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Notification'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single notification response
+    NotificationStatus:
+      type: string
+      enum:
+        - pending
+        - queued
+        - processing
+        - sent
+        - delivered
+        - failed
+        - bounced
+      description: Notification status enum
     Pagination:
       type: object
       required:
@@ -4532,6 +5119,74 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Single role response
+    SendNotificationRequest:
+      type: object
+      required:
+        - channel
+        - category
+        - recipient
+      properties:
+        channel:
+          allOf:
+            - $ref: '#/components/schemas/NotificationChannel'
+          description: Notification channel
+        category:
+          allOf:
+            - $ref: '#/components/schemas/NotificationCategory'
+          description: Notification category
+        priority:
+          allOf:
+            - $ref: '#/components/schemas/NotificationPriority'
+          description: 'Notification priority (default: normal)'
+        recipient:
+          allOf:
+            - $ref: '#/components/schemas/NotificationRecipient'
+          description: Recipient information
+        templateId:
+          type: string
+          description: Template ID to use for rendering
+          example: welcome-email
+        templateData:
+          type: object
+          additionalProperties: {}
+          description: Data for template rendering
+        subject:
+          type: string
+          description: Subject line (for email, required if not using template)
+          example: Welcome to our platform
+        body:
+          type: string
+          description: Plain text body (required if not using template)
+          example: Thank you for signing up!
+        bodyHtml:
+          type: string
+          description: HTML body (for email)
+        metadata:
+          type: object
+          additionalProperties: {}
+          description: Custom metadata
+      description: Request body for sending a notification
+    SendNotificationResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            messageId:
+              type: string
+              description: Message ID assigned to the notification
+            provider:
+              type: string
+              description: Provider used to send
+          required:
+            - messageId
+            - provider
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Send notification success response
     SoftDeleteResponse:
       type: object
       required:
@@ -4619,6 +5274,24 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Context switch response
+    UnreadCountResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            unreadCount:
+              type: integer
+              format: int32
+              description: Number of unread notifications
+          required:
+            - unreadCount
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Unread count response
     UpdateExampleCommentRequest:
       type: object
       properties:
@@ -4648,6 +5321,58 @@ components:
             - $ref: '#/components/schemas/FileAccess'
           description: New access level
       description: Request to update file properties
+    UpdatePreferencesRequest:
+      type: object
+      properties:
+        emailEnabled:
+          type: boolean
+          description: Email notifications enabled
+        smsEnabled:
+          type: boolean
+          description: SMS notifications enabled
+        whatsappEnabled:
+          type: boolean
+          description: WhatsApp notifications enabled
+        telegramEnabled:
+          type: boolean
+          description: Telegram notifications enabled
+        pushEnabled:
+          type: boolean
+          description: Push notifications enabled
+        marketingEnabled:
+          type: boolean
+          description: Marketing notifications enabled
+        transactionalEnabled:
+          type: boolean
+          description: Transactional notifications enabled
+        securityEnabled:
+          type: boolean
+          description: Security notifications enabled
+        systemEnabled:
+          type: boolean
+          description: System notifications enabled
+        preferredEmail:
+          type: string
+          description: Preferred email address
+        preferredPhone:
+          type: string
+          description: Preferred phone number
+        preferredTelegramId:
+          type: string
+          description: Preferred Telegram ID
+        quietHoursEnabled:
+          type: boolean
+          description: Quiet hours enabled
+        quietHoursStart:
+          type: string
+          description: Quiet hours start time (HH:mm format)
+        quietHoursEnd:
+          type: string
+          description: Quiet hours end time (HH:mm format)
+        quietHoursTimezone:
+          type: string
+          description: Quiet hours timezone (IANA format)
+      description: Request body for updating notification preferences
     UpdateRoleRequest:
       type: object
       properties:

@@ -14,10 +14,10 @@ import {
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
-export type AuthClientConfig = {
+export interface AuthClientConfig {
   /** Base URL for the auth API (required, no fallback) */
   baseURL: string;
-};
+}
 
 /**
  * Create an auth client instance for use in frontend apps.

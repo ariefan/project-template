@@ -3,18 +3,18 @@ import type { FastifyInstance } from "fastify";
 import { requireAuth } from "../../auth/middleware";
 import * as jobsService from "../services/jobs.service";
 
-type JobParams = {
+interface JobParams {
   orgId: string;
   jobId: string;
-};
+}
 
-type ListJobsQuery = {
+interface ListJobsQuery {
   page?: number;
   pageSize?: number;
   status?: JobStatus;
   type?: string;
   createdAfter?: string;
-};
+}
 
 /**
  * Jobs routes

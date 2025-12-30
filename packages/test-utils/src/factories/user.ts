@@ -1,4 +1,4 @@
-export type MockUser = {
+export interface MockUser {
   id: string;
   email: string;
   name: string;
@@ -6,7 +6,7 @@ export type MockUser = {
   image: string | null;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 let userCounter = 0;
 

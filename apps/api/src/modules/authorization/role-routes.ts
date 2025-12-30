@@ -16,7 +16,7 @@ import { requirePermission } from "../auth/authorization-middleware";
 /**
  * Response types for role endpoints
  */
-type RoleResponse = {
+interface RoleResponse {
   data: {
     id: string;
     applicationId: string;
@@ -30,17 +30,17 @@ type RoleResponse = {
     permissions?: RolePermission[];
   };
   meta: { requestId: string };
-};
+}
 
-type RoleListResponse = {
+interface RoleListResponse {
   data: RoleResponse["data"][];
   meta: { requestId: string };
-};
+}
 
 /**
  * Request body types
  */
-type CreateRoleBody = {
+interface CreateRoleBody {
   name: string;
   description?: string;
   permissions?: Array<{
@@ -49,9 +49,9 @@ type CreateRoleBody = {
     effect?: "allow" | "deny";
     condition?: "" | "owner" | "shared";
   }>;
-};
+}
 
-type UpdateRoleBody = {
+interface UpdateRoleBody {
   name?: string;
   description?: string;
   permissions?: Array<{
@@ -60,7 +60,7 @@ type UpdateRoleBody = {
     effect?: "allow" | "deny";
     condition?: "" | "owner" | "shared";
   }>;
-};
+}
 
 /**
  * Helper to map role to response format

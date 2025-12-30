@@ -13,7 +13,7 @@ import type {
 
 export type { NotificationChannel } from "@workspace/db/schema";
 
-export type NotificationJobData = {
+export interface NotificationJobData {
   id: string;
   channel: NotificationChannel;
   userId?: string | null;
@@ -30,26 +30,27 @@ export type NotificationJobData = {
   campaignId?: string;
   retryCount: number;
   maxRetries: number;
-};
+}
 
-export type NotificationJobResult = {
+export interface NotificationJobResult {
   success: boolean;
   messageId?: string;
+  provider?: string;
   error?: {
     code: string;
     message: string;
     retryable: boolean;
   };
-};
+}
 
-export type QueueStats = {
+export interface QueueStats {
   pending: number;
   active: number;
   completed: number;
   failed: number;
-};
+}
 
-export type NotificationQueue = {
+export interface NotificationQueue {
   start(): Promise<void>;
   stop(): Promise<void>;
   enqueue(job: NotificationJobData, options?: EnqueueOptions): Promise<string>;
@@ -59,11 +60,11 @@ export type NotificationQueue = {
   ): Promise<string[]>;
   getStats(): Promise<QueueStats>;
   retryFailed(jobId: string): Promise<void>;
-};
+}
 
-export type EnqueueOptions = {
+export interface EnqueueOptions {
   startAfter?: Date;
   retryLimit?: number;
   retryDelay?: number;
   expireIn?: string;
-};
+}

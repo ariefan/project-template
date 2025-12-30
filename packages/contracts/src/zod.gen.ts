@@ -333,6 +333,119 @@ export const zMigrationStatusResponse = z.object({
 });
 
 /**
+ * Notification category enum
+ */
+export const zNotificationCategory = z.enum([
+    'transactional',
+    'marketing',
+    'security',
+    'system'
+]);
+
+/**
+ * Notification channel enum
+ */
+export const zNotificationChannel = z.enum([
+    'email',
+    'sms',
+    'whatsapp',
+    'telegram',
+    'push'
+]);
+
+/**
+ * Notification preferences model
+ */
+export const zNotificationPreferences = z.object({
+    userId: z.string(),
+    emailEnabled: z.boolean(),
+    smsEnabled: z.boolean(),
+    whatsappEnabled: z.boolean(),
+    telegramEnabled: z.boolean(),
+    pushEnabled: z.boolean(),
+    marketingEnabled: z.boolean(),
+    transactionalEnabled: z.boolean(),
+    securityEnabled: z.boolean(),
+    systemEnabled: z.boolean(),
+    preferredEmail: z.optional(z.string()),
+    preferredPhone: z.optional(z.string()),
+    preferredTelegramId: z.optional(z.string()),
+    quietHoursEnabled: z.boolean(),
+    quietHoursStart: z.optional(z.string()),
+    quietHoursEnd: z.optional(z.string()),
+    quietHoursTimezone: z.optional(z.string()),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+});
+
+/**
+ * Notification priority enum
+ */
+export const zNotificationPriority = z.enum([
+    'urgent',
+    'high',
+    'normal',
+    'low'
+]);
+
+/**
+ * Notification recipient information
+ */
+export const zNotificationRecipient = z.object({
+    email: z.optional(z.string()),
+    phone: z.optional(z.string()),
+    telegramId: z.optional(z.string())
+});
+
+/**
+ * Notification status enum
+ */
+export const zNotificationStatus = z.enum([
+    'pending',
+    'queued',
+    'processing',
+    'sent',
+    'delivered',
+    'failed',
+    'bounced'
+]);
+
+/**
+ * Notification resource model
+ */
+export const zNotification = z.object({
+    id: z.string(),
+    userId: z.optional(z.string()),
+    channel: zNotificationChannel,
+    category: zNotificationCategory,
+    priority: zNotificationPriority,
+    status: zNotificationStatus,
+    recipientEmail: z.optional(z.string()),
+    recipientPhone: z.optional(z.string()),
+    recipientTelegramId: z.optional(z.string()),
+    templateId: z.optional(z.string()),
+    subject: z.optional(z.string()),
+    body: z.optional(z.string()),
+    bodyHtml: z.optional(z.string()),
+    templateData: z.optional(z.record(z.string(), z.unknown())),
+    campaignId: z.optional(z.string()),
+    provider: z.optional(z.string()),
+    providerMessageId: z.optional(z.string()),
+    sentAt: z.optional(z.iso.datetime()),
+    deliveredAt: z.optional(z.iso.datetime()),
+    failedAt: z.optional(z.iso.datetime()),
+    readAt: z.optional(z.iso.datetime()),
+    deletedAt: z.optional(z.iso.datetime()),
+    retryCount: z.int(),
+    maxRetries: z.int(),
+    nextRetryAt: z.optional(z.iso.datetime()),
+    statusMessage: z.optional(z.string()),
+    metadata: z.optional(z.record(z.string(), z.unknown())),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+});
+
+/**
  * Pagination links for navigating through paginated results
  */
 export const zPaginationLinks = z.object({
@@ -588,6 +701,40 @@ export const zJobResponse = z.object({
 });
 
 /**
+ * Mark all as read response
+ */
+export const zMarkAllReadResponse = z.object({
+    data: z.object({
+        markedCount: z.int()
+    }),
+    meta: zResponseMeta
+});
+
+/**
+ * Notification collection response
+ */
+export const zNotificationListResponse = z.object({
+    data: z.array(zNotification),
+    meta: zResponseMeta
+});
+
+/**
+ * Notification preferences response
+ */
+export const zNotificationPreferencesResponse = z.object({
+    data: zNotificationPreferences,
+    meta: zResponseMeta
+});
+
+/**
+ * Single notification response
+ */
+export const zNotificationResponse = z.object({
+    data: zNotification,
+    meta: zResponseMeta
+});
+
+/**
  * Role resource model
  *
  * Roles can be:
@@ -625,6 +772,33 @@ export const zRoleListResponse = z.object({
  */
 export const zRoleResponse = z.object({
     data: zRole,
+    meta: zResponseMeta
+});
+
+/**
+ * Request body for sending a notification
+ */
+export const zSendNotificationRequest = z.object({
+    channel: zNotificationChannel,
+    category: zNotificationCategory,
+    priority: z.optional(zNotificationPriority),
+    recipient: zNotificationRecipient,
+    templateId: z.optional(z.string()),
+    templateData: z.optional(z.record(z.string(), z.unknown())),
+    subject: z.optional(z.string()),
+    body: z.optional(z.string()),
+    bodyHtml: z.optional(z.string()),
+    metadata: z.optional(z.record(z.string(), z.unknown()))
+});
+
+/**
+ * Send notification success response
+ */
+export const zSendNotificationResponse = z.object({
+    data: z.object({
+        messageId: z.string(),
+        provider: z.string()
+    }),
     meta: zResponseMeta
 });
 
@@ -668,6 +842,16 @@ export const zSwitchContextResponse = z.object({
 });
 
 /**
+ * Unread count response
+ */
+export const zUnreadCountResponse = z.object({
+    data: z.object({
+        unreadCount: z.int()
+    }),
+    meta: zResponseMeta
+});
+
+/**
  * Request body for updating a comment
  */
 export const zUpdateExampleCommentRequest = z.object({
@@ -688,6 +872,28 @@ export const zUpdateExamplePostRequest = z.object({
  */
 export const zUpdateFileRequest = z.object({
     access: z.optional(zFileAccess)
+});
+
+/**
+ * Request body for updating notification preferences
+ */
+export const zUpdatePreferencesRequest = z.object({
+    emailEnabled: z.optional(z.boolean()),
+    smsEnabled: z.optional(z.boolean()),
+    whatsappEnabled: z.optional(z.boolean()),
+    telegramEnabled: z.optional(z.boolean()),
+    pushEnabled: z.optional(z.boolean()),
+    marketingEnabled: z.optional(z.boolean()),
+    transactionalEnabled: z.optional(z.boolean()),
+    securityEnabled: z.optional(z.boolean()),
+    systemEnabled: z.optional(z.boolean()),
+    preferredEmail: z.optional(z.string()),
+    preferredPhone: z.optional(z.string()),
+    preferredTelegramId: z.optional(z.string()),
+    quietHoursEnabled: z.optional(z.boolean()),
+    quietHoursStart: z.optional(z.string()),
+    quietHoursEnd: z.optional(z.string()),
+    quietHoursTimezone: z.optional(z.string())
 });
 
 /**
@@ -1013,6 +1219,136 @@ export const zMigrationGetStatusData = z.object({
  * The request has succeeded.
  */
 export const zMigrationGetStatusResponse = zMigrationStatusResponse;
+
+export const zNotificationsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        limit: z.optional(z.int()).default(50),
+        offset: z.optional(z.int()).default(0),
+        channel: z.optional(zNotificationChannel),
+        category: z.optional(zNotificationCategory),
+        status: z.optional(zNotificationStatus)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationsListResponse = z.union([
+    zNotificationListResponse,
+    zErrorResponse
+]);
+
+export const zNotificationsMarkAllReadData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationsMarkAllReadResponse = z.union([
+    zMarkAllReadResponse,
+    zErrorResponse
+]);
+
+export const zNotificationsSendData = z.object({
+    body: zSendNotificationRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationsSendResponse = z.union([
+    zSendNotificationResponse,
+    zErrorResponse
+]);
+
+export const zNotificationsGetUnreadCountData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationsGetUnreadCountResponse = z.union([
+    zUnreadCountResponse,
+    zErrorResponse
+]);
+
+export const zNotificationsDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zNotificationsDeleteResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zNotificationsGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationsGetResponse = z.union([
+    zNotificationResponse,
+    zErrorResponse
+]);
+
+export const zNotificationsMarkReadData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zNotificationsMarkReadResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zNotificationsRestoreData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zNotificationsRestoreResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zNotificationsMarkUnreadData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zNotificationsMarkUnreadResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
 
 export const zAuditLogsListData = z.object({
     body: z.optional(z.never()),
@@ -2116,6 +2452,34 @@ export const zWebhooksTestResponse = z.union([
         }),
         meta: zResponseMeta
     }),
+    zErrorResponse
+]);
+
+export const zNotificationPreferencesRoutesGetPreferencesData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationPreferencesRoutesGetPreferencesResponse = z.union([
+    zNotificationPreferencesResponse,
+    zErrorResponse
+]);
+
+export const zNotificationPreferencesRoutesUpdatePreferencesData = z.object({
+    body: zUpdatePreferencesRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationPreferencesRoutesUpdatePreferencesResponse = z.union([
+    zNotificationPreferencesResponse,
     zErrorResponse
 ]);
 

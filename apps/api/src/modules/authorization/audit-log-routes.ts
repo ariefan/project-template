@@ -45,7 +45,7 @@ function parseEventId(eventId: string): number | null {
   return Number.isNaN(id) ? null : id;
 }
 
-type AuditLogListQuery = {
+interface AuditLogListQuery {
   page?: number;
   pageSize?: number;
   eventType?: string;
@@ -54,14 +54,14 @@ type AuditLogListQuery = {
   timestampAfter?: string;
   timestampBefore?: string;
   ipAddress?: string;
-};
+}
 
-type ExportRequest = {
+interface ExportRequest {
   format: "csv" | "json";
   timestampAfter?: string;
   timestampBefore?: string;
   eventTypes?: string[];
-};
+}
 
 export function auditLogRoutes(app: FastifyInstance) {
   // GET /:orgId/audit-logs - List audit logs with pagination and filters

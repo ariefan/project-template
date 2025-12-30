@@ -1,6 +1,6 @@
 import * as RadioGroupPrimitive from "@rn-primitives/radio-group";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { Platform } from "react-native";
+import { cn } from "../lib/utils";
 
 function RadioGroup({
   className,

@@ -7,7 +7,7 @@ import { BadRequestError, NotFoundError } from "../../../lib/errors";
 import { generateId } from "../../../lib/response";
 import * as postsRepo from "../repositories/posts.repository";
 
-export type PaginatedExamplePosts = {
+export interface PaginatedExamplePosts {
   posts: Partial<ExamplePost>[];
   page: number;
   pageSize: number;
@@ -15,9 +15,9 @@ export type PaginatedExamplePosts = {
   totalPages: number;
   hasNext: boolean;
   hasPrevious: boolean;
-};
+}
 
-export type ListExamplePostsOptions = {
+export interface ListExamplePostsOptions {
   page: number;
   pageSize: number;
   orderBy?: string;
@@ -33,7 +33,7 @@ export type ListExamplePostsOptions = {
   createdBefore?: string;
   publishedAfter?: string;
   publishedBefore?: string;
-};
+}
 
 export async function listExamplePosts(
   orgId: string,
@@ -137,13 +137,13 @@ export async function updateExamplePost(
   return updated;
 }
 
-export type SoftDeleteResult = {
+export interface SoftDeleteResult {
   id: string;
   deletedAt: string;
   deletedBy: string;
   canRestore: boolean;
   restoreUntil: string;
-};
+}
 
 export async function softDeleteExamplePost(
   id: string,
@@ -202,7 +202,7 @@ export async function permanentDeleteExamplePost(
   }
 }
 
-export type BatchCreateResult = {
+export interface BatchCreateResult {
   results: Array<{
     index: number;
     status: "success" | "error";
@@ -216,7 +216,7 @@ export type BatchCreateResult = {
     failed: number;
     skipped: number;
   };
-};
+}
 
 export async function batchCreateExamplePosts(
   orgId: string,
@@ -269,7 +269,7 @@ export async function batchCreateExamplePosts(
   };
 }
 
-export type BatchUpdateResult = {
+export interface BatchUpdateResult {
   results: Array<{
     index: number;
     status: "success" | "error";
@@ -282,7 +282,7 @@ export type BatchUpdateResult = {
     failed: number;
     skipped: number;
   };
-};
+}
 
 export async function batchUpdateExamplePosts(
   orgId: string,
@@ -334,7 +334,7 @@ export async function batchUpdateExamplePosts(
   };
 }
 
-export type BatchSoftDeleteResult = {
+export interface BatchSoftDeleteResult {
   results: Array<{
     index: number;
     status: "success" | "error";
@@ -347,7 +347,7 @@ export type BatchSoftDeleteResult = {
     failed: number;
     skipped: number;
   };
-};
+}
 
 export async function batchSoftDeleteExamplePosts(
   orgId: string,
@@ -439,22 +439,22 @@ export async function listDeletedExamplePosts(
  * Cursor-based pagination result.
  * As documented in docs/api-guide/02-data-operations/01-pagination.md
  */
-export type CursorPaginatedExamplePosts = {
+export interface CursorPaginatedExamplePosts {
   posts: ExamplePost[];
   limit: number;
   hasNext: boolean;
   nextCursor: string | null;
   previousCursor: string | null;
-};
+}
 
-export type CursorListExamplePostsOptions = {
+export interface CursorListExamplePostsOptions {
   cursor?: string;
   limit: number;
   orderBy?: string;
   status?: string;
   authorId?: string;
   search?: string;
-};
+}
 
 /**
  * List posts using cursor-based pagination.

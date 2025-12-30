@@ -10,7 +10,7 @@ import {
   Text,
 } from "@react-email/components";
 
-export type SecurityAlertEmailProps = {
+export interface SecurityAlertEmailProps {
   userName: string;
   alertType: "new_login" | "password_changed" | "email_changed" | "suspicious";
   ipAddress?: string;
@@ -18,7 +18,7 @@ export type SecurityAlertEmailProps = {
   device?: string;
   timestamp?: string;
   actionUrl?: string;
-};
+}
 
 const alertMessages = {
   new_login: {

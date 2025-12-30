@@ -1,4 +1,4 @@
-export type MockPost = {
+export interface MockPost {
   id: string;
   title: string;
   content: string;
@@ -7,7 +7,7 @@ export type MockPost = {
   status: "draft" | "published" | "archived";
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 let postCounter = 0;
 

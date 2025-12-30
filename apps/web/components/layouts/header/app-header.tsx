@@ -8,10 +8,10 @@ import { ModeToggle } from "./mode-toggle";
 import { NotificationMenu } from "./notification-menu";
 import { SearchTrigger } from "./search-trigger";
 
-type AppHeaderProps = {
+interface AppHeaderProps {
   breadcrumb?: ReactNode;
   className?: string;
-};
+}
 
 export function AppHeader({ breadcrumb, className }: AppHeaderProps) {
   return (

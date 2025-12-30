@@ -60,6 +60,7 @@ function createSignature(
   return `sha256=${signature}`;
 }
 
+// biome-ignore lint/style/useConsistentTypeDefinitions: type alias needed for compatibility with Record<string, unknown>
 export type WebhookPayload = {
   id: string;
   type: string;

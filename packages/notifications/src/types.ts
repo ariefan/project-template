@@ -6,7 +6,7 @@ import type {
 
 // ============ SEND RESULT ============
 
-export type SendResult = {
+export interface SendResult {
   success: boolean;
   messageId?: string;
   provider: string;
@@ -15,11 +15,11 @@ export type SendResult = {
     message: string;
     retryable: boolean;
   };
-};
+}
 
 // ============ PAYLOAD TYPES ============
 
-export type EmailPayload = {
+export interface EmailPayload {
   to: string;
   subject: string;
   body: string;
@@ -33,34 +33,34 @@ export type EmailPayload = {
     content: Buffer | string;
     contentType?: string;
   }>;
-};
+}
 
-export type SmsPayload = {
+export interface SmsPayload {
   to: string;
   body: string;
   from?: string;
-};
+}
 
-export type WhatsAppPayload = {
+export interface WhatsAppPayload {
   to: string;
   body: string;
   templateName?: string;
   templateParams?: string[];
-};
+}
 
-export type TelegramPayload = {
+export interface TelegramPayload {
   chatId: string;
   text: string;
   parseMode?: "HTML" | "Markdown" | "MarkdownV2";
   disableNotification?: boolean;
-};
+}
 
-export type PushPayload = {
+export interface PushPayload {
   deviceToken: string;
   title: string;
   body: string;
   data?: Record<string, unknown>;
-};
+}
 
 export type NotificationPayload =
   | EmailPayload
@@ -71,14 +71,14 @@ export type NotificationPayload =
 
 // ============ SEND REQUEST ============
 
-export type Recipient = {
+export interface Recipient {
   email?: string;
   phone?: string;
   telegramId?: string;
   deviceToken?: string;
-};
+}
 
-export type SendNotificationRequest = {
+export interface SendNotificationRequest {
   channel: NotificationChannel;
   category: NotificationCategory;
   priority?: NotificationPriority;
@@ -92,9 +92,9 @@ export type SendNotificationRequest = {
   campaignId?: string;
   metadata?: Record<string, unknown>;
   scheduledFor?: Date;
-};
+}
 
-export type SendBulkRequest = {
+export interface SendBulkRequest {
   channel: NotificationChannel;
   category: NotificationCategory;
   priority?: NotificationPriority;
@@ -103,11 +103,11 @@ export type SendBulkRequest = {
   templateData?: Record<string, unknown>;
   campaignId?: string;
   scheduledFor?: Date;
-};
+}
 
 // ============ NOTIFICATION SERVICE ============
 
-export type NotificationServiceConfig = {
+export interface NotificationServiceConfig {
   email?: {
     provider: "resend" | "nodemailer";
     resend?: { apiKey: string };
@@ -142,4 +142,4 @@ export type NotificationServiceConfig = {
     concurrency: number;
     maxRetries: number;
   };
-};
+}

@@ -43,22 +43,22 @@ function generateUploadId(): string {
   return `upload_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}`;
 }
 
-export type InitiateUploadInput = {
+export interface InitiateUploadInput {
   orgId: string;
   filename: string;
   contentType: string;
   size: number;
   metadata?: Record<string, unknown>;
   createdBy: string;
-};
+}
 
-export type InitiateUploadResult = {
+export interface InitiateUploadResult {
   uploadId: string;
   url: string;
   method: "PUT";
   headers: Record<string, string>;
   expiresAt: Date;
-};
+}
 
 /**
  * Initiate a presigned upload
@@ -119,11 +119,11 @@ export async function initiateUpload(
   };
 }
 
-export type ConfirmUploadResult = {
+export interface ConfirmUploadResult {
   success: boolean;
   file?: FileRow;
   error?: string;
-};
+}
 
 /**
  * Confirm an upload and create file record
@@ -190,14 +190,14 @@ export async function confirmUpload(
   return { success: true, file };
 }
 
-export type DirectUploadInput = {
+export interface DirectUploadInput {
   orgId: string;
   filename: string;
   contentType: string;
   data: Buffer;
   metadata?: Record<string, unknown>;
   uploadedBy: string;
-};
+}
 
 /**
  * Direct upload for small files (< 10MB)
@@ -276,10 +276,10 @@ export function listFiles(
   return filesRepository.listFiles(orgId, options);
 }
 
-export type DownloadUrlResult = {
+export interface DownloadUrlResult {
   url: string;
   expiresAt: Date;
-};
+}
 
 /**
  * Get download URL for a file
@@ -322,11 +322,11 @@ export async function downloadFile(
   return { data, file };
 }
 
-export type SoftDeleteResult = {
+export interface SoftDeleteResult {
   success: boolean;
   file?: FileRow;
   error?: string;
-};
+}
 
 /**
  * Soft delete a file
@@ -345,10 +345,10 @@ export async function softDeleteFile(
   return { success: true, file };
 }
 
-export type HardDeleteResult = {
+export interface HardDeleteResult {
   success: boolean;
   error?: string;
-};
+}
 
 /**
  * Permanently delete a file (removes from storage)

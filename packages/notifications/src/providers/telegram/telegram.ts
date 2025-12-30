@@ -1,17 +1,17 @@
 import type { SendResult, TelegramPayload } from "../../types";
 import type { TelegramProvider } from "../types";
 
-export type TelegramBotConfig = {
+export interface TelegramBotConfig {
   botToken: string;
-};
+}
 
-type TelegramApiResponse = {
+interface TelegramApiResponse {
   ok: boolean;
   result?: {
     message_id: number;
   };
   description?: string;
-};
+}
 
 export function createTelegramProvider(
   config: TelegramBotConfig

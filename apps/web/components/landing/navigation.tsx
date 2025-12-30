@@ -5,9 +5,9 @@ import { cn } from "@workspace/ui/lib/utils";
 import Link from "next/link";
 import { ModeToggle } from "@/components/layouts/header/mode-toggle";
 
-type NavigationProps = {
+interface NavigationProps {
   className?: string;
-};
+}
 
 export function Navigation({ className }: NavigationProps) {
   return (

@@ -2,11 +2,11 @@ import twilio from "twilio";
 import type { SendResult, WhatsAppPayload } from "../../types";
 import type { WhatsAppProvider } from "../types";
 
-export type TwilioWhatsAppConfig = {
+export interface TwilioWhatsAppConfig {
   accountSid: string;
   authToken: string;
   fromNumber: string;
-};
+}
 
 export function createTwilioWhatsAppProvider(
   config: TwilioWhatsAppConfig

@@ -2,7 +2,7 @@
  * Metrics package types
  */
 
-export type MetricsConfig = {
+export interface MetricsConfig {
   /** Enable default metrics collection (CPU, memory, etc.) */
   collectDefaultMetrics?: boolean;
   /** Prefix for all metric names */
@@ -11,26 +11,26 @@ export type MetricsConfig = {
   defaultLabels?: Record<string, string>;
   /** Custom buckets for HTTP request duration histogram */
   httpDurationBuckets?: number[];
-};
+}
 
-export type HttpRequestLabels = {
+export interface HttpRequestLabels {
   method: string;
   route: string;
   statusCode: string;
-};
+}
 
-export type AuthorizationLabels = {
+export interface AuthorizationLabels {
   resource: string;
   action: string;
   result: "allowed" | "denied";
-};
+}
 
-export type CacheLabels = {
+export interface CacheLabels {
   operation: "get" | "set" | "delete" | "mget" | "mset";
   result: "hit" | "miss" | "error";
-};
+}
 
-export type DatabaseLabels = {
+export interface DatabaseLabels {
   operation: "select" | "insert" | "update" | "delete";
   table: string;
-};
+}

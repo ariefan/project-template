@@ -11,13 +11,13 @@ import { Separator } from "@workspace/ui/components/separator";
 import { Bell } from "lucide-react";
 import { useState } from "react";
 
-type Notification = {
+interface Notification {
   id: string;
   title: string;
   description: string;
   time: string;
   read: boolean;
-};
+}
 
 const MOCK_NOTIFICATIONS: Notification[] = [
   {
@@ -53,7 +53,7 @@ export function NotificationMenu() {
         <Button className="relative h-9 w-9 p-0" variant="outline">
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="-top-1 -right-1 absolute flex h-5 w-5 items-center justify-center rounded-full bg-destructive font-medium text-[10px] text-white">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive font-medium text-[10px] text-white">
               {unreadCount}
             </span>
           )}

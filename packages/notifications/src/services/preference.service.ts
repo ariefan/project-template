@@ -10,7 +10,7 @@ export type PreferenceUpdate = Partial<
   Omit<NotificationPreference, "id" | "userId" | "createdAt" | "updatedAt">
 >;
 
-export type PreferenceService = {
+export interface PreferenceService {
   getPreferences(userId: string): Promise<NotificationPreference | null>;
   upsertPreferences(
     userId: string,
@@ -24,7 +24,7 @@ export type PreferenceService = {
     userId: string,
     category: "transactional" | "marketing" | "security" | "system"
   ): Promise<boolean>;
-};
+}
 
 export function createPreferenceService(): PreferenceService {
   return {

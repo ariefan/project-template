@@ -11,15 +11,15 @@ import {
 } from "@workspace/db/schema";
 import { and, desc, eq, isNull, lt } from "drizzle-orm";
 
-export type ListFilesOptions = {
+export interface ListFilesOptions {
   page?: number;
   pageSize?: number;
   mimeType?: string;
   access?: FileAccess;
   includeDeleted?: boolean;
-};
+}
 
-export type ListFilesResult = {
+export interface ListFilesResult {
   data: FileRow[];
   pagination: {
     page: number;
@@ -29,7 +29,7 @@ export type ListFilesResult = {
     hasNext: boolean;
     hasPrevious: boolean;
   };
-};
+}
 
 /**
  * Create a new file record

@@ -13,15 +13,14 @@
       "!coverage",
 
       // Generated code (auto-generated from TypeSpec)
-      "!packages/contracts/src"
+      "!packages/contracts/src",
+
+      // Metro config requires CommonJS with __dirname
+      "!apps/mobile/metro.config.js"
     ]
   },
   "linter": {
     "rules": {
-      "nursery": {
-        // Enable Tailwind CSS class sorting
-        "useSortedClasses": "error"
-      },
       "performance": {
         // Radix UI / shadcn/ui requires namespace imports
         "noNamespaceImport": "off",
@@ -75,15 +74,19 @@
           },
           "nursery": {
             "noShadow": "off",
-            "noLeakedRender": "off"
+            "noLeakedRender": "off",
+            // Enable Tailwind CSS class sorting
+            "useSortedClasses": "error"
           },
           "style": {
             "useBlockStatements": "off",
-            "noNestedTernary": "off"
+            "noNestedTernary": "off",
+            "useConsistentTypeDefinitions": "off"
           },
           "suspicious": {
             "noArrayIndexKey": "off",
-            "noDocumentCookie": "off"
+            "noDocumentCookie": "off",
+            "noDoubleEquals": "off"
           },
           "security": {
             "noDangerouslySetInnerHtml": "off"
@@ -92,12 +95,20 @@
       }
     },
     {
-      // Relaxed rules for mobile UI components
-      "includes": ["packages/ui-mobile/**", "apps/mobile/**"],
+      // Relaxed rules for React Native Reusables generated components
+      "includes": ["packages/ui-mobile/src/components/**"],
       "linter": {
         "rules": {
+          "a11y": {
+            "useSemanticElements": "off"
+          },
           "nursery": {
-            "noLeakedRender": "off"
+            "noLeakedRender": "off",
+            // Enable Tailwind CSS class sorting
+            "useSortedClasses": "error"
+          },
+          "style": {
+            "noNestedTernary": "off"
           }
         }
       }

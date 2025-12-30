@@ -40,14 +40,14 @@ export type UrlMode = "direct" | "caddy";
 /**
  * URL builder configuration
  */
-export type UrlConfig = {
+export interface UrlConfig {
   /** Mode: direct (individual ports) or caddy (reverse proxy) */
   mode: UrlMode;
   /** Protocol (http or https) */
   protocol?: "http" | "https";
   /** Host (default: localhost) */
   host?: string;
-};
+}
 
 /**
  * Generate service URLs based on configuration mode

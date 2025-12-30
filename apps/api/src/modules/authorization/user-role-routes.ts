@@ -14,7 +14,7 @@ import { requireAuth } from "../auth/middleware";
 /**
  * Response types for user role endpoints
  */
-type UserRoleResponse = {
+interface UserRoleResponse {
   data: {
     userId: string;
     applicationId: string;
@@ -28,11 +28,11 @@ type UserRoleResponse = {
     }>;
   };
   meta: { requestId: string };
-};
+}
 
-type AssignRoleBody = {
+interface AssignRoleBody {
   roleId: string;
-};
+}
 
 /**
  * User role assignment routes

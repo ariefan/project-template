@@ -5,11 +5,10 @@
     "paths": {
       "@workspace/ui-mobile/*": ["./src/*"]
     },
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "types": ["nativewind/types"],
-    "strictNullChecks": true
+    "jsx": "react-native",
+    "strictNullChecks": true,
+    "skipLibCheck": true
   },
-  "include": ["."],
+  "include": ["src/**/*", "src/nativewind-env.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

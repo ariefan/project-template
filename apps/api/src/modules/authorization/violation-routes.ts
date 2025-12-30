@@ -9,15 +9,15 @@ import { AppError, handleError, ValidationError } from "../../lib/errors";
 import { createMeta } from "../../lib/response";
 import { requirePermission } from "../auth/authorization-middleware";
 
-type ViolationRequest = {
+interface ViolationRequest {
   resource: string;
   action: string;
   severity: ViolationSeverity;
   reason: string;
   expiresAt?: string;
-};
+}
 
-type ViolationResponse = {
+interface ViolationResponse {
   data: {
     orgId: string;
     resource: string;
@@ -27,9 +27,9 @@ type ViolationResponse = {
   meta: {
     requestId: string;
   };
-};
+}
 
-type ViolationListResponse = {
+interface ViolationListResponse {
   data: Array<{
     role: string;
     resource: string;
@@ -39,7 +39,7 @@ type ViolationListResponse = {
   meta: {
     requestId: string;
   };
-};
+}
 
 export function violationRoutes(app: FastifyInstance) {
   const violationManager = createViolationManager(app.enforcer);

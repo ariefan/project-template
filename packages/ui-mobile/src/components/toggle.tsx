@@ -1,10 +1,10 @@
 import * as TogglePrimitive from "@rn-primitives/toggle";
-import { Icon } from "@workspace/ui-mobile/components/icon";
-import { TextClassContext } from "@workspace/ui-mobile/components/text";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 import { Platform } from "react-native";
+import { cn } from "../lib/utils";
+import { Icon } from "./icon";
+import { TextClassContext } from "./text";
 
 const toggleVariants = cva(
   cn(

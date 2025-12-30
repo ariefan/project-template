@@ -1,16 +1,16 @@
 /**
  * Cache entry with value and expiration timestamp
  */
-export type CacheEntry<T = unknown> = {
+export interface CacheEntry<T = unknown> {
   value: T;
   expiresAt: number | null;
-};
+}
 
 /**
  * Core cache provider interface
  * All implementations must follow this contract
  */
-export type CacheProvider = {
+export interface CacheProvider {
   readonly name: string;
 
   /**
@@ -67,7 +67,7 @@ export type CacheProvider = {
    * @returns true if healthy, false otherwise
    */
   ping(): Promise<boolean>;
-};
+}
 
 /**
  * Cache provider configuration options

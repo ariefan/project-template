@@ -1,6 +1,6 @@
 import * as SwitchPrimitives from "@rn-primitives/switch";
-import { cn } from "@workspace/ui-mobile/lib/utils";
 import { Platform } from "react-native";
+import { cn } from "../lib/utils";
 
 function Switch({
   className,

@@ -5,7 +5,7 @@ import type { SmsService } from "./services/sms";
 /**
  * OIDC client configuration for trusted first-party clients
  */
-export type OIDCClient = {
+export interface OIDCClient {
   clientId: string;
   clientSecret?: string;
   type: "web" | "native" | "user-agent-based" | "public";
@@ -14,21 +14,21 @@ export type OIDCClient = {
   metadata: Record<string, unknown> | null;
   disabled: boolean;
   skipConsent?: boolean;
-};
+}
 
 /**
  * Social provider configurations
  */
-export type SocialProviders = {
+export interface SocialProviders {
   github?: { clientId: string; clientSecret: string };
   google?: { clientId: string; clientSecret: string };
   // Add more providers as needed
-};
+}
 
 /**
  * Auth configuration for the factory function
  */
-export type AuthConfig = {
+export interface AuthConfig {
   /**
    * Database instance (injected by the app)
    */
@@ -81,7 +81,7 @@ export type AuthConfig = {
    * Environment (affects cookie security, etc.)
    */
   environment: "development" | "production" | "test";
-};
+}
 
 /**
  * Parse cookie domain from URL for cross-subdomain sharing

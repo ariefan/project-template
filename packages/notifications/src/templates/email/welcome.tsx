@@ -10,10 +10,10 @@ import {
   Text,
 } from "@react-email/components";
 
-export type WelcomeEmailProps = {
+export interface WelcomeEmailProps {
   userName: string;
   loginUrl?: string;
-};
+}
 
 export function WelcomeEmail({
   userName,

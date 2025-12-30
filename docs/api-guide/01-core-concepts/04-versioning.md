@@ -134,7 +134,7 @@ Link: <https://docs.example.com/migrations/v1-to-v2>; rel="deprecation"
   },
   "warnings": [
     {
-      "code": "endpoint_deprecated",
+      "code": "endpointDeprecated",
       "message": "This endpoint version will be sunset on 2024-12-31",
       "sunsetDate": "2024-12-31T23:59:59Z",
       "alternative": "Use GET /v2/users instead",
@@ -394,7 +394,7 @@ Link: <https://docs.example.com/migrations/v1-to-v2>; rel="deprecation"
   "data": [...],
   "warnings": [
     {
-      "code": "version_deprecated",
+      "code": "versionDeprecated",
       "message": "API version v1 is deprecated and will be sunset on 2024-12-31",
       "sunsetDate": "2024-12-31T23:59:59Z",
       "replacementVersion": "v2",
@@ -422,7 +422,7 @@ HTTP/1.1 410 Gone
 ```json
 {
   "error": {
-    "code": "version_retired",
+    "code": "versionRetired",
     "message": "API version v0 has been retired",
     "retiredDate": "2023-12-31T23:59:59Z",
     "replacementVersion": "v2",

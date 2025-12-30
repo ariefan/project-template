@@ -4,8 +4,6 @@ import { notificationRoutes } from "./routes/notifications";
 import { preferenceRoutes } from "./routes/preferences";
 
 declare module "fastify" {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Module augmentation requires interface
-  // biome-ignore lint/nursery/noShadow: Intentionally extending FastifyInstance
   interface FastifyInstance {
     notifications: NotificationSystem | null;
   }
