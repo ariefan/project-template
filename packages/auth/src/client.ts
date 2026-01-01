@@ -39,6 +39,9 @@ export interface AuthClientConfig {
 export function createAuthClientInstance(config: AuthClientConfig) {
   return createAuthClient({
     baseURL: config.baseURL,
+    fetchOptions: {
+      credentials: "include",
+    },
     plugins: [
       // Username authentication
       usernameClient(),

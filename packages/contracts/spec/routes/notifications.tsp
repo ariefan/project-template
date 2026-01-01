@@ -26,11 +26,11 @@ namespace ProjectAPI {
     @get
     @summary("List notifications")
     list(
-      /** Number of items to return (max: 100) */
-      @query limit?: int32 = 50,
+      /** Page number (1-indexed, default: 1) */
+      @query page?: int32 = 1,
 
-      /** Number of items to skip */
-      @query offset?: int32 = 0,
+      /** Number of items per page (max: 100, default: 20) */
+      @query pageSize?: int32 = 20,
 
       /** Filter by notification channel */
       @query channel?: NotificationChannel,

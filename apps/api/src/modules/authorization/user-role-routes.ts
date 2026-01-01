@@ -2,12 +2,14 @@ import {
   AuthorizationAuditService,
   UserRoleService,
 } from "@workspace/authorization";
-import type { ErrorResponse } from "@workspace/contracts";
+import type { AssignRoleRequest, ErrorResponse } from "@workspace/contracts";
+import { zAssignRoleRequest } from "@workspace/contracts/zod";
 import { getDefaultDb } from "@workspace/db";
 import { DEFAULT_APPLICATION_ID } from "@workspace/db/schema";
 import type { FastifyInstance } from "fastify";
 import { ForbiddenError, handleError, NotFoundError } from "../../lib/errors";
 import { createMeta } from "../../lib/response";
+import { validateBody } from "../../lib/validation";
 import { requirePermission } from "../auth/authorization-middleware";
 import { requireAuth } from "../auth/middleware";
 
@@ -28,10 +30,6 @@ interface UserRoleResponse {
     }>;
   };
   meta: { requestId: string };
-}
-
-interface AssignRoleBody {
-  roleId: string;
 }
 
 /**
@@ -108,18 +106,19 @@ export function userRoleRoutes(app: FastifyInstance) {
   // Assign a role to a user in a tenant
   app.post<{
     Params: { orgId: string; userId: string };
-    Body: AssignRoleBody;
+    Body: AssignRoleRequest;
   }>(
     "/orgs/:orgId/users/:userId/roles",
-    { preHandler: [requirePermission("users", "manage")] },
+    {
+      preHandler: [
+        requirePermission("users", "manage"),
+        validateBody(zAssignRoleRequest),
+      ],
+    },
     async (request, reply): Promise<UserRoleResponse | ErrorResponse> => {
       try {
         const { orgId, userId } = request.params;
         const { roleId } = request.body;
-
-        if (!roleId) {
-          throw new Error("roleId is required");
-        }
 
         await userRoleService.assignRole({
           userId,

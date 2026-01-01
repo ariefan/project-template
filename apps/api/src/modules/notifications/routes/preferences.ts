@@ -1,10 +1,10 @@
+import type { UpdatePreferencesRequest } from "@workspace/contracts";
+import { zUpdatePreferencesRequest } from "@workspace/contracts/zod";
 import type { FastifyInstance } from "fastify";
 import { validateBody } from "../../../lib/validation";
 import { requireAuth } from "../../auth";
-import {
-  type UpdatePreferencesBody,
-  UpdatePreferencesBodySchema,
-} from "../schemas/preference.schema";
+
+type UpdatePreferencesBody = UpdatePreferencesRequest;
 
 export function preferenceRoutes(app: FastifyInstance) {
   app.get(
@@ -55,7 +55,7 @@ export function preferenceRoutes(app: FastifyInstance) {
   app.patch(
     "/preferences",
     {
-      preHandler: [requireAuth, validateBody(UpdatePreferencesBodySchema)],
+      preHandler: [requireAuth, validateBody(zUpdatePreferencesRequest)],
     },
     async (request, reply) => {
       const notifications = app.notifications;

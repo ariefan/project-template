@@ -715,6 +715,7 @@ export const zMarkAllReadResponse = z.object({
  */
 export const zNotificationListResponse = z.object({
     data: z.array(zNotification),
+    pagination: zPagination,
     meta: zResponseMeta
 });
 
@@ -1224,8 +1225,8 @@ export const zNotificationsListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.object({
-        limit: z.optional(z.int()).default(50),
-        offset: z.optional(z.int()).default(0),
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(20),
         channel: z.optional(zNotificationChannel),
         category: z.optional(zNotificationCategory),
         status: z.optional(zNotificationStatus)

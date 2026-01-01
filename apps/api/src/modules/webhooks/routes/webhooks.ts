@@ -1,5 +1,14 @@
+import type {
+  CreateWebhookRequest,
+  UpdateWebhookRequest,
+} from "@workspace/contracts";
+import {
+  zCreateWebhookRequest,
+  zUpdateWebhookRequest,
+} from "@workspace/contracts/zod";
 import type { WebhookDeliveryStatus } from "@workspace/db/schema";
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import { validateBody } from "../../../lib/validation";
 import { requireAuth } from "../../auth/middleware";
 import * as webhookService from "../services/webhook.service";
 import * as webhookDeliveryService from "../services/webhook-delivery.service";
@@ -31,21 +40,6 @@ interface ListDeliveriesQuery {
   status?: WebhookDeliveryStatus;
   eventType?: string;
   createdAfter?: string;
-}
-
-interface CreateWebhookBody {
-  name: string;
-  url: string;
-  events: string[];
-  description?: string;
-}
-
-interface UpdateWebhookBody {
-  name?: string;
-  url?: string;
-  events?: string[];
-  isActive?: boolean;
-  description?: string;
 }
 
 /**
@@ -92,10 +86,10 @@ export function webhooksRoutes(app: FastifyInstance) {
    */
   app.post<{
     Params: OrgParams;
-    Body: CreateWebhookBody;
+    Body: CreateWebhookRequest;
   }>(
     "/:orgId/webhooks",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth, validateBody(zCreateWebhookRequest)] },
     async (request, reply) => {
       const { orgId } = request.params;
       const { name, url, events, description } = request.body;
@@ -104,7 +98,7 @@ export function webhooksRoutes(app: FastifyInstance) {
       try {
         const { webhook, secret } = await webhookService.createWebhook({
           orgId,
-          name,
+          name: name ?? url, // Use URL as name if not provided
           url,
           events,
           description,
@@ -190,10 +184,10 @@ export function webhooksRoutes(app: FastifyInstance) {
    */
   app.patch<{
     Params: WebhookParams;
-    Body: UpdateWebhookBody;
+    Body: UpdateWebhookRequest;
   }>(
     "/:orgId/webhooks/:webhookId",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth, validateBody(zUpdateWebhookRequest)] },
     async (request, reply) => {
       const { orgId, webhookId } = request.params;
       const { name, url, events, isActive, description } = request.body;

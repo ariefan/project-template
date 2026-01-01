@@ -39,14 +39,12 @@
   "pnpm": {
     "overrides": {
       "csstype": "^3.2.3",
+      "@types/react": "^19.2.7",
+      "@types/react-dom": "^19.2.3",
       "mobile>react": "19.1.0",
       "mobile>react-dom": "19.1.0",
-      "mobile>@types/react": "~19.1.10",
-      "mobile>@types/react-dom": "~19.1.10",
       "@workspace/ui-mobile>react": "19.1.0",
-      "@workspace/ui-mobile>react-dom": "19.1.0",
-      "@workspace/ui-mobile>@types/react": "~19.1.10",
-      "@workspace/ui-mobile>@types/react-dom": "~19.1.10"
+      "@workspace/ui-mobile>react-dom": "19.1.0"
     }
   },
   "engines": {

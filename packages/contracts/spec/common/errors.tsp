@@ -67,6 +67,12 @@ enum ErrorCode {
   /** Conflict - resource already exists */
   conflict: "conflict",
 
+  /** Duplicate - resource with same identifier already exists */
+  duplicate: "duplicate",
+
+  /** Unprocessable entity - semantic errors (valid format but can't process) */
+  unprocessableEntity: "unprocessableEntity",
+
   /** Rate limit exceeded */
   rateLimitExceeded: "rateLimitExceeded",
 

@@ -5,12 +5,22 @@ import {
   RoleService,
   type UpdateRoleInput,
 } from "@workspace/authorization";
-import type { ErrorResponse } from "@workspace/contracts";
+import type {
+  CreateRoleRequest,
+  ErrorResponse,
+  PermissionInput,
+  UpdateRoleRequest,
+} from "@workspace/contracts";
+import {
+  zCreateRoleRequest,
+  zUpdateRoleRequest,
+} from "@workspace/contracts/zod";
 import { getDefaultDb } from "@workspace/db";
 import { DEFAULT_APPLICATION_ID } from "@workspace/db/schema";
 import type { FastifyInstance } from "fastify";
-import { handleError, NotFoundError, ValidationError } from "../../lib/errors";
+import { handleError, NotFoundError } from "../../lib/errors";
 import { createMeta } from "../../lib/response";
+import { validateBody } from "../../lib/validation";
 import { requirePermission } from "../auth/authorization-middleware";
 
 /**
@@ -35,31 +45,6 @@ interface RoleResponse {
 interface RoleListResponse {
   data: RoleResponse["data"][];
   meta: { requestId: string };
-}
-
-/**
- * Request body types
- */
-interface CreateRoleBody {
-  name: string;
-  description?: string;
-  permissions?: Array<{
-    resource: string;
-    action: string;
-    effect?: "allow" | "deny";
-    condition?: "" | "owner" | "shared";
-  }>;
-}
-
-interface UpdateRoleBody {
-  name?: string;
-  description?: string;
-  permissions?: Array<{
-    resource: string;
-    action: string;
-    effect?: "allow" | "deny";
-    condition?: "" | "owner" | "shared";
-  }>;
 }
 
 /**
@@ -94,10 +79,10 @@ function mapRoleToResponse(
 }
 
 /**
- * Helper to parse permission body to RolePermission
+ * Helper to parse permission input from contracts to RolePermission
  */
 function parsePermissions(
-  permissions?: CreateRoleBody["permissions"]
+  permissions?: PermissionInput[]
 ): RolePermission[] | undefined {
   if (!permissions) {
     return;
@@ -152,22 +137,18 @@ export function roleRoutes(app: FastifyInstance) {
 
   // Create global role
   app.post<{
-    Body: CreateRoleBody;
+    Body: CreateRoleRequest;
   }>(
     "/roles",
-    { preHandler: [requirePermission("settings", "manage")] },
+    {
+      preHandler: [
+        requirePermission("settings", "manage"),
+        validateBody(zCreateRoleRequest),
+      ],
+    },
     async (request, reply): Promise<RoleResponse | ErrorResponse> => {
       try {
         const { name, description, permissions } = request.body;
-
-        if (!name) {
-          const error = new ValidationError("Missing required fields", [
-            { field: "name", code: "required", message: "Name is required" },
-          ]);
-          const { statusCode, response } = handleError(error, request.id);
-          reply.status(statusCode);
-          return response as ErrorResponse;
-        }
 
         const input: CreateRoleInput = {
           applicationId: DEFAULT_APPLICATION_ID,
@@ -227,23 +208,19 @@ export function roleRoutes(app: FastifyInstance) {
   // Create tenant role
   app.post<{
     Params: { orgId: string };
-    Body: CreateRoleBody;
+    Body: CreateRoleRequest;
   }>(
     "/orgs/:orgId/roles",
-    { preHandler: [requirePermission("settings", "manage")] },
+    {
+      preHandler: [
+        requirePermission("settings", "manage"),
+        validateBody(zCreateRoleRequest),
+      ],
+    },
     async (request, reply): Promise<RoleResponse | ErrorResponse> => {
       try {
         const { orgId } = request.params;
         const { name, description, permissions } = request.body;
-
-        if (!name) {
-          const error = new ValidationError("Missing required fields", [
-            { field: "name", code: "required", message: "Name is required" },
-          ]);
-          const { statusCode, response } = handleError(error, request.id);
-          reply.status(statusCode);
-          return response as ErrorResponse;
-        }
 
         const input: CreateRoleInput = {
           applicationId: DEFAULT_APPLICATION_ID,
@@ -313,10 +290,15 @@ export function roleRoutes(app: FastifyInstance) {
   // Update role
   app.patch<{
     Params: { roleId: string };
-    Body: UpdateRoleBody;
+    Body: UpdateRoleRequest;
   }>(
     "/roles/:roleId",
-    { preHandler: [requirePermission("settings", "manage")] },
+    {
+      preHandler: [
+        requirePermission("settings", "manage"),
+        validateBody(zUpdateRoleRequest),
+      ],
+    },
     async (request, reply): Promise<RoleResponse | ErrorResponse> => {
       try {
         const { roleId } = request.params;

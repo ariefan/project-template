@@ -151,7 +151,7 @@ export const notificationsListInfiniteOptions = (options?: Options<Notifications
         // @ts-ignore
         const page: Pick<QueryKey<Options<NotificationsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
             query: {
-                offset: pageParam
+                page: pageParam
             }
         };
         const params = createInfiniteParams(queryKey, page);

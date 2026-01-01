@@ -324,6 +324,7 @@ model NotificationResponse {
  */
 model NotificationListResponse {
   data: Notification[];
+  pagination: Pagination;
   meta: ResponseMeta;
 }
 

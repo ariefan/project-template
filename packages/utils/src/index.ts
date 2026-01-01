@@ -1,2 +1,2 @@
-export * from "./config.js";
-export * from "./format.js";
+export * from "./config";
+export * from "./format";

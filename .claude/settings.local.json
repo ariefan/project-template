@@ -93,7 +93,15 @@
       "Bash(pnpm --filter @workspace/db typecheck:*)",
       "Bash(column -t -s'|':*)",
       "Bash(test:*)",
-      "Bash(pnpm --filter @workspace/notifications typecheck:*)"
+      "Bash(pnpm --filter @workspace/notifications typecheck:*)",
+      "Bash(pnpm --filter web dlx ultracite check:*)",
+      "Bash(pnpm --filter @workspace/auth typecheck:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm --filter @workspace/db db:push:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm --filter @workspace/db db:seed:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm --filter api dev:*)",
+      "Bash(pnpm --filter web dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(pnpm --filter api dev:*)"
     ]
   }
 }

@@ -1,18 +1,31 @@
+import type { SendNotificationRequest } from "@workspace/contracts";
+import {
+  zNotificationsGetData,
+  zNotificationsListData,
+  zSendNotificationRequest,
+} from "@workspace/contracts/zod";
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import {
   validateBody,
   validateParams,
   validateQuery,
 } from "../../../lib/validation";
 import { requireAuth } from "../../auth";
-import {
-  type GetNotificationParams,
-  GetNotificationParamsSchema,
-  type GetNotificationsQuery,
-  GetNotificationsQuerySchema,
-  type SendNotificationBody,
-  SendNotificationBodySchema,
-} from "../schemas/notification.schema";
+
+// Extract and enhance schemas from contracts for validation
+const GetNotificationsQuerySchema = zNotificationsListData.shape.query
+  .unwrap()
+  .extend({
+    // Add coercion for query string parsing
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  });
+const GetNotificationParamsSchema = zNotificationsGetData.shape.path;
+
+type GetNotificationsQuery = z.infer<typeof GetNotificationsQuerySchema>;
+type GetNotificationParams = z.infer<typeof GetNotificationParamsSchema>;
+type SendNotificationBody = SendNotificationRequest;
 
 export function notificationRoutes(app: FastifyInstance) {
   app.get(
@@ -21,17 +34,6 @@ export function notificationRoutes(app: FastifyInstance) {
       preHandler: [requireAuth, validateQuery(GetNotificationsQuerySchema)],
     },
     async (request, reply) => {
-      const notifications = app.notifications;
-      if (!notifications) {
-        return reply.status(503).send({
-          error: {
-            code: "serviceUnavailable",
-            message: "Notification service not configured",
-            requestId: request.id,
-          },
-        });
-      }
-
       const userId = request.user?.id;
       if (!userId) {
         return reply.status(401).send({
@@ -43,11 +45,21 @@ export function notificationRoutes(app: FastifyInstance) {
         });
       }
 
+      const notifications = app.notifications;
+      if (!notifications) {
+        // Return empty list when notification service is not configured
+        return { data: [] };
+      }
+
       const query = request.query as GetNotificationsQuery;
 
+      // Convert page-based to offset-based for service
+      const limit = query.pageSize;
+      const offset = (query.page - 1) * query.pageSize;
+
       const history = await notifications.notification.getHistory(userId, {
-        limit: query.limit,
-        offset: query.offset,
+        limit,
+        offset,
       });
 
       return { data: history };
@@ -105,7 +117,7 @@ export function notificationRoutes(app: FastifyInstance) {
   app.post(
     "/notifications/send",
     {
-      preHandler: [requireAuth, validateBody(SendNotificationBodySchema)],
+      preHandler: [requireAuth, validateBody(zSendNotificationRequest)],
     },
     async (request, reply) => {
       const notifications = app.notifications;
@@ -280,17 +292,6 @@ export function notificationRoutes(app: FastifyInstance) {
     "/notifications/unread/count",
     { preHandler: [requireAuth] },
     async (request, reply) => {
-      const notifications = app.notifications;
-      if (!notifications) {
-        return reply.status(503).send({
-          error: {
-            code: "serviceUnavailable",
-            message: "Notification service not configured",
-            requestId: request.id,
-          },
-        });
-      }
-
       const userId = request.user?.id;
       if (!userId) {
         return reply.status(401).send({
@@ -300,6 +301,12 @@ export function notificationRoutes(app: FastifyInstance) {
             requestId: request.id,
           },
         });
+      }
+
+      const notifications = app.notifications;
+      if (!notifications) {
+        // Return 0 when notification service is not configured
+        return { data: { unreadCount: 0 } };
       }
 
       const count = await notifications.notification.getUnreadCount(userId);

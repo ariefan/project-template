@@ -1134,6 +1134,7 @@ export type NotificationChannel = 'email' | 'sms' | 'whatsapp' | 'telegram' | 'p
  */
 export type NotificationListResponse = {
     data: Array<Notification>;
+    pagination: Pagination;
     meta: ResponseMeta;
 };
 
@@ -2271,13 +2272,13 @@ export type NotificationsListData = {
     path?: never;
     query?: {
         /**
-         * Number of items to return (max: 100)
+         * Page number (1-indexed, default: 1)
          */
-        limit?: number;
+        page?: number;
         /**
-         * Number of items to skip
+         * Number of items per page (max: 100, default: 20)
          */
-        offset?: number;
+        pageSize?: number;
         /**
          * Filter by notification channel
          */

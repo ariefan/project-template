@@ -26,6 +26,8 @@ async function start() {
     emailService: createConsoleEmailService(),
     smsService: createConsoleSmsService(),
     environment: env.NODE_ENV,
+    // Allow cross-origin requests from the web app
+    trustedOrigins: [env.CORS_ORIGIN],
     socialProviders: {
       github:
         env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET

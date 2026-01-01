@@ -3,17 +3,16 @@
 import { Separator } from "@workspace/ui/components/separator";
 import { SidebarTrigger } from "@workspace/ui/components/sidebar";
 import { cn } from "@workspace/ui/lib/utils";
-import type { ReactNode } from "react";
+import { AutoBreadcrumb } from "./auto-breadcrumb";
 import { ModeToggle } from "./mode-toggle";
 import { NotificationMenu } from "./notification-menu";
 import { SearchTrigger } from "./search-trigger";
 
 interface AppHeaderProps {
-  breadcrumb?: ReactNode;
   className?: string;
 }
 
-export function AppHeader({ breadcrumb, className }: AppHeaderProps) {
+export function AppHeader({ className }: AppHeaderProps) {
   return (
     <header
       className={cn(
@@ -21,14 +20,12 @@ export function AppHeader({ breadcrumb, className }: AppHeaderProps) {
         className
       )}
     >
-      {/* Left Section: Sidebar Toggle + Breadcrumb */}
       <div className="flex items-center gap-2 px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator className="mr-2 h-4" orientation="vertical" />
-        {breadcrumb}
+        <AutoBreadcrumb />
       </div>
 
-      {/* Right Section: Search, Theme Toggle, Notifications */}
       <div className="ml-auto flex items-center gap-2 px-4">
         <SearchTrigger />
         <ModeToggle />

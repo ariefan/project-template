@@ -1,5 +1,14 @@
+import type {
+  InitiateUploadRequest,
+  UpdateFileRequest,
+} from "@workspace/contracts";
+import {
+  zInitiateUploadRequest,
+  zUpdateFileRequest,
+} from "@workspace/contracts/zod";
 import type { FileAccess } from "@workspace/db/schema";
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import { validateBody } from "../../../lib/validation";
 import { requireAuth } from "../../auth/middleware";
 import * as filesService from "../services/files.service";
 
@@ -18,17 +27,6 @@ interface ListFilesQuery {
   pageSize?: number;
   mimeType?: string;
   access?: FileAccess;
-}
-
-interface InitiateUploadBody {
-  filename: string;
-  contentType: string;
-  size: number;
-  metadata?: Record<string, unknown>;
-}
-
-interface UpdateAccessBody {
-  access: FileAccess;
 }
 
 /**
@@ -125,10 +123,10 @@ export function filesRoutes(app: FastifyInstance) {
    */
   app.post<{
     Params: { orgId: string };
-    Body: InitiateUploadBody;
+    Body: InitiateUploadRequest;
   }>(
     "/:orgId/files/uploads",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth, validateBody(zInitiateUploadRequest)] },
     async (request, reply) => {
       const { orgId } = request.params;
       const { filename, contentType, size, metadata } = request.body;
@@ -139,8 +137,8 @@ export function filesRoutes(app: FastifyInstance) {
           orgId,
           filename,
           contentType,
-          size,
-          metadata,
+          size: Number(size),
+          metadata: metadata as Record<string, unknown> | undefined,
           createdBy: userId,
         });
 
@@ -268,15 +266,29 @@ export function filesRoutes(app: FastifyInstance) {
    */
   app.patch<{
     Params: FileParams;
-    Body: UpdateAccessBody;
+    Body: UpdateFileRequest;
   }>(
     "/:orgId/files/:fileId",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth, validateBody(zUpdateFileRequest)] },
     async (request, reply) => {
       const { orgId, fileId } = request.params;
       const { access } = request.body;
 
-      const file = await filesService.updateFileAccess(orgId, fileId, access);
+      if (!access) {
+        return reply.status(400).send({
+          error: {
+            code: "badRequest",
+            message: "Access level is required",
+            requestId: request.id,
+          },
+        });
+      }
+
+      const file = await filesService.updateFileAccess(
+        orgId,
+        fileId,
+        access as FileAccess
+      );
 
       if (!file) {
         return reply.status(404).send({

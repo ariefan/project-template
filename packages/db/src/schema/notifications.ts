@@ -153,6 +153,7 @@ export const notificationPreferences = pgTable(
       .notNull()
       .default(true),
     securityEnabled: boolean("security_enabled").notNull().default(true),
+    systemEnabled: boolean("system_enabled").notNull().default(true),
 
     // Contact details (user may provide different contacts for notifications)
     preferredEmail: text("preferred_email"),
