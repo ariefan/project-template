@@ -5,24 +5,66 @@ import {
   buildAuthzPatternForUser,
   type CacheProvider,
 } from "@workspace/cache";
+import { and, type Database, eq, isNull } from "@workspace/db";
+import {
+  DEFAULT_APPLICATION_ID,
+  roles,
+  userRoleAssignments,
+} from "@workspace/db/schema";
 import type * as casbin from "casbin";
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
 interface AuthorizeParams {
   userId: string;
+  appId: string;
   orgId: string;
   resource: string;
   action: string;
+  resourceOwnerId?: string;
 }
 
 interface AuthorizationDeps {
   enforcer: casbin.Enforcer;
+  db: Database;
   cache: CacheProvider | null;
   cacheTtl: number;
   auditService: AuthorizationAuditService | null;
   logPermissionDenials: boolean;
   log: FastifyInstance["log"];
+}
+
+/**
+ * Look up user's role from database for a specific app + tenant
+ * Returns the role name or null if no role assigned
+ */
+async function lookupUserRole(
+  userId: string,
+  appId: string,
+  tenantId: string | null,
+  db: Database
+): Promise<string | null> {
+  const conditions = [
+    eq(userRoleAssignments.userId, userId),
+    eq(userRoleAssignments.applicationId, appId),
+  ];
+
+  if (tenantId) {
+    conditions.push(eq(userRoleAssignments.tenantId, tenantId));
+  } else {
+    conditions.push(isNull(userRoleAssignments.tenantId));
+  }
+
+  const result = await db
+    .select({
+      roleName: roles.name,
+    })
+    .from(userRoleAssignments)
+    .innerJoin(roles, eq(userRoleAssignments.roleId, roles.id))
+    .where(and(...conditions))
+    .limit(1);
+
+  return result[0]?.roleName ?? null;
 }
 
 /**
@@ -105,7 +147,13 @@ async function logDenialIfEnabled(
 }
 
 /**
- * Perform authorization check with caching and logging
+ * Perform authorization check with DB role lookup, caching, and logging
+ *
+ * Flow:
+ * 1. Check cache
+ * 2. Look up user's role from DB (user_role_assignments table)
+ * 3. Pass resolved role to Casbin for permission evaluation
+ * 4. Cache result
  */
 async function performAuthorizationCheck(
   params: AuthorizeParams,
@@ -117,12 +165,34 @@ async function performAuthorizationCheck(
     return cacheResult.allowed;
   }
 
-  // Cache miss - check enforcer
+  // Look up user's role from DB
+  const role = await lookupUserRole(
+    params.userId,
+    params.appId,
+    params.orgId,
+    deps.db
+  );
+
+  // No role assigned = no permission
+  if (!role) {
+    deps.log.debug(
+      { userId: params.userId, appId: params.appId, orgId: params.orgId },
+      "No role found for user in app+tenant"
+    );
+    await logDenialIfEnabled(params, deps);
+    await storeInCache(params, false, deps);
+    return false;
+  }
+
+  // Casbin model: (sub, role, app, tenant, obj, act, resourceOwnerId)
   const allowed = await deps.enforcer.enforce(
     params.userId,
+    role,
+    params.appId,
     params.orgId,
     params.resource,
-    params.action
+    params.action,
+    params.resourceOwnerId ?? ""
   );
 
   // Log denial if enabled
@@ -156,17 +226,23 @@ declare module "fastify" {
     /**
      * Check if a user has permission for a resource action in an organization
      *
+     * Flow:
+     * 1. Look up user's role from DB (user_role_assignments)
+     * 2. Pass resolved role to Casbin for permission evaluation
+     *
      * @param userId User ID from better-auth
-     * @param orgId Organization ID
+     * @param orgId Organization ID (tenant)
      * @param resource Resource name (posts, comments, etc.)
      * @param action Action name (read, create, update, delete, manage)
+     * @param resourceOwnerId Optional owner ID for owner-based permissions
      * @returns true if user has permission, false otherwise
      */
     authorize(
       userId: string,
       orgId: string,
       resource: string,
-      action: string
+      action: string,
+      resourceOwnerId?: string
     ): Promise<boolean>;
 
     /**
@@ -187,13 +263,20 @@ declare module "fastify" {
 }
 
 /**
- * Fastify plugin for Casbin authorization with optional caching and audit logging
- * Provides enforcer instance, authorize() helper method, cache invalidation, and audit service
+ * Fastify plugin for Casbin authorization with DB-driven role lookup
+ *
+ * Architecture:
+ * - DB owns user→role mapping (user_role_assignments table)
+ * - Casbin owns role→permission evaluation
+ *
+ * Note: db is required for production use. Tests may omit it if not testing
+ * the authorize() method (e.g., testing cache behavior only).
  */
 function authorizationPlugin(
   fastify: FastifyInstance,
   opts: {
     enforcer: casbin.Enforcer;
+    db?: Database;
     cache?: CacheProvider | null;
     cacheTtlSeconds?: number;
     auditService?: AuthorizationAuditService | null;
@@ -202,6 +285,7 @@ function authorizationPlugin(
 ): void {
   const deps: AuthorizationDeps = {
     enforcer: opts.enforcer,
+    db: opts.db as Database, // May be undefined in tests
     cache: opts.cache ?? null,
     cacheTtl: opts.cacheTtlSeconds ?? 300, // 5 minutes default
     auditService: opts.auditService ?? null,
@@ -225,11 +309,27 @@ function authorizationPlugin(
       userId: string,
       orgId: string,
       resource: string,
-      action: string
+      action: string,
+      resourceOwnerId?: string
     ): Promise<boolean> => {
+      // Runtime check: db is required for authorization
+      if (!deps.db) {
+        throw new Error(
+          "Database connection required for authorization. " +
+            "Ensure db is passed to authorization plugin."
+        );
+      }
+
       try {
         return await performAuthorizationCheck(
-          { userId, orgId, resource, action },
+          {
+            userId,
+            appId: DEFAULT_APPLICATION_ID,
+            orgId,
+            resource,
+            action,
+            resourceOwnerId,
+          },
           deps
         );
       } catch (error) {

@@ -12,13 +12,17 @@ import { roles } from "./roles";
 /**
  * User Role Assignments table
  *
- * Tracks which roles are assigned to which users with audit metadata.
- * This provides the audit trail (who assigned, when) while Casbin
- * provides the actual enforcement via grouping policies.
+ * Source of truth for user→role mapping in the multi-app multi-tenant system.
  *
- * When a role is assigned:
- * 1. Insert into this table (audit trail)
- * 2. Add Casbin grouping policy: g(userId, roleName, appId, tenantId)
+ * Architecture:
+ * - This table owns user→role assignments (queryable, indexable, auditable)
+ * - Casbin (casbin_rules table) owns role→permission evaluation only
+ * - Authorization plugin performs DB lookup to resolve user's role at runtime
+ *
+ * This design allows:
+ * - Same user can have different roles per app within the same tenant
+ * - Role assignments are first-class data with audit metadata
+ * - No Casbin g() grouping policies needed
  */
 export const userRoleAssignments = pgTable(
   "user_role_assignments",

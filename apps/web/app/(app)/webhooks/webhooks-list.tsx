@@ -292,7 +292,7 @@ export function WebhooksList() {
         totalPages: number;
         hasNext: boolean;
         hasPrevious: boolean;
-        total: number;
+        totalCount: number;
       };
     }
   )?.pagination;
@@ -313,9 +313,11 @@ export function WebhooksList() {
     }
 
     if (error) {
+      console.error("Webhooks loading error:", error);
       return (
         <div className="py-12 text-center text-destructive">
-          Failed to load webhooks
+          Failed to load webhooks:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </div>
       );
     }
@@ -442,7 +444,7 @@ export function WebhooksList() {
         {pagination && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-muted-foreground text-sm">
-              Page {page} of {pagination.totalPages} ({pagination.total}{" "}
+              Page {page} of {pagination.totalPages} ({pagination.totalCount}{" "}
               webhooks)
             </div>
             <div className="flex gap-2">
@@ -828,7 +830,7 @@ function DeliveriesPanel({
         totalPages: number;
         hasNext: boolean;
         hasPrevious: boolean;
-        total: number;
+        totalCount: number;
       };
     }
   )?.pagination;

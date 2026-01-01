@@ -11,17 +11,6 @@ export function preferenceRoutes(app: FastifyInstance) {
     "/preferences",
     { preHandler: [requireAuth] },
     async (request, reply) => {
-      const notifications = app.notifications;
-      if (!notifications) {
-        return reply.status(503).send({
-          error: {
-            code: "serviceUnavailable",
-            message: "Notification service not configured",
-            requestId: request.id,
-          },
-        });
-      }
-
       const userId = request.user?.id;
       if (!userId) {
         return reply.status(401).send({
@@ -31,6 +20,24 @@ export function preferenceRoutes(app: FastifyInstance) {
             requestId: request.id,
           },
         });
+      }
+
+      const notifications = app.notifications;
+      if (!notifications) {
+        // Return default preferences when notification service is not configured
+        return {
+          data: {
+            emailEnabled: true,
+            smsEnabled: true,
+            whatsappEnabled: true,
+            telegramEnabled: true,
+            pushEnabled: true,
+            marketingEnabled: true,
+            transactionalEnabled: true,
+            securityEnabled: true,
+            systemEnabled: true,
+          },
+        };
       }
 
       const preferences =

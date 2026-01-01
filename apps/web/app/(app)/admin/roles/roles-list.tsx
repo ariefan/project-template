@@ -83,9 +83,11 @@ export function RolesList() {
     }
 
     if (error) {
+      console.error("Roles loading error:", error);
       return (
         <div className="py-8 text-center text-destructive">
-          Failed to load roles
+          Failed to load roles:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </div>
       );
     }

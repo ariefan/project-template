@@ -20,7 +20,7 @@ import {
 import type * as React from "react";
 import { NavMain } from "@/components/layouts/nav-main";
 import { NavUser } from "@/components/layouts/nav-user";
-import { TeamSwitcher } from "@/components/layouts/team-switcher";
+import { OrgSwitcher } from "@/components/layouts/org-switcher";
 
 const navMain = [
   {
@@ -89,7 +89,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher />
+        <OrgSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />

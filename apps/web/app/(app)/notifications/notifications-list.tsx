@@ -144,7 +144,7 @@ export function NotificationsList() {
         totalPages: number;
         hasNext: boolean;
         hasPrevious: boolean;
-        total: number;
+        totalCount: number;
       };
     }
   )?.pagination;
@@ -159,9 +159,11 @@ export function NotificationsList() {
     }
 
     if (error) {
+      console.error("Notifications loading error:", error);
       return (
         <div className="py-12 text-center text-destructive">
-          Failed to load notifications
+          Failed to load notifications:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </div>
       );
     }
@@ -270,7 +272,8 @@ export function NotificationsList() {
         {pagination && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-muted-foreground text-sm">
-              Page {page} of {pagination.totalPages} ({pagination.total} total)
+              Page {page} of {pagination.totalPages} ({pagination.totalCount}{" "}
+              total)
             </div>
             <div className="flex gap-2">
               <Button

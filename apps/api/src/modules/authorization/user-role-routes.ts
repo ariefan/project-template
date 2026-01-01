@@ -37,18 +37,18 @@ interface UserRoleResponse {
  *
  * Routes for managing user-role assignments in the multi-app RBAC system.
  *
- * - GET    /orgs/:orgId/users/:userId/roles  - Get user's roles in tenant
- * - POST   /orgs/:orgId/users/:userId/roles  - Assign role to user in tenant
- * - DELETE /orgs/:orgId/users/:userId/roles/:roleId - Remove role from user
+ * - GET    /:orgId/users/:userId/roles  - Get user's roles in tenant
+ * - POST   /:orgId/users/:userId/roles  - Assign role to user in tenant
+ * - DELETE /:orgId/users/:userId/roles/:roleId - Remove role from user
  */
 export function userRoleRoutes(app: FastifyInstance) {
-  const userRoleService = new UserRoleService(getDefaultDb(), app.enforcer);
+  const userRoleService = new UserRoleService(getDefaultDb());
 
   // Get user's roles in a tenant
   app.get<{
     Params: { orgId: string; userId: string };
   }>(
-    "/orgs/:orgId/users/:userId/roles",
+    "/:orgId/users/:userId/roles",
     { preHandler: [requireAuth] },
     async (request, reply): Promise<UserRoleResponse | ErrorResponse> => {
       try {
@@ -108,7 +108,7 @@ export function userRoleRoutes(app: FastifyInstance) {
     Params: { orgId: string; userId: string };
     Body: AssignRoleRequest;
   }>(
-    "/orgs/:orgId/users/:userId/roles",
+    "/:orgId/users/:userId/roles",
     {
       preHandler: [
         requirePermission("users", "manage"),
@@ -185,7 +185,7 @@ export function userRoleRoutes(app: FastifyInstance) {
   app.delete<{
     Params: { orgId: string; userId: string; roleId: string };
   }>(
-    "/orgs/:orgId/users/:userId/roles/:roleId",
+    "/:orgId/users/:userId/roles/:roleId",
     { preHandler: [requirePermission("users", "manage")] },
     async (
       request,

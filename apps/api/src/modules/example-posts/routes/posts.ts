@@ -45,8 +45,8 @@ export function postsRoutes(app: FastifyInstance) {
     { preHandler: [requirePermission("posts", "read")] },
     async (request): Promise<ExamplePostListResponse> => {
       const { orgId } = request.params;
-      const page = request.query.page ?? 1;
-      const pageSize = Math.min(request.query.pageSize ?? 50, 100);
+      const page = Number(request.query.page) || 1;
+      const pageSize = Math.min(Number(request.query.pageSize) || 50, 100);
 
       const result = await postsService.listExamplePosts(orgId, {
         page,
@@ -413,8 +413,8 @@ export function postsRoutes(app: FastifyInstance) {
       reply
     ): Promise<ExamplePostListResponse | ErrorResponse> => {
       const { orgId } = request.params;
-      const page = request.query.page ?? 1;
-      const pageSize = Math.min(request.query.pageSize ?? 50, 100);
+      const page = Number(request.query.page) || 1;
+      const pageSize = Math.min(Number(request.query.pageSize) || 50, 100);
 
       try {
         const result = await postsService.listDeletedExamplePosts(orgId, {

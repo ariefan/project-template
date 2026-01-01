@@ -122,6 +122,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
             <Link
               className="ml-auto text-sm underline-offset-4 hover:underline"
               href="/forgot-password"
+              tabIndex={-1}
             >
               Forgot your password?
             </Link>

@@ -386,6 +386,7 @@ function formatFileResponse(file: {
   filename: string;
   size: number;
   mimeType: string;
+  storagePath: string;
   metadata: Record<string, unknown> | null;
   uploadedBy: string;
   uploadedAt: Date;
@@ -397,21 +398,19 @@ function formatFileResponse(file: {
   deletedBy: string | null;
 }) {
   return {
-    fileId: file.id,
-    tenantId: file.orgId,
+    id: file.id,
     filename: file.filename,
     size: file.size,
     mimeType: file.mimeType,
-    metadata: file.metadata,
+    storagePath: file.storagePath,
+    metadata: file.metadata ?? undefined,
     uploadedBy: file.uploadedBy,
     uploadedAt: file.uploadedAt.toISOString(),
-    virusScan: {
-      status: file.virusScanStatus,
-      completedAt: file.virusScanCompletedAt?.toISOString(),
-    },
-    access: file.access,
+    virusScanStatus: file.virusScanStatus ?? "pending",
+    virusScanCompletedAt: file.virusScanCompletedAt?.toISOString(),
+    access: file.access ?? "private",
     isDeleted: file.isDeleted,
     deletedAt: file.deletedAt?.toISOString(),
-    deletedBy: file.deletedBy,
+    deletedBy: file.deletedBy ?? undefined,
   };
 }

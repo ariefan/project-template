@@ -1,40 +1,53 @@
 # @workspace/authorization
 
-**Casbin-based RBAC with multi-app support, deny-override, and dynamic conditions**
+**Casbin-based RBAC with multi-app multi-tenant support, deny-override, and dynamic conditions**
 
 This package provides a powerful authorization system built on [Casbin](https://casbin.org/) with support for multi-tenancy, dynamic conditions, and comprehensive audit logging.
 
 ## Architecture
 
+**Key Design Principle:** DB owns user→role mapping, Casbin owns role→permission evaluation.
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      @workspace/authorization                        │
+│                        Authorization Flow                            │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  Request: (subject, app, tenant, resource, action, resourceOwnerId) │
+│  1. Request: authorize(userId, orgId, resource, action)             │
 │                              │                                       │
 │                              ▼                                       │
 │  ┌────────────────────────────────────────────────────────────────┐ │
-│  │                    Casbin Enforcer                              │ │
+│  │  2. DB Lookup: user_role_assignments                           │ │
+│  │     SELECT role_name FROM user_role_assignments                │ │
+│  │     WHERE user_id = ? AND app_id = ? AND tenant_id = ?         │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                              │                                       │
+│                              ▼                                       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │  3. Casbin: role→permission evaluation                         │ │
+│  │     enforce(userId, role, appId, tenantId, resource, action)   │ │
 │  │  ┌────────────┐  ┌────────────┐  ┌────────────────────────┐   │ │
 │  │  │ Policy     │  │ Role       │  │ Condition Functions    │   │ │
-│  │  │ Matching   │──│ Inheritance│──│ isOwner(), isShared()  │   │ │
+│  │  │ Matching   │──│ Inheritance│──│ isOwner()              │   │ │
 │  │  └────────────┘  └────────────┘  └────────────────────────┘   │ │
 │  └────────────────────────────────────────────────────────────────┘ │
 │                              │                                       │
 │                              ▼                                       │
 │  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  Effect: allow | deny (deny-override)                          │ │
+│  │  4. Effect: allow | deny (deny-override)                       │ │
 │  └────────────────────────────────────────────────────────────────┘ │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┼───────────────────┐
-          ▼                   ▼                   ▼
-   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-   │ DrizzleAdapter│  │ AuditService│    │ ViolationMgr│
-   │ (persistence)│   │ (logging)   │    │ (tracking)  │
-   └─────────────┘    └─────────────┘    └─────────────┘
+
+Data Stores:
+┌─────────────────────────────┐    ┌─────────────────────────────┐
+│   user_role_assignments     │    │      casbin_rules           │
+│   (user→role mapping)       │    │   (role→permission rules)   │
+│   - userId                  │    │   - p: role,app,tenant,     │
+│   - roleId                  │    │        resource,action,eft  │
+│   - applicationId           │    │   - g: role inheritance     │
+│   - tenantId                │    │        (optional)           │
+└─────────────────────────────┘    └─────────────────────────────┘
 ```
 
 ## Exports
@@ -106,7 +119,7 @@ import { RoleService, UserRoleService } from "@workspace/authorization";
 
 // Create services
 const roleService = new RoleService(enforcer);
-const userRoleService = new UserRoleService(enforcer);
+const userRoleService = new UserRoleService(db); // Only needs DB, not enforcer
 
 // Create a custom role with permissions
 await roleService.createRole({
@@ -121,23 +134,28 @@ await roleService.createRole({
   ],
 });
 
-// Assign role to user
+// Assign role to user (writes to user_role_assignments table)
 await userRoleService.assignRole({
   userId: "user_123",
-  roleName: "editor",
-  appId: "api",
+  roleId: "role_editor_id", // Role ID from roles table
+  applicationId: "api",
   tenantId: "org_456",
 });
 ```
 
 ## Policy Model
 
-The authorization model uses a 6-tuple request format:
+The authorization model uses a 7-tuple request format (role is resolved from DB):
 
 ```
-Request:  (sub, app, tenant, obj, act, resourceOwnerId)
-Policy:   (sub, app, tenant, obj, act, eft, condition)
-Grouping: (user, role, app, tenant)
+Request:  (sub, role, app, tenant, obj, act, resourceOwnerId)
+          └─ role is looked up from user_role_assignments table
+
+Policy:   (role, app, tenant, obj, act, eft, condition)
+          └─ Defines what each role can do
+
+Grouping: (child_role, parent_role)
+          └─ Optional role inheritance (e.g., admin inherits member permissions)
 ```
 
 ### Effect Evaluation (Deny-Override)

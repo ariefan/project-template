@@ -28,10 +28,16 @@ export {
 /**
  * Create a fully configured Casbin enforcer for authorization
  *
- * Multi-App RBAC with dynamic conditions:
- * - Request format: (sub, app, tenant, obj, act, resourceOwnerId)
- * - Policy format: (sub, app, tenant, obj, act, eft, condition)
- * - Grouping format: (user, role, app, tenant)
+ * Architecture:
+ * - DB (user_role_assignments table) owns user→role mapping
+ * - Casbin (casbin_rules table) owns role→permission evaluation
+ * - Authorization plugin resolves role from DB, then queries Casbin
+ *
+ * Request format: (sub, role, app, tenant, obj, act, resourceOwnerId)
+ * - role is resolved from DB before calling Casbin
+ *
+ * Policy format: (role, app, tenant, obj, act, eft, condition)
+ * - Defines what each role can do in each app+tenant
  *
  * @param db Database instance for policy persistence
  * @param config Optional configuration for the enforcer

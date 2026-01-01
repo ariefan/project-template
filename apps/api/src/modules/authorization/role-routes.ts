@@ -5,10 +5,15 @@ import {
   RoleService,
   type UpdateRoleInput,
 } from "@workspace/authorization";
+// Use types from @workspace/contracts for type safety
 import type {
   CreateRoleRequest,
   ErrorResponse,
+  Permission,
   PermissionInput,
+  Role,
+  RoleListResponse,
+  RoleResponse,
   UpdateRoleRequest,
 } from "@workspace/contracts";
 import {
@@ -24,27 +29,15 @@ import { validateBody } from "../../lib/validation";
 import { requirePermission } from "../auth/authorization-middleware";
 
 /**
- * Response types for role endpoints
+ * Helper to map RolePermission to contracts Permission type
  */
-interface RoleResponse {
-  data: {
-    id: string;
-    applicationId: string;
-    tenantId: string | null;
-    name: string;
-    description: string | null;
-    isSystemRole: boolean;
-    createdAt: string;
-    updatedAt: string;
-    createdBy: string | null;
-    permissions?: RolePermission[];
-  };
-  meta: { requestId: string };
-}
-
-interface RoleListResponse {
-  data: RoleResponse["data"][];
-  meta: { requestId: string };
+function mapPermissions(permissions: RolePermission[]): Permission[] {
+  return permissions.map((p) => ({
+    resource: p.resource,
+    action: p.action,
+    effect: p.effect as Permission["effect"],
+    condition: p.condition as Permission["condition"],
+  }));
 }
 
 /**
@@ -63,18 +56,19 @@ function mapRoleToResponse(
     createdBy: string | null;
   },
   permissions?: RolePermission[]
-): RoleResponse["data"] {
+): Role {
   return {
     id: role.id,
     applicationId: role.applicationId,
-    tenantId: role.tenantId,
+    tenantId: role.tenantId ?? undefined,
     name: role.name,
-    description: role.description,
+    description: role.description ?? undefined,
     isSystemRole: role.isSystemRole,
+    isGlobalRole: role.tenantId === null,
+    permissions: mapPermissions(permissions ?? []),
     createdAt: role.createdAt.toISOString(),
     updatedAt: role.updatedAt.toISOString(),
-    createdBy: role.createdBy,
-    ...(permissions && { permissions }),
+    createdBy: role.createdBy ?? undefined,
   };
 }
 
@@ -102,8 +96,8 @@ function parsePermissions(
  * Single-app mode routes (using default app):
  * - GET    /roles              - List global roles
  * - POST   /roles              - Create global role
- * - GET    /orgs/:orgId/roles  - List tenant roles
- * - POST   /orgs/:orgId/roles  - Create tenant role
+ * - GET    /:orgId/roles       - List tenant roles
+ * - POST   /:orgId/roles       - Create tenant role
  * - GET    /roles/:roleId      - Get role details
  * - PATCH  /roles/:roleId      - Update role
  * - DELETE /roles/:roleId      - Delete role
@@ -122,9 +116,18 @@ export function roleRoutes(app: FastifyInstance) {
     async (request): Promise<RoleListResponse | ErrorResponse> => {
       try {
         const roles = await roleService.listGlobalRoles(DEFAULT_APPLICATION_ID);
+        const roleData = roles.map((role) => mapRoleToResponse(role));
 
         return {
-          data: roles.map((role) => mapRoleToResponse(role)),
+          data: roleData,
+          pagination: {
+            page: 1,
+            pageSize: roleData.length,
+            totalPages: 1,
+            totalCount: roleData.length,
+            hasNext: false,
+            hasPrevious: false,
+          },
           meta: createMeta(request.id),
         };
       } catch (error) {
@@ -183,7 +186,7 @@ export function roleRoutes(app: FastifyInstance) {
   app.get<{
     Params: { orgId: string };
   }>(
-    "/orgs/:orgId/roles",
+    "/:orgId/roles",
     { preHandler: [requirePermission("settings", "read")] },
     async (request): Promise<RoleListResponse | ErrorResponse> => {
       try {
@@ -195,6 +198,14 @@ export function roleRoutes(app: FastifyInstance) {
 
         return {
           data: roles.map((role) => mapRoleToResponse(role)),
+          pagination: {
+            page: 1,
+            pageSize: roles.length,
+            totalPages: 1,
+            totalCount: roles.length,
+            hasNext: false,
+            hasPrevious: false,
+          },
           meta: createMeta(request.id),
         };
       } catch (error) {
@@ -210,7 +221,7 @@ export function roleRoutes(app: FastifyInstance) {
     Params: { orgId: string };
     Body: CreateRoleRequest;
   }>(
-    "/orgs/:orgId/roles",
+    "/:orgId/roles",
     {
       preHandler: [
         requirePermission("settings", "manage"),
@@ -241,6 +252,141 @@ export function roleRoutes(app: FastifyInstance) {
           data: mapRoleToResponse(role, parsePermissions(permissions)),
           meta: createMeta(request.id),
         };
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const { statusCode, response } = handleError(err, request.id);
+        reply.status(statusCode);
+        return response as ErrorResponse;
+      }
+    }
+  );
+
+  // Get tenant role by ID
+  app.get<{
+    Params: { orgId: string; roleId: string };
+  }>(
+    "/:orgId/roles/:roleId",
+    { preHandler: [requirePermission("settings", "read")] },
+    async (request, reply): Promise<RoleResponse | ErrorResponse> => {
+      try {
+        const { roleId } = request.params;
+        const role = await roleService.getById(roleId);
+
+        if (!role) {
+          const error = new NotFoundError("Role not found");
+          const { statusCode, response } = handleError(error, request.id);
+          reply.status(statusCode);
+          return response as ErrorResponse;
+        }
+
+        const permissions = await roleService.getPermissions(roleId);
+
+        return {
+          data: mapRoleToResponse(role, permissions),
+          meta: createMeta(request.id),
+        };
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const { statusCode, response } = handleError(err, request.id);
+        reply.status(statusCode);
+        return response as ErrorResponse;
+      }
+    }
+  );
+
+  // Update tenant role
+  app.patch<{
+    Params: { orgId: string; roleId: string };
+    Body: UpdateRoleRequest;
+  }>(
+    "/:orgId/roles/:roleId",
+    {
+      preHandler: [
+        requirePermission("settings", "manage"),
+        validateBody(zUpdateRoleRequest),
+      ],
+    },
+    async (request, reply): Promise<RoleResponse | ErrorResponse> => {
+      try {
+        const { orgId, roleId } = request.params;
+        const { name, description, permissions } = request.body;
+
+        const existingRole = await roleService.getById(roleId);
+        if (!existingRole) {
+          const error = new NotFoundError("Role not found");
+          const { statusCode, response } = handleError(error, request.id);
+          reply.status(statusCode);
+          return response as ErrorResponse;
+        }
+
+        const input: UpdateRoleInput = {
+          name,
+          description,
+          permissions: parsePermissions(permissions),
+        };
+
+        const role = await roleService.update(roleId, input);
+
+        if (!role) {
+          const error = new NotFoundError("Role not found");
+          const { statusCode, response } = handleError(error, request.id);
+          reply.status(statusCode);
+          return response as ErrorResponse;
+        }
+
+        // Invalidate cache for the organization
+        await request.server.invalidateOrgAuthzCache(orgId);
+
+        const updatedPermissions = await roleService.getPermissions(roleId);
+
+        return {
+          data: mapRoleToResponse(role, updatedPermissions),
+          meta: createMeta(request.id),
+        };
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const { statusCode, response } = handleError(err, request.id);
+        reply.status(statusCode);
+        return response as ErrorResponse;
+      }
+    }
+  );
+
+  // Delete tenant role
+  app.delete<{
+    Params: { orgId: string; roleId: string };
+  }>(
+    "/:orgId/roles/:roleId",
+    { preHandler: [requirePermission("settings", "manage")] },
+    async (
+      request,
+      reply
+    ): Promise<{ meta: { requestId: string } } | ErrorResponse> => {
+      try {
+        const { orgId, roleId } = request.params;
+
+        const role = await roleService.getById(roleId);
+        if (!role) {
+          const error = new NotFoundError("Role not found");
+          const { statusCode, response } = handleError(error, request.id);
+          reply.status(statusCode);
+          return response as ErrorResponse;
+        }
+
+        const deleted = await roleService.delete(roleId);
+
+        if (!deleted) {
+          const error = new NotFoundError("Role not found");
+          const { statusCode, response } = handleError(error, request.id);
+          reply.status(statusCode);
+          return response as ErrorResponse;
+        }
+
+        // Invalidate cache for the organization
+        await request.server.invalidateOrgAuthzCache(orgId);
+
+        reply.status(200);
+        return { meta: createMeta(request.id) };
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         const { statusCode, response } = handleError(err, request.id);

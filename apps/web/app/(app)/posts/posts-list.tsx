@@ -44,7 +44,7 @@ import {
 import { format } from "date-fns";
 import { Edit, Eye, Loader2, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 
@@ -56,9 +56,10 @@ const STATUS_COLORS: Record<ExamplePostStatus, string> = {
 
 export function PostsList() {
   const queryClient = useQueryClient();
-  const { data: orgData } = useActiveOrganization();
-  const orgId = orgData?.id ?? "";
+  const { data: orgData, isPending: orgLoading } = useActiveOrganization();
+  const orgId = orgData?.id;
 
+  const [mounted, setMounted] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ExamplePostStatus | "all">(
@@ -66,18 +67,24 @@ export function PostsList() {
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const { data, isLoading, error } = useQuery(
-    examplePostsListOptions({
+  // Avoid hydration mismatch by only rendering dynamic content after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const { data, isLoading, error } = useQuery({
+    ...examplePostsListOptions({
       client: apiClient,
-      path: { orgId },
+      path: { orgId: orgId ?? "" },
       query: {
         page,
         pageSize: 10,
         search: search || undefined,
         status: statusFilter === "all" ? undefined : statusFilter,
       },
-    })
-  );
+    }),
+    enabled: Boolean(orgId), // Only run query when orgId is available
+  });
 
   const deleteMutation = useMutation({
     ...examplePostsDeleteMutation({ client: apiClient }),
@@ -88,8 +95,11 @@ export function PostsList() {
   });
 
   function handleDeleteConfirm() {
-    if (deleteTarget) {
-      deleteMutation.mutate({ path: { orgId, id: deleteTarget } });
+    const currentOrgId = orgId;
+    if (deleteTarget && currentOrgId) {
+      deleteMutation.mutate({
+        path: { orgId: currentOrgId, id: deleteTarget },
+      });
     }
   }
 
@@ -105,6 +115,21 @@ export function PostsList() {
   )?.pagination;
 
   function renderContent() {
+    // Show consistent loading state until mounted to avoid hydration mismatch
+    if (!mounted || orgLoading) {
+      return (
+        <div className="py-8 text-center text-muted-foreground">Loading...</div>
+      );
+    }
+
+    if (!orgId) {
+      return (
+        <div className="py-8 text-center text-muted-foreground">
+          Please select an organization
+        </div>
+      );
+    }
+
     if (isLoading) {
       return (
         <div className="py-8 text-center text-muted-foreground">
@@ -114,9 +139,11 @@ export function PostsList() {
     }
 
     if (error) {
+      console.error("Posts loading error:", error);
       return (
         <div className="py-8 text-center text-destructive">
-          Failed to load posts
+          Failed to load posts:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </div>
       );
     }
@@ -249,7 +276,7 @@ export function PostsList() {
               }}
               value={statusFilter}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-45">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>

@@ -137,12 +137,18 @@ function formatJobResponse(job: {
     tenantId: job.orgId,
     type: job.type,
     status: job.status,
-    progress: job.progress,
-    message: job.message,
-    result: job.result,
+    progress: job.progress ?? undefined,
+    message: job.message ?? undefined,
+    result:
+      job.result !== null && job.result !== undefined
+        ? (job.result as Record<string, unknown>)
+        : undefined,
     error:
       job.errorCode || job.errorMessage
-        ? { code: job.errorCode, message: job.errorMessage }
+        ? {
+            code: job.errorCode ?? undefined,
+            message: job.errorMessage ?? undefined,
+          }
         : undefined,
     createdBy: job.createdBy,
     createdAt: job.createdAt.toISOString(),

@@ -3,16 +3,29 @@ import { index, pgTable, serial, text } from "drizzle-orm/pg-core";
 /**
  * Casbin Rules table
  *
- * Stores authorization policies and role assignments.
+ * Stores role→permission policies for authorization.
  *
- * Multi-App RBAC Model:
- * - Policy (ptype="p"): v0=sub, v1=app, v2=tenant, v3=obj, v4=act, v5=eft, v6=condition
- * - Grouping (ptype="g"): v0=user, v1=role, v2=app, v3=tenant
+ * Architecture:
+ * - DB (user_role_assignments table) owns user→role mapping
+ * - Casbin (this table) owns role→permission evaluation via p policies
+ * - No g() grouping policies are used; role is resolved from DB at runtime
  *
- * Condition values (v6 for policies):
+ * Policy format (ptype="p"):
+ * - v0: role name (e.g., "owner", "admin", "member", "viewer")
+ * - v1: application ID
+ * - v2: tenant ID (organization)
+ * - v3: resource (e.g., "posts", "comments", "files")
+ * - v4: action (e.g., "read", "create", "update", "delete")
+ * - v5: effect ("allow" or "deny")
+ * - v6: condition ("" for none, "owner" for owner-only access)
+ *
+ * Role inheritance (ptype="g", optional):
+ * - v0: child role, v1: parent role
+ * - Example: g("admin", "member") means admin inherits member permissions
+ *
+ * Condition values (v6):
  * - "" (empty): no condition, always applies
  * - "owner": isOwner(sub, resourceOwnerId) must be true
- * - "shared": isShared(sub, resourceId) must be true
  */
 export const casbinRules = pgTable(
   "casbin_rules",

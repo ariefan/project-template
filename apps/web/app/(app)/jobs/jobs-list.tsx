@@ -136,7 +136,7 @@ export function JobsList() {
         totalPages: number;
         hasNext: boolean;
         hasPrevious: boolean;
-        total: number;
+        totalCount: number;
       };
     }
   )?.pagination;
@@ -151,9 +151,11 @@ export function JobsList() {
     }
 
     if (error) {
+      console.error("Jobs loading error:", error);
       return (
         <div className="py-12 text-center text-destructive">
-          Failed to load jobs
+          Failed to load jobs:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </div>
       );
     }
@@ -253,7 +255,8 @@ export function JobsList() {
         {pagination && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-muted-foreground text-sm">
-              Page {page} of {pagination.totalPages} ({pagination.total} jobs)
+              Page {page} of {pagination.totalPages} ({pagination.totalCount}{" "}
+              jobs)
             </div>
             <div className="flex gap-2">
               <Button

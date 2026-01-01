@@ -493,11 +493,17 @@ function formatWebhookResponse(webhook: {
 }) {
   return {
     id: webhook.id,
-    name: webhook.name,
+    tenantId: webhook.orgId,
     url: webhook.url,
+    name: webhook.name ?? undefined,
+    description: webhook.description ?? undefined,
     events: webhook.events,
+    secret: "whsec_***", // Masked for security
     isActive: webhook.isActive,
-    description: webhook.description,
+    consecutiveFailures: 0, // TODO: Calculate from deliveries table
+    lastTriggeredAt: undefined,
+    lastSuccessAt: undefined,
+    lastFailureAt: undefined,
     createdBy: webhook.createdBy,
     createdAt: webhook.createdAt.toISOString(),
     updatedAt: webhook.updatedAt.toISOString(),

@@ -56,7 +56,7 @@ async function start() {
   // Create authorization enforcer with injected database
   const enforcer = await createAuthorization(db);
 
-  const app = await buildApp({ auth, enforcer });
+  const app = await buildApp({ auth, enforcer, db });
 
   // Graceful shutdown
   const shutdown = async (signal: string) => {

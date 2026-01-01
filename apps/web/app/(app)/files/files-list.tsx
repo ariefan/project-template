@@ -221,7 +221,7 @@ export function FilesList() {
         totalPages: number;
         hasNext: boolean;
         hasPrevious: boolean;
-        total: number;
+        totalCount: number;
       };
     }
   )?.pagination;
@@ -236,9 +236,11 @@ export function FilesList() {
     }
 
     if (error) {
+      console.error("Files loading error:", error);
       return (
         <div className="py-12 text-center text-destructive">
-          Failed to load files
+          Failed to load files:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </div>
       );
     }
@@ -355,7 +357,8 @@ export function FilesList() {
         {pagination && (
           <div className="mt-4 flex items-center justify-between">
             <div className="text-muted-foreground text-sm">
-              Page {page} of {pagination.totalPages} ({pagination.total} files)
+              Page {page} of {pagination.totalPages} ({pagination.totalCount}{" "}
+              files)
             </div>
             <div className="flex gap-2">
               <Button

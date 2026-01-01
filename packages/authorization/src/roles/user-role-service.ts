@@ -6,7 +6,6 @@ import {
   type UserRoleAssignment,
   userRoleAssignments,
 } from "@workspace/db/schema";
-import type { Enforcer } from "../types";
 
 /**
  * Input for assigning a role to a user
@@ -29,28 +28,27 @@ function generateAssignmentId(): string {
 }
 
 /**
- * UserRoleService - Manage user-role assignments with Casbin sync
+ * UserRoleService - Manage user-role assignments
  *
- * This service manages the user_role_assignments table (audit trail) and
- * syncs to Casbin grouping policies for actual authorization.
+ * Architecture:
+ * - DB (user_role_assignments table) is the source of truth for user→role mapping
+ * - Casbin is only used for role→permission evaluation (p policies, not g policies)
  *
- * Casbin grouping policy format: g(userId, roleName, appId, tenantId)
+ * This service manages CRUD operations on user_role_assignments table.
+ * The authorization plugin performs DB lookup during authorization checks.
  */
 export class UserRoleService {
   readonly db: Database;
-  readonly enforcer: Enforcer;
 
-  constructor(db: Database, enforcer: Enforcer) {
+  constructor(db: Database) {
     this.db = db;
-    this.enforcer = enforcer;
   }
 
   /**
    * Assign a role to a user
    *
    * 1. Validates the role exists and matches app/tenant
-   * 2. Inserts audit record into user_role_assignments
-   * 3. Adds Casbin grouping policy: g(userId, roleName, appId, tenantId)
+   * 2. Inserts record into user_role_assignments
    */
   async assignRole(input: AssignRoleInput): Promise<UserRoleAssignment> {
     const tenantId = input.tenantId ?? null;
@@ -82,7 +80,7 @@ export class UserRoleService {
       return existing; // Already assigned
     }
 
-    // Create audit record
+    // Create assignment record
     const assignment: NewUserRoleAssignment = {
       id: generateAssignmentId(),
       userId: input.userId,
@@ -102,15 +100,6 @@ export class UserRoleService {
       throw new Error("Failed to create role assignment");
     }
 
-    // Add Casbin grouping policy
-    const tenant = tenantId ?? "";
-    await this.enforcer.addGroupingPolicy(
-      input.userId,
-      role.name,
-      input.applicationId,
-      tenant
-    );
-
     return created;
   }
 
@@ -125,13 +114,7 @@ export class UserRoleService {
   ): Promise<boolean> {
     const tenant = tenantId ?? null;
 
-    // Get role name for Casbin
-    const role = await this.getRole(roleId);
-    if (!role) {
-      return false;
-    }
-
-    // Remove audit record
+    // Remove assignment record
     const conditions = [
       eq(userRoleAssignments.userId, userId),
       eq(userRoleAssignments.roleId, roleId),
@@ -149,19 +132,7 @@ export class UserRoleService {
       .where(and(...conditions))
       .returning();
 
-    if (result.length === 0) {
-      return false;
-    }
-
-    // Remove Casbin grouping policy
-    await this.enforcer.removeGroupingPolicy(
-      userId,
-      role.name,
-      applicationId,
-      tenant ?? ""
-    );
-
-    return true;
+    return result.length > 0;
   }
 
   /**
@@ -201,19 +172,15 @@ export class UserRoleService {
   }
 
   /**
-   * Get all role names for a user (for Casbin queries)
+   * Get all role names for a user
    */
   async getUserRoleNames(
     userId: string,
     applicationId: string,
     tenantId?: string | null
   ): Promise<string[]> {
-    const tenant = tenantId ?? "";
-    const rolesForUser = await this.enforcer.getRolesForUserInDomain(
-      userId,
-      `${applicationId}:${tenant}`
-    );
-    return rolesForUser;
+    const userRoles = await this.getUserRoles(userId, applicationId, tenantId);
+    return userRoles.map((ur) => ur.role.name);
   }
 
   /**
@@ -268,48 +235,7 @@ export class UserRoleService {
   }
 
   /**
-   * Sync user roles from database to Casbin
-   *
-   * Use this to recover from Casbin/DB drift or after database restore.
-   */
-  async syncUserToCasbin(
-    userId: string,
-    applicationId: string,
-    tenantId?: string | null
-  ): Promise<void> {
-    const tenant = tenantId ?? "";
-
-    // Remove all existing Casbin grouping policies for this user in context
-    await this.enforcer.removeFilteredGroupingPolicy(
-      0,
-      userId,
-      "", // role name (any)
-      applicationId,
-      tenant
-    );
-
-    // Get assignments from database
-    const assignments = await this.getUserRoles(
-      userId,
-      applicationId,
-      tenantId
-    );
-
-    // Add Casbin grouping policies
-    for (const assignment of assignments) {
-      await this.enforcer.addGroupingPolicy(
-        userId,
-        assignment.role.name,
-        applicationId,
-        tenant
-      );
-    }
-  }
-
-  /**
    * Check if user has a specific role
-   *
-   * Note: Uses Casbin's domain format which combines app and tenant
    */
   async hasRole(
     userId: string,
@@ -317,11 +243,12 @@ export class UserRoleService {
     applicationId: string,
     tenantId?: string | null
   ): Promise<boolean> {
-    const tenant = tenantId ?? "";
-    // Casbin's hasRoleForUser takes domain as 3rd argument
-    // We combine app and tenant into a single domain
-    const domain = `${applicationId}:${tenant}`;
-    return await this.enforcer.hasRoleForUser(userId, roleName, domain);
+    const roleNames = await this.getUserRoleNames(
+      userId,
+      applicationId,
+      tenantId
+    );
+    return roleNames.includes(roleName);
   }
 
   /**

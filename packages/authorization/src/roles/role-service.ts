@@ -400,19 +400,19 @@ export class RoleService {
     }
 
     // Update grouping policies (user-role assignments)
+    // Grouping format: (user, role, domain) where domain = "app:tenant"
+    const domain = `${applicationId}:${tenant}`;
     const groupingPolicies = await this.enforcer.getFilteredGroupingPolicy(
       1,
       oldName,
-      applicationId,
-      tenant
+      domain
     );
 
     for (const gp of groupingPolicies) {
       const userId = gp[0] ?? "";
-      const appId = gp[2] ?? applicationId;
-      const tenId = gp[3] ?? tenant;
-      await this.enforcer.removeGroupingPolicy(userId, oldName, appId, tenId);
-      await this.enforcer.addGroupingPolicy(userId, newName, appId, tenId);
+      const gpDomain = gp[2] ?? domain;
+      await this.enforcer.removeGroupingPolicy(userId, oldName, gpDomain);
+      await this.enforcer.addGroupingPolicy(userId, newName, gpDomain);
     }
   }
 
@@ -425,11 +425,8 @@ export class RoleService {
     tenantId: string | null
   ): Promise<void> {
     const tenant = tenantId ?? "";
-    await this.enforcer.removeFilteredGroupingPolicy(
-      1,
-      roleName,
-      applicationId,
-      tenant
-    );
+    // Grouping format: (user, role, domain) where domain = "app:tenant"
+    const domain = `${applicationId}:${tenant}`;
+    await this.enforcer.removeFilteredGroupingPolicy(1, roleName, domain);
   }
 }

@@ -1,7 +1,5 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { contextSwitchSwitchMutation } from "@workspace/contracts/query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,9 +17,12 @@ import {
 import { Building2, Check, ChevronsUpDown, Loader2, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-import { apiClient } from "@/lib/api-client";
-import { useActiveOrganization, useListOrganizations } from "@/lib/auth";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  authClient,
+  useActiveOrganization,
+  useListOrganizations,
+} from "@/lib/auth";
 
 interface Organization {
   id: string;
@@ -31,56 +32,86 @@ interface Organization {
   createdAt: string | Date;
 }
 
-export function TeamSwitcher() {
+export function OrgSwitcher() {
   const { isMobile } = useSidebar();
-  const queryClient = useQueryClient();
   const { data: orgsData, isPending: orgsLoading } = useListOrganizations();
   const { data: activeOrgData, isPending: activeLoading } =
     useActiveOrganization();
 
-  const organizations: Organization[] = orgsData ?? [];
-  const activeOrg = activeOrgData;
-
-  // Track if we've already auto-selected to prevent infinite loops
+  const [isSwitching, setIsSwitching] = useState(false);
   const hasAutoSelected = useRef(false);
 
-  const switchMutation = useMutation({
-    ...contextSwitchSwitchMutation({ client: apiClient }),
-    onSuccess: () => {
-      hasAutoSelected.current = true;
-      // Invalidate all queries to refetch with new context
-      queryClient.invalidateQueries();
-    },
-  });
-
-  // Auto-select the first organization if none is active
-  const firstOrg = organizations[0];
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only run when orgs load and no active org
-  useEffect(() => {
-    if (
-      !(hasAutoSelected.current || activeLoading || orgsLoading || activeOrg) &&
-      firstOrg &&
-      !switchMutation.isPending
-    ) {
-      hasAutoSelected.current = true;
-      switchMutation.mutate({
-        body: { tenantId: firstOrg.id },
-      });
+  // Deduplicate and memoize organizations
+  const organizations = useMemo<Organization[]>(() => {
+    if (!orgsData) {
+      return [];
     }
-  }, [activeLoading, orgsLoading, activeOrg, organizations]);
+    const seen = new Set<string>();
+    return orgsData.filter((org) => {
+      if (seen.has(org.id)) {
+        return false;
+      }
+      seen.add(org.id);
+      return true;
+    });
+  }, [orgsData]);
 
-  function handleSwitchOrg(orgId: string) {
-    if (orgId === activeOrg?.id) {
+  const activeOrg = activeOrgData;
+
+  // Auto-select first org when data loads and no active org
+  const firstOrgId = organizations[0]?.id;
+  useEffect(() => {
+    // Skip if already attempted, still loading, or already have active org
+    if (hasAutoSelected.current || orgsLoading || activeLoading) {
       return;
     }
-    switchMutation.mutate({
-      body: { tenantId: orgId },
-    });
+
+    // If user already has an active org, mark as done
+    if (activeOrg) {
+      hasAutoSelected.current = true;
+      return;
+    }
+
+    // Auto-select first org if available
+    if (firstOrgId) {
+      hasAutoSelected.current = true;
+      setIsSwitching(true);
+
+      async function selectOrg() {
+        try {
+          // @ts-expect-error - Better Auth organization.setActive exists at runtime
+          await authClient.organization.setActive({
+            organizationId: firstOrgId,
+          });
+        } catch (error) {
+          console.error("Failed to auto-select organization:", error);
+        } finally {
+          setIsSwitching(false);
+        }
+      }
+      selectOrg();
+    }
+  }, [orgsLoading, activeLoading, activeOrg, firstOrgId]);
+
+  async function handleSwitchOrg(orgId: string) {
+    if (orgId === activeOrg?.id || isSwitching) {
+      return;
+    }
+    setIsSwitching(true);
+    try {
+      // @ts-expect-error - Better Auth organization.setActive exists at runtime
+      await authClient.organization.setActive({ organizationId: orgId });
+    } catch (error) {
+      console.error("Failed to switch organization:", error);
+    } finally {
+      setIsSwitching(false);
+    }
   }
 
-  const isLoading = orgsLoading || activeLoading || switchMutation.isPending;
+  const isLoading = orgsLoading || activeLoading;
 
-  if (isLoading && !activeOrg) {
+  // Show loading state only during initial load
+  if (isLoading && !activeOrg && organizations.length === 0) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -97,6 +128,9 @@ export function TeamSwitcher() {
     );
   }
 
+  // Use first org as fallback display while switching
+  const displayOrg = activeOrg ?? organizations[0];
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -107,12 +141,12 @@ export function TeamSwitcher() {
               size="lg"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                {activeOrg?.logo ? (
+                {displayOrg?.logo ? (
                   <Image
-                    alt={activeOrg.name}
+                    alt={displayOrg.name}
                     className="size-4 rounded"
                     height={16}
-                    src={activeOrg.logo}
+                    src={displayOrg.logo}
                     width={16}
                   />
                 ) : (
@@ -121,13 +155,13 @@ export function TeamSwitcher() {
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
-                  {activeOrg?.name ?? "Select Organization"}
+                  {displayOrg?.name ?? "Select Organization"}
                 </span>
                 <span className="truncate text-muted-foreground text-xs">
-                  {activeOrg?.slug ?? "No organization selected"}
+                  {displayOrg?.slug ?? "No organization selected"}
                 </span>
               </div>
-              {switchMutation.isPending ? (
+              {isSwitching ? (
                 <Loader2 className="ml-auto size-4 animate-spin" />
               ) : (
                 <ChevronsUpDown className="ml-auto" />
@@ -151,7 +185,7 @@ export function TeamSwitcher() {
               organizations.map((org) => (
                 <DropdownMenuItem
                   className="gap-2 p-2"
-                  disabled={switchMutation.isPending}
+                  disabled={isSwitching}
                   key={org.id}
                   onClick={() => handleSwitchOrg(org.id)}
                 >

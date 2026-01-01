@@ -7,6 +7,7 @@ import multipart from "@fastify/multipart";
 import scalarApiReference from "@scalar/fastify-api-reference";
 import type { Auth } from "@workspace/auth";
 import type { Authorization } from "@workspace/authorization";
+import type { Database } from "@workspace/db";
 import { createNotificationSystem } from "@workspace/notifications";
 import { createStorageProvider } from "@workspace/storage";
 import Fastify from "fastify";
@@ -14,7 +15,7 @@ import YAML from "yaml";
 import { env } from "./env";
 import { applicationsModule } from "./modules/applications";
 import { authRoutes } from "./modules/auth";
-import { authorizationModule } from "./modules/authorization";
+import { authorizationModule, contextRoutes } from "./modules/authorization";
 import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
@@ -29,6 +30,7 @@ import securityHeadersPlugin from "./plugins/security-headers";
 export interface AppConfig {
   auth: Auth;
   enforcer: Authorization;
+  db: Database;
 }
 
 const require = createRequire(import.meta.url);
@@ -152,8 +154,11 @@ export async function buildApp(config: AppConfig) {
   // Rate Limiting
   await app.register(rateLimitPlugin);
 
-  // Authorization
-  await app.register(authorizationPlugin, { enforcer: config.enforcer });
+  // Authorization (DB-driven role lookup, Casbin for permission evaluation)
+  await app.register(authorizationPlugin, {
+    enforcer: config.enforcer,
+    db: config.db,
+  });
 
   // Idempotency (for POST/PATCH operations)
   // As documented in docs/api-guide/06-quality/02-idempotency.md
@@ -280,6 +285,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(migrationRoutes);
   await app.register(authRoutes);
   await app.register(applicationsModule, { prefix: "/v1" });
+  await app.register(contextRoutes, { prefix: "/v1" });
   await app.register(authorizationModule, { prefix: "/v1/orgs" });
   await app.register(examplePostsModule, { prefix: "/v1/orgs" });
   await app.register(jobsModule, { prefix: "/v1/orgs" });

@@ -11,6 +11,7 @@
  */
 
 import { hash } from "bcrypt";
+import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -261,6 +262,190 @@ async function seedRoles(ctx: SeedContext) {
 
   console.log("   ✓ Global roles: super_user, app_admin, user");
   console.log("   ✓ Tenant roles: owner, admin, member, viewer (per org)");
+}
+
+// ─────────────────────────────────────────────────────────────
+// Seed: User Role Assignments
+// ─────────────────────────────────────────────────────────────
+
+async function seedUserRoleAssignments(ctx: SeedContext) {
+  const { db, now } = ctx;
+
+  console.log("\n👤 Creating user role assignments...");
+
+  // Helper to find role ID by name and tenant
+  async function findRoleId(
+    roleName: string,
+    tenantId: string
+  ): Promise<string | null> {
+    const result = await db
+      .select({ id: schema.roles.id })
+      .from(schema.roles)
+      .where(
+        and(
+          eq(schema.roles.name, roleName),
+          eq(schema.roles.applicationId, DEFAULT_APPLICATION_ID),
+          eq(schema.roles.tenantId, tenantId)
+        )
+      )
+      .limit(1);
+    return result[0]?.id ?? null;
+  }
+
+  // Define user-role assignments per org
+  const assignments = [
+    // Acme org
+    { userId: "user_admin", roleName: SystemRoles.OWNER, tenantId: "org_acme" },
+    {
+      userId: "user_member",
+      roleName: SystemRoles.MEMBER,
+      tenantId: "org_acme",
+    },
+    {
+      userId: "user_viewer",
+      roleName: SystemRoles.VIEWER,
+      tenantId: "org_acme",
+    },
+    // Demo org
+    {
+      userId: "user_member",
+      roleName: SystemRoles.OWNER,
+      tenantId: "org_demo",
+    },
+  ];
+
+  let created = 0;
+  for (const assignment of assignments) {
+    const roleId = await findRoleId(assignment.roleName, assignment.tenantId);
+    if (!roleId) {
+      console.warn(
+        `   ⚠ Role ${assignment.roleName} not found for tenant ${assignment.tenantId}`
+      );
+      continue;
+    }
+
+    await db
+      .insert(schema.userRoleAssignments)
+      .values({
+        id: generateId("ura"),
+        userId: assignment.userId,
+        roleId,
+        applicationId: DEFAULT_APPLICATION_ID,
+        tenantId: assignment.tenantId,
+        assignedAt: now,
+        assignedBy: null, // System-created
+      })
+      .onConflictDoNothing();
+    created++;
+  }
+
+  console.log(`   ✓ Created ${created} user role assignments`);
+  console.log("     - Acme: admin (owner), member (member), viewer (viewer)");
+  console.log("     - Demo: member (owner)");
+}
+
+// ─────────────────────────────────────────────────────────────
+// Seed: Casbin Policies
+// ─────────────────────────────────────────────────────────────
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: seed script with multiple policy insertions
+async function seedCasbinPolicies(ctx: SeedContext) {
+  const { db } = ctx;
+
+  console.log("\n🔒 Creating Casbin authorization policies...");
+
+  // Resources that need permissions
+  const resources = [
+    "posts",
+    "comments",
+    "files",
+    "jobs",
+    "webhooks",
+    "settings",
+    "users",
+  ];
+  const actions = ["read", "create", "update", "delete", "manage"];
+
+  // Policy rules (ptype="p"): role -> app -> tenant -> resource -> action -> effect -> condition
+  const policies: Array<{
+    ptype: string;
+    v0: string;
+    v1: string;
+    v2: string;
+    v3: string;
+    v4: string;
+    v5: string;
+    v6: string;
+  }> = [];
+
+  // Create policies for each org
+  for (const org of DEMO_ORGS) {
+    for (const resource of resources) {
+      for (const action of actions) {
+        // Owner can do everything
+        policies.push({
+          ptype: "p",
+          v0: SystemRoles.OWNER,
+          v1: DEFAULT_APPLICATION_ID,
+          v2: org.id,
+          v3: resource,
+          v4: action,
+          v5: "allow",
+          v6: "",
+        });
+
+        // Admin can do everything
+        policies.push({
+          ptype: "p",
+          v0: SystemRoles.ADMIN,
+          v1: DEFAULT_APPLICATION_ID,
+          v2: org.id,
+          v3: resource,
+          v4: action,
+          v5: "allow",
+          v6: "",
+        });
+
+        // Member can read and create
+        if (action === "read" || action === "create") {
+          policies.push({
+            ptype: "p",
+            v0: SystemRoles.MEMBER,
+            v1: DEFAULT_APPLICATION_ID,
+            v2: org.id,
+            v3: resource,
+            v4: action,
+            v5: "allow",
+            v6: "",
+          });
+        }
+
+        // Viewer can only read
+        if (action === "read") {
+          policies.push({
+            ptype: "p",
+            v0: SystemRoles.VIEWER,
+            v1: DEFAULT_APPLICATION_ID,
+            v2: org.id,
+            v3: resource,
+            v4: action,
+            v5: "allow",
+            v6: "",
+          });
+        }
+      }
+    }
+  }
+
+  // Insert policies
+  for (const policy of policies) {
+    await db.insert(schema.casbinRules).values(policy).onConflictDoNothing();
+  }
+  console.log(`   ✓ Created ${policies.length} permission policies`);
+
+  // Note: User-role assignments are now stored in the user_role_assignments table
+  // (seedUserRoleAssignments function), not as Casbin g() grouping policies.
+  // This follows the architecture: DB owns user→role, Casbin owns role→permission.
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -674,6 +859,8 @@ async function seed() {
     await seedApplicationAndUsers(ctx);
     await seedOrganizations(ctx);
     await seedRoles(ctx);
+    await seedUserRoleAssignments(ctx);
+    await seedCasbinPolicies(ctx);
     await seedContent(ctx);
     await seedFilesAndJobs(ctx);
     await seedWebhooks(ctx);
