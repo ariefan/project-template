@@ -101,7 +101,11 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm --filter api dev:*)",
       "Bash(pnpm --filter web dev:*)",
       "Bash(taskkill:*)",
-      "Bash(pnpm --filter api dev:*)"
+      "Bash(pnpm --filter api dev:*)",
+      "Bash(pnpm --filter @workspace/authorization typecheck:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" timeout 10 pnpm:*)",
+      "Bash(cd:*)",
+      "Bash(pnpm --filter @workspace/auth add:*)"
     ]
   }
 }

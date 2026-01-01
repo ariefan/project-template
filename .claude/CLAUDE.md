@@ -147,3 +147,5 @@ In `.vscode/settings.json`:
 ```
 
 Now AI can add imports incrementally without them being removed. Run `pnpm dlx ultracite fix` manually when ready to clean up.
+
+make sure the apps/api and apps/web uses generated sdk/types from packages/contracts. 
