@@ -6,7 +6,7 @@ async function getData(): Promise<Payment[]> {
   const statuses = ["pending", "processing", "success", "failed"] as const;
   const data: Payment[] = [];
 
-  for (let i = 1; i <= 35; i++) {
+  for (let i = 1; i <= 125; i++) {
     const randomIndex = Math.floor(Math.random() * statuses.length);
     const status = statuses[randomIndex] as Payment["status"];
     data.push({

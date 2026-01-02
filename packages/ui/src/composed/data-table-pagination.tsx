@@ -6,6 +6,10 @@ interface DataTablePaginationProps<TData> {
   table: Table<TData>;
 }
 
+type PageItem =
+  | { type: "page"; value: number }
+  | { type: "ellipsis"; afterPage: number };
+
 export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
@@ -13,114 +17,106 @@ export function DataTablePagination<TData>({
   const totalPages = table.getPageCount();
   const currentPage = pageIndex + 1;
 
-  const addEllipsisBetween = (
-    pages: (number | "...")[],
-    prevPage: number,
-    currentPageNum: number
+  const addGapContent = (
+    result: PageItem[],
+    prev: number,
+    current: number,
+    threshold: number
   ): void => {
-    const diff = currentPageNum - prevPage;
+    const diff = current - prev;
     if (diff === 2) {
-      pages.push(prevPage + 1);
-    } else if (diff > 2) {
-      pages.push("...");
+      result.push({ type: "page", value: prev + 1 });
+    } else if (diff > threshold) {
+      result.push({ type: "ellipsis", afterPage: prev });
     }
   };
 
-  const buildPagesWithEllipsis = (pages: number[]): (number | "...")[] => {
-    const pagesWithEllipsis: (number | "...")[] = [];
-    for (let i = 0; i < pages.length; i++) {
-      const currentPageNum = pages[i];
-      if (currentPageNum === undefined) {
+  const buildPagesWithEllipsis = (
+    pages: number[],
+    ellipsisThreshold = 2
+  ): PageItem[] => {
+    const result: PageItem[] = [];
+
+    for (const [i, page] of pages.entries()) {
+      if (i === 0) {
+        result.push({ type: "page", value: page });
         continue;
       }
 
-      if (i === 0) {
-        pagesWithEllipsis.push(currentPageNum);
-      } else {
-        const prevPageNum = pages[i - 1];
-        if (prevPageNum === undefined) {
-          continue;
-        }
-
-        addEllipsisBetween(pagesWithEllipsis, prevPageNum, currentPageNum);
-        pagesWithEllipsis.push(currentPageNum);
+      const prev = pages[i - 1];
+      if (prev !== undefined) {
+        addGapContent(result, prev, page, ellipsisThreshold);
+        result.push({ type: "page", value: page });
       }
     }
 
-    return pagesWithEllipsis;
-  };
-
-  const addLeftPages = (pages: number[]): void => {
-    const window = 2;
-    for (let i = currentPage - window; i < currentPage; i++) {
-      if (i > 1) {
-        pages.push(i);
-      }
-    }
-  };
-
-  const addRightPages = (pages: number[]): void => {
-    const window = 2;
-    for (let i = currentPage + 1; i <= currentPage + window; i++) {
-      if (i < totalPages) {
-        pages.push(i);
-      }
-    }
+    return result;
   };
 
   const buildDesktopPageList = (): number[] => {
-    const pages: number[] = [];
-
     if (totalPages <= 1) {
       return [];
     }
 
-    pages.push(1);
-    addLeftPages(pages);
+    const pages = new Set<number>();
 
-    // Current
-    if (currentPage !== 1 && currentPage !== totalPages) {
-      pages.push(currentPage);
+    // Always show first 2 pages
+    pages.add(1);
+    if (totalPages >= 2) {
+      pages.add(2);
     }
 
-    addRightPages(pages);
+    // Always show last 2 pages
+    if (totalPages >= 2) {
+      pages.add(totalPages - 1);
+    }
+    pages.add(totalPages);
 
-    // Last page
-    if (totalPages > 1) {
-      pages.push(totalPages);
+    // Calculate window of 5 centered on current page
+    const windowSize = 5;
+    const halfWindow = Math.floor(windowSize / 2);
+    let windowStart = currentPage - halfWindow;
+    let windowEnd = currentPage + halfWindow;
+
+    // Shift window if it goes past boundaries
+    if (windowStart < 1) {
+      windowEnd += 1 - windowStart;
+      windowStart = 1;
+    }
+    if (windowEnd > totalPages) {
+      windowStart -= windowEnd - totalPages;
+      windowEnd = totalPages;
+    }
+    windowStart = Math.max(1, windowStart);
+
+    for (let i = windowStart; i <= windowEnd; i++) {
+      pages.add(i);
     }
 
-    return pages;
+    return Array.from(pages).sort((a, b) => a - b);
   };
 
   const buildTabletPageList = (): number[] => {
-    const arr: number[] = [];
-
     if (totalPages <= 1) {
       return [];
     }
 
-    arr.push(1);
+    const pages = new Set<number>();
+    pages.add(1);
+    pages.add(currentPage);
+    pages.add(totalPages);
 
-    if (currentPage !== 1 && currentPage !== totalPages) {
-      arr.push(currentPage);
-    }
-
-    if (totalPages > 1) {
-      arr.push(totalPages);
-    }
-
-    return arr;
+    return Array.from(pages).sort((a, b) => a - b);
   };
 
-  const generateDesktopPages = (): (number | "...")[] => {
+  const generateDesktopPages = (): PageItem[] => {
     const pages = buildDesktopPageList();
-    return buildPagesWithEllipsis(pages);
+    return buildPagesWithEllipsis(pages, 2);
   };
 
-  const generateTabletPages = (): (number | "...")[] => {
-    const arr = buildTabletPageList();
-    return buildPagesWithEllipsis(arr);
+  const generateTabletPages = (): PageItem[] => {
+    const pages = buildTabletPageList();
+    return buildPagesWithEllipsis(pages, 5);
   };
 
   return (
@@ -138,33 +134,33 @@ export function DataTablePagination<TData>({
           aria-label="Go to previous page"
           disabled={!table.getCanPreviousPage()}
           onClick={() => table.previousPage()}
-          size="icon"
-          variant="outline"
+          variant="ghost"
         >
           <ChevronLeft />
+          Previous
         </Button>
 
         {/* Desktop numbers */}
         <div className="hidden items-center space-x-1 lg:flex">
-          {generateDesktopPages().map((p) =>
-            p === "..." ? (
+          {generateDesktopPages().map((item) =>
+            item.type === "ellipsis" ? (
               <span
                 aria-hidden="true"
                 className="select-none px-2"
-                key="ellipsis-desktop"
+                key={`desktop-ellipsis-${item.afterPage}`}
               >
                 …
               </span>
             ) : (
               <Button
-                aria-current={p === currentPage ? "page" : undefined}
-                aria-label={`Go to page ${p}`}
-                key={`page-${p}`}
-                onClick={() => table.setPageIndex(p - 1)}
+                aria-current={item.value === currentPage ? "page" : undefined}
+                aria-label={`Go to page ${item.value}`}
+                key={`desktop-page-${item.value}`}
+                onClick={() => table.setPageIndex(item.value - 1)}
                 size="sm"
-                variant={p === currentPage ? "default" : "ghost"}
+                variant={item.value === currentPage ? "default" : "ghost"}
               >
-                {p}
+                {item.value}
               </Button>
             )
           )}
@@ -172,25 +168,25 @@ export function DataTablePagination<TData>({
 
         {/* Tablet numbers */}
         <div className="hidden items-center space-x-1 sm:flex lg:hidden">
-          {generateTabletPages().map((p) =>
-            p === "..." ? (
+          {generateTabletPages().map((item) =>
+            item.type === "ellipsis" ? (
               <span
                 aria-hidden="true"
                 className="select-none px-2"
-                key="ellipsis-tablet"
+                key={`tablet-ellipsis-${item.afterPage}`}
               >
                 …
               </span>
             ) : (
               <Button
-                aria-current={p === currentPage ? "page" : undefined}
-                aria-label={`Go to page ${p}`}
-                key={`page-${p}`}
-                onClick={() => table.setPageIndex(p - 1)}
+                aria-current={item.value === currentPage ? "page" : undefined}
+                aria-label={`Go to page ${item.value}`}
+                key={`tablet-page-${item.value}`}
+                onClick={() => table.setPageIndex(item.value - 1)}
                 size="sm"
-                variant={p === currentPage ? "default" : "ghost"}
+                variant={item.value === currentPage ? "default" : "ghost"}
               >
-                {p}
+                {item.value}
               </Button>
             )
           )}
@@ -201,9 +197,9 @@ export function DataTablePagination<TData>({
           aria-label="Go to next page"
           disabled={!table.getCanNextPage()}
           onClick={() => table.nextPage()}
-          size="icon"
-          variant="outline"
+          variant="ghost"
         >
+          Next
           <ChevronRight />
         </Button>
       </nav>
