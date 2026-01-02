@@ -116,7 +116,12 @@ export function roleRoutes(app: FastifyInstance) {
     async (request): Promise<RoleListResponse | ErrorResponse> => {
       try {
         const roles = await roleService.listGlobalRoles(DEFAULT_APPLICATION_ID);
-        const roleData = roles.map((role) => mapRoleToResponse(role));
+        const roleData = await Promise.all(
+          roles.map(async (role) => {
+            const permissions = await roleService.getPermissions(role.id);
+            return mapRoleToResponse(role, permissions);
+          })
+        );
 
         return {
           data: roleData,
@@ -196,13 +201,20 @@ export function roleRoutes(app: FastifyInstance) {
           orgId
         );
 
+        const roleData = await Promise.all(
+          roles.map(async (role) => {
+            const permissions = await roleService.getPermissions(role.id);
+            return mapRoleToResponse(role, permissions);
+          })
+        );
+
         return {
-          data: roles.map((role) => mapRoleToResponse(role)),
+          data: roleData,
           pagination: {
             page: 1,
-            pageSize: roles.length,
+            pageSize: roleData.length,
             totalPages: 1,
-            totalCount: roles.length,
+            totalCount: roleData.length,
             hasNext: false,
             hasPrevious: false,
           },

@@ -13,6 +13,7 @@ import {
   FileText,
   FolderOpen,
   Home,
+  LetterTextIcon,
   Settings,
   Shield,
   Webhook,
@@ -80,6 +81,17 @@ const navMain = [
       {
         title: "Roles",
         url: "/admin/roles",
+      },
+    ],
+  },
+  {
+    title: "Pages",
+    url: "/pages/crud",
+    icon: LetterTextIcon,
+    items: [
+      {
+        title: "CRUD",
+        url: "/pages/crud",
       },
     ],
   },

@@ -55,7 +55,8 @@
     "tailwind-merge": "^3.3.1",
     "tw-animate-css": "^1.3.6",
     "vaul": "^1.1.2",
-    "zod": "^4.2.0"
+    "zod": "^4.2.0",
+    "@tanstack/react-table": "^8.21.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",
@@ -76,6 +77,7 @@
     "./postcss.config": "./postcss.config.mjs",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
+    "./composed/*": "./src/composed/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"
   }
 }
