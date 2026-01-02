@@ -54,7 +54,7 @@ import {
 import { format } from "date-fns";
 import { ArrowLeft, Loader2, Plus, Shield, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { authClient, useActiveOrganization } from "@/lib/auth";
 
@@ -86,6 +86,11 @@ export function UserDetail({ userId }: UserDetailProps) {
     roleId: string;
     roleName: string;
   } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch user info from organization members
   const { data: orgFullData } = useQuery({
@@ -179,7 +184,9 @@ export function UserDetail({ userId }: UserDetailProps) {
   }
 
   function renderContent() {
-    if (rolesLoading) {
+    // Only show loading state after component is mounted on client
+    // to prevent hydration mismatch with server render
+    if (mounted && rolesLoading) {
       return (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -187,7 +194,7 @@ export function UserDetail({ userId }: UserDetailProps) {
       );
     }
 
-    if (userRoles.length === 0) {
+    if (!mounted || userRoles.length === 0) {
       return (
         <div className="py-8 text-center text-muted-foreground">
           No roles assigned to this user yet.

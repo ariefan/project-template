@@ -44,6 +44,11 @@ export function SettingsPanel() {
   const queryClient = useQueryClient();
   const { data: session, isPending: sessionLoading } = useSession();
   const user = session?.user;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [profileForm, setProfileForm] = useState({
     name: "",
@@ -98,7 +103,9 @@ export function SettingsPanel() {
   }
 
   function renderPreferencesContent() {
-    if (preferencesLoading) {
+    // Only show loading state after component is mounted on client
+    // to prevent hydration mismatch with server render
+    if (mounted && preferencesLoading) {
       return (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -106,7 +113,7 @@ export function SettingsPanel() {
       );
     }
 
-    if (!preferences) {
+    if (!(mounted && preferences)) {
       return (
         <div className="py-8 text-center text-muted-foreground">
           Failed to load preferences
@@ -298,7 +305,20 @@ export function SettingsPanel() {
     );
   }
 
-  if (sessionLoading) {
+  // Only show loading state after component is mounted on client
+  // to prevent hydration mismatch with server render
+  if (mounted && sessionLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // During SSR or before mount, show a skeleton/placeholder
+  if (!mounted) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">

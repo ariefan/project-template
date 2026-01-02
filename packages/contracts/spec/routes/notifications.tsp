@@ -39,7 +39,10 @@ namespace ProjectAPI {
       @query category?: NotificationCategory,
 
       /** Filter by notification status */
-      @query status?: NotificationStatus
+      @query status?: NotificationStatus,
+
+      /** Filter by read status ("read" or "unread") */
+      @query readStatus?: "read" | "unread"
     ): NotificationListResponse | ErrorResponse;
 
     /**

@@ -105,7 +105,10 @@
       "Bash(pnpm --filter @workspace/authorization typecheck:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" timeout 10 pnpm:*)",
       "Bash(cd:*)",
-      "Bash(pnpm --filter @workspace/auth add:*)"
+      "Bash(pnpm --filter @workspace/auth add:*)",
+      "Bash(pnpm --filter @workspace/contracts generate:*)",
+      "Bash(pnpm --filter @workspace/contracts tsp compile:*)",
+      "Bash(pnpm --filter @workspace/contracts build:tsp:*)"
     ]
   }
 }

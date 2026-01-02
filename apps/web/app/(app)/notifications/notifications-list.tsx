@@ -58,7 +58,7 @@ import {
   MoreHorizontal,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 
 const CATEGORY_COLORS: Record<NotificationCategory, string> = {
@@ -79,6 +79,21 @@ export function NotificationsList() {
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
+  const invalidateNotifications = useCallback(() => {
+    queryClient.invalidateQueries({
+      predicate: (query) => {
+        const key = query.queryKey[0];
+        if (typeof key === "object" && key !== null && "_id" in key) {
+          const id = (key as { _id: string })._id;
+          return (
+            id === "notificationsList" || id === "notificationsGetUnreadCount"
+          );
+        }
+        return false;
+      },
+    });
+  }, [queryClient]);
+
   const { data, isLoading, error } = useQuery({
     ...notificationsListOptions({
       client: apiClient,
@@ -86,47 +101,30 @@ export function NotificationsList() {
         page,
         pageSize: 20,
         category: categoryFilter === "all" ? undefined : categoryFilter,
+        readStatus: readFilter === "all" ? undefined : readFilter,
       },
     }),
   });
 
   const markReadMutation = useMutation({
     ...notificationsMarkReadMutation({ client: apiClient }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notificationsList"] });
-      queryClient.invalidateQueries({
-        queryKey: ["notificationsGetUnreadCount"],
-      });
-    },
+    onSuccess: invalidateNotifications,
   });
 
   const markUnreadMutation = useMutation({
     ...notificationsMarkUnreadMutation({ client: apiClient }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notificationsList"] });
-      queryClient.invalidateQueries({
-        queryKey: ["notificationsGetUnreadCount"],
-      });
-    },
+    onSuccess: invalidateNotifications,
   });
 
   const markAllReadMutation = useMutation({
     ...notificationsMarkAllReadMutation({ client: apiClient }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notificationsList"] });
-      queryClient.invalidateQueries({
-        queryKey: ["notificationsGetUnreadCount"],
-      });
-    },
+    onSuccess: invalidateNotifications,
   });
 
   const deleteMutation = useMutation({
     ...notificationsDeleteMutation({ client: apiClient }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notificationsList"] });
-      queryClient.invalidateQueries({
-        queryKey: ["notificationsGetUnreadCount"],
-      });
+      invalidateNotifications();
       setDeleteTarget(null);
     },
   });
@@ -361,6 +359,7 @@ export function NotificationsList() {
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="unread">Unread only</SelectItem>
+                <SelectItem value="read">Read only</SelectItem>
               </SelectContent>
             </Select>
           </div>

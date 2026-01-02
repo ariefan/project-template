@@ -2291,6 +2291,10 @@ export type NotificationsListData = {
          * Filter by notification status
          */
         status?: NotificationStatus;
+        /**
+         * Filter by read status ("read" or "unread")
+         */
+        readStatus?: 'read' | 'unread';
     };
     url: '/v1/notifications';
 };

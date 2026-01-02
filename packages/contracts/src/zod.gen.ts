@@ -1229,7 +1229,8 @@ export const zNotificationsListData = z.object({
         pageSize: z.optional(z.int()).default(20),
         channel: z.optional(zNotificationChannel),
         category: z.optional(zNotificationCategory),
-        status: z.optional(zNotificationStatus)
+        status: z.optional(zNotificationStatus),
+        readStatus: z.optional(z.enum(['read', 'unread']))
     }))
 });
 

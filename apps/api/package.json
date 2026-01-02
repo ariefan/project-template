@@ -10,7 +10,8 @@
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest",
+    "seed:notifications": "tsx src/scripts/seed-notifications.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
