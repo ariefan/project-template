@@ -35,7 +35,7 @@ function HoverCardContent({
                   "z-50 w-64 rounded-md border border-border bg-popover p-4 shadow-black/5 shadow-md outline-hidden",
                   Platform.select({
                     web: cn(
-                      "fade-in-0 zoom-in-95 origin-(--radix-hover-card-content-transform-origin) animate-in cursor-default [&>*]:cursor-auto",
+                      "fade-in-0 zoom-in-95 origin-(--radix-hover-card-content-transform-origin) animate-in cursor-default *:cursor-auto",
                       props.side === "bottom" && "slide-in-from-top-2",
                       props.side === "top" && "slide-in-from-bottom-2"
                     ),

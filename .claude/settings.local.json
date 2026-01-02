@@ -108,7 +108,8 @@
       "Bash(pnpm --filter @workspace/auth add:*)",
       "Bash(pnpm --filter @workspace/contracts generate:*)",
       "Bash(pnpm --filter @workspace/contracts tsp compile:*)",
-      "Bash(pnpm --filter @workspace/contracts build:tsp:*)"
+      "Bash(pnpm --filter @workspace/contracts build:tsp:*)",
+      "Bash(npx @tailwindcss/upgrade)"
     ]
   }
 }

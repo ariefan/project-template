@@ -105,7 +105,7 @@ function SelectContent({
             >
               <SelectPrimitive.Content
                 className={cn(
-                  "relative z-50 min-w-[8rem] rounded-md border border-border bg-popover shadow-black/5 shadow-md",
+                  "relative z-50 min-w-32 rounded-md border border-border bg-popover shadow-black/5 shadow-md",
                   Platform.select({
                     web: cn(
                       "fade-in-0 zoom-in-95 max-h-52 origin-(--radix-select-content-transform-origin) animate-in overflow-y-auto overflow-x-hidden",
@@ -134,7 +134,7 @@ function SelectContent({
                       cn(
                         "w-full",
                         Platform.select({
-                          web: "h-[var(--radix-select-trigger-height)] min-w-[var(--radix-select-trigger-width)]",
+                          web: "h-(--radix-select-trigger-height) min-w-(--radix-select-trigger-width)",
                         })
                       )
                   )}
@@ -176,7 +176,7 @@ function SelectItem({
       className={cn(
         "group relative flex w-full flex-row items-center gap-2 rounded-sm py-2 pr-8 pl-2 active:bg-accent sm:py-1.5",
         Platform.select({
-          web: "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none [&_svg]:pointer-events-none *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+          web: "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none [&_svg]:pointer-events-none *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         }),
         props.disabled && "opacity-50",
         className
