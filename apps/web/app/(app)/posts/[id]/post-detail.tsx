@@ -61,7 +61,12 @@ export function PostDetail({ id }: PostDetailProps) {
   const deleteMutation = useMutation({
     ...examplePostsDeleteMutation({ client: apiClient }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["examplePostsList"] });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0] as { _id: string };
+          return key?._id === "examplePostsList";
+        },
+      });
       router.push("/posts");
     },
   });

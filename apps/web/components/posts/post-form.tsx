@@ -54,7 +54,12 @@ export function PostForm({ post, mode }: PostFormProps) {
   const createMutation = useMutation({
     ...examplePostsCreateMutation({ client: apiClient }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["examplePostsList"] });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0] as { _id: string };
+          return key?._id === "examplePostsList";
+        },
+      });
       router.push("/posts");
     },
     onError: (err) => {
@@ -65,8 +70,18 @@ export function PostForm({ post, mode }: PostFormProps) {
   const updateMutation = useMutation({
     ...examplePostsUpdateMutation({ client: apiClient }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["examplePostsList"] });
-      queryClient.invalidateQueries({ queryKey: ["examplePostsGet"] });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0] as { _id: string };
+          return key?._id === "examplePostsList";
+        },
+      });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0] as { _id: string };
+          return key?._id === "examplePostsGet";
+        },
+      });
       router.push(`/posts/${post?.id}`);
     },
     onError: (err) => {

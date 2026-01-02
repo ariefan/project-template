@@ -20,14 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@workspace/ui/components/navigation-menu";
 import { Separator } from "@workspace/ui/components/separator";
 import {
   Sheet,
@@ -38,91 +30,73 @@ import {
 } from "@workspace/ui/components/sheet";
 import { cn } from "@workspace/ui/lib/utils";
 import {
-  BlocksIcon,
   BookOpenIcon,
+  BoxIcon,
   ChevronDownIcon,
   CodeIcon,
+  CreditCardIcon,
   ExternalLinkIcon,
   FileTextIcon,
-  HomeIcon,
-  LayoutGridIcon,
+  HelpCircleIcon,
   LogOutIcon,
   MenuIcon,
-  NewspaperIcon,
-  PaletteIcon,
+  MessageSquareIcon,
+  PackageIcon,
   RocketIcon,
   SettingsIcon,
+  ShieldIcon,
   UserIcon,
+  UsersIcon,
+  ZapIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { ModeToggle } from "@/components/layouts/header/mode-toggle";
+import { NotificationMenu } from "@/components/layouts/header/notification-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface NavSubItem {
   href: string;
   label: string;
-  description?: string;
   icon?: React.ComponentType<{ className?: string }>;
 }
 
 interface NavItem {
   href?: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>;
   subItems?: NavSubItem[];
 }
 
 const navItems: NavItem[] = [
-  { href: "/", label: "Home", icon: HomeIcon },
   {
-    label: "Docs",
+    label: "Products",
+    icon: PackageIcon,
+    subItems: [
+      { href: "/products/analytics", label: "Analytics", icon: ZapIcon },
+      { href: "/products/automation", label: "Automation", icon: RocketIcon },
+      { href: "/products/security", label: "Security", icon: ShieldIcon },
+    ],
+  },
+  {
+    label: "Solutions",
+    icon: BoxIcon,
+    subItems: [
+      { href: "/solutions/enterprise", label: "Enterprise", icon: UsersIcon },
+      { href: "/solutions/startups", label: "Startups", icon: RocketIcon },
+      { href: "/solutions/developers", label: "Developers", icon: CodeIcon },
+    ],
+  },
+  {
+    label: "Resources",
     icon: BookOpenIcon,
     subItems: [
-      {
-        href: "/docs",
-        label: "Introduction",
-        description: "Get started with the basics",
-        icon: RocketIcon,
-      },
-      {
-        href: "/docs/installation",
-        label: "Installation",
-        description: "How to install and configure",
-        icon: CodeIcon,
-      },
-      {
-        href: "/docs/theming",
-        label: "Theming",
-        description: "Customize colors and styles",
-        icon: PaletteIcon,
-      },
+      { href: "/docs", label: "Documentation", icon: FileTextIcon },
+      { href: "/blog", label: "Blog", icon: MessageSquareIcon },
+      { href: "/support", label: "Support", icon: HelpCircleIcon },
     ],
   },
-  {
-    label: "Components",
-    icon: LayoutGridIcon,
-    subItems: [
-      {
-        href: "/components/buttons",
-        label: "Buttons",
-        description: "Interactive button components",
-        icon: BlocksIcon,
-      },
-      {
-        href: "/components/forms",
-        label: "Forms",
-        description: "Input and form elements",
-        icon: FileTextIcon,
-      },
-      {
-        href: "/components/layouts",
-        label: "Layouts",
-        description: "Page layout components",
-        icon: LayoutGridIcon,
-      },
-    ],
-  },
-  { href: "/blog", label: "Blog", icon: NewspaperIcon },
+  { href: "/pricing", label: "Pricing", icon: CreditCardIcon },
 ];
 
 export function SiteHeader() {
@@ -164,7 +138,7 @@ export function SiteHeader() {
                     shadcn
                   </SheetTitle>
                 </SheetHeader>
-                <Separator className="my-4" />
+                <Separator />
                 <nav className="flex flex-col gap-1">
                   {navItems.map((item) =>
                     item.subItems ? (
@@ -175,7 +149,9 @@ export function SiteHeader() {
                       >
                         <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2.5 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
                           <span className="flex items-center gap-3">
-                            <item.icon className="h-4 w-4 text-muted-foreground" />
+                            {item.icon && (
+                              <item.icon className="h-4 w-4 text-muted-foreground" />
+                            )}
                             {item.label}
                           </span>
                           <ChevronDownIcon
@@ -186,10 +162,10 @@ export function SiteHeader() {
                           />
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <div className="ml-4 flex flex-col gap-1 border-l pt-1 pl-3">
+                          <div className="ml-4 flex flex-col gap-1 pt-1 pl-3">
                             {item.subItems.map((subItem) => (
                               <Link
-                                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                                 href={subItem.href}
                                 key={subItem.href}
                                 onClick={() => setMobileMenuOpen(false)}
@@ -197,16 +173,7 @@ export function SiteHeader() {
                                 {subItem.icon && (
                                   <subItem.icon className="h-4 w-4 text-muted-foreground" />
                                 )}
-                                <div>
-                                  <div className="font-medium">
-                                    {subItem.label}
-                                  </div>
-                                  {subItem.description && (
-                                    <div className="text-muted-foreground text-xs">
-                                      {subItem.description}
-                                    </div>
-                                  )}
-                                </div>
+                                {subItem.label}
                               </Link>
                             ))}
                           </div>
@@ -219,7 +186,9 @@ export function SiteHeader() {
                         key={item.label}
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <item.icon className="h-4 w-4 text-muted-foreground" />
+                        {item.icon && (
+                          <item.icon className="h-4 w-4 text-muted-foreground" />
+                        )}
                         {item.label}
                       </Link>
                     )
@@ -266,65 +235,48 @@ export function SiteHeader() {
         {/* Center: Navigation with dropdowns (desktop only) */}
         {!isMobile && (
           <div className="flex flex-1 justify-center">
-            <NavigationMenu viewport={false}>
-              <NavigationMenuList>
-                {navItems.map((item) =>
-                  item.subItems ? (
-                    <NavigationMenuItem key={item.label}>
-                      <NavigationMenuTrigger className="gap-2">
-                        <item.icon className="h-4 w-4" />
+            <nav className="flex items-center gap-1">
+              {navItems.map((item) =>
+                item.subItems ? (
+                  <DropdownMenu key={item.label}>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="gap-2" variant="ghost">
+                        {item.icon && <item.icon className="size-4" />}
                         {item.label}
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid w-80 gap-1 p-2">
-                          {item.subItems.map((subItem) => (
-                            <li key={subItem.href}>
-                              <NavigationMenuLink asChild>
-                                <Link
-                                  className="flex items-start gap-3 rounded-md p-3 transition-colors hover:bg-accent"
-                                  href={subItem.href}
-                                >
-                                  {subItem.icon && (
-                                    <subItem.icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
-                                  )}
-                                  <div>
-                                    <div className="font-medium text-sm">
-                                      {subItem.label}
-                                    </div>
-                                    {subItem.description && (
-                                      <div className="text-muted-foreground text-xs leading-snug">
-                                        {subItem.description}
-                                      </div>
-                                    )}
-                                  </div>
-                                </Link>
-                              </NavigationMenuLink>
-                            </li>
-                          ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  ) : (
-                    <NavigationMenuItem key={item.label}>
-                      <NavigationMenuLink asChild>
-                        <Link
-                          className="group inline-flex h-9 w-max items-center justify-center gap-2 rounded-md bg-background px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none"
-                          href={item.href ?? "#"}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          {item.label}
-                        </Link>
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  )
-                )}
-              </NavigationMenuList>
-            </NavigationMenu>
+                        <ChevronDownIcon className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {item.subItems.map((subItem) => (
+                        <DropdownMenuItem asChild key={subItem.href}>
+                          <Link
+                            className="flex-row items-center gap-2"
+                            href={subItem.href}
+                          >
+                            {subItem.icon && <subItem.icon />}
+                            {subItem.label}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button asChild key={item.label} variant="ghost">
+                    <Link className="gap-2" href={item.href ?? "#"}>
+                      {item.icon && <item.icon className="size-4" />}
+                      {item.label}
+                    </Link>
+                  </Button>
+                )
+              )}
+            </nav>
           </div>
         )}
 
-        {/* Right: User avatar dropdown */}
-        <div className="ml-auto flex items-center">
+        {/* Right: Notification, Theme toggle, User avatar */}
+        <div className="ml-auto flex items-center gap-1">
+          <NotificationMenu />
+          <ModeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="relative h-9 w-9 rounded-full" variant="ghost">
