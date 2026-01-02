@@ -167,7 +167,7 @@ function MenubarSubContent({
         className={cn(
           "overflow-hidden rounded-md border border-border bg-popover p-1 shadow-black/5 shadow-lg",
           Platform.select({
-            web: "data-[state=closed]:fade-out-0 fade-in-0 data-[state=closed]:zoom-out-95 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-32 origin-(--radix-context-menu-content-transform-origin) animate-in data-[state=closed]:animate-out",
+            web: "data-[state=closed]:fade-out-0 fade-in-0 data-[state=closed]:zoom-out-95 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-context-menu-content-transform-origin) animate-in data-[state=closed]:animate-out",
           }),
           className
         )}
@@ -205,7 +205,7 @@ function MenubarContent({
               align={align}
               alignOffset={alignOffset}
               className={cn(
-                "min-w-48 overflow-hidden rounded-md border border-border bg-popover p-1 shadow-black/5 shadow-lg",
+                "min-w-[12rem] overflow-hidden rounded-md border border-border bg-popover p-1 shadow-black/5 shadow-lg",
                 Platform.select({
                   web: cn(
                     "fade-in-0 zoom-in-95 z-50 max-h-(--radix-context-menu-content-available-height) origin-(--radix-context-menu-content-transform-origin) animate-in cursor-default",
@@ -249,7 +249,7 @@ function MenubarItem({
           "group relative flex flex-row items-center gap-2 rounded-sm px-2 py-2 active:bg-accent sm:py-1.5",
           Platform.select({
             web: cn(
-              "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none",
+              "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none",
               variant === "destructive" &&
                 "focus:bg-destructive/10 dark:focus:bg-destructive/20"
             ),
@@ -280,7 +280,7 @@ function MenubarCheckboxItem({
         className={cn(
           "group relative flex flex-row items-center gap-2 rounded-sm py-2 pr-2 pl-8 active:bg-accent sm:py-1.5",
           Platform.select({
-            web: "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none",
+            web: "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none",
           }),
           props.disabled && "opacity-50",
           className
@@ -318,7 +318,7 @@ function MenubarRadioItem({
         className={cn(
           "group relative flex flex-row items-center gap-2 rounded-sm py-2 pr-2 pl-8 active:bg-accent sm:py-1.5",
           Platform.select({
-            web: "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none",
+            web: "cursor-default outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none",
           }),
           props.disabled && "opacity-50",
           className
