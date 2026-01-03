@@ -50,6 +50,9 @@ export function DataView<T>({
   listItemRenderer,
   gridCardRenderer,
   responsiveBreakpoints,
+  // Mode configuration
+  mode,
+  clientSideThreshold,
   // Controlled state
   view: controlledView,
   onViewChange,
@@ -66,6 +69,8 @@ export function DataView<T>({
   // Event handlers
   onRowClick,
   onRowDoubleClick,
+  // Server-side handler
+  onFetchData,
   // Styling
   className,
   toolbarClassName,
@@ -120,6 +125,8 @@ export function DataView<T>({
       listItemRenderer,
       gridCardRenderer,
       responsiveBreakpoints,
+      mode,
+      clientSideThreshold,
     }),
     [
       availableViews,
@@ -149,6 +156,8 @@ export function DataView<T>({
       listItemRenderer,
       gridCardRenderer,
       responsiveBreakpoints,
+      mode,
+      clientSideThreshold,
     ]
   )
 
@@ -170,6 +179,7 @@ export function DataView<T>({
       onSelectionChange={onSelectionChange}
       pagination={controlledPagination}
       onPaginationChange={onPaginationChange}
+      onFetchData={onFetchData}
     >
       <div className={cn("space-y-4", className)}>
         {/* Toolbar */}

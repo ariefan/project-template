@@ -40,4 +40,10 @@ export type {
   DataViewConfig,
   DataViewState,
   DataViewProps,
+  ServerSideRequest,
+  ServerSideResponse,
+  DataMode,
 } from "./types"
+
+// Constants
+export { CLIENT_SIDE_THRESHOLD } from "./types"

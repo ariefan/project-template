@@ -27,6 +27,35 @@ export interface PaginationConfig {
 }
 
 // ============================================================================
+// Server-Side Request Types
+// ============================================================================
+
+export interface ServerSideRequest {
+  /** Current page number */
+  page: number
+  /** Number of items per page */
+  pageSize: number
+  /** Search query */
+  search: string
+  /** Active filters */
+  filters: FilterValue[]
+  /** Current sort configuration */
+  sort: SortConfig | null
+}
+
+export interface ServerSideResponse<T> {
+  /** Data items for the current page */
+  data: T[]
+  /** Total number of items (for pagination) */
+  total: number
+}
+
+/** Threshold for switching to server-side mode (default: 500) */
+export const CLIENT_SIDE_THRESHOLD = 500
+
+export type DataMode = "client" | "server"
+
+// ============================================================================
 // Column Definition
 // ============================================================================
 
@@ -206,6 +235,17 @@ export interface DataViewConfig<T = unknown> {
     /** Switch to grid view below this width */
     grid?: number
   }
+  /**
+   * Force a specific data mode. If not set, automatically determined:
+   * - "client": data.length <= 500 (client-side search/sort/filter/pagination)
+   * - "server": data.length > 500 (server-side operations required)
+   */
+  mode?: DataMode
+  /**
+   * Threshold for auto-switching to server-side mode.
+   * Default: 500
+   */
+  clientSideThreshold?: number
 }
 
 // ============================================================================
@@ -282,4 +322,10 @@ export interface DataViewProps<T = unknown> extends DataViewConfig<T> {
   emptyState?: React.ReactNode
   /** Custom loading state */
   loadingState?: React.ReactNode
+  /**
+   * Server-side data fetch handler. Called when in server mode and
+   * search/sort/filter/pagination changes.
+   * Return the data for the current page and total count.
+   */
+  onFetchData?: (request: ServerSideRequest) => Promise<ServerSideResponse<T>> | ServerSideResponse<T>
 }

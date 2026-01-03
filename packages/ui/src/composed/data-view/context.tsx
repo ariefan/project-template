@@ -8,7 +8,11 @@ import type {
   PaginationConfig,
   DataViewState,
   DataViewConfig,
+  DataMode,
+  ServerSideRequest,
+  ServerSideResponse,
 } from "./types"
+import { CLIENT_SIDE_THRESHOLD } from "./types"
 
 // ============================================================================
 // Context Types
@@ -19,6 +23,10 @@ interface DataViewContextValue<T = unknown> extends DataViewState {
   config: DataViewConfig<T>
   data: T[]
   loading: boolean
+  /** Whether the data view is operating in server-side mode */
+  isServerSide: boolean
+  /** The current data mode */
+  mode: DataMode
 
   // Actions
   setView: (view: ViewMode) => void
@@ -91,6 +99,8 @@ interface DataViewProviderProps<T> {
   onSelectionChange?: (selectedIds: Set<string | number>) => void
   pagination?: PaginationConfig
   onPaginationChange?: (pagination: PaginationConfig) => void
+  /** Server-side data fetch handler */
+  onFetchData?: (request: ServerSideRequest) => Promise<ServerSideResponse<T>> | ServerSideResponse<T>
 }
 
 // ============================================================================
@@ -101,7 +111,7 @@ export function DataViewProvider<T>({
   children,
   config,
   data,
-  loading = false,
+  loading: externalLoading = false,
   totalCount,
   view: controlledView,
   onViewChange,
@@ -115,7 +125,21 @@ export function DataViewProvider<T>({
   onSelectionChange,
   pagination: controlledPagination,
   onPaginationChange,
+  onFetchData,
 }: DataViewProviderProps<T>) {
+  // Determine data mode (client or server)
+  const threshold = config.clientSideThreshold ?? CLIENT_SIDE_THRESHOLD
+  const mode: DataMode = React.useMemo(() => {
+    if (config.mode) return config.mode
+    // If totalCount is provided and > threshold, use server mode
+    if (totalCount !== undefined && totalCount > threshold) return "server"
+    // If data length > threshold, use server mode
+    if (data.length > threshold) return "server"
+    return "client"
+  }, [config.mode, totalCount, data.length, threshold])
+
+  const isServerSide = mode === "server"
+
   // Internal state (used when not controlled)
   const [internalView, setInternalView] = React.useState<ViewMode>(
     config.defaultView ?? "table"
@@ -136,6 +160,10 @@ export function DataViewProvider<T>({
   })
   const [expandedIds, setExpandedIds] = React.useState<Set<string | number>>(new Set())
 
+  // Server-side state
+  const [serverData, setServerData] = React.useState<T[]>([])
+  const [serverLoading, setServerLoading] = React.useState(false)
+
   // Determine if controlled or uncontrolled
   const view = controlledView ?? internalView
   const search = controlledSearch ?? internalSearch
@@ -144,18 +172,60 @@ export function DataViewProvider<T>({
   const selectedIds = controlledSelectedIds ?? internalSelectedIds
   const pagination = controlledPagination ?? internalPagination
 
-  // Update total when data changes
+  // Combined loading state
+  const loading = externalLoading || serverLoading
+
+  // Update total when data/totalCount changes (client mode only)
   React.useEffect(() => {
-    const newTotal = totalCount ?? data.length
-    if (pagination.total !== newTotal) {
-      const newPagination = { ...pagination, total: newTotal }
-      if (onPaginationChange) {
-        onPaginationChange(newPagination)
-      } else {
-        setInternalPagination(newPagination)
+    if (!isServerSide) {
+      const newTotal = totalCount ?? data.length
+      if (pagination.total !== newTotal) {
+        const newPagination = { ...pagination, total: newTotal }
+        if (onPaginationChange) {
+          onPaginationChange(newPagination)
+        } else {
+          setInternalPagination(newPagination)
+        }
       }
     }
-  }, [data.length, totalCount])
+  }, [data.length, totalCount, isServerSide])
+
+  // Server-side data fetching
+  React.useEffect(() => {
+    if (!isServerSide || !onFetchData) return
+
+    const fetchData = async () => {
+      setServerLoading(true)
+      try {
+        const request: ServerSideRequest = {
+          page: pagination.page,
+          pageSize: pagination.pageSize,
+          search,
+          filters,
+          sort,
+        }
+        const response = await onFetchData(request)
+        setServerData(response.data)
+
+        // Update total from server response
+        if (response.total !== pagination.total) {
+          const newPagination = { ...pagination, total: response.total }
+          if (onPaginationChange) {
+            onPaginationChange(newPagination)
+          } else {
+            setInternalPagination(newPagination)
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error)
+        setServerData([])
+      } finally {
+        setServerLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [isServerSide, onFetchData, pagination.page, pagination.pageSize, search, filters, sort])
 
   // Actions
   const setView = React.useCallback(
@@ -293,22 +363,25 @@ export function DataViewProvider<T>({
     [selectedIds, selectRow, deselectRow, setSelectedIds, config.multiSelect]
   )
 
+  // Use the appropriate data source based on mode
+  const displayData = isServerSide ? serverData : data
+
   const selectAll = React.useCallback(() => {
-    const allIds = data.map((row) => config.getRowId(row))
+    const allIds = displayData.map((row) => config.getRowId(row))
     setSelectedIds(new Set(allIds))
-  }, [data, config.getRowId, setSelectedIds])
+  }, [displayData, config.getRowId, setSelectedIds])
 
   const deselectAll = React.useCallback(() => {
     setSelectedIds(new Set())
   }, [setSelectedIds])
 
   const toggleSelectAll = React.useCallback(() => {
-    if (selectedIds.size === data.length) {
+    if (selectedIds.size === displayData.length) {
       deselectAll()
     } else {
       selectAll()
     }
-  }, [selectedIds.size, data.length, selectAll, deselectAll])
+  }, [selectedIds.size, displayData.length, selectAll, deselectAll])
 
   const setPagination = React.useCallback(
     (newPagination: PaginationConfig) => {
@@ -349,18 +422,18 @@ export function DataViewProvider<T>({
 
   // Computed values
   const selectedRows = React.useMemo(
-    () => data.filter((row) => selectedIds.has(config.getRowId(row))),
-    [data, selectedIds, config.getRowId]
+    () => displayData.filter((row) => selectedIds.has(config.getRowId(row))),
+    [displayData, selectedIds, config.getRowId]
   )
 
   const isAllSelected = React.useMemo(
-    () => data.length > 0 && selectedIds.size === data.length,
-    [data.length, selectedIds.size]
+    () => displayData.length > 0 && selectedIds.size === displayData.length,
+    [displayData.length, selectedIds.size]
   )
 
   const isSomeSelected = React.useMemo(
-    () => selectedIds.size > 0 && selectedIds.size < data.length,
-    [selectedIds.size, data.length]
+    () => selectedIds.size > 0 && selectedIds.size < displayData.length,
+    [selectedIds.size, displayData.length]
   )
 
   const totalPages = React.useMemo(
@@ -368,11 +441,16 @@ export function DataViewProvider<T>({
     [pagination.total, pagination.pageSize]
   )
 
-  // Process data: filter and sort (for client-side operations)
+  // Process data: filter and sort (for CLIENT-SIDE operations only)
   const processedData = React.useMemo(() => {
+    // In server mode, data is already processed by the server
+    if (isServerSide) {
+      return serverData
+    }
+
     let result = [...data]
 
-    // Apply search
+    // Apply search (client-side only)
     if (search && config.searchable !== false) {
       const searchLower = search.toLowerCase()
       result = result.filter((row) => {
@@ -387,7 +465,7 @@ export function DataViewProvider<T>({
       })
     }
 
-    // Apply filters
+    // Apply filters (client-side only)
     if (filters.length > 0) {
       result = result.filter((row) => {
         return filters.every((filter) => {
@@ -426,7 +504,7 @@ export function DataViewProvider<T>({
       })
     }
 
-    // Apply sort
+    // Apply sort (client-side only)
     if (sort) {
       const column = config.columns.find((c) => c.id === sort.field)
       if (column) {
@@ -453,26 +531,31 @@ export function DataViewProvider<T>({
     }
 
     return result
-  }, [data, search, filters, sort, config.columns, config.searchable])
+  }, [data, serverData, isServerSide, search, filters, sort, config.columns, config.searchable])
 
   // Paginated data
   const paginatedData = React.useMemo(() => {
+    // In server mode, data is already paginated
+    if (isServerSide) {
+      return serverData
+    }
+
     if (!config.paginated) return processedData
 
     const start = (pagination.page - 1) * pagination.pageSize
     const end = start + pagination.pageSize
     return processedData.slice(start, end)
-  }, [processedData, pagination.page, pagination.pageSize, config.paginated])
+  }, [processedData, serverData, isServerSide, pagination.page, pagination.pageSize, config.paginated])
 
-  // Update pagination total when processedData changes
+  // Update pagination total when processedData changes (client mode only)
   React.useEffect(() => {
-    if (config.paginated && !totalCount) {
+    if (!isServerSide && config.paginated && !totalCount) {
       const newTotal = processedData.length
       if (pagination.total !== newTotal) {
         setPagination({ ...pagination, total: newTotal })
       }
     }
-  }, [processedData.length, config.paginated, totalCount])
+  }, [processedData.length, config.paginated, totalCount, isServerSide])
 
   const value: DataViewContextValue<T> = {
     // State
@@ -486,8 +569,10 @@ export function DataViewProvider<T>({
 
     // Config & Data
     config,
-    data,
+    data: displayData,
     loading,
+    isServerSide,
+    mode,
 
     // Actions
     setView,
