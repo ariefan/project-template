@@ -211,12 +211,17 @@ export function DataViewProvider<T>({
   // Combined loading state
   const loading = externalLoading || serverLoading;
 
+  // Use ref to access pagination without causing dependency loops
+  const paginationRef = React.useRef(pagination);
+  paginationRef.current = pagination;
+
   // Update total when data/totalCount changes (client mode only)
   React.useEffect(() => {
     if (!isServerSide) {
       const newTotal = totalCount ?? data.length;
-      if (pagination.total !== newTotal) {
-        const newPagination = { ...pagination, total: newTotal };
+      const currentPagination = paginationRef.current;
+      if (currentPagination.total !== newTotal) {
+        const newPagination = { ...currentPagination, total: newTotal };
         if (onPaginationChange) {
           onPaginationChange(newPagination);
         } else {
@@ -224,10 +229,11 @@ export function DataViewProvider<T>({
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.length, totalCount, isServerSide, onPaginationChange, pagination]);
+  }, [data.length, totalCount, isServerSide, onPaginationChange]);
 
   // Server-side data fetching
+  const serverPage = pagination.page;
+  const serverPageSize = pagination.pageSize;
   React.useEffect(() => {
     if (!(isServerSide && onFetchData)) {
       return;
@@ -237,8 +243,8 @@ export function DataViewProvider<T>({
       setServerLoading(true);
       try {
         const request: ServerSideRequest = {
-          page: pagination.page,
-          pageSize: pagination.pageSize,
+          page: serverPage,
+          pageSize: serverPageSize,
           search,
           filters,
           sort,
@@ -246,9 +252,10 @@ export function DataViewProvider<T>({
         const response = await onFetchData(request);
         setServerData(response.data);
 
-        // Update total from server response
-        if (response.total !== pagination.total) {
-          const newPagination = { ...pagination, total: response.total };
+        // Update total from server response (use ref to get current pagination)
+        const currentPagination = paginationRef.current;
+        if (response.total !== currentPagination.total) {
+          const newPagination = { ...currentPagination, total: response.total };
           if (onPaginationChange) {
             onPaginationChange(newPagination);
           } else {
@@ -264,16 +271,14 @@ export function DataViewProvider<T>({
     };
 
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isServerSide,
     onFetchData,
-    pagination.page,
-    pagination.pageSize,
+    serverPage,
+    serverPageSize,
     search,
     filters,
     sort,
-    pagination,
     onPaginationChange,
   ]);
 
@@ -290,13 +295,18 @@ export function DataViewProvider<T>({
   );
 
   const resetToFirstPage = React.useCallback(() => {
-    const newPagination = { ...pagination, page: 1 };
+    // Only update if not already on page 1 to avoid unnecessary re-renders
+    const currentPagination = paginationRef.current;
+    if (currentPagination.page === 1) {
+      return;
+    }
+    const newPagination = { ...currentPagination, page: 1 };
     if (onPaginationChange) {
       onPaginationChange(newPagination);
     } else {
       setInternalPagination(newPagination);
     }
-  }, [pagination, onPaginationChange]);
+  }, [onPaginationChange]);
 
   const setSearch = React.useCallback(
     (newSearch: string) => {
@@ -323,23 +333,29 @@ export function DataViewProvider<T>({
     [onFiltersChange, resetToFirstPage]
   );
 
+  // Use a ref to access current filters without adding to dependency array
+  const filtersRef = React.useRef(filters);
+  filtersRef.current = filters;
+
   const addFilter = React.useCallback(
     (filter: FilterValue) => {
+      const currentFilters = filtersRef.current;
       const newFilters = [
-        ...filters.filter((f) => f.field !== filter.field),
+        ...currentFilters.filter((f) => f.field !== filter.field),
         filter,
       ];
       setFilters(newFilters);
     },
-    [filters, setFilters]
+    [setFilters]
   );
 
   const removeFilter = React.useCallback(
     (field: string) => {
-      const newFilters = filters.filter((f) => f.field !== field);
+      const currentFilters = filtersRef.current;
+      const newFilters = currentFilters.filter((f) => f.field !== field);
       setFilters(newFilters);
     },
-    [filters, setFilters]
+    [setFilters]
   );
 
   const clearFilters = React.useCallback(() => {
@@ -448,16 +464,18 @@ export function DataViewProvider<T>({
 
   const setPage = React.useCallback(
     (page: number) => {
-      setPagination({ ...pagination, page });
+      const currentPagination = paginationRef.current;
+      setPagination({ ...currentPagination, page });
     },
-    [pagination, setPagination]
+    [setPagination]
   );
 
   const setPageSize = React.useCallback(
     (pageSize: number) => {
-      setPagination({ ...pagination, pageSize, page: 1 });
+      const currentPagination = paginationRef.current;
+      setPagination({ ...currentPagination, pageSize, page: 1 });
     },
-    [pagination, setPagination]
+    [setPagination]
   );
 
   const toggleExpanded = React.useCallback((id: string | number) => {
@@ -624,17 +642,16 @@ export function DataViewProvider<T>({
   React.useEffect(() => {
     if (!isServerSide && config.paginated && !totalCount) {
       const newTotal = processedData.length;
-      if (pagination.total !== newTotal) {
-        setPagination({ ...pagination, total: newTotal });
+      const currentPagination = paginationRef.current;
+      if (currentPagination.total !== newTotal) {
+        setPagination({ ...currentPagination, total: newTotal });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     processedData.length,
     config.paginated,
     totalCount,
     isServerSide,
-    pagination,
     setPagination,
   ]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   DropdownMenu,
@@ -9,6 +10,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemSeparator,
+  ItemTitle,
+} from "@workspace/ui/components/item";
 import { cn } from "@workspace/ui/lib/utils";
 import { MoreHorizontal } from "lucide-react";
 import * as React from "react";
@@ -89,39 +100,42 @@ export function DataViewList<T>({
   }
 
   return (
-    <div className={cn("space-y-2", className)}>
-      {paginatedData.map((row) => {
+    <ItemGroup className={className}>
+      {paginatedData.map((row, index) => {
         const rowId = config.getRowId(row);
         const isSelected = selectedIds.has(rowId);
 
         if (itemRenderer) {
           return (
-            <div key={rowId}>
+            <React.Fragment key={rowId}>
               {itemRenderer({
                 row,
                 fields: visibleFields,
                 selected: isSelected,
                 onSelect: () => toggleRowSelection(rowId),
               })}
-            </div>
+              {index !== paginatedData.length - 1 && <ItemSeparator />}
+            </React.Fragment>
           );
         }
 
         return (
-          <ListItem
-            dense={config.dense}
-            fields={visibleFields}
-            hoverable={config.hoverable}
-            key={rowId}
-            onSelect={() => toggleRowSelection(rowId)}
-            row={row}
-            rowActions={rowActions}
-            selectable={config.selectable}
-            selected={isSelected}
-          />
+          <React.Fragment key={rowId}>
+            <ListItem
+              dense={config.dense}
+              fields={visibleFields}
+              hoverable={config.hoverable}
+              onSelect={() => toggleRowSelection(rowId)}
+              row={row}
+              rowActions={rowActions}
+              selectable={config.selectable}
+              selected={isSelected}
+            />
+            {index !== paginatedData.length - 1 && <ItemSeparator />}
+          </React.Fragment>
         );
       })}
-    </div>
+    </ItemGroup>
   );
 }
 
@@ -192,69 +206,69 @@ function ListItem<T>({
     return content;
   };
 
+  // Build description from other fields
+  const descriptionContent =
+    otherFields.length > 0
+      ? otherFields
+          .slice(0, 4)
+          .map((field) => {
+            const value = getFieldValue(field);
+            return `${field.label}: ${String(value ?? "")}`;
+          })
+          .join(" · ")
+      : null;
+
   return (
-    <div
+    <Item
       className={cn(
-        "flex items-center gap-3 rounded-lg border bg-card p-3",
-        "transition-colors",
         hoverable !== false && "hover:bg-muted/50",
-        selected && "bg-muted ring-1 ring-primary",
-        dense && "p-2"
+        selected && "bg-muted ring-1 ring-primary"
       )}
+      size={dense ? "sm" : "default"}
     >
       {selectable && (
-        <Checkbox
-          aria-label="Select item"
-          checked={selected}
-          onCheckedChange={onSelect}
-        />
+        <ItemMedia>
+          <Checkbox
+            aria-label="Select item"
+            checked={selected}
+            onCheckedChange={onSelect}
+          />
+        </ItemMedia>
       )}
 
-      <div className="min-w-0 flex-1 space-y-1">
-        {/* Primary & Secondary */}
-        <div className="flex items-center gap-2">
-          {primaryField && (
-            <div className="truncate font-medium">
-              {renderFieldValue(primaryField)}
-            </div>
-          )}
+      <ItemContent>
+        <ItemTitle>
+          {primaryField && renderFieldValue(primaryField)}
           {secondaryField && (
-            <div className="truncate text-muted-foreground text-sm">
+            <span className="font-normal text-muted-foreground">
               {renderFieldValue(secondaryField)}
-            </div>
+            </span>
           )}
-        </div>
-
-        {/* Other fields */}
-        {otherFields.length > 0 && (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
-            {otherFields.slice(0, 4).map((field) => (
-              <div className="flex items-center gap-1" key={field.id}>
-                <span className="text-xs opacity-70">{field.label}:</span>
-                {renderFieldValue(field)}
-              </div>
-            ))}
-          </div>
+        </ItemTitle>
+        {descriptionContent && (
+          <ItemDescription>{descriptionContent}</ItemDescription>
         )}
-      </div>
+      </ItemContent>
 
       {rowActions && rowActions.length > 0 && (
-        <ListItemActions actions={rowActions} row={row} />
+        <ItemActions>
+          <ListItemActionsMenu actions={rowActions} row={row} />
+        </ItemActions>
       )}
-    </div>
+    </Item>
   );
 }
 
 // ============================================================================
-// List Item Actions
+// List Item Actions Menu
 // ============================================================================
 
-interface ListItemActionsProps<T> {
+interface ListItemActionsMenuProps<T> {
   row: T;
   actions: RowAction<T>[];
 }
 
-function ListItemActions<T>({ row, actions }: ListItemActionsProps<T>) {
+function ListItemActionsMenu<T>({ row, actions }: ListItemActionsMenuProps<T>) {
   const visibleActions = actions.filter((action) => {
     if (typeof action.hidden === "function") {
       return !action.hidden(row);
@@ -268,9 +282,11 @@ function ListItemActions<T>({ row, actions }: ListItemActionsProps<T>) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex size-8 shrink-0 items-center justify-center rounded-md font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-        <MoreHorizontal className="size-4" />
-        <span className="sr-only">Open menu</span>
+      <DropdownMenuTrigger asChild>
+        <Button className="rounded-full" size="icon" variant="ghost">
+          <MoreHorizontal className="size-4" />
+          <span className="sr-only">Open menu</span>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {visibleActions.map((action, index) => {

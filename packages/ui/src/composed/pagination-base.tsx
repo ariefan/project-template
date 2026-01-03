@@ -151,7 +151,7 @@ export function PaginationBase({
     <div className="flex flex-col items-center justify-between space-y-2 px-2 py-2 sm:flex-row sm:space-y-0">
       {/* Row info */}
       {showRowInfo && rowInfo && (
-        <div className="flex-1 text-muted-foreground text-sm">
+        <div className="mr-4 flex-1 text-muted-foreground text-sm">
           {rowInfo.selected !== undefined && (
             <>
               {rowInfo.selected} of {rowInfo.total} row(s) selected.
@@ -170,10 +170,10 @@ export function PaginationBase({
           aria-label="Go to previous page"
           disabled={!canPreviousPage}
           onClick={onPreviousPage}
+          size="icon"
           variant="ghost"
         >
           <ChevronLeft />
-          Previous
         </Button>
 
         {/* Desktop numbers */}
@@ -246,9 +246,9 @@ export function PaginationBase({
           aria-label="Go to next page"
           disabled={!canNextPage}
           onClick={onNextPage}
+          size="icon"
           variant="ghost"
         >
-          Next
           <ChevronRight />
         </Button>
       </nav>

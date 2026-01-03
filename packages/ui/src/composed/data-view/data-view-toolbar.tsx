@@ -18,6 +18,8 @@ import {
 } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 import {
+  ArrowDown,
+  ArrowUp,
   Filter,
   LayoutGrid,
   LayoutList,
@@ -72,9 +74,6 @@ export function ViewToggle({ className, availableViews }: ViewToggleProps) {
           variant={view === v ? "secondary" : "outline"}
         >
           {viewIcons[v]}
-          <span className="sr-only sm:not-sr-only sm:ml-1">
-            {viewLabels[v]}
-          </span>
         </Button>
       ))}
     </ButtonGroup>
@@ -103,7 +102,6 @@ export function SearchInput({ className, placeholder }: SearchInputProps) {
     const value = e.target.value;
     setLocalSearch(value);
 
-    // Debounce the actual search
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -146,7 +144,7 @@ export function SearchInput({ className, placeholder }: SearchInputProps) {
 }
 
 // ============================================================================
-// Filter Button
+// Filter Button (using Radix Popover)
 // ============================================================================
 
 interface FilterButtonProps {
@@ -154,8 +152,7 @@ interface FilterButtonProps {
 }
 
 export function FilterButton({ className }: FilterButtonProps) {
-  const { filters, config, addFilter, removeFilter, clearFilters } =
-    useDataView();
+  const { filters, config, setFilters } = useDataView();
 
   const filterableColumns = config.columns.filter((col) => col.filterable);
 
@@ -165,30 +162,50 @@ export function FilterButton({ className }: FilterButtonProps) {
 
   const activeFilterCount = filters.length;
 
+  const handleFilterChange = (columnId: string, value: string) => {
+    if (value) {
+      const column = filterableColumns.find((c) => c.id === columnId);
+      const filterType = column?.filterType ?? "text";
+      const newFilter: FilterValue = {
+        field: columnId,
+        operator: filterType === "select" ? "equals" : "contains",
+        value,
+      };
+      setFilters([...filters.filter((f) => f.field !== columnId), newFilter]);
+    } else {
+      setFilters(filters.filter((f) => f.field !== columnId));
+    }
+  };
+
+  const handleClearAll = () => {
+    setFilters([]);
+  };
+
   return (
     <Popover>
-      <PopoverTrigger
-        className={cn(
-          "inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-input bg-background px-3 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-          className
-        )}
-      >
-        <Filter className="size-4" />
-        <span className="hidden sm:inline">Filters</span>
-        {activeFilterCount > 0 && (
-          <Badge className="ml-1 px-1.5 py-0 text-xs" variant="secondary">
-            {activeFilterCount}
-          </Badge>
-        )}
+      <PopoverTrigger asChild>
+        <Button
+          className={cn("gap-1.5", className)}
+          size="sm"
+          variant="outline"
+        >
+          <Filter className="size-4" />
+          <span className="hidden sm:inline">Filters</span>
+          {activeFilterCount > 0 && (
+            <Badge className="ml-1 px-1.5 py-0 text-xs" variant="secondary">
+              {activeFilterCount}
+            </Badge>
+          )}
+        </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-80">
+      <PopoverContent align="end" className="w-80">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-sm">Filters</h4>
             {activeFilterCount > 0 && (
               <Button
                 className="h-auto px-2 py-1 text-xs"
-                onClick={clearFilters}
+                onClick={handleClearAll}
                 size="sm"
                 variant="ghost"
               >
@@ -198,20 +215,21 @@ export function FilterButton({ className }: FilterButtonProps) {
           </div>
 
           <div className="space-y-3">
-            {filterableColumns.map((column) => (
-              <FilterField
-                column={column}
-                key={column.id}
-                onValueChange={(value) => {
-                  if (value) {
-                    addFilter(value);
-                  } else {
-                    removeFilter(column.id);
-                  }
-                }}
-                value={filters.find((f) => f.field === column.id)}
-              />
-            ))}
+            {filterableColumns.map((column) => {
+              const currentFilter = filters.find((f) => f.field === column.id);
+              const currentValue = currentFilter?.value
+                ? String(currentFilter.value)
+                : "";
+
+              return (
+                <FilterField
+                  column={column}
+                  key={column.id}
+                  onChange={(value) => handleFilterChange(column.id, value)}
+                  value={currentValue}
+                />
+              );
+            })}
           </div>
         </div>
       </PopoverContent>
@@ -225,39 +243,29 @@ export function FilterButton({ className }: FilterButtonProps) {
 
 interface FilterFieldProps {
   column: ColumnDef;
-  value?: FilterValue;
-  onValueChange: (value: FilterValue | null) => void;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-function FilterField({ column, value, onValueChange }: FilterFieldProps) {
+function FilterField({ column, value, onChange }: FilterFieldProps) {
   const filterType = column.filterType ?? "text";
   const inputId = `filter-${column.id}`;
 
-  const handleChange = (inputValue: string) => {
-    if (!inputValue) {
-      onValueChange(null);
-      return;
-    }
-
-    onValueChange({
-      field: column.id,
-      operator: filterType === "select" ? "equals" : "contains",
-      value: inputValue,
-    });
-  };
-
-  return (
-    <div className="space-y-1.5">
-      <label className="text-muted-foreground text-sm" htmlFor={inputId}>
-        {column.header}
-      </label>
-      {filterType === "select" && column.filterOptions ? (
-        <Select onValueChange={handleChange} value={String(value?.value ?? "")}>
-          <SelectTrigger id={inputId} size="sm">
+  if (filterType === "select" && column.filterOptions) {
+    return (
+      <div className="space-y-1.5">
+        <label className="text-muted-foreground text-sm" htmlFor={inputId}>
+          {column.header}
+        </label>
+        <Select
+          onValueChange={(v) => onChange(v === "__all__" ? "" : v)}
+          value={value || "__all__"}
+        >
+          <SelectTrigger className="w-full" size="sm">
             <SelectValue placeholder="All" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="__all__">All</SelectItem>
             {column.filterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -265,22 +273,29 @@ function FilterField({ column, value, onValueChange }: FilterFieldProps) {
             ))}
           </SelectContent>
         </Select>
-      ) : (
-        <Input
-          className="h-8 text-sm"
-          id={inputId}
-          onChange={(e) => handleChange(e.target.value)}
-          placeholder={`Filter ${column.header.toLowerCase()}...`}
-          type={filterType === "number" ? "number" : "text"}
-          value={String(value?.value ?? "")}
-        />
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <label className="text-muted-foreground text-sm" htmlFor={inputId}>
+        {column.header}
+      </label>
+      <Input
+        className="h-8 text-sm"
+        id={inputId}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={`Filter ${column.header.toLowerCase()}...`}
+        type={filterType === "number" ? "number" : "text"}
+        value={value}
+      />
     </div>
   );
 }
 
 // ============================================================================
-// Sort Button
+// Sort Button (using Radix Popover)
 // ============================================================================
 
 interface SortButtonProps {
@@ -288,7 +303,7 @@ interface SortButtonProps {
 }
 
 export function SortButton({ className }: SortButtonProps) {
-  const { sort, toggleSort, config } = useDataView();
+  const { sort, setSort, config } = useDataView();
 
   const sortableColumns = config.columns.filter(
     (col) => col.sortable !== false && config.sortable !== false
@@ -298,69 +313,76 @@ export function SortButton({ className }: SortButtonProps) {
     return null;
   }
 
-  const sortOptions = sortableColumns.map((col) => ({
-    value: col.id,
-    label: col.header,
-  }));
+  const handleSortFieldChange = (field: string) => {
+    if (field && field !== "__none__") {
+      setSort({ field, direction: sort?.direction ?? "asc" });
+    } else {
+      setSort(null);
+    }
+  };
+
+  const handleDirectionChange = (direction: "asc" | "desc") => {
+    if (sort) {
+      setSort({ ...sort, direction });
+    }
+  };
 
   return (
     <Popover>
-      <PopoverTrigger
-        className={cn(
-          "inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-input bg-background px-3 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-          className
-        )}
-      >
-        <SlidersHorizontal className="size-4" />
-        <span className="hidden sm:inline">Sort</span>
-        {sort && (
-          <Badge className="ml-1 px-1.5 py-0 text-xs" variant="secondary">
-            {sort.direction === "asc" ? "↑" : "↓"}
-          </Badge>
-        )}
+      <PopoverTrigger asChild>
+        <Button
+          className={cn("gap-1.5", className)}
+          size="sm"
+          variant="outline"
+        >
+          <SlidersHorizontal className="size-4" />
+          <span className="hidden sm:inline">Sort</span>
+          {sort && (
+            <Badge className="ml-1 px-1.5 py-0 text-xs" variant="secondary">
+              {sort.direction === "asc" ? "↑" : "↓"}
+            </Badge>
+          )}
+        </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-56">
+      <PopoverContent align="end" className="w-56">
         <div className="space-y-3">
           <h4 className="font-medium text-sm">Sort by</h4>
           <Select
-            onValueChange={(value) => {
-              if (value) {
-                toggleSort(value);
-              } else {
-                toggleSort("");
-              }
-            }}
-            value={sort?.field ?? ""}
+            onValueChange={handleSortFieldChange}
+            value={sort?.field ?? "__none__"}
           >
-            <SelectTrigger size="sm">
+            <SelectTrigger className="w-full" size="sm">
               <SelectValue placeholder="None" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
-              {sortOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+              <SelectItem value="__none__">None</SelectItem>
+              {sortableColumns.map((col) => (
+                <SelectItem key={col.id} value={col.id}>
+                  {col.header}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
           {sort && (
             <div className="flex gap-2">
               <Button
-                className="flex-1"
-                onClick={() => toggleSort(sort.field)}
+                className="flex-1 gap-1"
+                onClick={() => handleDirectionChange("asc")}
                 size="sm"
                 variant={sort.direction === "asc" ? "secondary" : "outline"}
               >
-                Ascending
+                <ArrowUp className="size-3" />
+                Asc
               </Button>
               <Button
-                className="flex-1"
-                onClick={() => toggleSort(sort.field)}
+                className="flex-1 gap-1"
+                onClick={() => handleDirectionChange("desc")}
                 size="sm"
                 variant={sort.direction === "desc" ? "secondary" : "outline"}
               >
-                Descending
+                <ArrowDown className="size-3" />
+                Desc
               </Button>
             </div>
           )}
@@ -369,6 +391,13 @@ export function SortButton({ className }: SortButtonProps) {
     </Popover>
   );
 }
+
+// ============================================================================
+// Legacy exports for backwards compatibility
+// ============================================================================
+
+export const FilterPanel = FilterButton;
+export const SortPanel = SortButton;
 
 // ============================================================================
 // DataViewToolbar
@@ -427,7 +456,7 @@ interface ActiveFiltersProps {
 }
 
 export function ActiveFilters({ className }: ActiveFiltersProps) {
-  const { filters, removeFilter, clearFilters, config } = useDataView();
+  const { filters, setFilters, config } = useDataView();
 
   if (filters.length === 0) {
     return null;
@@ -436,6 +465,14 @@ export function ActiveFilters({ className }: ActiveFiltersProps) {
   const getColumnLabel = (field: string) => {
     const column = config.columns.find((c) => c.id === field);
     return column?.header ?? field;
+  };
+
+  const removeFilter = (field: string) => {
+    setFilters(filters.filter((f) => f.field !== field));
+  };
+
+  const clearFilters = () => {
+    setFilters([]);
   };
 
   return (
