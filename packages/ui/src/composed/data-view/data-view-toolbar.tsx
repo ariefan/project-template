@@ -9,7 +9,6 @@ import {
   LayoutList,
   Table2,
   SlidersHorizontal,
-  ChevronDown,
 } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
@@ -84,7 +83,7 @@ interface SearchInputProps {
 }
 
 export function SearchInput({ className, placeholder }: SearchInputProps) {
-  const { search, setSearch, config, setPage } = useDataView()
+  const { search, setSearch, config } = useDataView()
   const [localSearch, setLocalSearch] = React.useState(search)
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -156,16 +155,14 @@ export function FilterButton({ className }: FilterButtonProps) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className={cn("gap-1.5", className)}>
-          <Filter className="size-4" />
-          <span className="hidden sm:inline">Filters</span>
-          {activeFilterCount > 0 && (
-            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
-              {activeFilterCount}
-            </Badge>
-          )}
-        </Button>
+      <PopoverTrigger className={cn("inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3", className)}>
+        <Filter className="size-4" />
+        <span className="hidden sm:inline">Filters</span>
+        {activeFilterCount > 0 && (
+          <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
+            {activeFilterCount}
+          </Badge>
+        )}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80">
         <div className="space-y-4">
@@ -278,16 +275,14 @@ export function SortButton({ className }: SortButtonProps) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className={cn("gap-1.5", className)}>
-          <SlidersHorizontal className="size-4" />
-          <span className="hidden sm:inline">Sort</span>
-          {sort && (
-            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
-              {sort.direction === "asc" ? "↑" : "↓"}
-            </Badge>
-          )}
-        </Button>
+      <PopoverTrigger className={cn("inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3", className)}>
+        <SlidersHorizontal className="size-4" />
+        <span className="hidden sm:inline">Sort</span>
+        {sort && (
+          <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
+            {sort.direction === "asc" ? "↑" : "↓"}
+          </Badge>
+        )}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-56">
         <div className="space-y-3">

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronRight, Check, Circle } from "lucide-react"
+import { Check } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -33,16 +33,11 @@ function DropdownMenu({ children, open: controlledOpen, onOpenChange }: Dropdown
   )
 }
 
-interface DropdownMenuTriggerProps extends React.ComponentProps<"button"> {
-  asChild?: boolean
-}
-
 function DropdownMenuTrigger({
   children,
-  asChild,
   className,
   ...props
-}: DropdownMenuTriggerProps) {
+}: React.ComponentProps<"button">) {
   const { open, setOpen } = React.useContext(DropdownMenuContext)
 
   return (

@@ -9,7 +9,7 @@ import { DataViewList } from "./data-view-list"
 import { DataViewGrid } from "./data-view-grid"
 import { DataViewToolbar, ActiveFilters } from "./data-view-toolbar"
 import { DataViewPagination, SimplePagination } from "./data-view-pagination"
-import { DataViewBulkActions, InlineBulkActions } from "./data-view-bulk-actions"
+import { InlineBulkActions } from "./data-view-bulk-actions"
 import { useResponsiveView } from "./use-responsive-view"
 import type { DataViewProps, ViewMode } from "./types"
 
@@ -66,8 +66,10 @@ export function DataView<T>({
   onSelectionChange,
   pagination: controlledPagination,
   onPaginationChange,
-  // Event handlers
+  // Event handlers (reserved for future use in child components)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRowClick,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRowDoubleClick,
   // Server-side handler
   onFetchData,

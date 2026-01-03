@@ -34,7 +34,7 @@ export function DataViewPagination({
   showTotal = true,
   pageSizeOptions: overrideSizeOptions,
 }: DataViewPaginationProps) {
-  const { pagination, setPage, setPageSize, totalPages, processedData, config } =
+  const { pagination, setPage, setPageSize, totalPages, config } =
     useDataView()
 
   if (!config.paginated) return null
@@ -216,7 +216,7 @@ function PageNumbers({
 
   return (
     <div className="flex items-center gap-1">
-      {pages.map((page, index) => {
+      {pages.map((page) => {
         if (page === "ellipsis-start" || page === "ellipsis-end") {
           return (
             <span

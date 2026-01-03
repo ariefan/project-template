@@ -99,11 +99,9 @@ export function DataViewBulkActions<T>({
 
         {actions.length > 3 && (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1">
-                More
-                <ChevronDown className="size-4" />
-              </Button>
+            <DropdownMenuTrigger className="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3">
+              More
+              <ChevronDown className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {actions.slice(3).map((action, index) => {
@@ -193,11 +191,9 @@ export function InlineBulkActions<T>({
       </span>
 
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5">
-            Actions
-            <ChevronDown className="size-4" />
-          </Button>
+        <DropdownMenuTrigger className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3">
+          Actions
+          <ChevronDown className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           {actions.map((action, index) => {

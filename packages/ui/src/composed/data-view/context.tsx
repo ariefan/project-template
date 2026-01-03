@@ -188,6 +188,7 @@ export function DataViewProvider<T>({
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.length, totalCount, isServerSide])
 
   // Server-side data fetching
@@ -225,6 +226,7 @@ export function DataViewProvider<T>({
     }
 
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isServerSide, onFetchData, pagination.page, pagination.pageSize, search, filters, sort])
 
   // Actions
@@ -366,10 +368,11 @@ export function DataViewProvider<T>({
   // Use the appropriate data source based on mode
   const displayData = isServerSide ? serverData : data
 
+  const getRowId = config.getRowId
   const selectAll = React.useCallback(() => {
-    const allIds = displayData.map((row) => config.getRowId(row))
+    const allIds = displayData.map((row) => getRowId(row))
     setSelectedIds(new Set(allIds))
-  }, [displayData, config.getRowId, setSelectedIds])
+  }, [displayData, getRowId, setSelectedIds])
 
   const deselectAll = React.useCallback(() => {
     setSelectedIds(new Set())
@@ -422,8 +425,8 @@ export function DataViewProvider<T>({
 
   // Computed values
   const selectedRows = React.useMemo(
-    () => displayData.filter((row) => selectedIds.has(config.getRowId(row))),
-    [displayData, selectedIds, config.getRowId]
+    () => displayData.filter((row) => selectedIds.has(getRowId(row))),
+    [displayData, selectedIds, getRowId]
   )
 
   const isAllSelected = React.useMemo(
@@ -555,6 +558,7 @@ export function DataViewProvider<T>({
         setPagination({ ...pagination, total: newTotal })
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [processedData.length, config.paginated, totalCount, isServerSide])
 
   const value: DataViewContextValue<T> = {

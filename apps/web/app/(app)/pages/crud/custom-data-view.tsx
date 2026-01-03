@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Users, Building2 } from "lucide-react"
 
 import { cn } from "@workspace/ui/lib/utils"
 import {
@@ -10,7 +9,6 @@ import {
   DataViewTable,
   DataViewList,
   DataViewGrid,
-  DataViewToolbar,
   DataViewPagination,
   ViewToggle,
   SearchInput,

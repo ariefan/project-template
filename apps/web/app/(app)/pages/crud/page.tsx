@@ -8,7 +8,6 @@ import {
   Copy,
   Download,
   Mail,
-  MoreHorizontal,
 } from "lucide-react"
 
 import {
@@ -18,7 +17,6 @@ import {
   type RowAction,
 } from "@workspace/ui/composed/data-view"
 import { Badge } from "@workspace/ui/components/badge"
-import { Button } from "@workspace/ui/components/button"
 
 // ============================================================================
 // Types
