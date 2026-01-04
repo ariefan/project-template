@@ -14,6 +14,7 @@ import { ChevronDown, X } from "lucide-react";
 import * as React from "react";
 import { useDataView } from "./context";
 import type { BulkAction } from "./types";
+import { isBulkActionDisabled, useBulkActionHandler } from "./use-bulk-action";
 
 // ============================================================================
 // DataViewBulkActions
@@ -35,7 +36,7 @@ export function DataViewBulkActions<T>({
   position = "top",
 }: DataViewBulkActionsProps<T>) {
   const { selectedRows, selectedIds, deselectAll, config } = useDataView<T>();
-  const [loading, setLoading] = React.useState<string | null>(null);
+  const { handleAction, isAnyLoading } = useBulkActionHandler(selectedRows);
 
   const actions = (overrideActions ?? config.bulkActions) as
     | BulkAction<T>[]
@@ -47,23 +48,6 @@ export function DataViewBulkActions<T>({
   if (selectedIds.size === 0) {
     return null;
   }
-
-  const handleAction = async (action: BulkAction<T>) => {
-    if (action.confirmMessage) {
-      // biome-ignore lint/suspicious/noAlert: confirmation is intentional for destructive bulk actions
-      const confirmed = window.confirm(action.confirmMessage);
-      if (!confirmed) {
-        return;
-      }
-    }
-
-    setLoading(action.id);
-    try {
-      await action.onAction(selectedRows);
-    } finally {
-      setLoading(null);
-    }
-  };
 
   const isFloating = position === "floating";
 
@@ -85,11 +69,11 @@ export function DataViewBulkActions<T>({
       <div className="flex items-center gap-1">
         {/* Show first 2-3 actions directly, rest in dropdown */}
         {actions.slice(0, 3).map((action) => {
-          const isDisabled =
-            loading !== null ||
-            (typeof action.disabled === "function"
-              ? action.disabled(selectedRows)
-              : action.disabled);
+          const isDisabled = isBulkActionDisabled(
+            action,
+            selectedRows,
+            isAnyLoading
+          );
 
           return (
             <Button
@@ -114,11 +98,11 @@ export function DataViewBulkActions<T>({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {actions.slice(3).map((action, index) => {
-                const isDisabled =
-                  loading !== null ||
-                  (typeof action.disabled === "function"
-                    ? action.disabled(selectedRows)
-                    : action.disabled);
+                const isDisabled = isBulkActionDisabled(
+                  action,
+                  selectedRows,
+                  isAnyLoading
+                );
 
                 return (
                   <React.Fragment key={action.id}>
@@ -172,7 +156,7 @@ export function InlineBulkActions<T>({
   actions: overrideActions,
 }: InlineBulkActionsProps<T>) {
   const { selectedRows, selectedIds, deselectAll, config } = useDataView<T>();
-  const [loading, setLoading] = React.useState<string | null>(null);
+  const { handleAction, isAnyLoading } = useBulkActionHandler(selectedRows);
 
   const actions = (overrideActions ?? config.bulkActions) as
     | BulkAction<T>[]
@@ -184,23 +168,6 @@ export function InlineBulkActions<T>({
   if (selectedIds.size === 0) {
     return null;
   }
-
-  const handleAction = async (action: BulkAction<T>) => {
-    if (action.confirmMessage) {
-      // biome-ignore lint/suspicious/noAlert: confirmation is intentional for destructive bulk actions
-      const confirmed = window.confirm(action.confirmMessage);
-      if (!confirmed) {
-        return;
-      }
-    }
-
-    setLoading(action.id);
-    try {
-      await action.onAction(selectedRows);
-    } finally {
-      setLoading(null);
-    }
-  };
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -215,11 +182,11 @@ export function InlineBulkActions<T>({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           {actions.map((action, index) => {
-            const isDisabled =
-              loading !== null ||
-              (typeof action.disabled === "function"
-                ? action.disabled(selectedRows)
-                : action.disabled);
+            const isDisabled = isBulkActionDisabled(
+              action,
+              selectedRows,
+              isAnyLoading
+            );
 
             return (
               <React.Fragment key={action.id}>
