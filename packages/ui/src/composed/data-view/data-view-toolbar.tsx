@@ -716,12 +716,20 @@ interface DataViewToolbarProps {
   showViewToggle?: boolean;
 
   // Slot positions for custom content
-  /** Content before the search input (e.g., field selector dropdown) */
+  /** Content before the search input */
   beforeSearch?: React.ReactNode;
   /** Content after the search input */
   afterSearch?: React.ReactNode;
-  /** Content before the filter button (e.g., import/export buttons) */
+  /** Content before the filter button */
   beforeFilters?: React.ReactNode;
+  /** Content after the filter button */
+  afterFilters?: React.ReactNode;
+  /** Content before the sort button */
+  beforeSort?: React.ReactNode;
+  /** Content after the sort button */
+  afterSort?: React.ReactNode;
+  /** Content before the view toggle */
+  beforeViewToggle?: React.ReactNode;
   /** Content after the view toggle */
   afterViewToggle?: React.ReactNode;
 
@@ -734,6 +742,10 @@ interface DataViewToolbarProps {
   sortSlot?: React.ReactNode;
   /** Replace the default ViewToggle */
   viewToggleSlot?: React.ReactNode;
+
+  // Primary action
+  /** Primary action button (e.g., "Add User", "Create Item") - renders at top-right before rightContent */
+  primaryAction?: React.ReactNode;
 
   // Legacy props (for backwards compatibility)
   leftContent?: React.ReactNode;
@@ -751,11 +763,16 @@ export function DataViewToolbar({
   beforeSearch,
   afterSearch,
   beforeFilters,
+  afterFilters,
+  beforeSort,
+  afterSort,
+  beforeViewToggle,
   afterViewToggle,
   searchSlot,
   filtersSlot,
   sortSlot,
   viewToggleSlot,
+  primaryAction,
   leftContent,
   rightContent,
 }: DataViewToolbarProps) {
@@ -781,31 +798,66 @@ export function DataViewToolbar({
       )}
     >
       <div className="flex flex-1 items-center gap-2">
+        {leftContent}
         {beforeSearch}
         {renderSearch()}
         {afterSearch}
-        {leftContent}
       </div>
 
       <div className="flex items-center gap-2">
         {children}
         {beforeFilters}
 
-        {/* Desktop: Show all controls */}
-        <div className="hidden items-center gap-2 sm:flex">
-          {showFilters && (filtersSlot ?? <FilterButton />)}
-          {showSort && (sortSlot ?? <SortButton />)}
-          {showViewToggle && (viewToggleSlot ?? <ViewToggle />)}
-        </div>
+        {/* Desktop: Filters */}
+        {showFilters && (
+          <div className="hidden items-center gap-2 sm:flex">
+            {filtersSlot ?? <FilterButton />}
+          </div>
+        )}
 
-        {/* Mobile: Show 3 separate icon buttons */}
-        <div className="flex items-center gap-1 sm:hidden">
-          {showFilters && !filtersSlot && <FilterButton />}
-          {showSort && !sortSlot && <SortButton />}
-          {showViewToggle && !viewToggleSlot && <ViewToggle />}
-        </div>
+        {/* Mobile: Filters */}
+        {showFilters && !filtersSlot && (
+          <div className="flex items-center gap-1 sm:hidden">
+            <FilterButton />
+          </div>
+        )}
+
+        {afterFilters}
+        {beforeSort}
+
+        {/* Desktop: Sort */}
+        {showSort && (
+          <div className="hidden items-center gap-2 sm:flex">
+            {sortSlot ?? <SortButton />}
+          </div>
+        )}
+
+        {/* Mobile: Sort */}
+        {showSort && !sortSlot && (
+          <div className="flex items-center gap-1 sm:hidden">
+            <SortButton />
+          </div>
+        )}
+
+        {afterSort}
+        {beforeViewToggle}
+
+        {/* Desktop: View Toggle */}
+        {showViewToggle && (
+          <div className="hidden items-center gap-2 sm:flex">
+            {viewToggleSlot ?? <ViewToggle />}
+          </div>
+        )}
+
+        {/* Mobile: View Toggle */}
+        {showViewToggle && !viewToggleSlot && (
+          <div className="flex items-center gap-1 sm:hidden">
+            <ViewToggle />
+          </div>
+        )}
 
         {afterViewToggle}
+        {primaryAction}
         {rightContent}
       </div>
     </div>

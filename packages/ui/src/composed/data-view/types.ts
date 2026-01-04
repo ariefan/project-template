@@ -337,12 +337,32 @@ export interface DataViewProps<T = unknown> extends DataViewConfig<T> {
   toolbarClassName?: string;
   /** Content class name */
   contentClassName?: string;
+  /** Custom content above the toolbar (full width) */
+  toolbarTop?: React.ReactNode;
   /** Custom toolbar content (left side) */
   toolbarLeft?: React.ReactNode;
+  /** Primary action button (e.g., "Add User", "Create Item") - renders at top-right before other actions */
+  primaryAction?: React.ReactNode;
   /** Custom toolbar content (right side) */
   toolbarRight?: React.ReactNode;
   /** Show field selector dropdown before search input */
   showFieldSelector?: boolean;
+  /** Content before search input */
+  beforeSearch?: React.ReactNode;
+  /** Content after search input */
+  afterSearch?: React.ReactNode;
+  /** Content before filters button */
+  beforeFilters?: React.ReactNode;
+  /** Content after filters button */
+  afterFilters?: React.ReactNode;
+  /** Content before sort button */
+  beforeSort?: React.ReactNode;
+  /** Content after sort button */
+  afterSort?: React.ReactNode;
+  /** Content before view toggle */
+  beforeViewToggle?: React.ReactNode;
+  /** Content after view toggle */
+  afterViewToggle?: React.ReactNode;
   /** Custom empty state */
   emptyState?: React.ReactNode;
   /** Custom loading state */

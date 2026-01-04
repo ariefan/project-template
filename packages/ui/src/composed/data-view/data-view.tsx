@@ -89,9 +89,19 @@ export function DataView<T>({
   toolbarClassName,
   contentClassName,
   // Custom content
+  toolbarTop,
   toolbarLeft,
+  primaryAction,
   toolbarRight,
   showFieldSelector = false,
+  beforeSearch,
+  afterSearch,
+  beforeFilters,
+  afterFilters,
+  beforeSort,
+  afterSort,
+  beforeViewToggle,
+  afterViewToggle,
   emptyState,
   loadingState,
 }: DataViewProps<T>) {
@@ -196,14 +206,26 @@ export function DataView<T>({
       view={view}
     >
       <div className={cn("space-y-4", className)}>
+        {/* Toolbar Top */}
+        {toolbarTop}
+
         {/* Toolbar */}
         <DataViewToolbar
+          afterFilters={afterFilters}
+          afterSearch={afterSearch}
+          afterSort={afterSort}
+          afterViewToggle={afterViewToggle}
+          beforeFilters={beforeFilters}
+          beforeSearch={beforeSearch}
+          beforeSort={beforeSort}
+          beforeViewToggle={beforeViewToggle}
           className={toolbarClassName}
+          leftContent={toolbarLeft}
+          primaryAction={primaryAction}
+          rightContent={toolbarRight}
           showFieldSelector={showFieldSelector}
         >
-          {toolbarLeft}
           {selectable && <InlineBulkActions />}
-          {toolbarRight}
         </DataViewToolbar>
 
         {/* Active Filters */}
