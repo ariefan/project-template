@@ -48,18 +48,13 @@ export function usePostsData() {
     async (
       request: ServerSideRequest
     ): Promise<ServerSideResponse<ExamplePost>> => {
-      console.log("🔍 fetchPosts called with request:", request);
-      console.log("🔍 orgId:", orgId);
-
       // Return empty data if orgId is not available yet
       if (!orgId) {
-        console.warn("⚠️ No orgId available, returning empty data");
         return { data: [], total: 0 };
       }
 
       try {
         const queryParams = buildQueryParams(request);
-        console.log("🔍 Query params:", queryParams);
 
         const response = await examplePostsList({
           client: apiClient,
@@ -67,17 +62,15 @@ export function usePostsData() {
           query: queryParams,
         });
 
-        console.log("🔍 API Response:", response);
-
         // Handle both success and error responses
         if (response.error) {
-          console.error("❌ API Error:", response.error);
+          console.error("Failed to fetch posts:", response.error);
           return { data: [], total: 0 };
         }
 
         const { data } = response;
         if (!data) {
-          console.error("❌ No data in response:", response);
+          console.error("No data in response:", response);
           return { data: [], total: 0 };
         }
 
@@ -86,22 +79,12 @@ export function usePostsData() {
         const pagination = (data as { pagination?: { totalCount: number } })
           ?.pagination;
 
-        console.log("📦 Posts array:", posts);
-        console.log("📦 First post:", posts[0]);
-        console.log("📦 Pagination:", pagination);
-
-        const result = {
+        return {
           data: posts,
           total: pagination?.totalCount ?? 0,
         };
-
-        console.log("✅ Returning result:", result);
-        console.log("✅ Result.data length:", result.data.length);
-        console.log("✅ Result.total:", result.total);
-
-        return result;
       } catch (error) {
-        console.error("❌ Fetch posts error:", error);
+        console.error("Failed to fetch posts:", error);
         return { data: [], total: 0 };
       }
     },

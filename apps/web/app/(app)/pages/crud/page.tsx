@@ -22,24 +22,44 @@ import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 import { PostFormDialog } from "./components/post-form-dialog";
 import { StatsCards } from "./components/stats-cards";
-import { usePostMutations } from "./hooks/use-posts-data";
+import { usePostMutations, usePostsData } from "./hooks/use-posts-data";
+
+const MODE_THRESHOLD = 1000; // Switch to server mode above this count
 
 export default function CrudPage() {
   const { data: orgData, isPending: orgLoading } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
   const { deletePost, restorePost } = usePostMutations();
+  const { fetchPosts } = usePostsData();
 
-  // Fetch posts using React Query (client mode)
-  const { data, isLoading } = useQuery({
+  // Step 1: Get total count to determine which mode to use
+  const { data: countData } = useQuery({
     ...examplePostsListOptions({
       client: apiClient,
       path: { orgId },
-      query: { page: 1, pageSize: 100 },
+      query: { page: 1, pageSize: 1 }, // Just get the count
     }),
     enabled: Boolean(orgId),
   });
 
-  const posts = (data as { data?: ExamplePost[] })?.data ?? [];
+  const totalCount =
+    (countData as { pagination?: { totalCount: number } })?.pagination
+      ?.totalCount ?? 0;
+
+  // Step 2: Determine mode based on count
+  const useServerMode = totalCount > MODE_THRESHOLD;
+
+  // Step 3: Fetch data for client mode (only if needed)
+  const { data: clientData, isLoading: clientLoading } = useQuery({
+    ...examplePostsListOptions({
+      client: apiClient,
+      path: { orgId },
+      query: { page: 1, pageSize: Math.max(totalCount, 100) }, // Fetch all records
+    }),
+    enabled: Boolean(orgId) && !useServerMode,
+  });
+
+  const posts = (clientData as { data?: ExamplePost[] })?.data ?? [];
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<ExamplePost | undefined>();
@@ -194,7 +214,7 @@ export default function CrudPage() {
   }
 
   function renderContent() {
-    if (orgLoading || isLoading) {
+    if (orgLoading || clientLoading) {
       return (
         <div className="py-8 text-center text-muted-foreground">
           Loading posts...
@@ -210,47 +230,73 @@ export default function CrudPage() {
       );
     }
 
+    // Show mode indicator
+    const modeIndicator = (
+      <div className="mb-2 text-muted-foreground text-xs">
+        {useServerMode
+          ? `🚀 Server mode (${totalCount.toLocaleString()} posts)`
+          : `💻 Client mode (${totalCount.toLocaleString()} posts)`}
+      </div>
+    );
+
+    const commonProps = {
+      availableViews: ["table", "list", "grid"] as (
+        | "table"
+        | "list"
+        | "grid"
+      )[],
+      bulkActions,
+      columns,
+      defaultPageSize: 10,
+      defaultView: "table" as "table" | "list" | "grid",
+      emptyMessage: "No posts found",
+      filterable: true,
+      getRowId: (row: ExamplePost) => row.id,
+      hoverable: true,
+      loadingMessage: "Loading posts...",
+      multiSelect: true,
+      pageSizeOptions: [10, 25, 50, 100],
+      paginated: true,
+      primaryAction: (
+        <Button onClick={handleCreateNew} size="sm">
+          <Plus className="size-4" />
+          <span className="hidden sm:inline">New Post</span>
+        </Button>
+      ),
+      responsiveBreakpoints: {
+        list: 1024,
+        grid: 640,
+      },
+      rowActions,
+      searchable: true,
+      selectable: true,
+      sortable: true,
+      striped: true,
+      toolbarLeft: <SearchInput showFieldSelector />,
+      toolbarRight: (
+        <>
+          <FilterButton />
+          <SortButton />
+          <ViewToggle />
+          <DataViewExport />
+        </>
+      ),
+    };
+
     return (
-      <DataViewComponent<ExamplePost>
-        availableViews={["table", "list", "grid"]}
-        bulkActions={bulkActions}
-        columns={columns}
-        data={posts}
-        defaultPageSize={10}
-        defaultView="table"
-        emptyMessage="No posts found"
-        filterable
-        getRowId={(row) => row.id}
-        hoverable
-        loadingMessage="Loading posts..."
-        multiSelect
-        pageSizeOptions={[10, 25, 50, 100]}
-        paginated
-        primaryAction={
-          <Button onClick={handleCreateNew} size="sm">
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">New Post</span>
-          </Button>
-        }
-        responsiveBreakpoints={{
-          list: 1024,
-          grid: 640,
-        }}
-        rowActions={rowActions}
-        searchable
-        selectable
-        sortable
-        striped
-        toolbarLeft={<SearchInput showFieldSelector />}
-        toolbarRight={
-          <>
-            <FilterButton />
-            <SortButton />
-            <ViewToggle />
-            <DataViewExport />
-          </>
-        }
-      />
+      <>
+        {modeIndicator}
+        {useServerMode ? (
+          <DataViewComponent<ExamplePost>
+            {...commonProps}
+            data={[]}
+            mode="server"
+            onFetchData={fetchPosts}
+          />
+        ) : (
+          <DataViewComponent<ExamplePost> {...commonProps} data={posts} />
+        )}
+      </>
     );
   }
 
