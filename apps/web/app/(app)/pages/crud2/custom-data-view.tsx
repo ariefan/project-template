@@ -16,9 +16,13 @@ import {
   DataViewProvider,
   DataViewTable,
   DataViewToolbar,
+  FilterButton,
   InlineBulkActions,
+  SearchInput,
+  SortButton,
   useDataView,
   type ViewMode,
+  ViewToggle,
 } from "@workspace/ui/composed/data-view";
 import { cn } from "@workspace/ui/lib/utils";
 import { Download, RefreshCw, Upload } from "lucide-react";
@@ -197,15 +201,15 @@ function CustomToolbar() {
         </Card>
       </div>
 
-      {/* Toolbar - using DataViewToolbar with slots */}
+      {/* Toolbar - using DataViewToolbar with composable components */}
       <DataViewToolbar
-        afterSearch={<InlineBulkActions />}
-        afterViewToggle={
-          <Button onClick={handleRefresh} size="sm" variant="ghost">
-            <RefreshCw className="size-4" />
-          </Button>
+        leftContent={
+          <>
+            <SearchInput showFieldSelector />
+            <InlineBulkActions />
+          </>
         }
-        beforeFilters={
+        rightContent={
           <>
             <Button onClick={handleImport} size="sm" variant="outline">
               <Upload className="mr-1.5 size-4" />
@@ -215,9 +219,14 @@ function CustomToolbar() {
               <Download className="mr-1.5 size-4" />
               <span className="hidden sm:inline">Export</span>
             </Button>
+            <FilterButton />
+            <SortButton />
+            <ViewToggle />
+            <Button onClick={handleRefresh} size="sm" variant="ghost">
+              <RefreshCw className="size-4" />
+            </Button>
           </>
         }
-        showFieldSelector
       />
     </div>
   );

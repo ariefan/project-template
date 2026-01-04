@@ -7,7 +7,11 @@ import {
   type ColumnDef,
   DataView as DataViewComponent,
   DataViewExport,
+  FilterButton,
   type RowAction,
+  SearchInput,
+  SortButton,
+  ViewToggle,
 } from "@workspace/ui/composed/data-view";
 import { Copy, Download, Edit, Eye, Mail, Plus, Trash2 } from "lucide-react";
 
@@ -277,72 +281,7 @@ export default function CrudPage() {
       </div>
 
       <DataViewComponent<User>
-        afterFilters={
-          <button
-            className="rounded bg-violet-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            afterFilters
-          </button>
-        }
-        afterSearch={
-          <button
-            className="rounded bg-green-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            afterSearch
-          </button>
-        }
-        afterSort={
-          <button
-            className="rounded bg-cyan-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            afterSort
-          </button>
-        }
-        afterViewToggle={
-          <button
-            className="rounded bg-orange-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            afterViewToggle
-          </button>
-        }
         availableViews={["table", "list", "grid"]}
-        beforeFilters={
-          <button
-            className="rounded bg-purple-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            beforeFilters
-          </button>
-        }
-        // Features
-        beforeSearch={
-          <button
-            className="rounded bg-blue-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            beforeSearch
-          </button>
-        }
-        beforeSort={
-          <button
-            className="rounded bg-indigo-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            beforeSort
-          </button>
-        }
-        beforeViewToggle={
-          <button
-            className="rounded bg-amber-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            beforeViewToggle
-          </button>
-        }
         bulkActions={bulkActions}
         columns={columns}
         data={sampleUsers}
@@ -351,62 +290,43 @@ export default function CrudPage() {
         emptyMessage="No users found"
         filterable
         getRowId={(row) => row.id}
-        // Views
         hoverable
         loadingMessage="Loading users..."
-        // Actions
         multiSelect
         pageSizeOptions={[5, 10, 25, 50]}
-        // Styling
         paginated
         primaryAction={
-          <Button onClick={() => console.log("Add user clicked")}>
-            <Plus className="mr-2 size-4" />
-            Add User
+          <Button onClick={() => console.log("Add user clicked")} size="sm">
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Add User</span>
           </Button>
         }
-        // Messages
         responsiveBreakpoints={{
           list: 1024,
           grid: 640,
         }}
-        // Primary action
         rowActions={rowActions}
-        // Field selector dropdown
         searchable
         searchPlaceholder="Search users..."
-        // Responsive breakpoints
         selectable
-        // Toolbar slot demonstrations
-        showFieldSelector
         sortable
         striped
-        toolbarLeft={
-          <button
-            className="rounded bg-pink-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            toolbarLeft
-          </button>
-        }
+        toolbarLeft={<SearchInput showFieldSelector />}
         toolbarRight={
           <>
-            <button
-              className="rounded bg-yellow-500 px-2 py-1 text-black text-xs"
-              type="button"
-            >
-              toolbarRight
-            </button>
+            <FilterButton />
+            <SortButton />
+            <ViewToggle />
             <DataViewExport />
           </>
         }
         toolbarTop={
-          <button
-            className="rounded bg-red-500 px-2 py-1 text-white text-xs"
-            type="button"
-          >
-            toolbarTop (full width above toolbar)
-          </button>
+          <div className="rounded bg-muted p-3 text-muted-foreground text-sm">
+            <strong>Composable Toolbar Demo:</strong> This DataView uses the new
+            clean API. The toolbar is built by composing SearchInput,
+            FilterButton, SortButton, ViewToggle, and custom components
+            directly.
+          </div>
         }
       />
     </div>

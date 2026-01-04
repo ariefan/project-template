@@ -138,75 +138,15 @@ export function ViewToggle({ className, availableViews }: ViewToggleProps) {
 interface SearchInputProps {
   className?: string;
   placeholder?: string;
+  /** Show field selector dropdown to search specific fields */
+  showFieldSelector?: boolean;
 }
 
-export function SearchInput({ className, placeholder }: SearchInputProps) {
-  const { search, setSearch, config } = useDataView();
-  const [localSearch, setLocalSearch] = React.useState(search);
-  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  React.useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLocalSearch(value);
-
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    debounceRef.current = setTimeout(() => {
-      setSearch(value);
-    }, 300);
-  };
-
-  const handleClear = () => {
-    setLocalSearch("");
-    setSearch("");
-  };
-
-  if (config.searchable === false) {
-    return null;
-  }
-
-  return (
-    <div className={cn("relative", className)}>
-      <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        className="h-8 w-full pr-8 pl-8 text-sm sm:w-64"
-        onChange={handleChange}
-        placeholder={placeholder ?? config.searchPlaceholder ?? "Search..."}
-        type="search"
-        value={localSearch}
-      />
-      {localSearch && (
-        <button
-          className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          onClick={handleClear}
-          type="button"
-        >
-          <X className="size-4" />
-          <span className="sr-only">Clear search</span>
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// Search Input With Field Selector (using InputGroup)
-// ============================================================================
-
-interface SearchInputWithFieldSelectorProps {
-  className?: string;
-  placeholder?: string;
-}
-
-function SearchInputWithFieldSelector({
+export function SearchInput({
   className,
   placeholder,
-}: SearchInputWithFieldSelectorProps) {
+  showFieldSelector,
+}: SearchInputProps) {
   const {
     search,
     setSearch,
@@ -247,59 +187,78 @@ function SearchInputWithFieldSelector({
     return null;
   }
 
-  const selectedLabel = searchField
-    ? (searchableFields.find((f) => f.id === searchField)?.label ??
-      "All fields")
-    : "All fields";
+  // Render with field selector
+  if (showFieldSelector) {
+    const selectedLabel = searchField
+      ? (searchableFields.find((f) => f.id === searchField)?.label ??
+        "All fields")
+      : "All fields";
 
+    return (
+      <InputGroup className={cn("w-full sm:w-auto", className)}>
+        <InputGroupInput
+          className="w-full sm:w-64"
+          onChange={handleChange}
+          placeholder={placeholder ?? config.searchPlaceholder ?? "Search..."}
+          type="search"
+          value={localSearch}
+        />
+        <InputGroupAddon align="inline-start">
+          <Search className="size-4" />
+        </InputGroupAddon>
+        <InputGroupAddon align="inline-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <InputGroupButton className="pr-1.5! text-xs" variant="ghost">
+                <span className="max-w-32 truncate">{selectedLabel}</span>
+                <ChevronDown className="size-3" />
+              </InputGroupButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-[calc(100vw-2rem)] sm:w-40"
+            >
+              <DropdownMenuItem onClick={() => handleFieldChange("__all__")}>
+                All fields
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {searchableFields.map((field) => (
+                <DropdownMenuItem
+                  key={field.id}
+                  onClick={() => handleFieldChange(field.id)}
+                >
+                  {field.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </InputGroupAddon>
+      </InputGroup>
+    );
+  }
+
+  // Render without field selector (default)
   return (
-    <InputGroup className={cn("w-full sm:w-auto", className)}>
-      <InputGroupInput
-        className="w-full sm:w-64"
+    <div className={cn("relative", className)}>
+      <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        className="h-8 w-full pr-8 pl-8 text-sm sm:w-64"
         onChange={handleChange}
         placeholder={placeholder ?? config.searchPlaceholder ?? "Search..."}
         type="search"
         value={localSearch}
       />
-      <InputGroupAddon align="inline-start">
-        <Search className="size-4" />
-      </InputGroupAddon>
-      <InputGroupAddon align="inline-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <InputGroupButton className="pr-1.5! text-xs" variant="ghost">
-              {selectedLabel} <ChevronDown className="size-3" />
-            </InputGroupButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleFieldChange("__all__")}>
-              All fields
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {searchableFields.map((field) => (
-              <DropdownMenuItem
-                key={field.id}
-                onClick={() => handleFieldChange(field.id)}
-              >
-                {field.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </InputGroupAddon>
       {localSearch && (
-        <InputGroupAddon align="inline-end">
-          <button
-            className="text-muted-foreground hover:text-foreground"
-            onClick={handleClear}
-            type="button"
-          >
-            <X className="size-4" />
-            <span className="sr-only">Clear search</span>
-          </button>
-        </InputGroupAddon>
+        <button
+          className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          onClick={handleClear}
+          type="button"
+        >
+          <X className="size-4" />
+          <span className="sr-only">Clear search</span>
+        </button>
       )}
-    </InputGroup>
+    </div>
   );
 }
 
@@ -681,7 +640,7 @@ export function SortButton({ className }: SortButtonProps) {
           <ChevronDown className="ml-auto size-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-56">
         <DropdownMenuLabel>Sort by</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
@@ -706,90 +665,21 @@ export function SortButton({ className }: SortButtonProps) {
 interface DataViewToolbarProps {
   className?: string;
   children?: React.ReactNode;
-
-  // Feature toggles
-  showSearch?: boolean;
-  /** Show field selector dropdown before search input */
-  showFieldSelector?: boolean;
-  showFilters?: boolean;
-  showSort?: boolean;
-  showViewToggle?: boolean;
-
-  // Slot positions for custom content
-  /** Content before the search input */
-  beforeSearch?: React.ReactNode;
-  /** Content after the search input */
-  afterSearch?: React.ReactNode;
-  /** Content before the filter button */
-  beforeFilters?: React.ReactNode;
-  /** Content after the filter button */
-  afterFilters?: React.ReactNode;
-  /** Content before the sort button */
-  beforeSort?: React.ReactNode;
-  /** Content after the sort button */
-  afterSort?: React.ReactNode;
-  /** Content before the view toggle */
-  beforeViewToggle?: React.ReactNode;
-  /** Content after the view toggle */
-  afterViewToggle?: React.ReactNode;
-
-  // Replace entire sections
-  /** Replace the default SearchInput */
-  searchSlot?: React.ReactNode;
-  /** Replace the default FilterButton */
-  filtersSlot?: React.ReactNode;
-  /** Replace the default SortButton */
-  sortSlot?: React.ReactNode;
-  /** Replace the default ViewToggle */
-  viewToggleSlot?: React.ReactNode;
-
-  // Primary action
-  /** Primary action button (e.g., "Add User", "Create Item") - renders at top-right before rightContent */
-  primaryAction?: React.ReactNode;
-
-  // Legacy props (for backwards compatibility)
+  /** Left section - compose with SearchInput and other components */
   leftContent?: React.ReactNode;
+  /** Primary action button (e.g., "Add User", "Create Item") */
+  primaryAction?: React.ReactNode;
+  /** Right section - compose with FilterButton, SortButton, ViewToggle, etc. */
   rightContent?: React.ReactNode;
 }
 
 export function DataViewToolbar({
   className,
   children,
-  showSearch = true,
-  showFieldSelector = false,
-  showFilters = true,
-  showSort = true,
-  showViewToggle = true,
-  beforeSearch,
-  afterSearch,
-  beforeFilters,
-  afterFilters,
-  beforeSort,
-  afterSort,
-  beforeViewToggle,
-  afterViewToggle,
-  searchSlot,
-  filtersSlot,
-  sortSlot,
-  viewToggleSlot,
-  primaryAction,
   leftContent,
+  primaryAction,
   rightContent,
 }: DataViewToolbarProps) {
-  // Render the appropriate search component
-  const renderSearch = () => {
-    if (!showSearch) {
-      return null;
-    }
-    if (searchSlot) {
-      return searchSlot;
-    }
-    if (showFieldSelector) {
-      return <SearchInputWithFieldSelector />;
-    }
-    return <SearchInput />;
-  };
-
   return (
     <div
       className={cn(
@@ -797,68 +687,14 @@ export function DataViewToolbar({
         className
       )}
     >
-      <div className="flex flex-1 items-center gap-2">
-        {leftContent}
-        {beforeSearch}
-        {renderSearch()}
-        {afterSearch}
-      </div>
+      {/* Left section */}
+      <div className="flex flex-1 items-center gap-2">{leftContent}</div>
 
-      <div className="flex items-center gap-2">
+      {/* Right section */}
+      <div className="flex items-center gap-2 self-end sm:self-auto">
         {children}
-        {beforeFilters}
-
-        {/* Desktop: Filters */}
-        {showFilters && (
-          <div className="hidden items-center gap-2 sm:flex">
-            {filtersSlot ?? <FilterButton />}
-          </div>
-        )}
-
-        {/* Mobile: Filters */}
-        {showFilters && !filtersSlot && (
-          <div className="flex items-center gap-1 sm:hidden">
-            <FilterButton />
-          </div>
-        )}
-
-        {afterFilters}
-        {beforeSort}
-
-        {/* Desktop: Sort */}
-        {showSort && (
-          <div className="hidden items-center gap-2 sm:flex">
-            {sortSlot ?? <SortButton />}
-          </div>
-        )}
-
-        {/* Mobile: Sort */}
-        {showSort && !sortSlot && (
-          <div className="flex items-center gap-1 sm:hidden">
-            <SortButton />
-          </div>
-        )}
-
-        {afterSort}
-        {beforeViewToggle}
-
-        {/* Desktop: View Toggle */}
-        {showViewToggle && (
-          <div className="hidden items-center gap-2 sm:flex">
-            {viewToggleSlot ?? <ViewToggle />}
-          </div>
-        )}
-
-        {/* Mobile: View Toggle */}
-        {showViewToggle && !viewToggleSlot && (
-          <div className="flex items-center gap-1 sm:hidden">
-            <ViewToggle />
-          </div>
-        )}
-
-        {afterViewToggle}
-        {primaryAction}
         {rightContent}
+        {primaryAction}
       </div>
     </div>
   );

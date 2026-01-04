@@ -93,15 +93,6 @@ export function DataView<T>({
   toolbarLeft,
   primaryAction,
   toolbarRight,
-  showFieldSelector = false,
-  beforeSearch,
-  afterSearch,
-  beforeFilters,
-  afterFilters,
-  beforeSort,
-  afterSort,
-  beforeViewToggle,
-  afterViewToggle,
   emptyState,
   loadingState,
 }: DataViewProps<T>) {
@@ -211,19 +202,10 @@ export function DataView<T>({
 
         {/* Toolbar */}
         <DataViewToolbar
-          afterFilters={afterFilters}
-          afterSearch={afterSearch}
-          afterSort={afterSort}
-          afterViewToggle={afterViewToggle}
-          beforeFilters={beforeFilters}
-          beforeSearch={beforeSearch}
-          beforeSort={beforeSort}
-          beforeViewToggle={beforeViewToggle}
           className={toolbarClassName}
           leftContent={toolbarLeft}
           primaryAction={primaryAction}
           rightContent={toolbarRight}
-          showFieldSelector={showFieldSelector}
         >
           {selectable && <InlineBulkActions />}
         </DataViewToolbar>

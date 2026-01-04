@@ -141,12 +141,12 @@ export function DataViewTable<T>({
 
   const getSortIcon = (columnId: string) => {
     if (sort?.field !== columnId) {
-      return <ArrowUpDown className="size-4 opacity-50" />;
+      return <ArrowUpDown className="ml-2 size-4 opacity-50" />;
     }
     return sort.direction === "asc" ? (
-      <ArrowUp className="size-4" />
+      <ArrowUp className="ml-2 size-4" />
     ) : (
-      <ArrowDown className="size-4" />
+      <ArrowDown className="ml-2 size-4" />
     );
   };
 
