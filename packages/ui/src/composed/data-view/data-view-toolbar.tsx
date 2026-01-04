@@ -5,6 +5,11 @@ import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
 import { Input } from "@workspace/ui/components/input";
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@workspace/ui/components/input-group";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -20,6 +25,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import {
   ArrowDown,
   ArrowUp,
+  ChevronDown,
   Filter,
   LayoutGrid,
   LayoutList,
@@ -140,6 +146,132 @@ export function SearchInput({ className, placeholder }: SearchInputProps) {
         </button>
       )}
     </div>
+  );
+}
+
+// ============================================================================
+// Search Input With Field Selector (using InputGroup)
+// ============================================================================
+
+interface SearchInputWithFieldSelectorProps {
+  className?: string;
+  placeholder?: string;
+}
+
+function SearchInputWithFieldSelector({
+  className,
+  placeholder,
+}: SearchInputWithFieldSelectorProps) {
+  const {
+    search,
+    setSearch,
+    searchField,
+    setSearchField,
+    searchableFields,
+    config,
+  } = useDataView();
+  const [localSearch, setLocalSearch] = React.useState(search);
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalSearch(value);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setSearch(value);
+    }, 300);
+  };
+
+  const handleClear = () => {
+    setLocalSearch("");
+    setSearch("");
+  };
+
+  const handleFieldChange = (value: string) => {
+    setSearchField(value === "__all__" ? null : value);
+  };
+
+  if (config.searchable === false) {
+    return null;
+  }
+
+  const selectedLabel = searchField
+    ? (searchableFields.find((f) => f.id === searchField)?.label ??
+      "All fields")
+    : "All fields";
+
+  return (
+    <InputGroup className={cn("w-full sm:w-auto", className)}>
+      <InputGroupAddon align="inline-start">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className="flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
+              type="button"
+            >
+              <span className="max-w-20 truncate">{selectedLabel}</span>
+              <ChevronDown className="size-3" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-40 p-1">
+            <div className="flex flex-col">
+              <button
+                className={cn(
+                  "rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
+                  !searchField && "bg-accent"
+                )}
+                onClick={() => handleFieldChange("__all__")}
+                type="button"
+              >
+                All fields
+              </button>
+              {searchableFields.map((field) => (
+                <button
+                  className={cn(
+                    "rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
+                    searchField === field.id && "bg-accent"
+                  )}
+                  key={field.id}
+                  onClick={() => handleFieldChange(field.id)}
+                  type="button"
+                >
+                  {field.label}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </InputGroupAddon>
+      <InputGroupAddon align="inline-start">
+        <Search className="size-4" />
+      </InputGroupAddon>
+      <InputGroupInput
+        className="w-full sm:w-48"
+        onChange={handleChange}
+        placeholder={placeholder ?? config.searchPlaceholder ?? "Search..."}
+        type="search"
+        value={localSearch}
+      />
+      {localSearch && (
+        <InputGroupAddon align="inline-end">
+          <button
+            className="text-muted-foreground hover:text-foreground"
+            onClick={handleClear}
+            type="button"
+          >
+            <X className="size-4" />
+            <span className="sr-only">Clear search</span>
+          </button>
+        </InputGroupAddon>
+      )}
+    </InputGroup>
   );
 }
 
@@ -406,10 +538,36 @@ export const SortPanel = SortButton;
 interface DataViewToolbarProps {
   className?: string;
   children?: React.ReactNode;
+
+  // Feature toggles
   showSearch?: boolean;
+  /** Show field selector dropdown before search input */
+  showFieldSelector?: boolean;
   showFilters?: boolean;
   showSort?: boolean;
   showViewToggle?: boolean;
+
+  // Slot positions for custom content
+  /** Content before the search input (e.g., field selector dropdown) */
+  beforeSearch?: React.ReactNode;
+  /** Content after the search input */
+  afterSearch?: React.ReactNode;
+  /** Content before the filter button (e.g., import/export buttons) */
+  beforeFilters?: React.ReactNode;
+  /** Content after the view toggle */
+  afterViewToggle?: React.ReactNode;
+
+  // Replace entire sections
+  /** Replace the default SearchInput */
+  searchSlot?: React.ReactNode;
+  /** Replace the default FilterButton */
+  filtersSlot?: React.ReactNode;
+  /** Replace the default SortButton */
+  sortSlot?: React.ReactNode;
+  /** Replace the default ViewToggle */
+  viewToggleSlot?: React.ReactNode;
+
+  // Legacy props (for backwards compatibility)
   leftContent?: React.ReactNode;
   rightContent?: React.ReactNode;
 }
@@ -418,12 +576,35 @@ export function DataViewToolbar({
   className,
   children,
   showSearch = true,
+  showFieldSelector = false,
   showFilters = true,
   showSort = true,
   showViewToggle = true,
+  beforeSearch,
+  afterSearch,
+  beforeFilters,
+  afterViewToggle,
+  searchSlot,
+  filtersSlot,
+  sortSlot,
+  viewToggleSlot,
   leftContent,
   rightContent,
 }: DataViewToolbarProps) {
+  // Render the appropriate search component
+  const renderSearch = () => {
+    if (!showSearch) {
+      return null;
+    }
+    if (searchSlot) {
+      return searchSlot;
+    }
+    if (showFieldSelector) {
+      return <SearchInputWithFieldSelector />;
+    }
+    return <SearchInput />;
+  };
+
   return (
     <div
       className={cn(
@@ -432,15 +613,19 @@ export function DataViewToolbar({
       )}
     >
       <div className="flex flex-1 items-center gap-2">
-        {showSearch && <SearchInput />}
+        {beforeSearch}
+        {renderSearch()}
+        {afterSearch}
         {leftContent}
       </div>
 
       <div className="flex items-center gap-2">
         {children}
-        {showFilters && <FilterButton />}
-        {showSort && <SortButton />}
-        {showViewToggle && <ViewToggle />}
+        {beforeFilters}
+        {showFilters && (filtersSlot ?? <FilterButton />)}
+        {showSort && (sortSlot ?? <SortButton />)}
+        {showViewToggle && (viewToggleSlot ?? <ViewToggle />)}
+        {afterViewToggle}
         {rightContent}
       </div>
     </div>

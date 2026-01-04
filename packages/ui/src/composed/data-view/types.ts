@@ -341,6 +341,8 @@ export interface DataViewProps<T = unknown> extends DataViewConfig<T> {
   toolbarLeft?: React.ReactNode;
   /** Custom toolbar content (right side) */
   toolbarRight?: React.ReactNode;
+  /** Show field selector dropdown before search input */
+  showFieldSelector?: boolean;
   /** Custom empty state */
   emptyState?: React.ReactNode;
   /** Custom loading state */

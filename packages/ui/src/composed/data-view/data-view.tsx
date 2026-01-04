@@ -80,6 +80,7 @@ export function DataView<T>({
   // Custom content
   toolbarLeft,
   toolbarRight,
+  showFieldSelector = false,
   emptyState,
   loadingState,
 }: DataViewProps<T>) {
@@ -185,7 +186,10 @@ export function DataView<T>({
     >
       <div className={cn("space-y-4", className)}>
         {/* Toolbar */}
-        <DataViewToolbar className={toolbarClassName}>
+        <DataViewToolbar
+          className={toolbarClassName}
+          showFieldSelector={showFieldSelector}
+        >
           {toolbarLeft}
           {selectable && <InlineBulkActions />}
           {toolbarRight}

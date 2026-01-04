@@ -1,15 +1,6 @@
 "use client";
 
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
 import {
   Item,
   ItemActions,
@@ -21,10 +12,16 @@ import {
   ItemTitle,
 } from "@workspace/ui/components/item";
 import { cn } from "@workspace/ui/lib/utils";
-import { MoreHorizontal } from "lucide-react";
 import * as React from "react";
+import { DataViewActionMenu } from "./action-menu";
+import { ContentPlaceholder } from "./content-placeholder";
 import { useDataView } from "./context";
 import type { FieldDef, RowAction } from "./types";
+import {
+  deriveFieldsFromColumns,
+  getFieldValue,
+  renderFieldContent,
+} from "./utils";
 
 // ============================================================================
 // DataViewList
@@ -59,18 +56,10 @@ export function DataViewList<T>({
     if (config.fields) {
       return config.fields as FieldDef<T>[];
     }
-
-    // Derive from columns
-    return config.columns.map((col, index) => ({
-      id: col.id,
-      label: col.header,
-      accessorKey: col.accessorKey as keyof T | undefined,
-      accessorFn: col.accessorFn as ((row: T) => unknown) | undefined,
-      ellipsis: col.ellipsis,
-      primary: index === 0,
-      secondary: index === 1,
-      hideInList: col.hidden,
-    }));
+    return deriveFieldsFromColumns(
+      config.columns,
+      "hideInList"
+    ) as FieldDef<T>[];
   }, [overrideFields, config.fields, config.columns]);
 
   const rowActions =
@@ -79,23 +68,15 @@ export function DataViewList<T>({
 
   const visibleFields = fields.filter((field) => !field.hideInList);
 
-  if (loading) {
+  // Use ContentPlaceholder for loading/empty states
+  if (loading || paginatedData.length === 0) {
     return (
-      <div className="flex items-center justify-center py-10">
-        <div className="text-muted-foreground">
-          {config.loadingMessage ?? "Loading..."}
-        </div>
-      </div>
-    );
-  }
-
-  if (paginatedData.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <div className="text-muted-foreground">
-          {config.emptyMessage ?? "No data available"}
-        </div>
-      </div>
+      <ContentPlaceholder
+        emptyMessage={config.emptyMessage}
+        isEmpty={paginatedData.length === 0}
+        loading={loading}
+        loadingMessage={config.loadingMessage}
+      />
     );
   }
 
@@ -168,42 +149,16 @@ function ListItem<T>({
   const secondaryField = fields.find((f) => f.secondary);
   const otherFields = fields.filter((f) => !(f.primary || f.secondary));
 
-  const getFieldValue = (field: FieldDef<T>): unknown => {
-    if (field.accessorFn) {
-      return field.accessorFn(row);
-    }
-    if (field.accessorKey) {
-      return (row as Record<string, unknown>)[field.accessorKey as string];
-    }
-    return null;
-  };
-
-  const renderFieldValue = (field: FieldDef<T>) => {
-    const value = getFieldValue(field);
-
-    if (field.render) {
-      return field.render({ row, value });
-    }
-
-    if (field.type === "badge" && field.badgeVariants) {
-      const variant = field.badgeVariants[String(value)];
-      const safeVariant =
-        variant === "success" || variant === "warning" ? "secondary" : variant;
-      return <Badge variant={safeVariant ?? "default"}>{String(value)}</Badge>;
-    }
-
-    const content = String(value ?? "");
-    const ellipsis = field.ellipsis !== false;
-
-    if (ellipsis) {
-      return (
-        <span className="truncate" title={content}>
-          {content}
-        </span>
-      );
-    }
-
-    return content;
+  const renderField = (field: FieldDef<T>) => {
+    const value = getFieldValue(row, field);
+    return renderFieldContent({
+      row,
+      value,
+      render: field.render,
+      ellipsis: field.ellipsis,
+      type: field.type,
+      badgeVariants: field.badgeVariants,
+    });
   };
 
   // Build description from other fields
@@ -212,7 +167,7 @@ function ListItem<T>({
       ? otherFields
           .slice(0, 4)
           .map((field) => {
-            const value = getFieldValue(field);
+            const value = getFieldValue(row, field);
             return `${field.label}: ${String(value ?? "")}`;
           })
           .join(" · ")
@@ -238,10 +193,10 @@ function ListItem<T>({
 
       <ItemContent>
         <ItemTitle>
-          {primaryField && renderFieldValue(primaryField)}
+          {primaryField && renderField(primaryField)}
           {secondaryField && (
             <span className="font-normal text-muted-foreground">
-              {renderFieldValue(secondaryField)}
+              {renderField(secondaryField)}
             </span>
           )}
         </ItemTitle>
@@ -252,68 +207,13 @@ function ListItem<T>({
 
       {rowActions && rowActions.length > 0 && (
         <ItemActions>
-          <ListItemActionsMenu actions={rowActions} row={row} />
+          <DataViewActionMenu
+            actions={rowActions}
+            row={row}
+            triggerVariant="button"
+          />
         </ItemActions>
       )}
     </Item>
-  );
-}
-
-// ============================================================================
-// List Item Actions Menu
-// ============================================================================
-
-interface ListItemActionsMenuProps<T> {
-  row: T;
-  actions: RowAction<T>[];
-}
-
-function ListItemActionsMenu<T>({ row, actions }: ListItemActionsMenuProps<T>) {
-  const visibleActions = actions.filter((action) => {
-    if (typeof action.hidden === "function") {
-      return !action.hidden(row);
-    }
-    return !action.hidden;
-  });
-
-  if (visibleActions.length === 0) {
-    return null;
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button className="rounded-full" size="icon" variant="ghost">
-          <MoreHorizontal className="size-4" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {visibleActions.map((action, index) => {
-          const isDisabled =
-            typeof action.disabled === "function"
-              ? action.disabled(row)
-              : action.disabled;
-
-          return (
-            <React.Fragment key={action.id}>
-              {index > 0 && action.variant === "destructive" && (
-                <DropdownMenuSeparator />
-              )}
-              <DropdownMenuItem
-                className={cn(
-                  action.variant === "destructive" && "text-destructive"
-                )}
-                disabled={isDisabled}
-                onClick={() => action.onAction(row)}
-              >
-                {action.icon && <action.icon className="size-4" />}
-                {action.label}
-              </DropdownMenuItem>
-            </React.Fragment>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

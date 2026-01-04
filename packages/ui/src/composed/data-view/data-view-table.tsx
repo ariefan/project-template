@@ -1,19 +1,14 @@
 "use client";
 
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
-
 import { cn } from "@workspace/ui/lib/utils";
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
-import * as React from "react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import type * as React from "react";
+import { DataViewActionMenu } from "./action-menu";
+import { ContentPlaceholder } from "./content-placeholder";
 import { useDataView } from "./context";
 import type { ColumnDef, RowAction } from "./types";
+import { getFieldValue } from "./utils";
 
 // ============================================================================
 // Table Components
@@ -123,18 +118,8 @@ export function DataViewTable<T>({
     overrideRowActions ?? (config.rowActions as RowAction<T>[] | undefined);
   const visibleColumns = columns.filter((col) => !col.hidden);
 
-  const getCellValue = (row: T, column: ColumnDef<T>): unknown => {
-    if (column.accessorFn) {
-      return column.accessorFn(row);
-    }
-    if (column.accessorKey) {
-      return (row as Record<string, unknown>)[column.accessorKey as string];
-    }
-    return null;
-  };
-
   const renderCellContent = (row: T, column: ColumnDef<T>) => {
-    const value = getCellValue(row, column);
+    const value = getFieldValue(row, column);
 
     if (column.cell) {
       return column.cell({ row, value });
@@ -165,23 +150,15 @@ export function DataViewTable<T>({
     );
   };
 
-  if (loading) {
+  // Use ContentPlaceholder for loading/empty states
+  if (loading || paginatedData.length === 0) {
     return (
-      <div className="flex items-center justify-center py-10">
-        <div className="text-muted-foreground">
-          {config.loadingMessage ?? "Loading..."}
-        </div>
-      </div>
-    );
-  }
-
-  if (paginatedData.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <div className="text-muted-foreground">
-          {config.emptyMessage ?? "No data available"}
-        </div>
-      </div>
+      <ContentPlaceholder
+        emptyMessage={config.emptyMessage}
+        isEmpty={paginatedData.length === 0}
+        loading={loading}
+        loadingMessage={config.loadingMessage}
+      />
     );
   }
 
@@ -278,7 +255,11 @@ export function DataViewTable<T>({
               ))}
               {rowActions && rowActions.length > 0 && (
                 <TableCell>
-                  <RowActionsMenu actions={rowActions} row={row} />
+                  <DataViewActionMenu
+                    actions={rowActions}
+                    row={row}
+                    triggerVariant="icon"
+                  />
                 </TableCell>
               )}
             </TableRow>
@@ -289,61 +270,4 @@ export function DataViewTable<T>({
   );
 }
 
-// ============================================================================
-// Row Actions Menu
-// ============================================================================
-
-interface RowActionsMenuProps<T> {
-  row: T;
-  actions: RowAction<T>[];
-}
-
-function RowActionsMenu<T>({ row, actions }: RowActionsMenuProps<T>) {
-  const visibleActions = actions.filter((action) => {
-    if (typeof action.hidden === "function") {
-      return !action.hidden(row);
-    }
-    return !action.hidden;
-  });
-
-  if (visibleActions.length === 0) {
-    return null;
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-        <MoreHorizontal className="size-4" />
-        <span className="sr-only">Open menu</span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {visibleActions.map((action, index) => {
-          const isDisabled =
-            typeof action.disabled === "function"
-              ? action.disabled(row)
-              : action.disabled;
-
-          return (
-            <React.Fragment key={action.id}>
-              {index > 0 && action.variant === "destructive" && (
-                <DropdownMenuSeparator />
-              )}
-              <DropdownMenuItem
-                className={cn(
-                  action.variant === "destructive" && "text-destructive"
-                )}
-                disabled={isDisabled}
-                onClick={() => action.onAction(row)}
-              >
-                {action.icon && <action.icon className="size-4" />}
-                {action.label}
-              </DropdownMenuItem>
-            </React.Fragment>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell };
+export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow };

@@ -302,6 +302,8 @@ export default function CrudPage() {
         searchPlaceholder="Search users..."
         // Messages
         selectable
+        // Field selector dropdown
+        showFieldSelector
         sortable
         // Responsive breakpoints
         striped

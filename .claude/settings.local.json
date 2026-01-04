@@ -109,7 +109,8 @@
       "Bash(pnpm --filter @workspace/contracts generate:*)",
       "Bash(pnpm --filter @workspace/contracts tsp compile:*)",
       "Bash(pnpm --filter @workspace/contracts build:tsp:*)",
-      "Bash(npx @tailwindcss/upgrade)"
+      "Bash(npx @tailwindcss/upgrade)",
+      "Bash(pnpm --filter @workspace/ui typecheck:*)"
     ]
   }
 }

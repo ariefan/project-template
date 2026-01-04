@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
@@ -14,14 +15,13 @@ import {
   DataViewPagination,
   DataViewProvider,
   DataViewTable,
-  FilterButton,
+  DataViewToolbar,
   InlineBulkActions,
-  SearchInput,
   useDataView,
   type ViewMode,
-  ViewToggle,
 } from "@workspace/ui/composed/data-view";
 import { cn } from "@workspace/ui/lib/utils";
+import { Download, RefreshCw, Upload } from "lucide-react";
 import * as React from "react";
 
 // ============================================================================
@@ -135,6 +135,18 @@ const productColumns: ColumnDef<Product>[] = [
 function CustomToolbar() {
   const { selectedIds, processedData } = useDataView<Product>();
 
+  const handleImport = () => {
+    console.log("Import clicked");
+  };
+
+  const handleExport = () => {
+    console.log("Export clicked");
+  };
+
+  const handleRefresh = () => {
+    console.log("Refresh clicked");
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Stats Cards */}
@@ -185,17 +197,28 @@ function CustomToolbar() {
         </Card>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <SearchInput />
-          <InlineBulkActions />
-        </div>
-        <div className="flex items-center gap-2">
-          <FilterButton />
-          <ViewToggle />
-        </div>
-      </div>
+      {/* Toolbar - using DataViewToolbar with slots */}
+      <DataViewToolbar
+        afterSearch={<InlineBulkActions />}
+        afterViewToggle={
+          <Button onClick={handleRefresh} size="sm" variant="ghost">
+            <RefreshCw className="size-4" />
+          </Button>
+        }
+        beforeFilters={
+          <>
+            <Button onClick={handleImport} size="sm" variant="outline">
+              <Upload className="mr-1.5 size-4" />
+              <span className="hidden sm:inline">Import</span>
+            </Button>
+            <Button onClick={handleExport} size="sm" variant="outline">
+              <Download className="mr-1.5 size-4" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+          </>
+        }
+        showFieldSelector
+      />
     </div>
   );
 }

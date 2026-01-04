@@ -1,20 +1,18 @@
 "use client";
 
-import { Badge } from "@workspace/ui/components/badge";
 import { Card, CardContent, CardHeader } from "@workspace/ui/components/card";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
 import { cn } from "@workspace/ui/lib/utils";
-import { MoreHorizontal } from "lucide-react";
 import * as React from "react";
+import { DataViewActionMenu } from "./action-menu";
+import { ContentPlaceholder } from "./content-placeholder";
 import { useDataView } from "./context";
 import type { FieldDef, RowAction } from "./types";
+import {
+  deriveFieldsFromColumns,
+  getFieldValue,
+  renderFieldContent,
+} from "./utils";
 
 // ============================================================================
 // DataViewGrid
@@ -51,18 +49,10 @@ export function DataViewGrid<T>({
     if (config.fields) {
       return config.fields as FieldDef<T>[];
     }
-
-    // Derive from columns
-    return config.columns.map((col, index) => ({
-      id: col.id,
-      label: col.header,
-      accessorKey: col.accessorKey as keyof T | undefined,
-      accessorFn: col.accessorFn as ((row: T) => unknown) | undefined,
-      ellipsis: col.ellipsis,
-      primary: index === 0,
-      secondary: index === 1,
-      hideInGrid: col.hidden,
-    }));
+    return deriveFieldsFromColumns(
+      config.columns,
+      "hideInGrid"
+    ) as FieldDef<T>[];
   }, [overrideFields, config.fields, config.columns]);
 
   const rowActions =
@@ -80,23 +70,15 @@ export function DataViewGrid<T>({
     6: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
   };
 
-  if (loading) {
+  // Use ContentPlaceholder for loading/empty states
+  if (loading || paginatedData.length === 0) {
     return (
-      <div className="flex items-center justify-center py-10">
-        <div className="text-muted-foreground">
-          {config.loadingMessage ?? "Loading..."}
-        </div>
-      </div>
-    );
-  }
-
-  if (paginatedData.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-10">
-        <div className="text-muted-foreground">
-          {config.emptyMessage ?? "No data available"}
-        </div>
-      </div>
+      <ContentPlaceholder
+        emptyMessage={config.emptyMessage}
+        isEmpty={paginatedData.length === 0}
+        loading={loading}
+        loadingMessage={config.loadingMessage}
+      />
     );
   }
 
@@ -166,42 +148,16 @@ function GridCard<T>({
   const secondaryField = fields.find((f) => f.secondary);
   const otherFields = fields.filter((f) => !(f.primary || f.secondary));
 
-  const getFieldValue = (field: FieldDef<T>): unknown => {
-    if (field.accessorFn) {
-      return field.accessorFn(row);
-    }
-    if (field.accessorKey) {
-      return (row as Record<string, unknown>)[field.accessorKey as string];
-    }
-    return null;
-  };
-
-  const renderFieldValue = (field: FieldDef<T>) => {
-    const value = getFieldValue(field);
-
-    if (field.render) {
-      return field.render({ row, value });
-    }
-
-    if (field.type === "badge" && field.badgeVariants) {
-      const variant = field.badgeVariants[String(value)];
-      const safeVariant =
-        variant === "success" || variant === "warning" ? "secondary" : variant;
-      return <Badge variant={safeVariant ?? "default"}>{String(value)}</Badge>;
-    }
-
-    const content = String(value ?? "");
-    const ellipsis = field.ellipsis !== false;
-
-    if (ellipsis) {
-      return (
-        <span className="truncate" title={content}>
-          {content}
-        </span>
-      );
-    }
-
-    return content;
+  const renderField = (field: FieldDef<T>) => {
+    const value = getFieldValue(row, field);
+    return renderFieldContent({
+      row,
+      value,
+      render: field.render,
+      ellipsis: field.ellipsis,
+      type: field.type,
+      badgeVariants: field.badgeVariants,
+    });
   };
 
   return (
@@ -227,19 +183,24 @@ function GridCard<T>({
             <div className="min-w-0 flex-1">
               {primaryField && (
                 <div className="truncate font-semibold">
-                  {renderFieldValue(primaryField)}
+                  {renderField(primaryField)}
                 </div>
               )}
               {secondaryField && (
                 <div className="truncate text-muted-foreground text-sm">
-                  {renderFieldValue(secondaryField)}
+                  {renderField(secondaryField)}
                 </div>
               )}
             </div>
           </div>
 
           {rowActions && rowActions.length > 0 && (
-            <GridCardActions actions={rowActions} row={row} />
+            <DataViewActionMenu
+              actions={rowActions}
+              row={row}
+              triggerClassName="-mt-1 -mr-2 shrink-0"
+              triggerVariant="icon"
+            />
           )}
         </div>
       </CardHeader>
@@ -256,7 +217,7 @@ function GridCard<T>({
                   {field.label}
                 </span>
                 <span className="truncate text-right">
-                  {renderFieldValue(field)}
+                  {renderField(field)}
                 </span>
               </div>
             ))}
@@ -264,62 +225,5 @@ function GridCard<T>({
         </CardContent>
       )}
     </Card>
-  );
-}
-
-// ============================================================================
-// Grid Card Actions
-// ============================================================================
-
-interface GridCardActionsProps<T> {
-  row: T;
-  actions: RowAction<T>[];
-}
-
-function GridCardActions<T>({ row, actions }: GridCardActionsProps<T>) {
-  const visibleActions = actions.filter((action) => {
-    if (typeof action.hidden === "function") {
-      return !action.hidden(row);
-    }
-    return !action.hidden;
-  });
-
-  if (visibleActions.length === 0) {
-    return null;
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="-mt-1 -mr-2 inline-flex size-8 shrink-0 items-center justify-center rounded-md font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-        <MoreHorizontal className="size-4" />
-        <span className="sr-only">Open menu</span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {visibleActions.map((action, index) => {
-          const isDisabled =
-            typeof action.disabled === "function"
-              ? action.disabled(row)
-              : action.disabled;
-
-          return (
-            <React.Fragment key={action.id}>
-              {index > 0 && action.variant === "destructive" && (
-                <DropdownMenuSeparator />
-              )}
-              <DropdownMenuItem
-                className={cn(
-                  action.variant === "destructive" && "text-destructive"
-                )}
-                disabled={isDisabled}
-                onClick={() => action.onAction(row)}
-              >
-                {action.icon && <action.icon className="size-4" />}
-                {action.label}
-              </DropdownMenuItem>
-            </React.Fragment>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

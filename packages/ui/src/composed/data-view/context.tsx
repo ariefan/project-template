@@ -18,6 +18,11 @@ import { CLIENT_SIDE_THRESHOLD } from "./types";
 // Context Types
 // ============================================================================
 
+interface SearchableField {
+  id: string;
+  label: string;
+}
+
 interface DataViewContextValue<T = unknown> extends DataViewState {
   // Config
   config: DataViewConfig<T>;
@@ -31,6 +36,7 @@ interface DataViewContextValue<T = unknown> extends DataViewState {
   // Actions
   setView: (view: ViewMode) => void;
   setSearch: (search: string) => void;
+  setSearchField: (field: string | null) => void;
   setFilters: (filters: FilterValue[]) => void;
   addFilter: (filter: FilterValue) => void;
   removeFilter: (field: string) => void;
@@ -56,6 +62,10 @@ interface DataViewContextValue<T = unknown> extends DataViewState {
   totalPages: number;
   processedData: T[];
   paginatedData: T[];
+  /** Fields that can be searched (derived from columns) */
+  searchableFields: SearchableField[];
+  /** Currently selected search field (null = all fields) */
+  searchField: string | null;
 }
 
 // ============================================================================
@@ -195,6 +205,9 @@ export function DataViewProvider<T>({
   const [expandedIds, setExpandedIds] = React.useState<Set<string | number>>(
     new Set()
   );
+  const [internalSearchField, setInternalSearchField] = React.useState<
+    string | null
+  >(null);
 
   // Server-side state
   const [serverData, setServerData] = React.useState<T[]>([]);
@@ -203,6 +216,7 @@ export function DataViewProvider<T>({
   // Determine if controlled or uncontrolled
   const view = controlledView ?? internalView;
   const search = controlledSearch ?? internalSearch;
+  const searchField = internalSearchField;
   const filters = controlledFilters ?? internalFilters;
   const sort = controlledSort ?? internalSort;
   const selectedIds = controlledSelectedIds ?? internalSelectedIds;
@@ -319,6 +333,15 @@ export function DataViewProvider<T>({
       resetToFirstPage();
     },
     [onSearchChange, resetToFirstPage]
+  );
+
+  const setSearchField = React.useCallback(
+    (field: string | null) => {
+      setInternalSearchField(field);
+      // Reset to first page when changing search field
+      resetToFirstPage();
+    },
+    [resetToFirstPage]
   );
 
   const setFilters = React.useCallback(
@@ -511,6 +534,16 @@ export function DataViewProvider<T>({
     [pagination.total, pagination.pageSize]
   );
 
+  // Compute searchable fields from columns
+  const searchableFields = React.useMemo(() => {
+    return config.columns
+      .filter((col) => !col.hidden)
+      .map((col) => ({
+        id: col.id,
+        label: col.header,
+      }));
+  }, [config.columns]);
+
   // Process data: filter and sort (for CLIENT-SIDE operations only)
   const processedData = React.useMemo(() => {
     // In server mode, data is already processed by the server
@@ -524,6 +557,18 @@ export function DataViewProvider<T>({
     if (search && config.searchable !== false) {
       const searchLower = search.toLowerCase();
       result = result.filter((row) => {
+        // If a specific field is selected, only search that field
+        if (searchField) {
+          const column = config.columns.find((c) => c.id === searchField);
+          if (column) {
+            const value = getColumnValue(row, column);
+            return String(value ?? "")
+              .toLowerCase()
+              .includes(searchLower);
+          }
+          return false;
+        }
+        // Otherwise search all columns
         return config.columns.some((col) => {
           const value = getColumnValue(row, col);
           return String(value ?? "")
@@ -609,6 +654,7 @@ export function DataViewProvider<T>({
     serverData,
     isServerSide,
     search,
+    searchField,
     filters,
     sort,
     config.columns,
@@ -659,6 +705,7 @@ export function DataViewProvider<T>({
     // State
     view,
     search,
+    searchField,
     filters,
     sort,
     selectedIds,
@@ -675,6 +722,7 @@ export function DataViewProvider<T>({
     // Actions
     setView,
     setSearch,
+    setSearchField,
     setFilters,
     addFilter,
     removeFilter,
@@ -700,6 +748,7 @@ export function DataViewProvider<T>({
     totalPages,
     processedData,
     paginatedData,
+    searchableFields,
   };
 
   return (
