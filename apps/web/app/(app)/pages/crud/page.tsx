@@ -1,31 +1,289 @@
-import { columns, type Payment } from "./columns";
-import { ViewToggle } from "./view-toggle";
+"use client";
 
-async function getData(): Promise<Payment[]> {
-  // Fetch data from your API here.
-  const statuses = ["pending", "processing", "success", "failed"] as const;
-  const data: Payment[] = [];
+import { useQuery } from "@tanstack/react-query";
+import type { ExamplePost } from "@workspace/contracts";
+import { examplePostsListOptions } from "@workspace/contracts/query";
+import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
+import {
+  type BulkAction,
+  type ColumnDef,
+  DataView as DataViewComponent,
+  DataViewExport,
+  FilterButton,
+  type RowAction,
+  SearchInput,
+  SortButton,
+  ViewToggle,
+} from "@workspace/ui/composed/data-view";
+import { Edit, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { apiClient } from "@/lib/api-client";
+import { useActiveOrganization } from "@/lib/auth";
+import { PostFormDialog } from "./components/post-form-dialog";
+import { StatsCards } from "./components/stats-cards";
+import { usePostMutations } from "./hooks/use-posts-data";
 
-  for (let i = 1; i <= 125; i++) {
-    const randomIndex = Math.floor(Math.random() * statuses.length);
-    const status = statuses[randomIndex] as Payment["status"];
-    data.push({
-      id: `payment-${i}`,
-      amount: Math.floor(Math.random() * 10_000) + 100,
-      status,
-      email: `user${i}@example.com`,
-    });
+export default function CrudPage() {
+  const { data: orgData, isPending: orgLoading } = useActiveOrganization();
+  const orgId = orgData?.id ?? "";
+  const { deletePost, restorePost } = usePostMutations();
+
+  // Fetch posts using React Query (client mode)
+  const { data, isLoading } = useQuery({
+    ...examplePostsListOptions({
+      client: apiClient,
+      path: { orgId },
+      query: { page: 1, pageSize: 100 },
+    }),
+    enabled: Boolean(orgId),
+  });
+
+  const posts = (data as { data?: ExamplePost[] })?.data ?? [];
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<ExamplePost | undefined>();
+
+  // Column definitions
+  const columns: ColumnDef<ExamplePost>[] = [
+    {
+      id: "id",
+      header: "ID",
+      accessorKey: "id",
+      width: 100,
+      cell: ({ value }) => {
+        const id = String(value);
+        return id.length > 8 ? `${id.substring(0, 8)}...` : id;
+      },
+    },
+    {
+      id: "title",
+      header: "Title",
+      accessorKey: "title",
+      sortable: true,
+      filterable: true,
+      filterType: "text",
+      minWidth: 200,
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessorKey: "status",
+      sortable: true,
+      filterable: true,
+      filterType: "select",
+      filterOptions: [
+        { value: "draft", label: "Draft" },
+        { value: "published", label: "Published" },
+        { value: "archived", label: "Archived" },
+      ],
+      width: 150,
+      cell: ({ row, value }) => {
+        const statusVariants: Record<
+          string,
+          "default" | "secondary" | "destructive" | "outline"
+        > = {
+          draft: "secondary",
+          published: "default",
+          archived: "outline",
+        };
+        return (
+          <div className="flex items-center gap-2">
+            <Badge variant={statusVariants[String(value)] ?? "outline"}>
+              {String(value)}
+            </Badge>
+            {row.isDeleted && <Badge variant="destructive">Deleted</Badge>}
+          </div>
+        );
+      },
+    },
+    {
+      id: "authorId",
+      header: "Author",
+      accessorKey: "authorId",
+      filterable: true,
+      filterType: "text",
+      width: 120,
+      cell: ({ value }) => {
+        const id = String(value);
+        return id.length > 8 ? `${id.substring(0, 8)}...` : id;
+      },
+    },
+    {
+      id: "createdAt",
+      header: "Created",
+      accessorKey: "createdAt",
+      sortable: true,
+      width: 110,
+      cell: ({ value }) => new Date(String(value)).toLocaleDateString(),
+    },
+    {
+      id: "updatedAt",
+      header: "Updated",
+      accessorKey: "updatedAt",
+      sortable: true,
+      width: 110,
+      cell: ({ value }) => new Date(String(value)).toLocaleDateString(),
+    },
+  ];
+
+  // Row actions
+  const rowActions: RowAction<ExamplePost>[] = [
+    {
+      id: "edit",
+      label: "Edit",
+      icon: Edit,
+      onAction: (row) => {
+        setEditingPost(row);
+        setDialogOpen(true);
+      },
+      hidden: (row) => row.isDeleted,
+    },
+    {
+      id: "delete",
+      label: "Delete",
+      icon: Trash2,
+      variant: "destructive",
+      onAction: async (row) => {
+        await deletePost(row.id);
+      },
+      hidden: (row) => row.isDeleted,
+    },
+    {
+      id: "restore",
+      label: "Restore",
+      icon: RotateCcw,
+      onAction: async (row) => {
+        await restorePost(row.id);
+      },
+      hidden: (row) => !row.isDeleted,
+    },
+  ];
+
+  // Bulk actions
+  const bulkActions: BulkAction<ExamplePost>[] = [
+    {
+      id: "delete",
+      label: "Delete Selected",
+      icon: Trash2,
+      variant: "destructive",
+      confirmMessage: "Are you sure you want to delete the selected posts?",
+      onAction: async (rows) => {
+        await Promise.all(
+          rows.filter((r) => !r.isDeleted).map((row) => deletePost(row.id))
+        );
+      },
+      disabled: (rows) => rows.every((r) => r.isDeleted),
+    },
+    {
+      id: "restore",
+      label: "Restore Selected",
+      icon: RotateCcw,
+      onAction: async (rows) => {
+        await Promise.all(
+          rows.filter((r) => r.isDeleted).map((row) => restorePost(row.id))
+        );
+      },
+      disabled: (rows) => rows.every((r) => !r.isDeleted),
+    },
+  ];
+
+  function handleCreateNew() {
+    setEditingPost(undefined);
+    setDialogOpen(true);
   }
 
-  return data;
-}
+  function renderContent() {
+    if (orgLoading || isLoading) {
+      return (
+        <div className="py-8 text-center text-muted-foreground">
+          Loading posts...
+        </div>
+      );
+    }
 
-export default async function DemoPage() {
-  const data = await getData();
+    if (!orgData?.id) {
+      return (
+        <div className="py-8 text-center text-muted-foreground">
+          Please select an organization
+        </div>
+      );
+    }
+
+    return (
+      <DataViewComponent<ExamplePost>
+        availableViews={["table", "list", "grid"]}
+        bulkActions={bulkActions}
+        columns={columns}
+        data={posts}
+        defaultPageSize={10}
+        defaultView="table"
+        emptyMessage="No posts found"
+        filterable
+        getRowId={(row) => row.id}
+        hoverable
+        loadingMessage="Loading posts..."
+        multiSelect
+        pageSizeOptions={[10, 25, 50, 100]}
+        paginated
+        primaryAction={
+          <Button onClick={handleCreateNew} size="sm">
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">New Post</span>
+          </Button>
+        }
+        responsiveBreakpoints={{
+          list: 1024,
+          grid: 640,
+        }}
+        rowActions={rowActions}
+        searchable
+        selectable
+        sortable
+        striped
+        toolbarLeft={<SearchInput showFieldSelector />}
+        toolbarRight={
+          <>
+            <FilterButton />
+            <SortButton />
+            <ViewToggle />
+            <DataViewExport />
+          </>
+        }
+      />
+    );
+  }
 
   return (
-    <div className="container mx-auto py-10">
-      <ViewToggle columns={columns} data={data} />
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <h1 className="font-bold text-2xl">Posts Management</h1>
+        <p className="mt-1 text-muted-foreground">
+          Manage your blog posts with real API integration. Create, edit,
+          delete, and restore posts.
+        </p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="mb-6">
+        <StatsCards />
+      </div>
+
+      {/* DataView - only render when orgId is available */}
+      {renderContent()}
+
+      {/* Form Dialog */}
+      <PostFormDialog
+        mode={editingPost ? "edit" : "create"}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            setEditingPost(undefined);
+          }
+        }}
+        open={dialogOpen}
+        post={editingPost}
+      />
     </div>
   );
 }
