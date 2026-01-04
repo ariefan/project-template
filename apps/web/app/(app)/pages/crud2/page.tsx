@@ -5,6 +5,7 @@ import {
   type BulkAction,
   type ColumnDef,
   DataView as DataViewComponent,
+  DataViewExport,
   type RowAction,
 } from "@workspace/ui/composed/data-view";
 import { Copy, Download, Edit, Eye, Mail, Trash2 } from "lucide-react";
@@ -307,6 +308,8 @@ export default function CrudPage() {
         sortable
         // Responsive breakpoints
         striped
+        // Export functionality
+        toolbarRight={<DataViewExport />}
       />
     </div>
   );

@@ -147,6 +147,9 @@ export function PaginationBase({
     return buildPagesWithEllipsis(pages, 5);
   };
 
+  // Pluralization helper
+  const pluralizeRow = (count: number) => (count === 1 ? "row" : "rows");
+
   return (
     <div className="flex flex-col items-center justify-between space-y-2 px-2 py-2 sm:flex-row sm:space-y-0">
       {/* Row info */}
@@ -154,11 +157,14 @@ export function PaginationBase({
         <div className="mr-4 flex-1 text-muted-foreground text-sm">
           {rowInfo.selected !== undefined && (
             <>
-              {rowInfo.selected} of {rowInfo.total} row(s) selected.
+              {rowInfo.selected} of {rowInfo.total}{" "}
+              {pluralizeRow(rowInfo.selected)} selected.
             </>
           )}
           {rowInfo.selected === undefined && (
-            <>Showing {rowInfo.total} row(s)</>
+            <>
+              Showing {rowInfo.total} {pluralizeRow(rowInfo.total)}
+            </>
           )}
         </div>
       )}

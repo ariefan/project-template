@@ -1,8 +1,19 @@
 "use client";
 
+import { Button } from "@workspace/ui/components/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { cn } from "@workspace/ui/lib/utils";
+import { Database, SearchX } from "lucide-react";
 import * as React from "react";
-import { DataViewProvider } from "./context";
+import { DataViewProvider, useDataView } from "./context";
 import { InlineBulkActions } from "./data-view-bulk-actions";
 import { DataViewGrid } from "./data-view-grid";
 import { DataViewList } from "./data-view-list";
@@ -231,6 +242,114 @@ export function DataView<T>({
 }
 
 // ============================================================================
+// DefaultLoadingState - Default loading skeleton component
+// ============================================================================
+
+function DefaultLoadingState({ view }: { view: ViewMode }) {
+  const skeletonRows = 5;
+
+  // Table view loading state
+  if (view === "table") {
+    return (
+      <div className="w-full space-y-3 p-4">
+        {Array.from({ length: skeletonRows }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton loading state, index is stable
+          <div className="flex gap-3" key={i}>
+            <Skeleton className="h-10 w-12" />
+            <Skeleton className="h-10 flex-1" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // List view loading state
+  if (view === "list") {
+    return (
+      <div className="w-full space-y-3 p-4">
+        {Array.from({ length: skeletonRows }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton loading state, index is stable
+          <div className="flex gap-3 rounded-lg border p-4" key={i}>
+            <Skeleton className="size-12 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-5 w-1/3" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Grid view loading state
+  return (
+    <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton loading state, index is stable
+        <div className="space-y-3 rounded-lg border p-4" key={i}>
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-5 w-2/3" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
+// DefaultEmptyState - Default empty state component
+// ============================================================================
+
+function DefaultEmptyState() {
+  const { filters, search, setFilters, setSearch } = useDataView();
+
+  const hasActiveFilters = filters.length > 0 || search.length > 0;
+
+  const handleClearFilters = () => {
+    setFilters([]);
+    setSearch("");
+  };
+
+  if (hasActiveFilters) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <SearchX />
+          </EmptyMedia>
+          <EmptyTitle>No results found</EmptyTitle>
+          <EmptyDescription>
+            Try adjusting your search or filters to find what you're looking
+            for.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button onClick={handleClearFilters} variant="outline">
+            Clear filters
+          </Button>
+        </EmptyContent>
+      </Empty>
+    );
+  }
+
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Database />
+        </EmptyMedia>
+        <EmptyTitle>No data available</EmptyTitle>
+        <EmptyDescription>
+          There are no items to display at the moment.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
+}
+
+// ============================================================================
 // DataViewContentRenderer - Handles loading/empty states and renders the view
 // ============================================================================
 
@@ -249,12 +368,12 @@ function DataViewContentRenderer<T>({
   emptyState,
   view,
 }: DataViewContentRendererProps<T>) {
-  if (loading && loadingState) {
-    return <>{loadingState}</>;
+  if (loading) {
+    return <>{loadingState ?? <DefaultLoadingState view={view} />}</>;
   }
 
-  if (data.length === 0 && !loading && emptyState) {
-    return <>{emptyState}</>;
+  if (data.length === 0 && !loading) {
+    return <>{emptyState ?? <DefaultEmptyState />}</>;
   }
 
   switch (view) {

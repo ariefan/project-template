@@ -11,6 +11,9 @@ export {
   DataViewBulkActions,
   InlineBulkActions,
 } from "./data-view-bulk-actions";
+export type { DataViewExportProps } from "./data-view-export";
+// Export components
+export { DataViewExport } from "./data-view-export";
 export { DataViewGrid } from "./data-view-grid";
 export { DataViewList } from "./data-view-list";
 
@@ -61,7 +64,14 @@ export type {
 // Constants
 export { CLIENT_SIDE_THRESHOLD } from "./types";
 export { useBulkActionHandler } from "./use-bulk-action";
+export type {
+  ExportFormat,
+  ExportOptions,
+} from "./use-data-export";
+export { useDataExport } from "./use-data-export";
+export type { FilterPreset } from "./use-filter-presets";
 // Hooks
+export { useFilterPresets } from "./use-filter-presets";
 export { useResponsiveView } from "./use-responsive-view";
 // Utilities (for custom implementations)
 export {

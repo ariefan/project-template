@@ -43,6 +43,11 @@ export function DataViewPagination({
 
   const { page, pageSize, total } = pagination;
 
+  // Hide pagination when there are no records
+  if (total === 0) {
+    return null;
+  }
+
   const paginationState: PaginationState = {
     currentPage: page,
     totalPages,

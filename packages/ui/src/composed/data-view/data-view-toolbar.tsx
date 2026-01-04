@@ -3,10 +3,21 @@
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu";
 import { Input } from "@workspace/ui/components/input";
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
 } from "@workspace/ui/components/input-group";
 import {
@@ -23,20 +34,19 @@ import {
 } from "@workspace/ui/components/select";
 import { cn } from "@workspace/ui/lib/utils";
 import {
-  ArrowDown,
-  ArrowUp,
+  ArrowUpDown,
   ChevronDown,
   Filter,
   LayoutGrid,
   LayoutList,
   Search,
-  SlidersHorizontal,
   Table2,
   X,
 } from "lucide-react";
 import * as React from "react";
 import { useDataView } from "./context";
 import type { ColumnDef, FilterValue, ViewMode } from "./types";
+import { useFilterPresets } from "./use-filter-presets";
 
 // ============================================================================
 // View Toggle
@@ -69,20 +79,55 @@ export function ViewToggle({ className, availableViews }: ViewToggleProps) {
   }
 
   return (
-    <ButtonGroup className={className}>
-      {views.map((v) => (
-        <Button
-          aria-label={`Switch to ${viewLabels[v]} view`}
-          aria-pressed={view === v}
-          key={v}
-          onClick={() => setView(v)}
-          size="sm"
-          variant={view === v ? "secondary" : "outline"}
-        >
-          {viewIcons[v]}
-        </Button>
-      ))}
-    </ButtonGroup>
+    <>
+      {/* Desktop: ButtonGroup */}
+      <ButtonGroup className={cn(className, "hidden sm:flex")}>
+        {views.map((v) => (
+          <Button
+            aria-label={`Switch to ${viewLabels[v]} view`}
+            aria-pressed={view === v}
+            key={v}
+            onClick={() => setView(v)}
+            size="sm"
+            variant={view === v ? "secondary" : "outline"}
+          >
+            {viewIcons[v]}
+          </Button>
+        ))}
+      </ButtonGroup>
+
+      {/* Mobile: Dropdown with current view icon */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            aria-label="Change view"
+            className={cn(className, "sm:hidden")}
+            size="sm"
+            variant="outline"
+          >
+            {viewIcons[view]}
+            <ChevronDown className="ml-1 size-3 opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>View</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuRadioGroup
+            onValueChange={(v) => setView(v as ViewMode)}
+            value={view}
+          >
+            {views.map((v) => (
+              <DropdownMenuRadioItem key={v} value={v}>
+                <span className="flex items-center gap-2">
+                  {viewIcons[v]}
+                  {viewLabels[v]}
+                </span>
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 }
 
@@ -194,8 +239,8 @@ function SearchInputWithFieldSelector({
     setSearch("");
   };
 
-  const handleFieldChange = (value: string) => {
-    setSearchField(value === "__all__" ? null : value);
+  const handleFieldChange = (fieldId: string) => {
+    setSearchField(fieldId === "__all__" ? null : fieldId);
   };
 
   if (config.searchable === false) {
@@ -209,56 +254,39 @@ function SearchInputWithFieldSelector({
 
   return (
     <InputGroup className={cn("w-full sm:w-auto", className)}>
-      <InputGroupAddon align="inline-start">
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className="flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
-              type="button"
-            >
-              <span className="max-w-20 truncate">{selectedLabel}</span>
-              <ChevronDown className="size-3" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-40 p-1">
-            <div className="flex flex-col">
-              <button
-                className={cn(
-                  "rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
-                  !searchField && "bg-accent"
-                )}
-                onClick={() => handleFieldChange("__all__")}
-                type="button"
-              >
-                All fields
-              </button>
-              {searchableFields.map((field) => (
-                <button
-                  className={cn(
-                    "rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent",
-                    searchField === field.id && "bg-accent"
-                  )}
-                  key={field.id}
-                  onClick={() => handleFieldChange(field.id)}
-                  type="button"
-                >
-                  {field.label}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </InputGroupAddon>
-      <InputGroupAddon align="inline-start">
-        <Search className="size-4" />
-      </InputGroupAddon>
       <InputGroupInput
-        className="w-full sm:w-48"
+        className="w-full sm:w-64"
         onChange={handleChange}
         placeholder={placeholder ?? config.searchPlaceholder ?? "Search..."}
         type="search"
         value={localSearch}
       />
+      <InputGroupAddon align="inline-start">
+        <Search className="size-4" />
+      </InputGroupAddon>
+      <InputGroupAddon align="inline-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <InputGroupButton className="pr-1.5! text-xs" variant="ghost">
+              {selectedLabel} <ChevronDown className="size-3" />
+            </InputGroupButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleFieldChange("__all__")}>
+              All fields
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {searchableFields.map((field) => (
+              <DropdownMenuItem
+                key={field.id}
+                onClick={() => handleFieldChange(field.id)}
+              >
+                {field.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </InputGroupAddon>
       {localSearch && (
         <InputGroupAddon align="inline-end">
           <button
@@ -285,6 +313,12 @@ interface FilterButtonProps {
 
 export function FilterButton({ className }: FilterButtonProps) {
   const { filters, config, setFilters } = useDataView();
+  const { presets, savePreset, deletePreset } = useFilterPresets({
+    dataViewId: config.id,
+  });
+
+  const [presetName, setPresetName] = React.useState("");
+  const [showPresetInput, setShowPresetInput] = React.useState(false);
 
   const filterableColumns = config.columns.filter((col) => col.filterable);
 
@@ -313,13 +347,25 @@ export function FilterButton({ className }: FilterButtonProps) {
     setFilters([]);
   };
 
+  const handleSavePreset = () => {
+    if (presetName.trim() && filters.length > 0) {
+      savePreset(presetName.trim(), filters);
+      setPresetName("");
+      setShowPresetInput(false);
+    }
+  };
+
+  const handleApplyPreset = (presetFilters: FilterValue[]) => {
+    setFilters(presetFilters);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           className={cn("gap-1.5", className)}
           size="sm"
-          variant="outline"
+          variant={activeFilterCount > 0 ? "secondary" : "outline"}
         >
           <Filter className="size-4" />
           <span className="hidden sm:inline">Filters</span>
@@ -330,7 +376,7 @@ export function FilterButton({ className }: FilterButtonProps) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80">
+      <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-80">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-sm">Filters</h4>
@@ -363,6 +409,85 @@ export function FilterButton({ className }: FilterButtonProps) {
               );
             })}
           </div>
+
+          {/* Filter Presets */}
+          {(presets.length > 0 || activeFilterCount > 0) && (
+            <div className="border-t pt-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="font-medium text-muted-foreground text-xs">
+                  Saved Presets
+                </span>
+                {activeFilterCount > 0 && !showPresetInput && (
+                  <Button
+                    className="h-auto px-2 py-1 text-xs"
+                    onClick={() => setShowPresetInput(true)}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    Save current
+                  </Button>
+                )}
+              </div>
+
+              {showPresetInput && (
+                <div className="mb-2 flex gap-2">
+                  <Input
+                    className="h-8 text-xs"
+                    onChange={(e) => setPresetName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSavePreset();
+                      } else if (e.key === "Escape") {
+                        setShowPresetInput(false);
+                        setPresetName("");
+                      }
+                    }}
+                    placeholder="Preset name..."
+                    value={presetName}
+                  />
+                  <Button
+                    className="h-8 px-2 text-xs"
+                    disabled={!presetName.trim()}
+                    onClick={handleSavePreset}
+                    size="sm"
+                  >
+                    Save
+                  </Button>
+                </div>
+              )}
+
+              {presets.length > 0 && (
+                <div className="space-y-1">
+                  {presets.map((preset) => (
+                    <div
+                      className="flex items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+                      key={preset.id}
+                    >
+                      <button
+                        className="flex-1 text-left"
+                        onClick={() => handleApplyPreset(preset.filters)}
+                        type="button"
+                      >
+                        <span className="font-medium">{preset.name}</span>
+                        <span className="ml-2 text-muted-foreground text-xs">
+                          ({preset.filters.length}{" "}
+                          {preset.filters.length === 1 ? "filter" : "filters"})
+                        </span>
+                      </button>
+                      <button
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => deletePreset(preset.id)}
+                        type="button"
+                      >
+                        <X className="size-3" />
+                        <span className="sr-only">Delete preset</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
@@ -434,6 +559,52 @@ interface SortButtonProps {
   className?: string;
 }
 
+// Helper function to determine column type
+function getColumnType(column: ColumnDef): "date" | "number" | "text" {
+  const columnType = String(column.accessorKey ?? "").toLowerCase();
+
+  const isDate =
+    columnType.includes("date") ||
+    columnType.includes("time") ||
+    columnType.includes("created") ||
+    columnType.includes("updated");
+
+  if (isDate) {
+    return "date";
+  }
+
+  const isNumber =
+    columnType.includes("id") ||
+    columnType.includes("count") ||
+    columnType.includes("amount") ||
+    columnType.includes("price");
+
+  if (isNumber) {
+    return "number";
+  }
+
+  return "text";
+}
+
+// Helper function to get direction label
+function getDirectionLabel(
+  columnType: "date" | "number" | "text",
+  direction: "asc" | "desc"
+): string {
+  if (columnType === "date") {
+    return direction === "asc" ? "Oldest" : "Newest";
+  }
+  if (columnType === "number") {
+    return direction === "asc" ? "Low→High" : "High→Low";
+  }
+  return direction === "asc" ? "A→Z" : "Z→A";
+}
+
+interface SortOption {
+  value: string;
+  label: string;
+}
+
 export function SortButton({ className }: SortButtonProps) {
   const { sort, setSort, config } = useDataView();
 
@@ -445,91 +616,88 @@ export function SortButton({ className }: SortButtonProps) {
     return null;
   }
 
-  const handleSortFieldChange = (field: string) => {
-    if (field && field !== "__none__") {
-      setSort({ field, direction: sort?.direction ?? "asc" });
-    } else {
+  // Helper to get sort label
+  const getSortLabel = (field: string, direction: "asc" | "desc") => {
+    const column = sortableColumns.find((col) => col.id === field);
+    if (!column) {
+      return "";
+    }
+
+    const columnType = getColumnType(column);
+    const directionLabel = getDirectionLabel(columnType, direction);
+    return `${column.header}: ${directionLabel}`;
+  };
+
+  // Build sort options (field + direction combinations)
+  const sortOptions: SortOption[] = [{ value: "__none__", label: "None" }];
+
+  for (const col of sortableColumns) {
+    sortOptions.push({
+      value: `${col.id}:asc`,
+      label: getSortLabel(col.id, "asc"),
+    });
+    sortOptions.push({
+      value: `${col.id}:desc`,
+      label: getSortLabel(col.id, "desc"),
+    });
+  }
+
+  const handleSortChange = (value: string) => {
+    if (value === "__none__") {
       setSort(null);
+    } else {
+      const [field, direction] = value.split(":");
+      if (field && direction) {
+        setSort({ field, direction: direction as "asc" | "desc" });
+      }
     }
   };
 
-  const handleDirectionChange = (direction: "asc" | "desc") => {
-    if (sort) {
-      setSort({ ...sort, direction });
-    }
-  };
+  const currentSortValue = sort
+    ? `${sort.field}:${sort.direction}`
+    : "__none__";
+  const currentSortLabel = sort
+    ? getSortLabel(sort.field, sort.direction)
+    : null;
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <Button
           className={cn("gap-1.5", className)}
           size="sm"
           variant="outline"
         >
-          <SlidersHorizontal className="size-4" />
+          <ArrowUpDown className="size-4" />
           <span className="hidden sm:inline">Sort</span>
-          {sort && (
-            <Badge className="ml-1 px-1.5 py-0 text-xs" variant="secondary">
-              {sort.direction === "asc" ? "↑" : "↓"}
+          {currentSortLabel && (
+            <Badge
+              className="ml-1 max-w-32 truncate px-1.5 py-0 text-xs"
+              variant="secondary"
+            >
+              {currentSortLabel}
             </Badge>
           )}
+          <ChevronDown className="ml-auto size-4 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-56">
-        <div className="space-y-3">
-          <h4 className="font-medium text-sm">Sort by</h4>
-          <Select
-            onValueChange={handleSortFieldChange}
-            value={sort?.field ?? "__none__"}
-          >
-            <SelectTrigger className="w-full" size="sm">
-              <SelectValue placeholder="None" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">None</SelectItem>
-              {sortableColumns.map((col) => (
-                <SelectItem key={col.id} value={col.id}>
-                  {col.header}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {sort && (
-            <div className="flex gap-2">
-              <Button
-                className="flex-1 gap-1"
-                onClick={() => handleDirectionChange("asc")}
-                size="sm"
-                variant={sort.direction === "asc" ? "secondary" : "outline"}
-              >
-                <ArrowUp className="size-3" />
-                Asc
-              </Button>
-              <Button
-                className="flex-1 gap-1"
-                onClick={() => handleDirectionChange("desc")}
-                size="sm"
-                variant={sort.direction === "desc" ? "secondary" : "outline"}
-              >
-                <ArrowDown className="size-3" />
-                Desc
-              </Button>
-            </div>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup
+          onValueChange={handleSortChange}
+          value={currentSortValue}
+        >
+          {sortOptions.map((option) => (
+            <DropdownMenuRadioItem key={option.value} value={option.value}>
+              {option.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
-
-// ============================================================================
-// Legacy exports for backwards compatibility
-// ============================================================================
-
-export const FilterPanel = FilterButton;
-export const SortPanel = SortButton;
 
 // ============================================================================
 // DataViewToolbar
@@ -622,9 +790,21 @@ export function DataViewToolbar({
       <div className="flex items-center gap-2">
         {children}
         {beforeFilters}
-        {showFilters && (filtersSlot ?? <FilterButton />)}
-        {showSort && (sortSlot ?? <SortButton />)}
-        {showViewToggle && (viewToggleSlot ?? <ViewToggle />)}
+
+        {/* Desktop: Show all controls */}
+        <div className="hidden items-center gap-2 sm:flex">
+          {showFilters && (filtersSlot ?? <FilterButton />)}
+          {showSort && (sortSlot ?? <SortButton />)}
+          {showViewToggle && (viewToggleSlot ?? <ViewToggle />)}
+        </div>
+
+        {/* Mobile: Show 3 separate icon buttons */}
+        <div className="flex items-center gap-1 sm:hidden">
+          {showFilters && !filtersSlot && <FilterButton />}
+          {showSort && !sortSlot && <SortButton />}
+          {showViewToggle && !viewToggleSlot && <ViewToggle />}
+        </div>
+
         {afterViewToggle}
         {rightContent}
       </div>
