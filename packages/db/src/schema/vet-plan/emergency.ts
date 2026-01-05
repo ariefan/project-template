@@ -13,6 +13,7 @@ import {
 import { appointments } from "./appointments";
 import { clients } from "./clients";
 import { clinics } from "./clinics";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
@@ -141,15 +142,9 @@ export const emergencyCases = pgTable(
     followUpRequired: text("follow_up_required"),
     followUpInstructions: text("follow_up_instructions"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_emergency_cases_clinic_id_idx").on(table.clinicId),
@@ -215,10 +210,8 @@ export const criticalCareRecords = pgTable(
     notes: text("notes"),
     concerns: text("concerns"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
+    // Metadata & timestamps
+    ...metadata,
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [

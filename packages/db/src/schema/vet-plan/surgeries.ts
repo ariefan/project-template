@@ -11,6 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
@@ -137,15 +138,9 @@ export const surgeries = pgTable(
     dischargedAt: timestamp("discharged_at"),
     dischargeNotes: text("discharge_notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_surgeries_appointment_id_idx").on(table.appointmentId),
@@ -230,15 +225,9 @@ export const anesthesiaRecords = pgTable(
     // Staff
     monitoredBy: uuid("monitored_by"), // Technician/veterinarian ID
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_anesthesia_records_surgery_id_idx").on(table.surgeryId),
