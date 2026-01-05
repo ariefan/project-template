@@ -10,6 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
@@ -101,15 +102,9 @@ export const diagnosticTests = pgTable(
     clinicalIndication: text("clinical_indication"),
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_diagnostic_tests_appointment_id_idx").on(table.appointmentId),
@@ -161,15 +156,9 @@ export const testResults = pgTable(
     reviewedAt: timestamp("reviewed_at"),
     reviewNotes: text("review_notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_test_results_diagnostic_test_id_idx").on(table.diagnosticTestId),
@@ -231,15 +220,9 @@ export const imagingStudies = pgTable(
         }>
       >(),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_imaging_studies_appointment_id_idx").on(table.appointmentId),

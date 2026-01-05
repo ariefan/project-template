@@ -5,7 +5,6 @@ import {
   decimal,
   index,
   integer,
-  json,
   pgEnum,
   pgTable,
   text,
@@ -14,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
 import { clients } from "./clients";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
@@ -111,15 +111,9 @@ export const treatments = pgTable(
     indication: text("indication"),
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_treatments_appointment_id_idx").on(table.appointmentId),
@@ -197,15 +191,9 @@ export const prescriptions = pgTable(
     pharmacyName: text("pharmacy_name"),
     dispensedAt: timestamp("dispensed_at"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_prescriptions_appointment_id_idx").on(table.appointmentId),
@@ -250,10 +238,8 @@ export const medicationAdministrationRecords = pgTable(
     notes: text("notes"),
     adverseReactions: text("adverse_reactions"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
+    // Metadata & timestamps
+    ...metadata,
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [

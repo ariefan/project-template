@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clients } from "./clients";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 
 // ============================================================================
@@ -119,15 +120,9 @@ export const boardingReservations = pgTable(
     // Items brought
     itemsBrought: json("items_brought").$type<string[]>(), // e.g., ["bed", "toys", "food"]
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_boarding_reservations_client_id_idx").on(table.clientId),

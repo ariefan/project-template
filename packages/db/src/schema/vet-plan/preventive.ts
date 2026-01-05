@@ -13,6 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
@@ -107,15 +108,9 @@ export const vaccinationRecords = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_vaccination_records_animal_id_idx").on(table.animalId),
@@ -168,15 +163,9 @@ export const parasiticControlRecords = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_parasitic_control_records_animal_id_idx").on(table.animalId),
@@ -250,15 +239,9 @@ export const wellnessExams = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_wellness_exams_appointment_id_idx").on(table.appointmentId),
@@ -340,15 +323,9 @@ export const dentalRecords = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_dental_records_appointment_id_idx").on(table.appointmentId),

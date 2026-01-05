@@ -4,13 +4,12 @@ import {
   date,
   decimal,
   index,
-  json,
   pgEnum,
   pgTable,
   text,
-  timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { metadata, timestamps, timestampsWithSoftDelete } from "./helpers";
 
 // ============================================================================
 // ENUMS
@@ -119,16 +118,9 @@ export const clients = pgTable(
     firstVisitDate: date("first_visit_date"),
     lastVisitDate: date("last_visit_date"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
-    deletedAt: timestamp("deleted_at"),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestampsWithSoftDelete,
   },
   (table) => [
     index("vet_clients_user_id_idx").on(table.userId),
@@ -170,11 +162,7 @@ export const clientRelationships = pgTable(
     notes: text("notes"),
 
     // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    ...timestamps,
   },
   (table) => [
     index("vet_client_relationships_primary_idx").on(table.primaryClientId),
