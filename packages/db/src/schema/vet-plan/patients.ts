@@ -13,6 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clients } from "./clients";
+import { metadata, timestamps } from "./helpers";
 
 // ============================================================================
 // ENUMS
@@ -158,15 +159,9 @@ export const patients = pgTable(
     // Notes
     generalNotes: text("general_notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
     deletedAt: timestamp("deleted_at"),
   },
   (table) => [
@@ -236,15 +231,9 @@ export const patientDocuments = pgTable(
     // Uploaded by
     uploadedBy: uuid("uploaded_by"), // Staff member ID
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_patient_documents_patient_id_idx").on(table.patientId),

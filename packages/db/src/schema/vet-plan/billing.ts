@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
 import { clients } from "./clients";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 
 // ============================================================================
@@ -128,15 +129,9 @@ export const invoices = pgTable(
     cancelledAt: timestamp("cancelled_at"),
     cancellationReason: text("cancellation_reason"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_invoices_client_id_idx").on(table.clientId),
@@ -260,15 +255,9 @@ export const payments = pgTable(
     // Processed by
     processedBy: uuid("processed_by"), // Staff member ID
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_payments_invoice_id_idx").on(table.invoiceId),
@@ -337,15 +326,9 @@ export const estimates = pgTable(
     // Created by
     createdBy: uuid("created_by"), // Staff member ID
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_estimates_client_id_idx").on(table.clientId),

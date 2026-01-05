@@ -11,6 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clinics } from "./clinics";
+import { metadata, timestamps } from "./helpers";
 
 // ============================================================================
 // ENUMS
@@ -92,15 +93,9 @@ export const veterinarians = pgTable(
     // Status
     isActive: boolean("is_active").default(true).notNull(),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
     deletedAt: timestamp("deleted_at"),
   },
   (table) => [
@@ -140,15 +135,9 @@ export const veterinarianLicenses = pgTable(
     // Documentation
     documentUrl: text("document_url"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("veterinarian_licenses_vet_id_idx").on(table.veterinarianId),
@@ -185,15 +174,9 @@ export const veterinarianClinicAssignments = pgTable(
     startDate: date("start_date"),
     endDate: date("end_date"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_clinic_assignments_vet_id_idx").on(table.veterinarianId),

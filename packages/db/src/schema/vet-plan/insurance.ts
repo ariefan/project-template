@@ -13,6 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clients } from "./clients";
+import { metadata, timestamps } from "./helpers";
 import { medicalEncounters } from "./medical-records";
 import { patients } from "./patients";
 
@@ -93,15 +94,9 @@ export const insurancePolicies = pgTable(
     providerEmail: text("provider_email"),
     providerWebsite: text("provider_website"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_insurance_policies_client_id_idx").on(table.clientId),
@@ -174,15 +169,9 @@ export const insuranceClaims = pgTable(
     appealSubmittedAt: timestamp("appeal_submitted_at"),
     appealNotes: text("appeal_notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_insurance_claims_policy_id_idx").on(table.policyId),

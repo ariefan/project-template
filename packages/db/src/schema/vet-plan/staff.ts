@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clinics } from "./clinics";
+import { metadata, timestamps } from "./helpers";
 
 // ============================================================================
 // ENUMS
@@ -156,15 +157,9 @@ export const staff = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
     deletedAt: timestamp("deleted_at"),
   },
   (table) => [
@@ -196,15 +191,9 @@ export const staffClinicAssignments = pgTable(
     // Status
     isActive: boolean("is_active").default(true).notNull(),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_staff_clinic_assignments_staff_id_idx").on(table.staffId),
@@ -252,15 +241,9 @@ export const staffAttendance = pgTable(
     approvedBy: uuid("approved_by"), // Manager ID
     approvedAt: timestamp("approved_at"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_staff_attendance_staff_id_idx").on(table.staffId),
@@ -298,15 +281,9 @@ export const staffLeaveRequests = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_staff_leave_requests_staff_id_idx").on(table.staffId),

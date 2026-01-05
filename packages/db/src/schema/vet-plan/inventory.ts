@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clinics } from "./clinics";
+import { metadata, timestamps } from "./helpers";
 import { products } from "./services";
 
 // ============================================================================
@@ -58,15 +59,9 @@ export const inventoryLocations = pgTable(
     description: text("description"),
     locationType: text("location_type"), // e.g., "pharmacy", "surgery_room", "storage", "exam_room"
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_inventory_locations_clinic_id_idx").on(table.clinicId),
@@ -107,15 +102,9 @@ export const inventoryItems = pgTable(
     lastRestockedAt: timestamp("last_restock_at"),
     lastCountedAt: timestamp("last_counted_at"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_inventory_items_product_id_idx").on(table.productId),
@@ -161,15 +150,9 @@ export const inventoryBatches = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_inventory_batches_inventory_item_id_idx").on(
@@ -309,15 +292,9 @@ export const purchaseOrders = pgTable(
     // Notes
     notes: text("notes"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_purchase_orders_clinic_id_idx").on(table.clinicId),

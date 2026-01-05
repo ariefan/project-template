@@ -13,6 +13,7 @@ import {
 import { appointments } from "./appointments";
 import { clients } from "./clients";
 import { clinics } from "./clinics";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
 
@@ -185,15 +186,9 @@ export const medicalEncounters = pgTable(
     cancelledBy: uuid("cancelled_by"),
     cancellationReason: text("cancellation_reason"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_medical_encounters_clinic_id_idx").on(table.clinicId),

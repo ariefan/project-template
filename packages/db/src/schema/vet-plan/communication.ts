@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { appointments } from "./appointments";
 import { clients } from "./clients";
+import { metadata, timestamps } from "./helpers";
 import { patients } from "./patients";
 
 // ============================================================================
@@ -124,15 +125,9 @@ export const communicationLogs = pgTable(
     // Sent by
     sentBy: uuid("sent_by"), // Staff member ID or system
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_communication_logs_client_id_idx").on(table.clientId),
@@ -185,15 +180,9 @@ export const reminders = pgTable(
     // Created by
     createdBy: uuid("created_by"), // Staff member ID or system
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_reminders_client_id_idx").on(table.clientId),
@@ -234,15 +223,9 @@ export const messageTemplates = pgTable(
     // Created by
     createdBy: uuid("created_by"), // Staff member ID
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_message_templates_type_idx").on(table.templateType),
@@ -277,15 +260,9 @@ export const clientNotes = pgTable(
     // Created by
     createdBy: uuid("created_by").notNull(), // Staff member ID
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_client_notes_client_id_idx").on(table.clientId),
@@ -319,15 +296,9 @@ export const patientNotes = pgTable(
     // Created by
     createdBy: uuid("created_by").notNull(), // Staff member ID
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_patient_notes_patient_id_idx").on(table.patientId),

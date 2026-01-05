@@ -11,6 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { clients } from "./clients";
+import { metadata, timestamps } from "./helpers";
 import { medicalEncounters } from "./medical-records";
 import { patients } from "./patients";
 
@@ -176,15 +177,9 @@ export const consentForms = pgTable(
     // Storage
     documentUrl: text("document_url"), // PDF stored in S3/storage
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_consent_forms_client_id_idx").on(table.clientId),

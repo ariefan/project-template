@@ -11,6 +11,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { metadata, timestamps } from "./helpers";
 
 // ============================================================================
 // ENUMS
@@ -76,15 +77,9 @@ export const serviceCategories = pgTable(
     // Status
     isActive: boolean("is_active").default(true).notNull(),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_service_categories_parent_idx").on(table.parentCategoryId),
@@ -144,15 +139,9 @@ export const services = pgTable(
     preparationInstructions: text("preparation_instructions"),
     aftercareInstructions: text("aftercare_instructions"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_services_category_idx").on(table.category),
@@ -232,15 +221,9 @@ export const servicePackages = pgTable(
     thumbnailUrl: text("thumbnail_url"),
     displayOrder: integer("display_order").default(0),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_service_packages_is_active_idx").on(table.isActive),
@@ -297,15 +280,9 @@ export const products = pgTable(
     thumbnailUrl: text("thumbnail_url"),
     displayOrder: integer("display_order").default(0),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_products_category_idx").on(table.category),

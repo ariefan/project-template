@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { clients } from "./clients";
 import { clinics } from "./clinics";
+import { metadata, timestamps } from "./helpers";
 import { medicalEncounters } from "./medical-records";
 import { patients } from "./patients";
 import { veterinarians } from "./veterinarians";
@@ -115,15 +116,9 @@ export const appointments = pgTable(
     // Reminders
     reminderSentAt: timestamp("reminder_sent_at"),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_appointments_clinic_id_idx").on(table.clinicId),
@@ -181,15 +176,9 @@ export const consultations = pgTable(
     // Prognosis
     prognosis: text("prognosis"), // e.g., "good", "guarded", "poor"
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_consultations_appointment_id_idx").on(table.appointmentId),

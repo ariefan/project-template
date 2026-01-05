@@ -9,6 +9,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { metadata, timestamps } from "./helpers";
 
 // ============================================================================
 // ENUMS
@@ -88,15 +89,9 @@ export const clinics = pgTable(
     // Status
     isActive: boolean("is_active").default(true).notNull(),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
     deletedAt: timestamp("deleted_at"),
   },
   (table) => [
@@ -126,15 +121,9 @@ export const clinicFacilities = pgTable(
     // Equipment
     equipment: json("equipment").$type<string[]>(),
 
-    // Metadata
-    metadata: json("metadata").$type<Record<string, unknown>>(),
-
-    // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Metadata & timestamps
+    ...metadata,
+    ...timestamps,
   },
   (table) => [
     index("vet_clinic_facilities_clinic_id_idx").on(table.clinicId),
