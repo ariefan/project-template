@@ -5,7 +5,6 @@ import fastifyPlugin from "fastify-plugin";
 import { requireAuth } from "../modules/auth";
 
 export interface SSEPluginOptions {
-  prefix?: string;
   broadcaster: EventBroadcaster;
   connectionManager: ConnectionManager;
   heartbeatInterval?: number;
@@ -19,8 +18,10 @@ function ssePlugin(fastify: FastifyInstance, options: SSEPluginOptions): void {
   } = options;
 
   // SSE endpoint for real-time events
+  // Note: fastify-plugin removes encapsulation, so prefix option doesn't work
+  // We manually include /v1 in the path
   fastify.get(
-    "/sse/events",
+    "/v1/sse/events",
     { preHandler: [requireAuth] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const userId = request.user?.id;

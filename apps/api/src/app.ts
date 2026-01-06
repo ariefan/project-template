@@ -284,9 +284,8 @@ export async function buildApp(config: AppConfig) {
       heartbeatInterval: env.REALTIME_HEARTBEAT_INTERVAL,
     });
 
-    // Register SSE with /v1 prefix to match API routes
+    // Register SSE plugin (path is hardcoded as /v1/sse/events)
     await app.register(ssePlugin.default, {
-      prefix: "/v1",
       broadcaster: eventBroadcaster,
       connectionManager,
       heartbeatInterval: env.REALTIME_HEARTBEAT_INTERVAL,
