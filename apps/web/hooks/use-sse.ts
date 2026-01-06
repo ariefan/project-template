@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { env } from "../lib/env";
 
 export interface SSEEvent<T = unknown> {
   type: string;
@@ -37,7 +38,8 @@ export function useSSE<T = unknown>(
       try {
         // Create SSE connection with credentials (session cookie)
         // SSE endpoint is at /v1/sse/events on the API server
-        eventSource = new EventSource("/api/v1/sse/events", {
+        const sseUrl = `${env.NEXT_PUBLIC_API_URL}/v1/sse/events`;
+        eventSource = new EventSource(sseUrl, {
           withCredentials: true,
         });
 
