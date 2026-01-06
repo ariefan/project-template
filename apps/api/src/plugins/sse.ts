@@ -37,11 +37,15 @@ function ssePlugin(fastify: FastifyInstance, options: SSEPluginOptions): void {
       }
 
       // Set SSE headers
+      // Note: reply.raw.writeHead bypasses Fastify plugins, so CORS headers must be set manually
+      const origin = request.headers.origin || "http://localhost:3000";
       reply.raw.writeHead(200, {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
         "X-Accel-Buffering": "no", // Disable nginx buffering
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Credentials": "true",
       });
 
       // Register connection
