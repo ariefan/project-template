@@ -165,7 +165,17 @@ function processJobData(
 
 export function createPgBossQueue(
   config: PgBossQueueConfig,
-  providers: ProviderRegistry
+  providers: ProviderRegistry,
+  eventBroadcaster?: {
+    broadcastToUser: <T = unknown>(
+      userId: string,
+      event: {
+        type: string;
+        data: T;
+        id: string;
+      }
+    ) => Promise<void>;
+  }
 ): NotificationQueue {
   const boss = new PgBoss(config.connectionString);
   const concurrency = config.concurrency ?? 10;
@@ -178,6 +188,7 @@ export function createPgBossQueue(
       await boss.work<NotificationJobData>(
         QUEUE_NAME,
         { batchSize: concurrency },
+        // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Queue worker handles job processing, retries, status updates, and event broadcasting
         async (jobs) => {
           for (const job of jobs) {
             try {
@@ -188,6 +199,21 @@ export function createPgBossQueue(
 
               // Log the result
               logJobResult(job.data, result, maxRetries);
+
+              // Emit notification status event
+              if (eventBroadcaster && job.data.userId) {
+                await eventBroadcaster.broadcastToUser(job.data.userId, {
+                  type: result.success
+                    ? "notification:sent"
+                    : "notification:failed",
+                  data: {
+                    id: job.data.id,
+                    status: result.success ? "sent" : "failed",
+                    timestamp: new Date().toISOString(),
+                  },
+                  id: `notif_${result.success ? "sent" : "failed"}_${job.data.id}`,
+                });
+              }
 
               // Retry if needed
               if (

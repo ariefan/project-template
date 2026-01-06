@@ -1,0 +1,39 @@
+{
+  "name": "@workspace/reports",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "biome lint .",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/cache": "workspace:*",
+    "@workspace/db": "workspace:*",
+    "csv-stringify": "^6.5.2",
+    "date-fns": "^4.1.0",
+    "eta": "^3.5.0",
+    "exceljs": "^4.4.0",
+    "nanoid": "^5.1.6",
+    "pdfkit": "^0.16.0",
+    "pg-boss": "^10.1.5",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/pdfkit": "^0.13.8",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.0"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./exporters": "./src/exporters/index.ts",
+    "./printers": "./src/printers/index.ts",
+    "./templates": "./src/templates/index.ts",
+    "./scheduler": "./src/scheduler/index.ts",
+    "./streaming": "./src/streaming/index.ts",
+    "./services": "./src/services/index.ts",
+    "./config": "./src/config.ts"
+  }
+}

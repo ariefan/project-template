@@ -45,6 +45,32 @@ export type AssignRoleRequest = {
 };
 
 /**
+ * Async export response (returns job info)
+ */
+export type AsyncExportResponse = {
+    /**
+     * Job ID for tracking
+     */
+    jobId: string;
+    /**
+     * Current status
+     */
+    status: ReportJobStatus;
+    /**
+     * URL to check job status
+     */
+    statusUrl: string;
+    /**
+     * Estimated completion time
+     */
+    estimatedCompletion?: string;
+    /**
+     * Response metadata
+     */
+    meta: ResponseMeta;
+};
+
+/**
  * Response for async operations that return 202 Accepted
  */
 export type AsyncJobResponse = {
@@ -335,6 +361,16 @@ export type BatchSummary = {
 };
 
 /**
+ * Column alignment
+ */
+export type ColumnAlignment = 'left' | 'center' | 'right';
+
+/**
+ * Column data format
+ */
+export type ColumnFormat = 'text' | 'number' | 'currency' | 'date' | 'datetime' | 'boolean' | 'percentage';
+
+/**
  * Request to confirm an upload completed successfully
  */
 export type ConfirmUploadRequest = {
@@ -381,6 +417,44 @@ export type CreateExamplePostRequest = {
 };
 
 /**
+ * Request body for creating a new report template
+ */
+export type CreateReportTemplateRequest = {
+    /**
+     * Template name
+     */
+    name: string;
+    /**
+     * Template description
+     */
+    description?: string;
+    /**
+     * Output format
+     */
+    format: ReportFormat;
+    /**
+     * Template content (Eta template string)
+     */
+    templateContent: string;
+    /**
+     * Format-specific options
+     */
+    options?: ReportOptions;
+    /**
+     * Data source configuration
+     */
+    dataSource?: DataSourceConfig;
+    /**
+     * Column definitions
+     */
+    columns: Array<ReportColumnConfig>;
+    /**
+     * Whether template is visible to all org members (default: false)
+     */
+    isPublic?: boolean;
+};
+
+/**
  * Request to create a custom role
  */
 export type CreateRoleRequest = {
@@ -396,6 +470,78 @@ export type CreateRoleRequest = {
      * Permissions to grant
      */
     permissions: Array<PermissionInput>;
+};
+
+/**
+ * Request body for creating a scheduled report
+ */
+export type CreateScheduledReportRequest = {
+    /**
+     * Associated report template ID
+     */
+    templateId: string;
+    /**
+     * Schedule name
+     */
+    name: string;
+    /**
+     * Schedule description
+     */
+    description?: string;
+    /**
+     * Schedule frequency
+     */
+    frequency: ScheduleFrequency;
+    /**
+     * Cron expression (required when frequency is custom)
+     */
+    cronExpression?: string;
+    /**
+     * Day of week (for weekly frequency)
+     */
+    dayOfWeek?: DayOfWeek;
+    /**
+     * Day of month (for monthly frequency)
+     */
+    dayOfMonth?: number;
+    /**
+     * Hour to run (0-23)
+     */
+    hour?: number;
+    /**
+     * Minute to run (0-59)
+     */
+    minute?: number;
+    /**
+     * Timezone for scheduling
+     */
+    timezone?: string;
+    /**
+     * Start date for the schedule
+     */
+    startDate?: string;
+    /**
+     * End date for the schedule
+     */
+    endDate?: string;
+    /**
+     * Delivery method
+     */
+    deliveryMethod: DeliveryMethod;
+    /**
+     * Delivery configuration
+     */
+    deliveryConfig?: DeliveryConfig;
+    /**
+     * Runtime parameters passed to template
+     */
+    parameters?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Whether the schedule is active (default: true)
+     */
+    isActive?: boolean;
 };
 
 /**
@@ -444,6 +590,144 @@ export type CursorPagination = {
      * Cursor for fetching the previous page (null if on first page)
      */
     previousCursor: string | null;
+};
+
+/**
+ * Data source configuration for report templates
+ */
+export type DataSourceConfig = {
+    /**
+     * Data source type
+     */
+    type: 'query' | 'api' | 'custom';
+    /**
+     * SQL query or API endpoint path
+     */
+    source?: string;
+    /**
+     * Default parameters for the query/API
+     */
+    defaultParams?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * Data source configuration for report templates
+ */
+export type DataSourceConfigUpdate = {
+    /**
+     * Data source type
+     */
+    type?: 'query' | 'api' | 'custom';
+    /**
+     * SQL query or API endpoint path
+     */
+    source?: string;
+    /**
+     * Default parameters for the query/API
+     */
+    defaultParams?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * Day of week for weekly schedules
+ */
+export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+
+/**
+ * Combined delivery configuration
+ */
+export type DeliveryConfig = {
+    /**
+     * Email delivery settings (when deliveryMethod is email)
+     */
+    email?: EmailDeliveryConfig;
+    /**
+     * Webhook delivery settings (when deliveryMethod is webhook)
+     */
+    webhook?: WebhookDeliveryConfig;
+    /**
+     * Storage delivery settings (when deliveryMethod is storage)
+     */
+    storage?: StorageDeliveryConfig;
+};
+
+/**
+ * Combined delivery configuration
+ */
+export type DeliveryConfigUpdate = {
+    /**
+     * Email delivery settings (when deliveryMethod is email)
+     */
+    email?: EmailDeliveryConfigUpdate;
+    /**
+     * Webhook delivery settings (when deliveryMethod is webhook)
+     */
+    webhook?: WebhookDeliveryConfigUpdate;
+    /**
+     * Storage delivery settings (when deliveryMethod is storage)
+     */
+    storage?: StorageDeliveryConfigUpdate;
+};
+
+/**
+ * Report delivery method
+ */
+export type DeliveryMethod = 'email' | 'download' | 'webhook' | 'storage';
+
+/**
+ * Email delivery configuration
+ */
+export type EmailDeliveryConfig = {
+    /**
+     * Email recipients
+     */
+    recipients: Array<string>;
+    /**
+     * Email subject (supports template variables)
+     */
+    subject?: string;
+    /**
+     * Email body text (supports template variables)
+     */
+    body?: string;
+    /**
+     * CC recipients
+     */
+    cc?: Array<string>;
+    /**
+     * BCC recipients
+     */
+    bcc?: Array<string>;
+};
+
+/**
+ * Email delivery configuration
+ */
+export type EmailDeliveryConfigUpdate = {
+    /**
+     * Email recipients
+     */
+    recipients?: Array<string>;
+    /**
+     * Email subject (supports template variables)
+     */
+    subject?: string;
+    /**
+     * Email body text (supports template variables)
+     */
+    body?: string;
+    /**
+     * CC recipients
+     */
+    cc?: Array<string>;
+    /**
+     * BCC recipients
+     */
+    bcc?: Array<string>;
 };
 
 /**
@@ -665,6 +949,59 @@ export type ExamplePostResponse = {
  * Post status enum
  */
 export type ExamplePostStatus = 'draft' | 'published' | 'archived';
+
+/**
+ * Request body for triggering an export
+ */
+export type ExportRequest = {
+    /**
+     * Report template ID (optional, for template-based exports)
+     */
+    templateId?: string;
+    /**
+     * Output format (required if no templateId)
+     */
+    format?: ReportFormat;
+    /**
+     * Data to export (for client-side data)
+     */
+    data?: Array<unknown>;
+    /**
+     * Column definitions (required if no templateId)
+     */
+    columns?: Array<ReportColumnConfig>;
+    /**
+     * Format-specific options
+     */
+    options?: ReportOptions;
+    /**
+     * Filters to apply to data source
+     */
+    filters?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Sort configuration
+     */
+    sort?: Array<{
+        field: string;
+        direction: 'asc' | 'desc';
+    }>;
+    /**
+     * Additional parameters for template
+     */
+    parameters?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Export only selected rows (by ID)
+     */
+    selectedIds?: Array<string>;
+    /**
+     * Use async processing (returns job ID)
+     */
+    async?: boolean;
+};
 
 /**
  * File resource model
@@ -1127,7 +1464,7 @@ export type NotificationCategory = 'transactional' | 'marketing' | 'security' | 
 /**
  * Notification channel enum
  */
-export type NotificationChannel = 'email' | 'sms' | 'whatsapp' | 'telegram' | 'push';
+export type NotificationChannel = 'email' | 'sms' | 'whatsapp' | 'telegram' | 'push' | 'none';
 
 /**
  * Notification collection response
@@ -1394,6 +1731,412 @@ export type PermissionInput = {
 };
 
 /**
+ * Column configuration for reports
+ */
+export type ReportColumnConfig = {
+    /**
+     * Column identifier
+     */
+    id: string;
+    /**
+     * Display header text
+     */
+    header: string;
+    /**
+     * Property key to access data (e.g., "user.name")
+     */
+    accessorKey?: string;
+    /**
+     * Custom accessor function (JavaScript expression)
+     */
+    accessorFn?: string;
+    /**
+     * Column width in pixels
+     */
+    width?: number;
+    /**
+     * Text alignment
+     */
+    align?: ColumnAlignment;
+    /**
+     * Data format type
+     */
+    format?: ColumnFormat;
+    /**
+     * Custom format pattern (e.g., "yyyy-MM-dd" for dates)
+     */
+    formatPattern?: string;
+    /**
+     * Whether column is hidden by default
+     */
+    hidden?: boolean;
+};
+
+/**
+ * Report output format
+ */
+export type ReportFormat = 'csv' | 'excel' | 'pdf' | 'thermal' | 'dotmatrix';
+
+/**
+ * Report Job resource model
+ *
+ * Tracks individual report generation jobs with:
+ * - Progress tracking
+ * - Result/error information
+ * - Queue integration (pg-boss)
+ * - Both manual and scheduled jobs
+ */
+export type ReportJob = {
+    /**
+     * Unique job identifier (format: rjob_{randomString})
+     */
+    id: string;
+    /**
+     * Organization ID (tenant scope)
+     */
+    orgId: string;
+    /**
+     * Associated report template ID
+     */
+    templateId?: string;
+    /**
+     * Associated scheduled report ID (null for manual jobs)
+     */
+    scheduledReportId?: string;
+    /**
+     * Job type
+     */
+    type: ReportJobType;
+    /**
+     * Current job status
+     */
+    status: ReportJobStatus;
+    /**
+     * Output format
+     */
+    format: ReportFormat;
+    /**
+     * Progress percentage (0-100)
+     */
+    progress?: number;
+    /**
+     * Total rows to process
+     */
+    totalRows?: number;
+    /**
+     * Rows processed so far
+     */
+    processedRows?: number;
+    /**
+     * Runtime parameters used for this job
+     */
+    parameters?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Job result (when completed)
+     */
+    result?: ReportJobResult;
+    /**
+     * Error information (when failed)
+     */
+    error?: ReportJobError;
+    /**
+     * pg-boss queue job ID
+     */
+    queueJobId?: string;
+    /**
+     * User ID who created/triggered the job
+     */
+    createdBy: string;
+    /**
+     * Timestamp when the job was created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when the job started processing
+     */
+    startedAt?: string;
+    /**
+     * Timestamp when the job completed (success or failure)
+     */
+    completedAt?: string;
+    /**
+     * Estimated completion time
+     */
+    estimatedCompletion?: string;
+};
+
+/**
+ * Job error data (when failed)
+ */
+export type ReportJobError = {
+    /**
+     * Error code
+     */
+    code: string;
+    /**
+     * Error message
+     */
+    message: string;
+    /**
+     * Stack trace (only in development)
+     */
+    stack?: string;
+    /**
+     * Whether the error is retryable
+     */
+    retryable: boolean;
+};
+
+/**
+ * Report job collection response (page-based)
+ */
+export type ReportJobListResponse = {
+    data: Array<ReportJob>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Single report job response
+ */
+export type ReportJobResponse = {
+    data: ReportJob;
+    meta: ResponseMeta;
+};
+
+/**
+ * Job result data (when completed successfully)
+ */
+export type ReportJobResult = {
+    /**
+     * Path to generated file (server-side)
+     */
+    filePath?: string;
+    /**
+     * Generated file size in bytes
+     */
+    fileSize?: number;
+    /**
+     * Number of rows in the report
+     */
+    rowCount?: number;
+    /**
+     * Temporary download URL (expires)
+     */
+    downloadUrl?: string;
+    /**
+     * Download URL expiration time
+     */
+    downloadExpiresAt?: string;
+    /**
+     * MIME type of the generated file
+     */
+    mimeType?: string;
+    /**
+     * Delivery status (for scheduled reports)
+     */
+    deliveryStatus?: 'pending' | 'sent' | 'failed';
+    /**
+     * Delivery error message (if failed)
+     */
+    deliveryError?: string;
+};
+
+/**
+ * Report job status
+ */
+export type ReportJobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+
+/**
+ * Report job type
+ */
+export type ReportJobType = 'manual' | 'scheduled';
+
+/**
+ * Report format-specific options
+ */
+export type ReportOptions = {
+    /**
+     * CSV delimiter character
+     */
+    delimiter?: string;
+    /**
+     * Include header row in CSV
+     */
+    includeHeaders?: boolean;
+    /**
+     * Excel sheet name
+     */
+    sheetName?: string;
+    /**
+     * Enable auto-filter in Excel
+     */
+    autoFilter?: boolean;
+    /**
+     * Freeze header row in Excel
+     */
+    freezeHeader?: boolean;
+    /**
+     * Page orientation for PDF
+     */
+    orientation?: ReportOrientation;
+    /**
+     * Page size for PDF
+     */
+    pageSize?: ReportPageSize;
+    /**
+     * Top margin in mm
+     */
+    marginTop?: number;
+    /**
+     * Right margin in mm
+     */
+    marginRight?: number;
+    /**
+     * Bottom margin in mm
+     */
+    marginBottom?: number;
+    /**
+     * Left margin in mm
+     */
+    marginLeft?: number;
+    /**
+     * Report title (displayed at top)
+     */
+    title?: string;
+    /**
+     * Report subtitle
+     */
+    subtitle?: string;
+    /**
+     * Watermark text
+     */
+    watermark?: string;
+    /**
+     * Include page numbers
+     */
+    includePageNumbers?: boolean;
+    /**
+     * Include generation timestamp
+     */
+    includeTimestamp?: boolean;
+    /**
+     * Printer paper width (58mm or 80mm)
+     */
+    printerWidth?: number;
+    /**
+     * Character encoding
+     */
+    encoding?: string;
+    /**
+     * Cut paper after printing
+     */
+    autoCut?: boolean;
+};
+
+/**
+ * Page orientation for PDF reports
+ */
+export type ReportOrientation = 'portrait' | 'landscape';
+
+/**
+ * Page size for PDF reports
+ */
+export type ReportPageSize = 'a4' | 'letter' | 'legal' | 'a3';
+
+/**
+ * Report Template resource model
+ *
+ * Defines reusable report configurations with:
+ * - Multiple output formats (CSV, Excel, PDF, Thermal, Dot-Matrix)
+ * - Eta template engine for custom layouts
+ * - Column definitions with formatting
+ * - Data source configuration
+ * - Multi-tenant scoping
+ */
+export type ReportTemplate = {
+    /**
+     * Unique template identifier (format: tpl_{randomString})
+     */
+    id: string;
+    /**
+     * Organization ID (tenant scope)
+     */
+    orgId: string;
+    /**
+     * Template name
+     */
+    name: string;
+    /**
+     * Template description
+     */
+    description?: string;
+    /**
+     * Output format
+     */
+    format: ReportFormat;
+    /**
+     * Template engine (currently only eta supported)
+     */
+    templateEngine: string;
+    /**
+     * Template content (Eta template string)
+     */
+    templateContent: string;
+    /**
+     * Format-specific options
+     */
+    options?: ReportOptions;
+    /**
+     * Data source configuration
+     */
+    dataSource?: DataSourceConfig;
+    /**
+     * Column definitions
+     */
+    columns: Array<ReportColumnConfig>;
+    /**
+     * Whether template is visible to all org members
+     */
+    isPublic: boolean;
+    /**
+     * User ID who created the template
+     */
+    createdBy: string;
+    /**
+     * Timestamp when the template was created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when the template was last updated
+     */
+    updatedAt: string;
+    /**
+     * Timestamp when the template was soft deleted (null if not deleted)
+     */
+    deletedAt?: string;
+};
+
+/**
+ * Report template collection response (page-based)
+ */
+export type ReportTemplateListResponse = {
+    data: Array<ReportTemplate>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Single report template response
+ */
+export type ReportTemplateResponse = {
+    data: ReportTemplate;
+    meta: ResponseMeta;
+};
+
+/**
  * Response metadata included in all API responses
  */
 export type ResponseMeta = {
@@ -1494,6 +2237,142 @@ export type RoleListResponse = {
  */
 export type RoleResponse = {
     data: Role;
+    meta: ResponseMeta;
+};
+
+/**
+ * Schedule frequency
+ */
+export type ScheduleFrequency = 'once' | 'daily' | 'weekly' | 'monthly' | 'custom';
+
+/**
+ * Scheduled Report resource model
+ *
+ * Defines automated report generation with:
+ * - Flexible scheduling (daily, weekly, monthly, custom cron)
+ * - Multiple delivery methods (email, webhook, storage)
+ * - Template-based generation
+ * - Multi-tenant scoping
+ */
+export type ScheduledReport = {
+    /**
+     * Unique schedule identifier (format: sched_{randomString})
+     */
+    id: string;
+    /**
+     * Organization ID (tenant scope)
+     */
+    orgId: string;
+    /**
+     * Associated report template ID
+     */
+    templateId: string;
+    /**
+     * Schedule name
+     */
+    name: string;
+    /**
+     * Schedule description
+     */
+    description?: string;
+    /**
+     * Schedule frequency
+     */
+    frequency: ScheduleFrequency;
+    /**
+     * Cron expression (required when frequency is custom)
+     */
+    cronExpression?: string;
+    /**
+     * Day of week (for weekly frequency)
+     */
+    dayOfWeek?: DayOfWeek;
+    /**
+     * Day of month (for monthly frequency, 1-28)
+     */
+    dayOfMonth?: number;
+    /**
+     * Hour to run (0-23)
+     */
+    hour?: number;
+    /**
+     * Minute to run (0-59)
+     */
+    minute?: number;
+    /**
+     * Timezone for scheduling
+     */
+    timezone: string;
+    /**
+     * Start date for the schedule
+     */
+    startDate: string;
+    /**
+     * End date for the schedule (null = runs indefinitely)
+     */
+    endDate?: string;
+    /**
+     * Delivery method
+     */
+    deliveryMethod: DeliveryMethod;
+    /**
+     * Delivery configuration
+     */
+    deliveryConfig?: DeliveryConfig;
+    /**
+     * Runtime parameters passed to template
+     */
+    parameters?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Whether the schedule is active
+     */
+    isActive: boolean;
+    /**
+     * Timestamp of last successful run
+     */
+    lastRunAt?: string;
+    /**
+     * Timestamp of next scheduled run
+     */
+    nextRunAt?: string;
+    /**
+     * Number of consecutive failures
+     */
+    failureCount: number;
+    /**
+     * User ID who created the schedule
+     */
+    createdBy: string;
+    /**
+     * Timestamp when the schedule was created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when the schedule was last updated
+     */
+    updatedAt: string;
+    /**
+     * Timestamp when the schedule was soft deleted
+     */
+    deletedAt?: string;
+};
+
+/**
+ * Scheduled report collection response (page-based)
+ */
+export type ScheduledReportListResponse = {
+    data: Array<ScheduledReport>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Single scheduled report response
+ */
+export type ScheduledReportResponse = {
+    data: ScheduledReport;
     meta: ResponseMeta;
 };
 
@@ -1600,6 +2479,73 @@ export type SoftDeleteResponse = {
      * Response metadata
      */
     meta: ResponseMeta;
+};
+
+/**
+ * Storage delivery configuration
+ */
+export type StorageDeliveryConfig = {
+    /**
+     * Storage path template (supports variables like {{date}}, {{name}})
+     */
+    pathTemplate: string;
+    /**
+     * Storage provider (local, s3, etc.)
+     */
+    provider?: string;
+    /**
+     * Storage bucket (for cloud providers)
+     */
+    bucket?: string;
+};
+
+/**
+ * Storage delivery configuration
+ */
+export type StorageDeliveryConfigUpdate = {
+    /**
+     * Storage path template (supports variables like {{date}}, {{name}})
+     */
+    pathTemplate?: string;
+    /**
+     * Storage provider (local, s3, etc.)
+     */
+    provider?: string;
+    /**
+     * Storage bucket (for cloud providers)
+     */
+    bucket?: string;
+};
+
+/**
+ * Request body for streaming export
+ */
+export type StreamExportRequest = {
+    /**
+     * Report template ID
+     */
+    templateId?: string;
+    /**
+     * Output format (only csv and excel supported)
+     */
+    format: 'csv' | 'excel';
+    /**
+     * Filters to apply
+     */
+    filters?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Sort configuration
+     */
+    sort?: Array<{
+        field: string;
+        direction: 'asc' | 'desc';
+    }>;
+    /**
+     * Batch size for streaming
+     */
+    batchSize?: number;
 };
 
 /**
@@ -1767,6 +2713,44 @@ export type UpdatePreferencesRequest = {
 };
 
 /**
+ * Request body for updating a report template
+ */
+export type UpdateReportTemplateRequest = {
+    /**
+     * Template name
+     */
+    name?: string;
+    /**
+     * Template description
+     */
+    description?: string;
+    /**
+     * Output format
+     */
+    format?: ReportFormat;
+    /**
+     * Template content
+     */
+    templateContent?: string;
+    /**
+     * Format-specific options
+     */
+    options?: ReportOptions;
+    /**
+     * Data source configuration
+     */
+    dataSource?: DataSourceConfigUpdate;
+    /**
+     * Column definitions
+     */
+    columns?: Array<ReportColumnConfig>;
+    /**
+     * Whether template is visible to all org members
+     */
+    isPublic?: boolean;
+};
+
+/**
  * Request to update a role
  */
 export type UpdateRoleRequest = {
@@ -1782,6 +2766,78 @@ export type UpdateRoleRequest = {
      * Permissions to grant (replaces existing permissions)
      */
     permissions?: Array<PermissionInput>;
+};
+
+/**
+ * Request body for updating a scheduled report
+ */
+export type UpdateScheduledReportRequest = {
+    /**
+     * Associated report template ID
+     */
+    templateId?: string;
+    /**
+     * Schedule name
+     */
+    name?: string;
+    /**
+     * Schedule description
+     */
+    description?: string;
+    /**
+     * Schedule frequency
+     */
+    frequency?: ScheduleFrequency;
+    /**
+     * Cron expression
+     */
+    cronExpression?: string;
+    /**
+     * Day of week
+     */
+    dayOfWeek?: DayOfWeek;
+    /**
+     * Day of month
+     */
+    dayOfMonth?: number;
+    /**
+     * Hour to run
+     */
+    hour?: number;
+    /**
+     * Minute to run
+     */
+    minute?: number;
+    /**
+     * Timezone
+     */
+    timezone?: string;
+    /**
+     * Start date
+     */
+    startDate?: string;
+    /**
+     * End date
+     */
+    endDate?: string;
+    /**
+     * Delivery method
+     */
+    deliveryMethod?: DeliveryMethod;
+    /**
+     * Delivery configuration
+     */
+    deliveryConfig?: DeliveryConfigUpdate;
+    /**
+     * Runtime parameters
+     */
+    parameters?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Whether the schedule is active
+     */
+    isActive?: boolean;
 };
 
 /**
@@ -2119,6 +3175,46 @@ export type WebhookDelivery = {
      * When the delivery completed (success or exhausted)
      */
     completedAt?: string;
+};
+
+/**
+ * Webhook delivery configuration
+ */
+export type WebhookDeliveryConfig = {
+    /**
+     * Webhook URL to POST the report
+     */
+    url: string;
+    /**
+     * Custom headers to include
+     */
+    headers?: {
+        [key: string]: string;
+    };
+    /**
+     * Include report as attachment or inline base64
+     */
+    attachmentMode?: 'attachment' | 'base64';
+};
+
+/**
+ * Webhook delivery configuration
+ */
+export type WebhookDeliveryConfigUpdate = {
+    /**
+     * Webhook URL to POST the report
+     */
+    url?: string;
+    /**
+     * Custom headers to include
+     */
+    headers?: {
+        [key: string]: string;
+    };
+    /**
+     * Include report as attachment or inline base64
+     */
+    attachmentMode?: 'attachment' | 'base64';
 };
 
 /**
@@ -3928,6 +5024,826 @@ export type JobsCancelResponses = {
 };
 
 export type JobsCancelResponse = JobsCancelResponses[keyof JobsCancelResponses];
+
+export type ReportExportsExportData = {
+    /**
+     * Export request
+     */
+    body: ExportRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/export';
+};
+
+export type ReportExportsExportResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AsyncExportResponse | ErrorResponse;
+};
+
+export type ReportExportsExportResponse = ReportExportsExportResponses[keyof ReportExportsExportResponses];
+
+export type ReportExportsPreviewExportData = {
+    /**
+     * Export request with limit
+     */
+    body: {
+        /**
+         * Report template ID (optional, for template-based exports)
+         */
+        templateId?: string;
+        /**
+         * Output format (required if no templateId)
+         */
+        format?: ReportFormat;
+        /**
+         * Data to export (for client-side data)
+         */
+        data?: Array<unknown>;
+        /**
+         * Column definitions (required if no templateId)
+         */
+        columns?: Array<ReportColumnConfig>;
+        /**
+         * Format-specific options
+         */
+        options?: ReportOptions;
+        /**
+         * Filters to apply to data source
+         */
+        filters?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Sort configuration
+         */
+        sort?: Array<{
+            field: string;
+            direction: 'asc' | 'desc';
+        }>;
+        /**
+         * Additional parameters for template
+         */
+        parameters?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Export only selected rows (by ID)
+         */
+        selectedIds?: Array<string>;
+        /**
+         * Use async processing (returns job ID)
+         */
+        async?: boolean;
+        /**
+         * Maximum rows to preview (default: 10, max: 100)
+         */
+        limit?: number;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/export/preview';
+};
+
+export type ReportExportsPreviewExportResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: {
+        data: {
+            /**
+             * Preview rows
+             */
+            rows: Array<unknown>;
+            /**
+             * Total row count (if known)
+             */
+            totalCount?: number;
+            /**
+             * Column headers
+             */
+            columns: Array<string>;
+        };
+        meta: ResponseMeta;
+    } | ErrorResponse;
+};
+
+export type ReportExportsPreviewExportResponse = ReportExportsPreviewExportResponses[keyof ReportExportsPreviewExportResponses];
+
+export type ReportExportsStreamExportData = {
+    /**
+     * Stream export request
+     */
+    body: StreamExportRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/export/stream';
+};
+
+export type ReportExportsStreamExportResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+};
+
+export type ReportExportsStreamExportResponse = ReportExportsStreamExportResponses[keyof ReportExportsStreamExportResponses];
+
+export type ReportJobsListData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page (max: 100)
+         */
+        pageSize?: number;
+        /**
+         * Sort order (default: -createdAt)
+         */
+        orderBy?: string;
+        /**
+         * Filter by template ID
+         */
+        templateId?: string;
+        /**
+         * Filter by schedule ID
+         */
+        scheduledReportId?: string;
+        /**
+         * Filter by job type
+         */
+        type?: ReportJobType;
+        /**
+         * Filter by status
+         */
+        status?: ReportJobStatus;
+        /**
+         * Filter by format
+         */
+        format?: ReportFormat;
+        /**
+         * Filter jobs created after this timestamp
+         */
+        createdAfter?: string;
+        /**
+         * Filter jobs created before this timestamp
+         */
+        createdBefore?: string;
+    };
+    url: '/v1/orgs/{orgId}/reports/jobs';
+};
+
+export type ReportJobsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportJobListResponse | ErrorResponse;
+};
+
+export type ReportJobsListResponse = ReportJobsListResponses[keyof ReportJobsListResponses];
+
+export type ReportJobsCancelData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Job ID
+         */
+        jobId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}';
+};
+
+export type ReportJobsCancelResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type ReportJobsCancelResponse = ReportJobsCancelResponses[keyof ReportJobsCancelResponses];
+
+export type ReportJobsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Job ID
+         */
+        jobId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}';
+};
+
+export type ReportJobsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportJobResponse | ErrorResponse;
+};
+
+export type ReportJobsGetResponse = ReportJobsGetResponses[keyof ReportJobsGetResponses];
+
+export type ReportJobsDownloadData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Job ID
+         */
+        jobId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}/download';
+};
+
+export type ReportJobsDownloadResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+};
+
+export type ReportJobsDownloadResponse = ReportJobsDownloadResponses[keyof ReportJobsDownloadResponses];
+
+export type ReportJobsRetryData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Job ID
+         */
+        jobId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}/retry';
+};
+
+export type ReportJobsRetryResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportJobResponse | ErrorResponse;
+};
+
+export type ReportJobsRetryResponse = ReportJobsRetryResponses[keyof ReportJobsRetryResponses];
+
+export type ScheduledReportsListData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page (max: 100)
+         */
+        pageSize?: number;
+        /**
+         * Sort order
+         */
+        orderBy?: string;
+        /**
+         * Filter by template ID
+         */
+        templateId?: string;
+        /**
+         * Filter by frequency
+         */
+        frequency?: ScheduleFrequency;
+        /**
+         * Filter by delivery method
+         */
+        deliveryMethod?: DeliveryMethod;
+        /**
+         * Filter by active status
+         */
+        isActive?: boolean;
+        /**
+         * Full-text search
+         */
+        search?: string;
+    };
+    url: '/v1/orgs/{orgId}/reports/schedules';
+};
+
+export type ScheduledReportsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledReportListResponse | ErrorResponse;
+};
+
+export type ScheduledReportsListResponse = ScheduledReportsListResponses[keyof ScheduledReportsListResponses];
+
+export type ScheduledReportsCreateData = {
+    /**
+     * Schedule data
+     */
+    body: CreateScheduledReportRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/schedules';
+};
+
+export type ScheduledReportsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: ScheduledReportResponse;
+};
+
+export type ScheduledReportsCreateResponse = ScheduledReportsCreateResponses[keyof ScheduledReportsCreateResponses];
+
+export type ScheduledReportsDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}';
+};
+
+export type ScheduledReportsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type ScheduledReportsDeleteResponse = ScheduledReportsDeleteResponses[keyof ScheduledReportsDeleteResponses];
+
+export type ScheduledReportsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}';
+};
+
+export type ScheduledReportsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledReportResponse | ErrorResponse;
+};
+
+export type ScheduledReportsGetResponse = ScheduledReportsGetResponses[keyof ScheduledReportsGetResponses];
+
+export type ScheduledReportsUpdateData = {
+    /**
+     * Schedule update data
+     */
+    body: UpdateScheduledReportRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}';
+};
+
+export type ScheduledReportsUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledReportResponse | ErrorResponse;
+};
+
+export type ScheduledReportsUpdateResponse = ScheduledReportsUpdateResponses[keyof ScheduledReportsUpdateResponses];
+
+export type ScheduledReportsGetHistoryData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: {
+        /**
+         * Page number
+         */
+        page?: number;
+        /**
+         * Items per page
+         */
+        pageSize?: number;
+        /**
+         * Filter by status
+         */
+        status?: ReportJobStatus;
+    };
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/history';
+};
+
+export type ScheduledReportsGetHistoryResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportJobListResponse | ErrorResponse;
+};
+
+export type ScheduledReportsGetHistoryResponse = ScheduledReportsGetHistoryResponses[keyof ScheduledReportsGetHistoryResponses];
+
+export type ScheduledReportsPauseData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/pause';
+};
+
+export type ScheduledReportsPauseResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledReportResponse | ErrorResponse;
+};
+
+export type ScheduledReportsPauseResponse = ScheduledReportsPauseResponses[keyof ScheduledReportsPauseResponses];
+
+export type ScheduledReportsResumeData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/resume';
+};
+
+export type ScheduledReportsResumeResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledReportResponse | ErrorResponse;
+};
+
+export type ScheduledReportsResumeResponse = ScheduledReportsResumeResponses[keyof ScheduledReportsResumeResponses];
+
+export type ScheduledReportsRunNowData = {
+    /**
+     * Optional parameter overrides
+     */
+    body?: {
+        parameters?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/run';
+};
+
+export type ScheduledReportsRunNowResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportJobResponse | ErrorResponse;
+};
+
+export type ScheduledReportsRunNowResponse = ScheduledReportsRunNowResponses[keyof ScheduledReportsRunNowResponses];
+
+export type ReportTemplatesListData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page (max: 100)
+         */
+        pageSize?: number;
+        /**
+         * Sort order (e.g., "-createdAt,name")
+         */
+        orderBy?: string;
+        /**
+         * Filter by format
+         */
+        format?: ReportFormat;
+        /**
+         * Filter by public templates only
+         */
+        isPublic?: boolean;
+        /**
+         * Full-text search in name and description
+         */
+        search?: string;
+        /**
+         * Filter templates created by specific user
+         */
+        createdBy?: string;
+    };
+    url: '/v1/orgs/{orgId}/reports/templates';
+};
+
+export type ReportTemplatesListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportTemplateListResponse | ErrorResponse;
+};
+
+export type ReportTemplatesListResponse = ReportTemplatesListResponses[keyof ReportTemplatesListResponses];
+
+export type ReportTemplatesCreateData = {
+    /**
+     * Template data
+     */
+    body: CreateReportTemplateRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/templates';
+};
+
+export type ReportTemplatesCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: ReportTemplateResponse;
+};
+
+export type ReportTemplatesCreateResponse = ReportTemplatesCreateResponses[keyof ReportTemplatesCreateResponses];
+
+export type ReportTemplatesDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Template ID
+         */
+        templateId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}';
+};
+
+export type ReportTemplatesDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type ReportTemplatesDeleteResponse = ReportTemplatesDeleteResponses[keyof ReportTemplatesDeleteResponses];
+
+export type ReportTemplatesGetData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Template ID
+         */
+        templateId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}';
+};
+
+export type ReportTemplatesGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportTemplateResponse | ErrorResponse;
+};
+
+export type ReportTemplatesGetResponse = ReportTemplatesGetResponses[keyof ReportTemplatesGetResponses];
+
+export type ReportTemplatesUpdateData = {
+    /**
+     * Template update data
+     */
+    body: UpdateReportTemplateRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Template ID
+         */
+        templateId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}';
+};
+
+export type ReportTemplatesUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ReportTemplateResponse | ErrorResponse;
+};
+
+export type ReportTemplatesUpdateResponse = ReportTemplatesUpdateResponses[keyof ReportTemplatesUpdateResponses];
+
+export type ReportTemplatesCloneData = {
+    /**
+     * New template name
+     */
+    body: {
+        name: string;
+        description?: string;
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Template ID to clone
+         */
+        templateId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}/clone';
+};
+
+export type ReportTemplatesCloneResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: ReportTemplateResponse;
+};
+
+export type ReportTemplatesCloneResponse = ReportTemplatesCloneResponses[keyof ReportTemplatesCloneResponses];
+
+export type ReportTemplatesTestData = {
+    /**
+     * Test data and parameters
+     */
+    body: {
+        /**
+         * Sample data to use for testing
+         */
+        sampleData?: Array<unknown>;
+        /**
+         * Number of sample rows to generate if no sampleData provided
+         */
+        sampleRows?: number;
+        /**
+         * Parameters to pass to template
+         */
+        parameters?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Template ID
+         */
+        templateId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}/test';
+};
+
+export type ReportTemplatesTestResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AsyncExportResponse | ErrorResponse;
+};
+
+export type ReportTemplatesTestResponse = ReportTemplatesTestResponses[keyof ReportTemplatesTestResponses];
 
 export type TenantRolesListData = {
     body?: never;

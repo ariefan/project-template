@@ -112,6 +112,30 @@
           }
         }
       }
+    },
+    {
+      // Relaxed rules for test files
+      // - useAwait: Test helper functions often return sync values wrapped in Promise.resolve()
+      //   for interface compatibility. Requiring await adds no value in tests.
+      // - useTopLevelRegex: Inline regex in test assertions (e.g., toMatch(/pattern/)) is
+      //   idiomatic and the "performance" concern is irrelevant for test code.
+      "includes": [
+        "**/__tests__/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "useAwait": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
+          }
+        }
+      }
     }
   ],
   "css": {

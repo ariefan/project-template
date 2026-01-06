@@ -2,13 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { examplePostsListOptions } from "@workspace/contracts/query";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
 import { Archive, FileCheck, FilePlus, FileText } from "lucide-react";
+import type { Stat } from "@/components/layouts/stats-grid";
+import { StatsGrid } from "@/components/layouts/stats-grid";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 
@@ -73,54 +69,28 @@ export function StatsCards() {
       ? archivedData.pagination.totalCount
       : 0;
 
-  const stats = [
+  const stats: Stat[] = [
     {
-      title: "Total Posts",
-      value: totalPosts,
+      label: "Total Posts",
+      value: totalPosts.toLocaleString(),
       icon: FileText,
-      description: "All posts",
     },
     {
-      title: "Drafts",
-      value: draftCount,
+      label: "Drafts",
+      value: draftCount.toLocaleString(),
       icon: FilePlus,
-      description: "Unpublished",
     },
     {
-      title: "Published",
-      value: publishedCount,
+      label: "Published",
+      value: publishedCount.toLocaleString(),
       icon: FileCheck,
-      description: "Live posts",
     },
     {
-      title: "Archived",
-      value: archivedCount,
+      label: "Archived",
+      value: archivedCount.toLocaleString(),
       icon: Archive,
-      description: "Archived posts",
     },
   ];
 
-  return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      {stats.map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="font-medium text-sm">
-                {stat.title}
-              </CardTitle>
-              <Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="font-bold text-2xl">{stat.value}</div>
-              <p className="text-muted-foreground text-xs">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
-  );
+  return <StatsGrid stats={stats} />;
 }

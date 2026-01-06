@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   Item,
@@ -19,7 +20,9 @@ import { useDataView } from "./context";
 import type { FieldDef, RowAction } from "./types";
 import {
   deriveFieldsFromColumns,
+  filterVisibleActions,
   getFieldValue,
+  isActionDisabled,
   renderFieldContent,
 } from "./utils";
 
@@ -173,6 +176,54 @@ function ListItem<T>({
           .join(" · ")
       : null;
 
+  const renderActionCell = () => {
+    if (!rowActions || rowActions.length === 0) {
+      return null;
+    }
+
+    const visibleActions = filterVisibleActions(rowActions, row);
+    const inlineActions = visibleActions.filter((action) => action.inline);
+    const menuActions = visibleActions.filter((action) => !action.inline);
+
+    return (
+      <div className="flex items-center gap-1">
+        {inlineActions.map((action) => {
+          const disabled = isActionDisabled(action, row);
+          return (
+            <Button
+              className="size-8"
+              disabled={disabled}
+              key={action.id}
+              onClick={() => action.onAction(row)}
+              size="icon"
+              title={action.label}
+              variant="ghost"
+            >
+              {action.icon && (
+                <action.icon
+                  className={cn(
+                    "size-4",
+                    action.variant === "destructive" && "text-destructive"
+                  )}
+                />
+              )}
+              <span className="sr-only">{action.label}</span>
+            </Button>
+          );
+        })}
+        {menuActions.length > 0 && (
+          <DataViewActionMenu
+            actions={menuActions}
+            row={row}
+            triggerVariant="button"
+          />
+        )}
+      </div>
+    );
+  };
+
+  const hasActions = rowActions && rowActions.length > 0;
+
   return (
     <Item
       className={cn(
@@ -205,15 +256,7 @@ function ListItem<T>({
         )}
       </ItemContent>
 
-      {rowActions && rowActions.length > 0 && (
-        <ItemActions>
-          <DataViewActionMenu
-            actions={rowActions}
-            row={row}
-            triggerVariant="button"
-          />
-        </ItemActions>
-      )}
+      {hasActions && <ItemActions>{renderActionCell()}</ItemActions>}
     </Item>
   );
 }

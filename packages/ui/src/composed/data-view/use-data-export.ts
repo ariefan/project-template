@@ -86,9 +86,58 @@ function convertToCSV<T>(
 }
 
 /**
+ * Convert data to TSV format (tab-separated, for clipboard/Excel paste)
+ */
+function convertToTSV<T>(
+  data: T[],
+  columns: ColumnDef<T>[],
+  options: ExportOptions = {}
+): string {
+  const { includeHidden = false } = options;
+
+  // Filter visible columns
+  const visibleColumns = columns.filter((col) => includeHidden || !col.hidden);
+
+  // Create header row
+  const headers = visibleColumns.map((col) => col.header);
+  const tsvRows = [headers.join("\t")];
+
+  // Create data rows
+  for (const row of data) {
+    const values = visibleColumns.map((col) => {
+      const value = getColumnValue(row, col);
+      // Replace tabs and newlines with spaces for TSV
+      return value.replace(/[\t\n\r]/g, " ");
+    });
+    tsvRows.push(values.join("\t"));
+  }
+
+  return tsvRows.join("\n");
+}
+
+/**
  * Download text content as a file
  */
 function downloadFile(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Download binary content as a file
+ */
+function downloadBinaryFile(
+  content: ArrayBuffer,
+  filename: string,
+  mimeType: string
+) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -120,6 +169,123 @@ async function copyToClipboard(text: string): Promise<void> {
       document.body.removeChild(textArea);
     }
   }
+}
+
+/**
+ * Export data to Excel format using xlsx library
+ */
+async function exportToExcel<T>(
+  data: T[],
+  columns: ColumnDef<T>[],
+  filename: string,
+  options: ExportOptions = {}
+): Promise<void> {
+  const { includeHidden = false } = options;
+
+  // Dynamic import xlsx
+  const XLSX = await import("xlsx");
+
+  // Filter visible columns
+  const visibleColumns = columns.filter((col) => includeHidden || !col.hidden);
+
+  // Create worksheet data
+  const worksheetData: string[][] = [];
+
+  // Add headers
+  worksheetData.push(visibleColumns.map((col) => col.header));
+
+  // Add data rows
+  for (const row of data) {
+    const rowData = visibleColumns.map((col) => getColumnValue(row, col));
+    worksheetData.push(rowData);
+  }
+
+  // Create worksheet and workbook
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+
+  // Auto-size columns
+  const colWidths = visibleColumns.map((col) => {
+    const headerWidth = col.header.length;
+    const maxDataWidth = data.reduce((max, row) => {
+      const value = getColumnValue(row, col);
+      return Math.max(max, value.length);
+    }, 0);
+    return { wch: Math.min(Math.max(headerWidth, maxDataWidth) + 2, 50) };
+  });
+  worksheet["!cols"] = colWidths;
+
+  // Generate Excel file
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array",
+  });
+
+  downloadBinaryFile(
+    excelBuffer,
+    `${filename}.xlsx`,
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+}
+
+/**
+ * Export data to PDF format using jspdf library
+ */
+async function exportToPDF<T>(
+  data: T[],
+  columns: ColumnDef<T>[],
+  filename: string,
+  options: ExportOptions = {}
+): Promise<void> {
+  const { includeHidden = false } = options;
+
+  // Dynamic import jspdf and jspdf-autotable
+  const { jsPDF } = await import("jspdf");
+  const autoTableModule = await import("jspdf-autotable");
+  // jspdf-autotable exports default as the autoTable function
+  const autoTable = autoTableModule.default;
+
+  // Filter visible columns
+  const visibleColumns = columns.filter((col) => includeHidden || !col.hidden);
+
+  // Create PDF document
+  const doc = new jsPDF({
+    orientation: visibleColumns.length > 5 ? "landscape" : "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  // Add title
+  doc.setFontSize(16);
+  doc.text(filename, 14, 15);
+
+  // Prepare table data
+  const headers = visibleColumns.map((col) => col.header);
+  const body = data.map((row) =>
+    visibleColumns.map((col) => getColumnValue(row, col))
+  );
+
+  // Add table using autoTable function (standalone usage)
+  autoTable(doc, {
+    head: [headers],
+    body,
+    startY: 25,
+    theme: "striped",
+    headStyles: {
+      fillColor: [66, 66, 66],
+      textColor: 255,
+      fontStyle: "bold",
+    },
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+    },
+    margin: { top: 25 },
+  });
+
+  // Save PDF
+  doc.save(`${filename}.pdf`);
 }
 
 // ============================================================================
@@ -169,23 +335,24 @@ export function useDataExport<T>({
           }
 
           case "clipboard": {
-            const csv = convertToCSV(exportRows, columns, { includeHidden });
-            await copyToClipboard(csv);
+            // Use TSV for clipboard - pastes nicely into Excel
+            const tsv = convertToTSV(exportRows, columns, { includeHidden });
+            await copyToClipboard(tsv);
             toast.success(`Copied ${exportRows.length} rows to clipboard`);
             break;
           }
 
           case "excel": {
-            toast.error(
-              "Excel export requires the 'xlsx' library. Please install it first."
-            );
+            await exportToExcel(exportRows, columns, filename, {
+              includeHidden,
+            });
+            toast.success(`Exported ${exportRows.length} rows to Excel`);
             break;
           }
 
           case "pdf": {
-            toast.error(
-              "PDF export requires the 'jspdf' library. Please install it first."
-            );
+            await exportToPDF(exportRows, columns, filename, { includeHidden });
+            toast.success(`Exported ${exportRows.length} rows to PDF`);
             break;
           }
 

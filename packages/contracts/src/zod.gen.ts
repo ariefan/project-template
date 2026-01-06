@@ -126,6 +126,28 @@ export const zBatchSummary = z.object({
 });
 
 /**
+ * Column alignment
+ */
+export const zColumnAlignment = z.enum([
+    'left',
+    'center',
+    'right'
+]);
+
+/**
+ * Column data format
+ */
+export const zColumnFormat = z.enum([
+    'text',
+    'number',
+    'currency',
+    'date',
+    'datetime',
+    'boolean',
+    'percentage'
+]);
+
+/**
  * Request to confirm an upload completed successfully
  */
 export const zConfirmUploadRequest = z.object({
@@ -165,6 +187,77 @@ export const zCursorPagination = z.object({
         z.string(),
         z.null()
     ])
+});
+
+/**
+ * Data source configuration for report templates
+ */
+export const zDataSourceConfig = z.object({
+    type: z.enum([
+        'query',
+        'api',
+        'custom'
+    ]),
+    source: z.optional(z.string()),
+    defaultParams: z.optional(z.record(z.string(), z.unknown()))
+});
+
+/**
+ * Data source configuration for report templates
+ */
+export const zDataSourceConfigUpdate = z.object({
+    type: z.optional(z.enum([
+        'query',
+        'api',
+        'custom'
+    ])),
+    source: z.optional(z.string()),
+    defaultParams: z.optional(z.record(z.string(), z.unknown()))
+});
+
+/**
+ * Day of week for weekly schedules
+ */
+export const zDayOfWeek = z.enum([
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday'
+]);
+
+/**
+ * Report delivery method
+ */
+export const zDeliveryMethod = z.enum([
+    'email',
+    'download',
+    'webhook',
+    'storage'
+]);
+
+/**
+ * Email delivery configuration
+ */
+export const zEmailDeliveryConfig = z.object({
+    recipients: z.array(z.string()),
+    subject: z.optional(z.string()),
+    body: z.optional(z.string()),
+    cc: z.optional(z.array(z.string())),
+    bcc: z.optional(z.array(z.string()))
+});
+
+/**
+ * Email delivery configuration
+ */
+export const zEmailDeliveryConfigUpdate = z.object({
+    recipients: z.optional(z.array(z.string())),
+    subject: z.optional(z.string()),
+    body: z.optional(z.string()),
+    cc: z.optional(z.array(z.string())),
+    bcc: z.optional(z.array(z.string()))
 });
 
 /**
@@ -350,7 +443,8 @@ export const zNotificationChannel = z.enum([
     'sms',
     'whatsapp',
     'telegram',
-    'push'
+    'push',
+    'none'
 ]);
 
 /**
@@ -550,6 +644,208 @@ export const zCreateRoleRequest = z.object({
 });
 
 /**
+ * Column configuration for reports
+ */
+export const zReportColumnConfig = z.object({
+    id: z.string(),
+    header: z.string(),
+    accessorKey: z.optional(z.string()),
+    accessorFn: z.optional(z.string()),
+    width: z.optional(z.int()),
+    align: z.optional(zColumnAlignment),
+    format: z.optional(zColumnFormat),
+    formatPattern: z.optional(z.string()),
+    hidden: z.optional(z.boolean())
+});
+
+/**
+ * Report output format
+ */
+export const zReportFormat = z.enum([
+    'csv',
+    'excel',
+    'pdf',
+    'thermal',
+    'dotmatrix'
+]);
+
+/**
+ * Job error data (when failed)
+ */
+export const zReportJobError = z.object({
+    code: z.string(),
+    message: z.string(),
+    stack: z.optional(z.string()),
+    retryable: z.boolean()
+});
+
+/**
+ * Job result data (when completed successfully)
+ */
+export const zReportJobResult = z.object({
+    filePath: z.optional(z.string()),
+    fileSize: z.optional(z.coerce.bigint()),
+    rowCount: z.optional(z.int()),
+    downloadUrl: z.optional(z.string()),
+    downloadExpiresAt: z.optional(z.iso.datetime()),
+    mimeType: z.optional(z.string()),
+    deliveryStatus: z.optional(z.enum([
+        'pending',
+        'sent',
+        'failed'
+    ])),
+    deliveryError: z.optional(z.string())
+});
+
+/**
+ * Report job status
+ */
+export const zReportJobStatus = z.enum([
+    'pending',
+    'processing',
+    'completed',
+    'failed',
+    'cancelled'
+]);
+
+/**
+ * Report job type
+ */
+export const zReportJobType = z.enum(['manual', 'scheduled']);
+
+/**
+ * Report Job resource model
+ *
+ * Tracks individual report generation jobs with:
+ * - Progress tracking
+ * - Result/error information
+ * - Queue integration (pg-boss)
+ * - Both manual and scheduled jobs
+ */
+export const zReportJob = z.object({
+    id: z.string(),
+    orgId: z.string(),
+    templateId: z.optional(z.string()),
+    scheduledReportId: z.optional(z.string()),
+    type: zReportJobType,
+    status: zReportJobStatus,
+    format: zReportFormat,
+    progress: z.optional(z.int()),
+    totalRows: z.optional(z.int()),
+    processedRows: z.optional(z.int()),
+    parameters: z.optional(z.record(z.string(), z.unknown())),
+    result: z.optional(zReportJobResult),
+    error: z.optional(zReportJobError),
+    queueJobId: z.optional(z.string()),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    startedAt: z.optional(z.iso.datetime()),
+    completedAt: z.optional(z.iso.datetime()),
+    estimatedCompletion: z.optional(z.iso.datetime())
+});
+
+/**
+ * Page orientation for PDF reports
+ */
+export const zReportOrientation = z.enum(['portrait', 'landscape']);
+
+/**
+ * Page size for PDF reports
+ */
+export const zReportPageSize = z.enum([
+    'a4',
+    'letter',
+    'legal',
+    'a3'
+]);
+
+/**
+ * Report format-specific options
+ */
+export const zReportOptions = z.object({
+    delimiter: z.optional(z.string()),
+    includeHeaders: z.optional(z.boolean()),
+    sheetName: z.optional(z.string()),
+    autoFilter: z.optional(z.boolean()),
+    freezeHeader: z.optional(z.boolean()),
+    orientation: z.optional(zReportOrientation),
+    pageSize: z.optional(zReportPageSize),
+    marginTop: z.optional(z.int()),
+    marginRight: z.optional(z.int()),
+    marginBottom: z.optional(z.int()),
+    marginLeft: z.optional(z.int()),
+    title: z.optional(z.string()),
+    subtitle: z.optional(z.string()),
+    watermark: z.optional(z.string()),
+    includePageNumbers: z.optional(z.boolean()),
+    includeTimestamp: z.optional(z.boolean()),
+    printerWidth: z.optional(z.int()),
+    encoding: z.optional(z.string()),
+    autoCut: z.optional(z.boolean())
+});
+
+/**
+ * Request body for creating a new report template
+ */
+export const zCreateReportTemplateRequest = z.object({
+    name: z.string(),
+    description: z.optional(z.string()),
+    format: zReportFormat,
+    templateContent: z.string(),
+    options: z.optional(zReportOptions),
+    dataSource: z.optional(zDataSourceConfig),
+    columns: z.array(zReportColumnConfig),
+    isPublic: z.optional(z.boolean())
+});
+
+/**
+ * Request body for triggering an export
+ */
+export const zExportRequest = z.object({
+    templateId: z.optional(z.string()),
+    format: z.optional(zReportFormat),
+    data: z.optional(z.array(z.unknown())),
+    columns: z.optional(z.array(zReportColumnConfig)),
+    options: z.optional(zReportOptions),
+    filters: z.optional(z.record(z.string(), z.unknown())),
+    sort: z.optional(z.array(z.object({
+        field: z.string(),
+        direction: z.enum(['asc', 'desc'])
+    }))),
+    parameters: z.optional(z.record(z.string(), z.unknown())),
+    selectedIds: z.optional(z.array(z.string())),
+    async: z.optional(z.boolean())
+});
+
+/**
+ * Report Template resource model
+ *
+ * Defines reusable report configurations with:
+ * - Multiple output formats (CSV, Excel, PDF, Thermal, Dot-Matrix)
+ * - Eta template engine for custom layouts
+ * - Column definitions with formatting
+ * - Data source configuration
+ * - Multi-tenant scoping
+ */
+export const zReportTemplate = z.object({
+    id: z.string(),
+    orgId: z.string(),
+    name: z.string(),
+    description: z.optional(z.string()),
+    format: zReportFormat,
+    templateEngine: z.string(),
+    templateContent: z.string(),
+    options: z.optional(zReportOptions),
+    dataSource: z.optional(zDataSourceConfig),
+    columns: z.array(zReportColumnConfig),
+    isPublic: z.boolean(),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    deletedAt: z.optional(z.iso.datetime())
+});
+
+/**
  * Response metadata included in all API responses
  */
 export const zResponseMeta = z.object({
@@ -566,6 +862,17 @@ export const zResponseMeta = z.object({
  */
 export const zActiveContextResponse = z.object({
     data: zActiveContext,
+    meta: zResponseMeta
+});
+
+/**
+ * Async export response (returns job info)
+ */
+export const zAsyncExportResponse = z.object({
+    jobId: z.string(),
+    status: zReportJobStatus,
+    statusUrl: z.string(),
+    estimatedCompletion: z.optional(z.iso.datetime()),
     meta: zResponseMeta
 });
 
@@ -736,6 +1043,40 @@ export const zNotificationResponse = z.object({
 });
 
 /**
+ * Report job collection response (page-based)
+ */
+export const zReportJobListResponse = z.object({
+    data: z.array(zReportJob),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single report job response
+ */
+export const zReportJobResponse = z.object({
+    data: zReportJob,
+    meta: zResponseMeta
+});
+
+/**
+ * Report template collection response (page-based)
+ */
+export const zReportTemplateListResponse = z.object({
+    data: z.array(zReportTemplate),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single report template response
+ */
+export const zReportTemplateResponse = z.object({
+    data: zReportTemplate,
+    meta: zResponseMeta
+});
+
+/**
  * Role resource model
  *
  * Roles can be:
@@ -775,6 +1116,17 @@ export const zRoleResponse = z.object({
     data: zRole,
     meta: zResponseMeta
 });
+
+/**
+ * Schedule frequency
+ */
+export const zScheduleFrequency = z.enum([
+    'once',
+    'daily',
+    'weekly',
+    'monthly',
+    'custom'
+]);
 
 /**
  * Request body for sending a notification
@@ -818,6 +1170,38 @@ export const zSoftDeleteResponse = z.object({
         restoreUntil: z.optional(z.iso.datetime())
     }),
     meta: zResponseMeta
+});
+
+/**
+ * Storage delivery configuration
+ */
+export const zStorageDeliveryConfig = z.object({
+    pathTemplate: z.string(),
+    provider: z.optional(z.string()),
+    bucket: z.optional(z.string())
+});
+
+/**
+ * Storage delivery configuration
+ */
+export const zStorageDeliveryConfigUpdate = z.object({
+    pathTemplate: z.optional(z.string()),
+    provider: z.optional(z.string()),
+    bucket: z.optional(z.string())
+});
+
+/**
+ * Request body for streaming export
+ */
+export const zStreamExportRequest = z.object({
+    templateId: z.optional(z.string()),
+    format: z.enum(['csv', 'excel']),
+    filters: z.optional(z.record(z.string(), z.unknown())),
+    sort: z.optional(z.array(z.object({
+        field: z.string(),
+        direction: z.enum(['asc', 'desc'])
+    }))),
+    batchSize: z.optional(z.int())
 });
 
 /**
@@ -895,6 +1279,20 @@ export const zUpdatePreferencesRequest = z.object({
     quietHoursStart: z.optional(z.string()),
     quietHoursEnd: z.optional(z.string()),
     quietHoursTimezone: z.optional(z.string())
+});
+
+/**
+ * Request body for updating a report template
+ */
+export const zUpdateReportTemplateRequest = z.object({
+    name: z.optional(z.string()),
+    description: z.optional(z.string()),
+    format: z.optional(zReportFormat),
+    templateContent: z.optional(z.string()),
+    options: z.optional(zReportOptions),
+    dataSource: z.optional(zDataSourceConfigUpdate),
+    columns: z.optional(z.array(zReportColumnConfig)),
+    isPublic: z.optional(z.boolean())
 });
 
 /**
@@ -1074,6 +1472,140 @@ export const zWebhook = z.object({
     createdBy: z.string(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime()
+});
+
+/**
+ * Webhook delivery configuration
+ */
+export const zWebhookDeliveryConfig = z.object({
+    url: z.string(),
+    headers: z.optional(z.record(z.string(), z.string())),
+    attachmentMode: z.optional(z.enum(['attachment', 'base64']))
+});
+
+/**
+ * Combined delivery configuration
+ */
+export const zDeliveryConfig = z.object({
+    email: z.optional(zEmailDeliveryConfig),
+    webhook: z.optional(zWebhookDeliveryConfig),
+    storage: z.optional(zStorageDeliveryConfig)
+});
+
+/**
+ * Request body for creating a scheduled report
+ */
+export const zCreateScheduledReportRequest = z.object({
+    templateId: z.string(),
+    name: z.string(),
+    description: z.optional(z.string()),
+    frequency: zScheduleFrequency,
+    cronExpression: z.optional(z.string()),
+    dayOfWeek: z.optional(zDayOfWeek),
+    dayOfMonth: z.optional(z.int()),
+    hour: z.optional(z.int()),
+    minute: z.optional(z.int()),
+    timezone: z.optional(z.string()),
+    startDate: z.optional(z.iso.datetime()),
+    endDate: z.optional(z.iso.datetime()),
+    deliveryMethod: zDeliveryMethod,
+    deliveryConfig: z.optional(zDeliveryConfig),
+    parameters: z.optional(z.record(z.string(), z.unknown())),
+    isActive: z.optional(z.boolean())
+});
+
+/**
+ * Scheduled Report resource model
+ *
+ * Defines automated report generation with:
+ * - Flexible scheduling (daily, weekly, monthly, custom cron)
+ * - Multiple delivery methods (email, webhook, storage)
+ * - Template-based generation
+ * - Multi-tenant scoping
+ */
+export const zScheduledReport = z.object({
+    id: z.string(),
+    orgId: z.string(),
+    templateId: z.string(),
+    name: z.string(),
+    description: z.optional(z.string()),
+    frequency: zScheduleFrequency,
+    cronExpression: z.optional(z.string()),
+    dayOfWeek: z.optional(zDayOfWeek),
+    dayOfMonth: z.optional(z.int()),
+    hour: z.optional(z.int()),
+    minute: z.optional(z.int()),
+    timezone: z.string(),
+    startDate: z.iso.datetime(),
+    endDate: z.optional(z.iso.datetime()),
+    deliveryMethod: zDeliveryMethod,
+    deliveryConfig: z.optional(zDeliveryConfig),
+    parameters: z.optional(z.record(z.string(), z.unknown())),
+    isActive: z.boolean(),
+    lastRunAt: z.optional(z.iso.datetime()),
+    nextRunAt: z.optional(z.iso.datetime()),
+    failureCount: z.int(),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    deletedAt: z.optional(z.iso.datetime())
+});
+
+/**
+ * Scheduled report collection response (page-based)
+ */
+export const zScheduledReportListResponse = z.object({
+    data: z.array(zScheduledReport),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single scheduled report response
+ */
+export const zScheduledReportResponse = z.object({
+    data: zScheduledReport,
+    meta: zResponseMeta
+});
+
+/**
+ * Webhook delivery configuration
+ */
+export const zWebhookDeliveryConfigUpdate = z.object({
+    url: z.optional(z.string()),
+    headers: z.optional(z.record(z.string(), z.string())),
+    attachmentMode: z.optional(z.enum(['attachment', 'base64']))
+});
+
+/**
+ * Combined delivery configuration
+ */
+export const zDeliveryConfigUpdate = z.object({
+    email: z.optional(zEmailDeliveryConfigUpdate),
+    webhook: z.optional(zWebhookDeliveryConfigUpdate),
+    storage: z.optional(zStorageDeliveryConfigUpdate)
+});
+
+/**
+ * Request body for updating a scheduled report
+ */
+export const zUpdateScheduledReportRequest = z.object({
+    templateId: z.optional(z.string()),
+    name: z.optional(z.string()),
+    description: z.optional(z.string()),
+    frequency: z.optional(zScheduleFrequency),
+    cronExpression: z.optional(z.string()),
+    dayOfWeek: z.optional(zDayOfWeek),
+    dayOfMonth: z.optional(z.int()),
+    hour: z.optional(z.int()),
+    minute: z.optional(z.int()),
+    timezone: z.optional(z.string()),
+    startDate: z.optional(z.iso.datetime()),
+    endDate: z.optional(z.iso.datetime()),
+    deliveryMethod: z.optional(zDeliveryMethod),
+    deliveryConfig: z.optional(zDeliveryConfigUpdate),
+    parameters: z.optional(z.record(z.string(), z.unknown())),
+    isActive: z.optional(z.boolean())
 });
 
 /**
@@ -2112,6 +2644,451 @@ export const zJobsCancelData = z.object({
  */
 export const zJobsCancelResponse = z.union([
     zJobResponse,
+    zErrorResponse
+]);
+
+export const zReportExportsExportData = z.object({
+    body: zExportRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportExportsExportResponse = z.union([
+    zAsyncExportResponse,
+    zErrorResponse
+]);
+
+export const zReportExportsPreviewExportData = z.object({
+    body: z.object({
+        templateId: z.optional(z.string()),
+        format: z.optional(zReportFormat),
+        data: z.optional(z.array(z.unknown())),
+        columns: z.optional(z.array(zReportColumnConfig)),
+        options: z.optional(zReportOptions),
+        filters: z.optional(z.record(z.string(), z.unknown())),
+        sort: z.optional(z.array(z.object({
+            field: z.string(),
+            direction: z.enum(['asc', 'desc'])
+        }))),
+        parameters: z.optional(z.record(z.string(), z.unknown())),
+        selectedIds: z.optional(z.array(z.string())),
+        async: z.optional(z.boolean()),
+        limit: z.optional(z.int())
+    }),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportExportsPreviewExportResponse = z.union([
+    z.object({
+        data: z.object({
+            rows: z.array(z.unknown()),
+            totalCount: z.optional(z.int()),
+            columns: z.array(z.string())
+        }),
+        meta: zResponseMeta
+    }),
+    zErrorResponse
+]);
+
+export const zReportExportsStreamExportData = z.object({
+    body: zStreamExportRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportExportsStreamExportResponse = zErrorResponse;
+
+export const zReportJobsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        templateId: z.optional(z.string()),
+        scheduledReportId: z.optional(z.string()),
+        type: z.optional(zReportJobType),
+        status: z.optional(zReportJobStatus),
+        format: z.optional(zReportFormat),
+        createdAfter: z.optional(z.iso.datetime()),
+        createdBefore: z.optional(z.iso.datetime())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportJobsListResponse = z.union([
+    zReportJobListResponse,
+    zErrorResponse
+]);
+
+export const zReportJobsCancelData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        jobId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReportJobsCancelResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zReportJobsGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        jobId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportJobsGetResponse = z.union([
+    zReportJobResponse,
+    zErrorResponse
+]);
+
+export const zReportJobsDownloadData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        jobId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportJobsDownloadResponse = zErrorResponse;
+
+export const zReportJobsRetryData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        jobId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportJobsRetryResponse = z.union([
+    zReportJobResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        templateId: z.optional(z.string()),
+        frequency: z.optional(zScheduleFrequency),
+        deliveryMethod: z.optional(zDeliveryMethod),
+        isActive: z.optional(z.boolean()),
+        search: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsListResponse = z.union([
+    zScheduledReportListResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsCreateData = z.object({
+    body: zCreateScheduledReportRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zScheduledReportsCreateResponse = z.union([
+    zErrorResponse,
+    zScheduledReportResponse
+]);
+
+export const zScheduledReportsDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsGetResponse = z.union([
+    zScheduledReportResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsUpdateData = z.object({
+    body: zUpdateScheduledReportRequest,
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsUpdateResponse = z.union([
+    zScheduledReportResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsGetHistoryData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(20),
+        status: z.optional(zReportJobStatus)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsGetHistoryResponse = z.union([
+    zReportJobListResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsPauseData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsPauseResponse = z.union([
+    zScheduledReportResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsResumeData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsResumeResponse = z.union([
+    zScheduledReportResponse,
+    zErrorResponse
+]);
+
+export const zScheduledReportsRunNowData = z.object({
+    body: z.optional(z.object({
+        parameters: z.optional(z.record(z.string(), z.unknown()))
+    })),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledReportsRunNowResponse = z.union([
+    zReportJobResponse,
+    zErrorResponse
+]);
+
+export const zReportTemplatesListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        format: z.optional(zReportFormat),
+        isPublic: z.optional(z.boolean()),
+        search: z.optional(z.string()),
+        createdBy: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportTemplatesListResponse = z.union([
+    zReportTemplateListResponse,
+    zErrorResponse
+]);
+
+export const zReportTemplatesCreateData = z.object({
+    body: zCreateReportTemplateRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReportTemplatesCreateResponse = z.union([
+    zErrorResponse,
+    zReportTemplateResponse
+]);
+
+export const zReportTemplatesDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        templateId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportTemplatesDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zReportTemplatesGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        templateId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportTemplatesGetResponse = z.union([
+    zReportTemplateResponse,
+    zErrorResponse
+]);
+
+export const zReportTemplatesUpdateData = z.object({
+    body: zUpdateReportTemplateRequest,
+    path: z.object({
+        orgId: z.string(),
+        templateId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportTemplatesUpdateResponse = z.union([
+    zReportTemplateResponse,
+    zErrorResponse
+]);
+
+export const zReportTemplatesCloneData = z.object({
+    body: z.object({
+        name: z.string(),
+        description: z.optional(z.string())
+    }),
+    path: z.object({
+        orgId: z.string(),
+        templateId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zReportTemplatesCloneResponse = z.union([
+    zErrorResponse,
+    zReportTemplateResponse
+]);
+
+export const zReportTemplatesTestData = z.object({
+    body: z.object({
+        sampleData: z.optional(z.array(z.unknown())),
+        sampleRows: z.optional(z.int()),
+        parameters: z.optional(z.record(z.string(), z.unknown()))
+    }),
+    path: z.object({
+        orgId: z.string(),
+        templateId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zReportTemplatesTestResponse = z.union([
+    zAsyncExportResponse,
     zErrorResponse
 ]);
 

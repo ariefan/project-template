@@ -18,7 +18,7 @@ export interface PreferenceService {
   ): Promise<NotificationPreference>;
   isChannelEnabled(
     userId: string,
-    channel: "email" | "sms" | "whatsapp" | "telegram" | "push"
+    channel: "email" | "sms" | "whatsapp" | "telegram" | "push" | "none"
   ): Promise<boolean>;
   isCategoryEnabled(
     userId: string,
@@ -76,7 +76,7 @@ export function createPreferenceService(): PreferenceService {
 
     async isChannelEnabled(
       userId: string,
-      channel: "email" | "sms" | "whatsapp" | "telegram" | "push"
+      channel: "email" | "sms" | "whatsapp" | "telegram" | "push" | "none"
     ): Promise<boolean> {
       const preferences = await this.getPreferences(userId);
 
@@ -95,6 +95,9 @@ export function createPreferenceService(): PreferenceService {
           return preferences.telegramEnabled;
         case "push":
           return preferences.pushEnabled;
+        case "none":
+          // In-app only notifications are always enabled (no external delivery)
+          return true;
         default:
           return true;
       }

@@ -8,13 +8,14 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx src/seed.ts",
+    "db:seed": "tsx src/seed/index.ts",
     "db:studio": "drizzle-kit studio",
     "lint": "biome lint .",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ngneat/falso": "^8.0.2",
     "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.45.1",
     "pg": "^8.16.3"

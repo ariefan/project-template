@@ -7,10 +7,10 @@
  * 1. Starts Docker infrastructure (PostgreSQL, optionally Redis/Caddy)
  * 2. Waits for services to be healthy
  * 3. Runs database migrations
- * 4. Starts all applications
+ * 4. Starts all applications (or specific apps if filtered)
  *
  * Usage:
- *   node scripts/dev.mjs [options]
+ *   node scripts/dev.mjs [options] [apps...]
  *
  * Options:
  *   --with-caddy    Include Caddy reverse proxy (HTTPS at https://localhost)
@@ -19,9 +19,10 @@
  *   --clean         Remove Docker volumes and start fresh
  *
  * Examples:
- *   pnpm dev              # PostgreSQL + apps
- *   pnpm dev:caddy        # PostgreSQL + Caddy + apps
- *   pnpm dev:full         # PostgreSQL + Redis + Caddy + apps
+ *   pnpm dev                    # PostgreSQL + all apps
+ *   pnpm dev api web            # PostgreSQL + only api and web
+ *   pnpm dev:caddy api          # PostgreSQL + Caddy + only api
+ *   pnpm dev:full api web       # PostgreSQL + Redis + Caddy + api and web
  */
 
 import { spawn } from "node:child_process";
@@ -32,6 +33,9 @@ const withCaddy = args.includes("--with-caddy");
 const withRedis = args.includes("--with-redis");
 const skipDb = args.includes("--skip-db");
 const clean = args.includes("--clean");
+
+// Extract app names (non-flag arguments) to filter which apps to run
+const appNames = args.filter((arg) => !arg.startsWith("--"));
 
 /**
  * Run a command and return a promise
@@ -133,7 +137,11 @@ async function main() {
     }
 
     // Start applications
-    console.log("🚀 Starting applications...\n");
+    if (appNames.length > 0) {
+      console.log(`🚀 Starting applications: ${appNames.join(", ")}...\n`);
+    } else {
+      console.log("🚀 Starting all applications...\n");
+    }
     console.log("───────────────────────────────────────────────────");
 
     if (withCaddy) {
@@ -146,7 +154,15 @@ async function main() {
 
     console.log("───────────────────────────────────────────────────\n");
 
-    await run("pnpm", ["turbo", "dev"]);
+    // Build turbo command with app filters if specified
+    const turboArgs = ["turbo", "dev"];
+    if (appNames.length > 0) {
+      for (const app of appNames) {
+        turboArgs.push("--filter", app);
+      }
+    }
+
+    await run("pnpm", turboArgs);
   } catch (error) {
     console.error("\n❌ Error:", error.message);
     process.exit(1);

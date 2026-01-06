@@ -14,10 +14,12 @@ import {
   type RowAction,
   SearchInput,
   SortButton,
+  type ViewMode,
   ViewToggle,
 } from "@workspace/ui/composed/data-view";
 import { Edit, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 import { PostFormDialog } from "./components/post-form-dialog";
@@ -240,15 +242,11 @@ export default function CrudPage() {
     );
 
     const commonProps = {
-      availableViews: ["table", "list", "grid"] as (
-        | "table"
-        | "list"
-        | "grid"
-      )[],
+      availableViews: ["table", "list", "grid"] as ViewMode[],
       bulkActions,
       columns,
       defaultPageSize: 10,
-      defaultView: "table" as "table" | "list" | "grid",
+      defaultView: "table" as ViewMode,
       emptyMessage: "No posts found",
       filterable: true,
       getRowId: (row: ExamplePost) => row.id,
@@ -301,19 +299,12 @@ export default function CrudPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="font-bold text-2xl">Posts Management</h1>
-        <p className="mt-1 text-muted-foreground">
-          Manage your blog posts with real API integration. Create, edit,
-          delete, and restore posts.
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="mb-6">
-        <StatsCards />
-      </div>
+    <div className="container mx-auto max-w-7xl px-4 py-8">
+      <PageHeader
+        description="Manage your blog posts with real API integration. Create, edit, delete, and restore posts."
+        stats={<StatsCards />}
+        title="Posts Management"
+      />
 
       {/* DataView - only render when orgId is available */}
       {renderContent()}

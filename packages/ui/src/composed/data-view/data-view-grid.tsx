@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent, CardHeader } from "@workspace/ui/components/card";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { cn } from "@workspace/ui/lib/utils";
@@ -10,7 +11,9 @@ import { useDataView } from "./context";
 import type { FieldDef, RowAction } from "./types";
 import {
   deriveFieldsFromColumns,
+  filterVisibleActions,
   getFieldValue,
+  isActionDisabled,
   renderFieldContent,
 } from "./utils";
 
@@ -160,6 +163,55 @@ function GridCard<T>({
     });
   };
 
+  const renderActionCell = () => {
+    if (!rowActions || rowActions.length === 0) {
+      return null;
+    }
+
+    const visibleActions = filterVisibleActions(rowActions, row);
+    const inlineActions = visibleActions.filter((action) => action.inline);
+    const menuActions = visibleActions.filter((action) => !action.inline);
+
+    return (
+      <div className="-mt-1 -mr-2 flex shrink-0 items-center gap-1">
+        {inlineActions.map((action) => {
+          const disabled = isActionDisabled(action, row);
+          return (
+            <Button
+              className="size-7"
+              disabled={disabled}
+              key={action.id}
+              onClick={() => action.onAction(row)}
+              size="icon"
+              title={action.label}
+              variant="ghost"
+            >
+              {action.icon && (
+                <action.icon
+                  className={cn(
+                    "size-4",
+                    action.variant === "destructive" && "text-destructive"
+                  )}
+                />
+              )}
+              <span className="sr-only">{action.label}</span>
+            </Button>
+          );
+        })}
+        {menuActions.length > 0 && (
+          <DataViewActionMenu
+            actions={menuActions}
+            row={row}
+            triggerClassName="-mt-1 -mr-2 shrink-0"
+            triggerVariant="icon"
+          />
+        )}
+      </div>
+    );
+  };
+
+  const hasActions = rowActions && rowActions.length > 0;
+
   return (
     <Card
       className={cn(
@@ -194,14 +246,7 @@ function GridCard<T>({
             </div>
           </div>
 
-          {rowActions && rowActions.length > 0 && (
-            <DataViewActionMenu
-              actions={rowActions}
-              row={row}
-              triggerClassName="-mt-1 -mr-2 shrink-0"
-              triggerVariant="icon"
-            />
-          )}
+          {hasActions && renderActionCell()}
         </div>
       </CardHeader>
 

@@ -12,6 +12,7 @@ enum NotificationChannel {
   whatsapp: "whatsapp",
   telegram: "telegram",
   push: "push",
+  none: "none",
 }
 
 /**

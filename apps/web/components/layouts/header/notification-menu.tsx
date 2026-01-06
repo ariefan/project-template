@@ -17,12 +17,16 @@ import {
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import { Separator } from "@workspace/ui/components/separator";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, Loader2 } from "lucide-react";
+import { Bell, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
 
 export function NotificationMenu() {
+  const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Fetch unread count
   const { data: unreadCountData } = useQuery({
@@ -32,7 +36,8 @@ export function NotificationMenu() {
   });
 
   const unreadCount =
-    (unreadCountData as { data?: { count: number } })?.data?.count ?? 0;
+    (unreadCountData as { data?: { unreadCount: number } })?.data
+      ?.unreadCount ?? 0;
 
   // Fetch recent notifications
   const { data: notificationsData, isLoading } = useQuery({
@@ -50,10 +55,16 @@ export function NotificationMenu() {
     ...notificationsMarkAllReadMutation({ client: apiClient }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["notificationsList"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["notificationsGetUnreadCount"],
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          if (typeof key === "object" && key !== null && "_id" in key) {
+            const id = (key as { _id: string })._id;
+            return (
+              id === "notificationsList" || id === "notificationsGetUnreadCount"
+            );
+          }
+          return false;
+        },
       });
     },
   });
@@ -63,24 +74,41 @@ export function NotificationMenu() {
     ...notificationsMarkReadMutation({ client: apiClient }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["notificationsList"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["notificationsGetUnreadCount"],
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          if (typeof key === "object" && key !== null && "_id" in key) {
+            const id = (key as { _id: string })._id;
+            return (
+              id === "notificationsList" || id === "notificationsGetUnreadCount"
+            );
+          }
+          return false;
+        },
       });
     },
   });
 
   function handleMarkAllRead() {
-    markAllReadMutation.mutate({});
+    markAllReadMutation.mutate(
+      {},
+      {
+        onSuccess: () => {
+          setOpen(false);
+        },
+      }
+    );
   }
 
   function handleNotificationClick(notification: Notification) {
+    // Mark as read if unread
     if (!notification.readAt) {
       markReadMutation.mutate({
         path: { id: notification.id },
       });
     }
+    // Close popover and navigate to notification detail page
+    setOpen(false);
+    router.push(`/notifications/${notification.id}`);
   }
 
   function formatTime(dateString: string) {
@@ -113,25 +141,28 @@ export function NotificationMenu() {
       <div className="divide-y">
         {notifications.map((notification) => (
           <button
-            className="flex w-full flex-col gap-1 p-4 text-left transition-colors hover:bg-muted"
+            className="group flex w-full cursor-pointer items-center gap-2 p-4 text-left transition-colors hover:bg-muted"
             key={notification.id}
             onClick={() => handleNotificationClick(notification)}
             type="button"
           >
-            <div className="flex items-start justify-between gap-2">
-              <p className="font-medium text-sm leading-none">
-                {notification.subject ?? notification.category}
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <div className="flex items-start justify-between gap-2">
+                <p className="line-clamp-1 font-medium text-sm leading-none">
+                  {notification.subject ?? notification.category}
+                </p>
+                {!notification.readAt && (
+                  <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                )}
+              </div>
+              <p className="line-clamp-2 text-muted-foreground text-sm">
+                {notification.body ?? "No content"}
               </p>
-              {!notification.readAt && (
-                <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
-              )}
+              <p className="text-muted-foreground text-xs">
+                {formatTime(notification.createdAt)}
+              </p>
             </div>
-            <p className="line-clamp-2 text-muted-foreground text-sm">
-              {notification.body ?? "No content"}
-            </p>
-            <p className="text-muted-foreground text-xs">
-              {formatTime(notification.createdAt)}
-            </p>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
           </button>
         ))}
       </div>
@@ -139,9 +170,9 @@ export function NotificationMenu() {
   }
 
   return (
-    <Popover>
+    <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
-        <Button className="relative h-9 w-9 p-0" variant="outline">
+        <Button className="relative h-9 w-9 p-0" variant="ghost">
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive font-medium text-[10px] text-white">
@@ -156,7 +187,7 @@ export function NotificationMenu() {
           <h3 className="font-semibold text-sm">Notifications</h3>
           {unreadCount > 0 && (
             <Button
-              className="h-auto p-0 text-xs"
+              className="h-auto cursor-pointer p-0 text-xs"
               disabled={markAllReadMutation.isPending}
               onClick={handleMarkAllRead}
               size="sm"

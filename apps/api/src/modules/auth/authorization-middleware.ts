@@ -60,14 +60,16 @@ export function requirePermission(
  *
  * @param resource Resource name
  * @param action Action name
- * @param getOwnerId Function to extract owner ID from request
+ * @param getOwnerId Function to extract owner ID from request (can be sync or async)
  * @param orgIdParam Parameter name containing orgId
  * @returns Fastify preHandler middleware function
  */
 export function requireOwnershipOrPermission(
   resource: string,
   action: string,
-  getOwnerId: (request: FastifyRequest) => string | undefined,
+  getOwnerId: (
+    request: FastifyRequest
+  ) => string | undefined | Promise<string | undefined>,
   orgIdParam = "orgId"
 ) {
   return async (
@@ -103,8 +105,8 @@ export function requireOwnershipOrPermission(
       return;
     }
 
-    // Check if user is the owner
-    const ownerId = getOwnerId(request);
+    // Check if user is the owner (await in case getOwnerId is async)
+    const ownerId = await getOwnerId(request);
     if (ownerId === userId) {
       return;
     }

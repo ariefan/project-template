@@ -10,6 +10,8 @@ import {
 import {
   Bell,
   Briefcase,
+  Code,
+  FileSpreadsheet,
   FileText,
   FolderOpen,
   Home,
@@ -33,16 +35,6 @@ const navMain = [
     title: "Posts",
     url: "/posts",
     icon: FileText,
-    items: [
-      {
-        title: "All Posts",
-        url: "/posts",
-      },
-      {
-        title: "New Post",
-        url: "/posts/new",
-      },
-    ],
   },
   {
     title: "Files",
@@ -63,6 +55,40 @@ const navMain = [
     title: "Notifications",
     url: "/notifications",
     icon: Bell,
+  },
+  {
+    title: "Reports",
+    url: "/reports/templates",
+    icon: FileSpreadsheet,
+    items: [
+      {
+        title: "Templates",
+        url: "/reports/templates",
+      },
+      {
+        title: "Schedules",
+        url: "/reports/schedules",
+      },
+    ],
+  },
+  {
+    title: "Developer",
+    url: "/developer/notifications",
+    icon: Code,
+    items: [
+      {
+        title: "Notifications",
+        url: "/developer/notifications",
+      },
+      {
+        title: "Jobs",
+        url: "/developer/jobs",
+      },
+      {
+        title: "Email",
+        url: "/developer/email",
+      },
+    ],
   },
   {
     title: "Settings",

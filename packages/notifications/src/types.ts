@@ -109,7 +109,7 @@ export interface SendBulkRequest {
 
 export interface NotificationServiceConfig {
   email?: {
-    provider: "resend" | "nodemailer";
+    provider: "resend" | "nodemailer" | "console";
     resend?: { apiKey: string };
     nodemailer?: {
       host: string;

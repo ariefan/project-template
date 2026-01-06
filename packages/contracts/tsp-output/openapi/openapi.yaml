@@ -27,6 +27,7 @@ tags:
   - name: ExampleComments
   - name: Notifications
   - name: Notification Preferences
+  - name: Reports
 paths:
   /health:
     get:
@@ -2403,6 +2404,1104 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Jobs
+  /v1/orgs/{orgId}/reports/export:
+    post:
+      operationId: ReportExports_export
+      summary: Export data
+      description: |-
+        Export data synchronously
+
+        For small datasets (<10,000 rows). Returns the file directly.
+        For larger datasets, use async=true to get a job ID.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            content-disposition:
+              required: true
+              schema:
+                type: string
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AsyncExportResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+        description: Export request
+  /v1/orgs/{orgId}/reports/export/preview:
+    post:
+      operationId: ReportExports_previewExport
+      summary: Preview export
+      description: |-
+        Preview export (first N rows)
+
+        Useful for testing templates and verifying data before full export.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          rows:
+                            type: array
+                            items: {}
+                            description: Preview rows
+                          totalCount:
+                            type: integer
+                            format: int32
+                            description: Total row count (if known)
+                          columns:
+                            type: array
+                            items:
+                              type: string
+                            description: Column headers
+                        required:
+                          - rows
+                          - columns
+                      meta:
+                        $ref: '#/components/schemas/ResponseMeta'
+                    required:
+                      - data
+                      - meta
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateId:
+                  type: string
+                  description: Report template ID (optional, for template-based exports)
+                format:
+                  allOf:
+                    - $ref: '#/components/schemas/ReportFormat'
+                  description: Output format (required if no templateId)
+                data:
+                  type: array
+                  items: {}
+                  description: Data to export (for client-side data)
+                columns:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ReportColumnConfig'
+                  description: Column definitions (required if no templateId)
+                options:
+                  allOf:
+                    - $ref: '#/components/schemas/ReportOptions'
+                  description: Format-specific options
+                filters:
+                  type: object
+                  additionalProperties: {}
+                  description: Filters to apply to data source
+                sort:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                      direction:
+                        type: string
+                        enum:
+                          - asc
+                          - desc
+                    required:
+                      - field
+                      - direction
+                  description: Sort configuration
+                parameters:
+                  type: object
+                  additionalProperties: {}
+                  description: Additional parameters for template
+                selectedIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Export only selected rows (by ID)
+                async:
+                  type: boolean
+                  description: Use async processing (returns job ID)
+                limit:
+                  type: integer
+                  format: int32
+                  description: 'Maximum rows to preview (default: 10, max: 100)'
+        description: Export request with limit
+  /v1/orgs/{orgId}/reports/export/stream:
+    post:
+      operationId: ReportExports_streamExport
+      summary: Stream export data
+      description: |-
+        Export data as streaming response
+
+        For large datasets. Streams data in chunks as it's generated.
+        Only supports CSV and Excel formats.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            content-disposition:
+              required: true
+              schema:
+                type: string
+            transfer-encoding:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - chunked
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamExportRequest'
+        description: Stream export request
+  /v1/orgs/{orgId}/reports/jobs:
+    get:
+      operationId: ReportJobs_list
+      summary: List report jobs
+      description: List report jobs in an organization
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: 'Number of items per page (max: 100)'
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: 'Sort order (default: -createdAt)'
+          schema:
+            type: string
+          explode: false
+        - name: templateId
+          in: query
+          required: false
+          description: Filter by template ID
+          schema:
+            type: string
+          explode: false
+        - name: scheduledReportId
+          in: query
+          required: false
+          description: Filter by schedule ID
+          schema:
+            type: string
+          explode: false
+        - name: type
+          in: query
+          required: false
+          description: Filter by job type
+          schema:
+            $ref: '#/components/schemas/ReportJobType'
+          explode: false
+        - name: status
+          in: query
+          required: false
+          description: Filter by status
+          schema:
+            $ref: '#/components/schemas/ReportJobStatus'
+          explode: false
+        - name: format
+          in: query
+          required: false
+          description: Filter by format
+          schema:
+            $ref: '#/components/schemas/ReportFormat'
+          explode: false
+        - name: createdAfter
+          in: query
+          required: false
+          description: Filter jobs created after this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+        - name: createdBefore
+          in: query
+          required: false
+          description: Filter jobs created before this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportJobListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/jobs/{jobId}:
+    get:
+      operationId: ReportJobs_get
+      summary: Get report job
+      description: Get a report job by ID
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+    delete:
+      operationId: ReportJobs_cancel
+      summary: Cancel report job
+      description: Cancel a pending or processing job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/jobs/{jobId}/download:
+    get:
+      operationId: ReportJobs_download
+      summary: Download job result
+      description: Download the result of a completed job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            content-disposition:
+              required: true
+              schema:
+                type: string
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/jobs/{jobId}/retry:
+    post:
+      operationId: ReportJobs_retry
+      summary: Retry failed job
+      description: Retry a failed job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/schedules:
+    get:
+      operationId: ScheduledReports_list
+      summary: List scheduled reports
+      description: List scheduled reports in an organization
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: 'Number of items per page (max: 100)'
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: Sort order
+          schema:
+            type: string
+          explode: false
+        - name: templateId
+          in: query
+          required: false
+          description: Filter by template ID
+          schema:
+            type: string
+          explode: false
+        - name: frequency
+          in: query
+          required: false
+          description: Filter by frequency
+          schema:
+            $ref: '#/components/schemas/ScheduleFrequency'
+          explode: false
+        - name: deliveryMethod
+          in: query
+          required: false
+          description: Filter by delivery method
+          schema:
+            $ref: '#/components/schemas/DeliveryMethod'
+          explode: false
+        - name: isActive
+          in: query
+          required: false
+          description: Filter by active status
+          schema:
+            type: boolean
+          explode: false
+        - name: search
+          in: query
+          required: false
+          description: Full-text search
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledReportListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+    post:
+      operationId: ScheduledReports_create
+      summary: Create scheduled report
+      description: Create a new scheduled report
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            location:
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledReportResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduledReportRequest'
+        description: Schedule data
+  /v1/orgs/{orgId}/reports/schedules/{scheduleId}:
+    get:
+      operationId: ScheduledReports_get
+      summary: Get scheduled report
+      description: Get a scheduled report by ID
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledReportResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+    patch:
+      operationId: ScheduledReports_update
+      summary: Update scheduled report
+      description: Update a scheduled report
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledReportResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateScheduledReportRequest'
+        description: Schedule update data
+    delete:
+      operationId: ScheduledReports_delete
+      summary: Delete scheduled report
+      description: Delete a scheduled report
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/history:
+    get:
+      operationId: ScheduledReports_getHistory
+      summary: Get schedule run history
+      description: Get run history for a scheduled report
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Items per page
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          explode: false
+        - name: status
+          in: query
+          required: false
+          description: Filter by status
+          schema:
+            $ref: '#/components/schemas/ReportJobStatus'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportJobListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/pause:
+    post:
+      operationId: ScheduledReports_pause
+      summary: Pause scheduled report
+      description: Pause a scheduled report
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledReportResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/resume:
+    post:
+      operationId: ScheduledReports_resume
+      summary: Resume scheduled report
+      description: Resume a paused scheduled report
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledReportResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/run:
+    post:
+      operationId: ScheduledReports_runNow
+      summary: Run scheduled report now
+      description: Trigger a scheduled report to run immediately
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  additionalProperties: {}
+        description: Optional parameter overrides
+  /v1/orgs/{orgId}/reports/templates:
+    get:
+      operationId: ReportTemplates_list
+      summary: List report templates
+      description: List report templates in an organization
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: 'Number of items per page (max: 100)'
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: Sort order (e.g., "-createdAt,name")
+          schema:
+            type: string
+          explode: false
+        - name: format
+          in: query
+          required: false
+          description: Filter by format
+          schema:
+            $ref: '#/components/schemas/ReportFormat'
+          explode: false
+        - name: isPublic
+          in: query
+          required: false
+          description: Filter by public templates only
+          schema:
+            type: boolean
+          explode: false
+        - name: search
+          in: query
+          required: false
+          description: Full-text search in name and description
+          schema:
+            type: string
+          explode: false
+        - name: createdBy
+          in: query
+          required: false
+          description: Filter templates created by specific user
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportTemplateListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+    post:
+      operationId: ReportTemplates_create
+      summary: Create report template
+      description: Create a new report template
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            location:
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportTemplateResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReportTemplateRequest'
+        description: Template data
+  /v1/orgs/{orgId}/reports/templates/{templateId}:
+    get:
+      operationId: ReportTemplates_get
+      summary: Get report template
+      description: Get a report template by ID
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: templateId
+          in: path
+          required: true
+          description: Template ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportTemplateResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+    patch:
+      operationId: ReportTemplates_update
+      summary: Update report template
+      description: Update a report template
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: templateId
+          in: path
+          required: true
+          description: Template ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ReportTemplateResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReportTemplateRequest'
+        description: Template update data
+    delete:
+      operationId: ReportTemplates_delete
+      summary: Delete report template
+      description: Delete a report template
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: templateId
+          in: path
+          required: true
+          description: Template ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+  /v1/orgs/{orgId}/reports/templates/{templateId}/clone:
+    post:
+      operationId: ReportTemplates_clone
+      summary: Clone report template
+      description: Clone a report template
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: templateId
+          in: path
+          required: true
+          description: Template ID to clone
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            location:
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportTemplateResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              required:
+                - name
+        description: New template name
+  /v1/orgs/{orgId}/reports/templates/{templateId}/test:
+    post:
+      operationId: ReportTemplates_test
+      summary: Test report template
+      description: Test a report template with sample data
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: templateId
+          in: path
+          required: true
+          description: Template ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AsyncExportResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sampleData:
+                  type: array
+                  items: {}
+                  description: Sample data to use for testing
+                sampleRows:
+                  type: integer
+                  format: int32
+                  description: Number of sample rows to generate if no sampleData provided
+                parameters:
+                  type: object
+                  additionalProperties: {}
+                  description: Parameters to pass to template
+        description: Test data and parameters
   /v1/orgs/{orgId}/roles:
     get:
       operationId: TenantRoles_list
@@ -3505,6 +4604,35 @@ components:
           type: string
           description: Role ID to assign
       description: Request to assign a role to a user
+    AsyncExportResponse:
+      type: object
+      required:
+        - jobId
+        - status
+        - statusUrl
+        - meta
+      properties:
+        jobId:
+          type: string
+          description: Job ID for tracking
+          example: rjob_abc123xyz
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ReportJobStatus'
+          description: Current status
+        statusUrl:
+          type: string
+          description: URL to check job status
+          example: /v1/orgs/org_xyz/reports/jobs/rjob_abc123xyz
+        estimatedCompletion:
+          type: string
+          format: date-time
+          description: Estimated completion time
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/ResponseMeta'
+          description: Response metadata
+      description: Async export response (returns job info)
     AsyncJobResponse:
       type: object
       required:
@@ -3811,6 +4939,24 @@ components:
           format: int32
           description: Number of skipped items (e.g., duplicates)
       description: Summary of batch operation results
+    ColumnAlignment:
+      type: string
+      enum:
+        - left
+        - center
+        - right
+      description: Column alignment
+    ColumnFormat:
+      type: string
+      enum:
+        - text
+        - number
+        - currency
+        - date
+        - datetime
+        - boolean
+        - percentage
+      description: Column data format
     ConfirmUploadRequest:
       type: object
       properties:
@@ -3857,6 +5003,46 @@ components:
             - $ref: '#/components/schemas/ExamplePostStatus'
           description: 'Post status (default: draft)'
       description: Request body for creating a new post
+    CreateReportTemplateRequest:
+      type: object
+      required:
+        - name
+        - format
+        - templateContent
+        - columns
+      properties:
+        name:
+          type: string
+          description: Template name
+          example: Monthly Sales Report
+        description:
+          type: string
+          description: Template description
+        format:
+          allOf:
+            - $ref: '#/components/schemas/ReportFormat'
+          description: Output format
+        templateContent:
+          type: string
+          description: Template content (Eta template string)
+          example: <% it.data.forEach(row => { %><%= row.name %><% }) %>
+        options:
+          allOf:
+            - $ref: '#/components/schemas/ReportOptions'
+          description: Format-specific options
+        dataSource:
+          allOf:
+            - $ref: '#/components/schemas/DataSourceConfig'
+          description: Data source configuration
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportColumnConfig'
+          description: Column definitions
+        isPublic:
+          type: boolean
+          description: 'Whether template is visible to all org members (default: false)'
+      description: Request body for creating a new report template
     CreateRoleRequest:
       type: object
       required:
@@ -3879,6 +5065,76 @@ components:
           minItems: 1
           description: Permissions to grant
       description: Request to create a custom role
+    CreateScheduledReportRequest:
+      type: object
+      required:
+        - templateId
+        - name
+        - frequency
+        - deliveryMethod
+      properties:
+        templateId:
+          type: string
+          description: Associated report template ID
+          example: tpl_template123
+        name:
+          type: string
+          description: Schedule name
+          example: Weekly Sales Summary
+        description:
+          type: string
+          description: Schedule description
+        frequency:
+          allOf:
+            - $ref: '#/components/schemas/ScheduleFrequency'
+          description: Schedule frequency
+        cronExpression:
+          type: string
+          description: Cron expression (required when frequency is custom)
+        dayOfWeek:
+          allOf:
+            - $ref: '#/components/schemas/DayOfWeek'
+          description: Day of week (for weekly frequency)
+        dayOfMonth:
+          type: integer
+          format: int32
+          description: Day of month (for monthly frequency)
+        hour:
+          type: integer
+          format: int32
+          description: Hour to run (0-23)
+        minute:
+          type: integer
+          format: int32
+          description: Minute to run (0-59)
+        timezone:
+          type: string
+          description: Timezone for scheduling
+          example: America/New_York
+        startDate:
+          type: string
+          format: date-time
+          description: Start date for the schedule
+        endDate:
+          type: string
+          format: date-time
+          description: End date for the schedule
+        deliveryMethod:
+          allOf:
+            - $ref: '#/components/schemas/DeliveryMethod'
+          description: Delivery method
+        deliveryConfig:
+          allOf:
+            - $ref: '#/components/schemas/DeliveryConfig'
+          description: Delivery configuration
+        parameters:
+          type: object
+          additionalProperties: {}
+          description: Runtime parameters passed to template
+        isActive:
+          type: boolean
+          description: 'Whether the schedule is active (default: true)'
+      description: Request body for creating a scheduled report
     CreateWebhookRequest:
       type: object
       required:
@@ -3931,6 +5187,149 @@ components:
           nullable: true
           description: Cursor for fetching the previous page (null if on first page)
       description: Cursor-based pagination for large datasets or real-time data
+    DataSourceConfig:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - query
+            - api
+            - custom
+          description: Data source type
+        source:
+          type: string
+          description: SQL query or API endpoint path
+        defaultParams:
+          type: object
+          additionalProperties: {}
+          description: Default parameters for the query/API
+      description: Data source configuration for report templates
+    DataSourceConfigUpdate:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - query
+            - api
+            - custom
+          description: Data source type
+        source:
+          type: string
+          description: SQL query or API endpoint path
+        defaultParams:
+          type: object
+          additionalProperties: {}
+          description: Default parameters for the query/API
+      description: Data source configuration for report templates
+    DayOfWeek:
+      type: string
+      enum:
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+        - saturday
+        - sunday
+      description: Day of week for weekly schedules
+    DeliveryConfig:
+      type: object
+      properties:
+        email:
+          allOf:
+            - $ref: '#/components/schemas/EmailDeliveryConfig'
+          description: Email delivery settings (when deliveryMethod is email)
+        webhook:
+          allOf:
+            - $ref: '#/components/schemas/WebhookDeliveryConfig'
+          description: Webhook delivery settings (when deliveryMethod is webhook)
+        storage:
+          allOf:
+            - $ref: '#/components/schemas/StorageDeliveryConfig'
+          description: Storage delivery settings (when deliveryMethod is storage)
+      description: Combined delivery configuration
+    DeliveryConfigUpdate:
+      type: object
+      properties:
+        email:
+          allOf:
+            - $ref: '#/components/schemas/EmailDeliveryConfigUpdate'
+          description: Email delivery settings (when deliveryMethod is email)
+        webhook:
+          allOf:
+            - $ref: '#/components/schemas/WebhookDeliveryConfigUpdate'
+          description: Webhook delivery settings (when deliveryMethod is webhook)
+        storage:
+          allOf:
+            - $ref: '#/components/schemas/StorageDeliveryConfigUpdate'
+          description: Storage delivery settings (when deliveryMethod is storage)
+      description: Combined delivery configuration
+    DeliveryMethod:
+      type: string
+      enum:
+        - email
+        - download
+        - webhook
+        - storage
+      description: Report delivery method
+    EmailDeliveryConfig:
+      type: object
+      required:
+        - recipients
+      properties:
+        recipients:
+          type: array
+          items:
+            type: string
+          description: Email recipients
+        subject:
+          type: string
+          description: Email subject (supports template variables)
+          example: Your Weekly Sales Report - {{date}}
+        body:
+          type: string
+          description: Email body text (supports template variables)
+        cc:
+          type: array
+          items:
+            type: string
+          description: CC recipients
+        bcc:
+          type: array
+          items:
+            type: string
+          description: BCC recipients
+      description: Email delivery configuration
+    EmailDeliveryConfigUpdate:
+      type: object
+      properties:
+        recipients:
+          type: array
+          items:
+            type: string
+          description: Email recipients
+        subject:
+          type: string
+          description: Email subject (supports template variables)
+          example: Your Weekly Sales Report - {{date}}
+        body:
+          type: string
+          description: Email body text (supports template variables)
+        cc:
+          type: array
+          items:
+            type: string
+          description: CC recipients
+        bcc:
+          type: array
+          items:
+            type: string
+          description: BCC recipients
+      description: Email delivery configuration
     Error:
       type: object
       required:
@@ -4190,6 +5589,62 @@ components:
         - published
         - archived
       description: Post status enum
+    ExportRequest:
+      type: object
+      properties:
+        templateId:
+          type: string
+          description: Report template ID (optional, for template-based exports)
+        format:
+          allOf:
+            - $ref: '#/components/schemas/ReportFormat'
+          description: Output format (required if no templateId)
+        data:
+          type: array
+          items: {}
+          description: Data to export (for client-side data)
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportColumnConfig'
+          description: Column definitions (required if no templateId)
+        options:
+          allOf:
+            - $ref: '#/components/schemas/ReportOptions'
+          description: Format-specific options
+        filters:
+          type: object
+          additionalProperties: {}
+          description: Filters to apply to data source
+        sort:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              direction:
+                type: string
+                enum:
+                  - asc
+                  - desc
+            required:
+              - field
+              - direction
+          description: Sort configuration
+        parameters:
+          type: object
+          additionalProperties: {}
+          description: Additional parameters for template
+        selectedIds:
+          type: array
+          items:
+            type: string
+          description: Export only selected rows (by ID)
+        async:
+          type: boolean
+          description: Use async processing (returns job ID)
+      description: Request body for triggering an export
     File:
       type: object
       required:
@@ -4714,6 +6169,7 @@ components:
         - whatsapp
         - telegram
         - push
+        - none
       description: Notification channel enum
     NotificationListResponse:
       type: object
@@ -5014,6 +6470,445 @@ components:
             - $ref: '#/components/schemas/PermissionCondition'
           description: Optional condition
       description: Permission input for creating/updating roles
+    ReportColumnConfig:
+      type: object
+      required:
+        - id
+        - header
+      properties:
+        id:
+          type: string
+          description: Column identifier
+        header:
+          type: string
+          description: Display header text
+        accessorKey:
+          type: string
+          description: Property key to access data (e.g., "user.name")
+        accessorFn:
+          type: string
+          description: Custom accessor function (JavaScript expression)
+        width:
+          type: integer
+          format: int32
+          description: Column width in pixels
+        align:
+          allOf:
+            - $ref: '#/components/schemas/ColumnAlignment'
+          description: Text alignment
+        format:
+          allOf:
+            - $ref: '#/components/schemas/ColumnFormat'
+          description: Data format type
+        formatPattern:
+          type: string
+          description: Custom format pattern (e.g., "yyyy-MM-dd" for dates)
+        hidden:
+          type: boolean
+          description: Whether column is hidden by default
+      description: Column configuration for reports
+    ReportFormat:
+      type: string
+      enum:
+        - csv
+        - excel
+        - pdf
+        - thermal
+        - dotmatrix
+      description: Report output format
+    ReportJob:
+      type: object
+      required:
+        - id
+        - orgId
+        - type
+        - status
+        - format
+        - createdBy
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: 'Unique job identifier (format: rjob_{randomString})'
+          example: rjob_abc123xyz
+        orgId:
+          type: string
+          description: Organization ID (tenant scope)
+          example: org_xyz789
+        templateId:
+          type: string
+          description: Associated report template ID
+          example: tpl_template123
+        scheduledReportId:
+          type: string
+          description: Associated scheduled report ID (null for manual jobs)
+          example: sched_schedule123
+        type:
+          allOf:
+            - $ref: '#/components/schemas/ReportJobType'
+          description: Job type
+        status:
+          allOf:
+            - $ref: '#/components/schemas/ReportJobStatus'
+          description: Current job status
+        format:
+          allOf:
+            - $ref: '#/components/schemas/ReportFormat'
+          description: Output format
+        progress:
+          type: integer
+          format: int32
+          description: Progress percentage (0-100)
+          example: 75
+        totalRows:
+          type: integer
+          format: int32
+          description: Total rows to process
+          example: 10000
+        processedRows:
+          type: integer
+          format: int32
+          description: Rows processed so far
+          example: 7500
+        parameters:
+          type: object
+          additionalProperties: {}
+          description: Runtime parameters used for this job
+        result:
+          allOf:
+            - $ref: '#/components/schemas/ReportJobResult'
+          description: Job result (when completed)
+        error:
+          allOf:
+            - $ref: '#/components/schemas/ReportJobError'
+          description: Error information (when failed)
+        queueJobId:
+          type: string
+          description: pg-boss queue job ID
+        createdBy:
+          type: string
+          description: User ID who created/triggered the job
+          example: usr_creator123
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the job was created
+        startedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the job started processing
+        completedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the job completed (success or failure)
+        estimatedCompletion:
+          type: string
+          format: date-time
+          description: Estimated completion time
+      description: |-
+        Report Job resource model
+
+        Tracks individual report generation jobs with:
+        - Progress tracking
+        - Result/error information
+        - Queue integration (pg-boss)
+        - Both manual and scheduled jobs
+    ReportJobError:
+      type: object
+      required:
+        - code
+        - message
+        - retryable
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: exportFailed
+        message:
+          type: string
+          description: Error message
+          example: Failed to connect to data source
+        stack:
+          type: string
+          description: Stack trace (only in development)
+        retryable:
+          type: boolean
+          description: Whether the error is retryable
+      description: Job error data (when failed)
+    ReportJobListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportJob'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Report job collection response (page-based)
+    ReportJobResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ReportJob'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single report job response
+    ReportJobResult:
+      type: object
+      properties:
+        filePath:
+          type: string
+          description: Path to generated file (server-side)
+        fileSize:
+          type: integer
+          format: int64
+          description: Generated file size in bytes
+          example: 102400
+        rowCount:
+          type: integer
+          format: int32
+          description: Number of rows in the report
+          example: 1500
+        downloadUrl:
+          type: string
+          description: Temporary download URL (expires)
+          example: https://storage.example.com/reports/abc123.csv?token=xyz
+        downloadExpiresAt:
+          type: string
+          format: date-time
+          description: Download URL expiration time
+        mimeType:
+          type: string
+          description: MIME type of the generated file
+          example: text/csv
+        deliveryStatus:
+          type: string
+          enum:
+            - pending
+            - sent
+            - failed
+          description: Delivery status (for scheduled reports)
+        deliveryError:
+          type: string
+          description: Delivery error message (if failed)
+      description: Job result data (when completed successfully)
+    ReportJobStatus:
+      type: string
+      enum:
+        - pending
+        - processing
+        - completed
+        - failed
+        - cancelled
+      description: Report job status
+    ReportJobType:
+      type: string
+      enum:
+        - manual
+        - scheduled
+      description: Report job type
+    ReportOptions:
+      type: object
+      properties:
+        delimiter:
+          type: string
+          description: CSV delimiter character
+        includeHeaders:
+          type: boolean
+          description: Include header row in CSV
+        sheetName:
+          type: string
+          description: Excel sheet name
+        autoFilter:
+          type: boolean
+          description: Enable auto-filter in Excel
+        freezeHeader:
+          type: boolean
+          description: Freeze header row in Excel
+        orientation:
+          allOf:
+            - $ref: '#/components/schemas/ReportOrientation'
+          description: Page orientation for PDF
+        pageSize:
+          allOf:
+            - $ref: '#/components/schemas/ReportPageSize'
+          description: Page size for PDF
+        marginTop:
+          type: integer
+          format: int32
+          description: Top margin in mm
+        marginRight:
+          type: integer
+          format: int32
+          description: Right margin in mm
+        marginBottom:
+          type: integer
+          format: int32
+          description: Bottom margin in mm
+        marginLeft:
+          type: integer
+          format: int32
+          description: Left margin in mm
+        title:
+          type: string
+          description: Report title (displayed at top)
+        subtitle:
+          type: string
+          description: Report subtitle
+        watermark:
+          type: string
+          description: Watermark text
+        includePageNumbers:
+          type: boolean
+          description: Include page numbers
+        includeTimestamp:
+          type: boolean
+          description: Include generation timestamp
+        printerWidth:
+          type: integer
+          format: int32
+          description: Printer paper width (58mm or 80mm)
+        encoding:
+          type: string
+          description: Character encoding
+        autoCut:
+          type: boolean
+          description: Cut paper after printing
+      description: Report format-specific options
+    ReportOrientation:
+      type: string
+      enum:
+        - portrait
+        - landscape
+      description: Page orientation for PDF reports
+    ReportPageSize:
+      type: string
+      enum:
+        - a4
+        - letter
+        - legal
+        - a3
+      description: Page size for PDF reports
+    ReportTemplate:
+      type: object
+      required:
+        - id
+        - orgId
+        - name
+        - format
+        - templateEngine
+        - templateContent
+        - columns
+        - isPublic
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: 'Unique template identifier (format: tpl_{randomString})'
+          example: tpl_abc123xyz
+        orgId:
+          type: string
+          description: Organization ID (tenant scope)
+          example: org_xyz789
+        name:
+          type: string
+          description: Template name
+          example: Monthly Sales Report
+        description:
+          type: string
+          description: Template description
+          example: Summarizes sales data by product category
+        format:
+          allOf:
+            - $ref: '#/components/schemas/ReportFormat'
+          description: Output format
+        templateEngine:
+          type: string
+          description: Template engine (currently only eta supported)
+          example: eta
+        templateContent:
+          type: string
+          description: Template content (Eta template string)
+          example: <% it.data.forEach(row => { %><%= row.name %><% }) %>
+        options:
+          allOf:
+            - $ref: '#/components/schemas/ReportOptions'
+          description: Format-specific options
+        dataSource:
+          allOf:
+            - $ref: '#/components/schemas/DataSourceConfig'
+          description: Data source configuration
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportColumnConfig'
+          description: Column definitions
+        isPublic:
+          type: boolean
+          description: Whether template is visible to all org members
+        createdBy:
+          type: string
+          description: User ID who created the template
+          example: usr_creator123
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the template was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the template was last updated
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the template was soft deleted (null if not deleted)
+      description: |-
+        Report Template resource model
+
+        Defines reusable report configurations with:
+        - Multiple output formats (CSV, Excel, PDF, Thermal, Dot-Matrix)
+        - Eta template engine for custom layouts
+        - Column definitions with formatting
+        - Data source configuration
+        - Multi-tenant scoping
+    ReportTemplateListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportTemplate'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Report template collection response (page-based)
+    ReportTemplateResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ReportTemplate'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single report template response
     ResponseMeta:
       type: object
       required:
@@ -5132,6 +7027,168 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Single role response
+    ScheduleFrequency:
+      type: string
+      enum:
+        - once
+        - daily
+        - weekly
+        - monthly
+        - custom
+      description: Schedule frequency
+    ScheduledReport:
+      type: object
+      required:
+        - id
+        - orgId
+        - templateId
+        - name
+        - frequency
+        - timezone
+        - startDate
+        - deliveryMethod
+        - isActive
+        - failureCount
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: 'Unique schedule identifier (format: sched_{randomString})'
+          example: sched_abc123xyz
+        orgId:
+          type: string
+          description: Organization ID (tenant scope)
+          example: org_xyz789
+        templateId:
+          type: string
+          description: Associated report template ID
+          example: tpl_template123
+        name:
+          type: string
+          description: Schedule name
+          example: Weekly Sales Summary
+        description:
+          type: string
+          description: Schedule description
+          example: Sends sales summary every Monday morning
+        frequency:
+          allOf:
+            - $ref: '#/components/schemas/ScheduleFrequency'
+          description: Schedule frequency
+        cronExpression:
+          type: string
+          description: Cron expression (required when frequency is custom)
+          example: 0 9 * * MON
+        dayOfWeek:
+          allOf:
+            - $ref: '#/components/schemas/DayOfWeek'
+          description: Day of week (for weekly frequency)
+        dayOfMonth:
+          type: integer
+          format: int32
+          description: Day of month (for monthly frequency, 1-28)
+        hour:
+          type: integer
+          format: int32
+          description: Hour to run (0-23)
+          example: 9
+        minute:
+          type: integer
+          format: int32
+          description: Minute to run (0-59)
+          example: 0
+        timezone:
+          type: string
+          description: Timezone for scheduling
+          example: America/New_York
+        startDate:
+          type: string
+          format: date-time
+          description: Start date for the schedule
+        endDate:
+          type: string
+          format: date-time
+          description: End date for the schedule (null = runs indefinitely)
+        deliveryMethod:
+          allOf:
+            - $ref: '#/components/schemas/DeliveryMethod'
+          description: Delivery method
+        deliveryConfig:
+          allOf:
+            - $ref: '#/components/schemas/DeliveryConfig'
+          description: Delivery configuration
+        parameters:
+          type: object
+          additionalProperties: {}
+          description: Runtime parameters passed to template
+        isActive:
+          type: boolean
+          description: Whether the schedule is active
+        lastRunAt:
+          type: string
+          format: date-time
+          description: Timestamp of last successful run
+        nextRunAt:
+          type: string
+          format: date-time
+          description: Timestamp of next scheduled run
+        failureCount:
+          type: integer
+          format: int32
+          description: Number of consecutive failures
+        createdBy:
+          type: string
+          description: User ID who created the schedule
+          example: usr_creator123
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the schedule was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the schedule was last updated
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the schedule was soft deleted
+      description: |-
+        Scheduled Report resource model
+
+        Defines automated report generation with:
+        - Flexible scheduling (daily, weekly, monthly, custom cron)
+        - Multiple delivery methods (email, webhook, storage)
+        - Template-based generation
+        - Multi-tenant scoping
+    ScheduledReportListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduledReport'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Scheduled report collection response (page-based)
+    ScheduledReportResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ScheduledReport'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single scheduled report response
     SendNotificationRequest:
       type: object
       required:
@@ -5242,6 +7299,75 @@ components:
         Response for soft delete operations
 
         Includes resource ID, deletion metadata, and restore information
+    StorageDeliveryConfig:
+      type: object
+      required:
+        - pathTemplate
+      properties:
+        pathTemplate:
+          type: string
+          description: Storage path template (supports variables like {{date}}, {{name}})
+          example: /reports/{{year}}/{{month}}/{{name}}-{{date}}.csv
+        provider:
+          type: string
+          description: Storage provider (local, s3, etc.)
+        bucket:
+          type: string
+          description: Storage bucket (for cloud providers)
+      description: Storage delivery configuration
+    StorageDeliveryConfigUpdate:
+      type: object
+      properties:
+        pathTemplate:
+          type: string
+          description: Storage path template (supports variables like {{date}}, {{name}})
+          example: /reports/{{year}}/{{month}}/{{name}}-{{date}}.csv
+        provider:
+          type: string
+          description: Storage provider (local, s3, etc.)
+        bucket:
+          type: string
+          description: Storage bucket (for cloud providers)
+      description: Storage delivery configuration
+    StreamExportRequest:
+      type: object
+      required:
+        - format
+      properties:
+        templateId:
+          type: string
+          description: Report template ID
+        format:
+          type: string
+          enum:
+            - csv
+            - excel
+          description: Output format (only csv and excel supported)
+        filters:
+          type: object
+          additionalProperties: {}
+          description: Filters to apply
+        sort:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              direction:
+                type: string
+                enum:
+                  - asc
+                  - desc
+            required:
+              - field
+              - direction
+          description: Sort configuration
+        batchSize:
+          type: integer
+          format: int32
+          description: Batch size for streaming
+      description: Request body for streaming export
     SwitchContextRequest:
       type: object
       properties:
@@ -5386,6 +7512,39 @@ components:
           type: string
           description: Quiet hours timezone (IANA format)
       description: Request body for updating notification preferences
+    UpdateReportTemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Template name
+        description:
+          type: string
+          description: Template description
+        format:
+          allOf:
+            - $ref: '#/components/schemas/ReportFormat'
+          description: Output format
+        templateContent:
+          type: string
+          description: Template content
+        options:
+          allOf:
+            - $ref: '#/components/schemas/ReportOptions'
+          description: Format-specific options
+        dataSource:
+          allOf:
+            - $ref: '#/components/schemas/DataSourceConfigUpdate'
+          description: Data source configuration
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportColumnConfig'
+          description: Column definitions
+        isPublic:
+          type: boolean
+          description: Whether template is visible to all org members
+      description: Request body for updating a report template
     UpdateRoleRequest:
       type: object
       properties:
@@ -5404,6 +7563,68 @@ components:
             $ref: '#/components/schemas/PermissionInput'
           description: Permissions to grant (replaces existing permissions)
       description: Request to update a role
+    UpdateScheduledReportRequest:
+      type: object
+      properties:
+        templateId:
+          type: string
+          description: Associated report template ID
+        name:
+          type: string
+          description: Schedule name
+        description:
+          type: string
+          description: Schedule description
+        frequency:
+          allOf:
+            - $ref: '#/components/schemas/ScheduleFrequency'
+          description: Schedule frequency
+        cronExpression:
+          type: string
+          description: Cron expression
+        dayOfWeek:
+          allOf:
+            - $ref: '#/components/schemas/DayOfWeek'
+          description: Day of week
+        dayOfMonth:
+          type: integer
+          format: int32
+          description: Day of month
+        hour:
+          type: integer
+          format: int32
+          description: Hour to run
+        minute:
+          type: integer
+          format: int32
+          description: Minute to run
+        timezone:
+          type: string
+          description: Timezone
+        startDate:
+          type: string
+          format: date-time
+          description: Start date
+        endDate:
+          type: string
+          format: date-time
+          description: End date
+        deliveryMethod:
+          allOf:
+            - $ref: '#/components/schemas/DeliveryMethod'
+          description: Delivery method
+        deliveryConfig:
+          allOf:
+            - $ref: '#/components/schemas/DeliveryConfigUpdate'
+          description: Delivery configuration
+        parameters:
+          type: object
+          additionalProperties: {}
+          description: Runtime parameters
+        isActive:
+          type: boolean
+          description: Whether the schedule is active
+      description: Request body for updating a scheduled report
     UpdateWebhookRequest:
       type: object
       properties:
@@ -5815,6 +8036,46 @@ components:
         Webhook delivery attempt record
 
         Tracks each attempt to deliver a webhook payload.
+    WebhookDeliveryConfig:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: Webhook URL to POST the report
+          example: https://api.example.com/reports/incoming
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom headers to include
+        attachmentMode:
+          type: string
+          enum:
+            - attachment
+            - base64
+          description: Include report as attachment or inline base64
+      description: Webhook delivery configuration
+    WebhookDeliveryConfigUpdate:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Webhook URL to POST the report
+          example: https://api.example.com/reports/incoming
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom headers to include
+        attachmentMode:
+          type: string
+          enum:
+            - attachment
+            - base64
+          description: Include report as attachment or inline base64
+      description: Webhook delivery configuration
     WebhookDeliveryListResponse:
       type: object
       required:

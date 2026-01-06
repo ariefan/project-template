@@ -110,7 +110,17 @@
       "Bash(pnpm --filter @workspace/contracts tsp compile:*)",
       "Bash(pnpm --filter @workspace/contracts build:tsp:*)",
       "Bash(npx @tailwindcss/upgrade)",
-      "Bash(pnpm --filter @workspace/ui typecheck:*)"
+      "Bash(pnpm --filter @workspace/ui typecheck:*)",
+      "Bash(pnpm --filter @workspace/contracts tsc:*)",
+      "Bash(pnpm --filter @workspace/db db:generate:*)",
+      "Bash(pnpm --filter @workspace/reports typecheck:*)",
+      "Bash(pnpm --filter @workspace/reports lint:*)",
+      "Bash(pnpm --filter @workspace/reports test:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" psql:*)",
+      "Bash(pnpm --filter @workspace/ui add:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" QUEUE_ENABLED=true timeout 10 pnpm:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm --filter @workspace/db drizzle-kit:*)",
+      "Bash(pnpm --filter @workspace/realtime typecheck:*)"
     ]
   }
 }

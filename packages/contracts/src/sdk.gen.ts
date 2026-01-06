@@ -2,8 +2,8 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AllUserRolesListData, AllUserRolesListResponses, AuditLogsExportData, AuditLogsExportResponses, AuditLogsGetData, AuditLogsGetResponses, AuditLogsListData, AuditLogsListResponses, AvailableContextsListData, AvailableContextsListResponses, ContextSwitchSwitchData, ContextSwitchSwitchResponses, CurrentUserContextGetData, CurrentUserContextGetResponses, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponses, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponses, ExampleCommentsCreateData, ExampleCommentsCreateResponses, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponses, ExampleCommentsDeleteResponses, ExampleCommentsGetData, ExampleCommentsGetResponses, ExampleCommentsListData, ExampleCommentsListResponses, ExampleCommentsRestoreData, ExampleCommentsRestoreResponses, ExampleCommentsUpdateData, ExampleCommentsUpdateResponses, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponses, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponses, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponses, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponses, ExamplePostsCreateData, ExamplePostsCreateResponses, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponses, ExamplePostsDeleteResponses, ExamplePostsGetData, ExamplePostsGetResponses, ExamplePostsListCursorData, ExamplePostsListCursorResponses, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponses, ExamplePostsListResponses, ExamplePostsRestoreData, ExamplePostsRestoreResponses, ExamplePostsUpdateData, ExamplePostsUpdateResponses, FilesConfirmUploadData, FilesConfirmUploadResponses, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponses, FilesDeleteResponses, FilesDirectUploadData, FilesDirectUploadResponses, FilesDownloadData, FilesDownloadResponses, FilesGetData, FilesGetResponses, FilesInitiateUploadData, FilesInitiateUploadResponses, FilesListData, FilesListResponses, FilesUpdateData, FilesUpdateResponses, GlobalRolesCreateData, GlobalRolesCreateResponses, GlobalRolesDeleteData, GlobalRolesDeleteResponses, GlobalRolesGetData, GlobalRolesGetResponses, GlobalRolesListData, GlobalRolesListResponses, GlobalRolesUpdateData, GlobalRolesUpdateResponses, HealthCheckData, HealthCheckResponses, JobsCancelData, JobsCancelResponses, JobsGetData, JobsGetResponses, JobsListData, JobsListResponses, MigrationGetStatusData, MigrationGetStatusResponses, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponses, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponses, NotificationsDeleteData, NotificationsDeleteResponses, NotificationsGetData, NotificationsGetResponses, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponses, NotificationsListData, NotificationsListResponses, NotificationsMarkAllReadData, NotificationsMarkAllReadResponses, NotificationsMarkReadData, NotificationsMarkReadResponses, NotificationsMarkUnreadData, NotificationsMarkUnreadResponses, NotificationsRestoreData, NotificationsRestoreResponses, NotificationsSendData, NotificationsSendResponses, TenantRolesCreateData, TenantRolesCreateResponses, TenantRolesDeleteData, TenantRolesDeleteResponses, TenantRolesGetData, TenantRolesGetResponses, TenantRolesListData, TenantRolesListResponses, TenantRolesUpdateData, TenantRolesUpdateResponses, UserPermissionsGetData, UserPermissionsGetResponses, UserTenantRolesAssignData, UserTenantRolesAssignResponses, UserTenantRolesListData, UserTenantRolesListResponses, UserTenantRolesRemoveData, UserTenantRolesRemoveResponses, WebhooksCreateData, WebhooksCreateResponses, WebhooksDeleteData, WebhooksDeleteResponses, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponses, WebhooksGetResponses, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponses, WebhooksListEventTypesData, WebhooksListEventTypesResponses, WebhooksListResponses, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponses, WebhooksRotateSecretData, WebhooksRotateSecretResponses, WebhooksTestData, WebhooksTestResponses, WebhooksUpdateData, WebhooksUpdateResponses } from './types.gen';
-import { zAllUserRolesListData, zAllUserRolesListResponse, zAuditLogsExportData, zAuditLogsExportResponse, zAuditLogsGetData, zAuditLogsGetResponse, zAuditLogsListData, zAuditLogsListResponse, zAvailableContextsListData, zAvailableContextsListResponse, zContextSwitchSwitchData, zContextSwitchSwitchResponse, zCurrentUserContextGetData, zCurrentUserContextGetResponse, zExampleCommentsBatchCreateData, zExampleCommentsBatchCreateResponse, zExampleCommentsBatchSoftDeleteData, zExampleCommentsBatchSoftDeleteResponse, zExampleCommentsCreateData, zExampleCommentsCreateResponse, zExampleCommentsDeleteData, zExampleCommentsDeletePermanentData, zExampleCommentsDeletePermanentResponse, zExampleCommentsDeleteResponse, zExampleCommentsGetData, zExampleCommentsGetResponse, zExampleCommentsListData, zExampleCommentsListResponse, zExampleCommentsRestoreData, zExampleCommentsRestoreResponse, zExampleCommentsUpdateData, zExampleCommentsUpdateResponse, zExamplePostsBatchCreateData, zExamplePostsBatchCreateResponse, zExamplePostsBatchRestoreData, zExamplePostsBatchRestoreResponse, zExamplePostsBatchSoftDeleteData, zExamplePostsBatchSoftDeleteResponse, zExamplePostsBatchUpdateData, zExamplePostsBatchUpdateResponse, zExamplePostsCreateData, zExamplePostsCreateResponse, zExamplePostsDeleteData, zExamplePostsDeletePermanentData, zExamplePostsDeletePermanentResponse, zExamplePostsDeleteResponse, zExamplePostsGetData, zExamplePostsGetResponse, zExamplePostsListCursorData, zExamplePostsListCursorResponse, zExamplePostsListData, zExamplePostsListDeletedData, zExamplePostsListDeletedResponse, zExamplePostsListResponse, zExamplePostsRestoreData, zExamplePostsRestoreResponse, zExamplePostsUpdateData, zExamplePostsUpdateResponse, zFilesConfirmUploadData, zFilesConfirmUploadResponse, zFilesDeleteData, zFilesDeletePermanentData, zFilesDeletePermanentResponse, zFilesDeleteResponse, zFilesDirectUploadData, zFilesDirectUploadResponse, zFilesDownloadData, zFilesDownloadResponse, zFilesGetData, zFilesGetResponse, zFilesInitiateUploadData, zFilesInitiateUploadResponse, zFilesListData, zFilesListResponse, zFilesUpdateData, zFilesUpdateResponse, zGlobalRolesCreateData, zGlobalRolesCreateResponse, zGlobalRolesDeleteData, zGlobalRolesDeleteResponse, zGlobalRolesGetData, zGlobalRolesGetResponse, zGlobalRolesListData, zGlobalRolesListResponse, zGlobalRolesUpdateData, zGlobalRolesUpdateResponse, zHealthCheckData, zHealthCheckResponse, zJobsCancelData, zJobsCancelResponse, zJobsGetData, zJobsGetResponse, zJobsListData, zJobsListResponse, zMigrationGetStatusData, zMigrationGetStatusResponse, zNotificationPreferencesRoutesGetPreferencesData, zNotificationPreferencesRoutesGetPreferencesResponse, zNotificationPreferencesRoutesUpdatePreferencesData, zNotificationPreferencesRoutesUpdatePreferencesResponse, zNotificationsDeleteData, zNotificationsDeleteResponse, zNotificationsGetData, zNotificationsGetResponse, zNotificationsGetUnreadCountData, zNotificationsGetUnreadCountResponse, zNotificationsListData, zNotificationsListResponse, zNotificationsMarkAllReadData, zNotificationsMarkAllReadResponse, zNotificationsMarkReadData, zNotificationsMarkReadResponse, zNotificationsMarkUnreadData, zNotificationsMarkUnreadResponse, zNotificationsRestoreData, zNotificationsRestoreResponse, zNotificationsSendData, zNotificationsSendResponse, zTenantRolesCreateData, zTenantRolesCreateResponse, zTenantRolesDeleteData, zTenantRolesDeleteResponse, zTenantRolesGetData, zTenantRolesGetResponse, zTenantRolesListData, zTenantRolesListResponse, zTenantRolesUpdateData, zTenantRolesUpdateResponse, zUserPermissionsGetData, zUserPermissionsGetResponse, zUserTenantRolesAssignData, zUserTenantRolesAssignResponse, zUserTenantRolesListData, zUserTenantRolesListResponse, zUserTenantRolesRemoveData, zUserTenantRolesRemoveResponse, zWebhooksCreateData, zWebhooksCreateResponse, zWebhooksDeleteData, zWebhooksDeleteResponse, zWebhooksGetData, zWebhooksGetDeliveryData, zWebhooksGetDeliveryResponse, zWebhooksGetResponse, zWebhooksListData, zWebhooksListDeliveriesData, zWebhooksListDeliveriesResponse, zWebhooksListEventTypesData, zWebhooksListEventTypesResponse, zWebhooksListResponse, zWebhooksRetryDeliveryData, zWebhooksRetryDeliveryResponse, zWebhooksRotateSecretData, zWebhooksRotateSecretResponse, zWebhooksTestData, zWebhooksTestResponse, zWebhooksUpdateData, zWebhooksUpdateResponse } from './zod.gen';
+import type { AllUserRolesListData, AllUserRolesListResponses, AuditLogsExportData, AuditLogsExportResponses, AuditLogsGetData, AuditLogsGetResponses, AuditLogsListData, AuditLogsListResponses, AvailableContextsListData, AvailableContextsListResponses, ContextSwitchSwitchData, ContextSwitchSwitchResponses, CurrentUserContextGetData, CurrentUserContextGetResponses, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponses, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponses, ExampleCommentsCreateData, ExampleCommentsCreateResponses, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponses, ExampleCommentsDeleteResponses, ExampleCommentsGetData, ExampleCommentsGetResponses, ExampleCommentsListData, ExampleCommentsListResponses, ExampleCommentsRestoreData, ExampleCommentsRestoreResponses, ExampleCommentsUpdateData, ExampleCommentsUpdateResponses, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponses, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponses, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponses, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponses, ExamplePostsCreateData, ExamplePostsCreateResponses, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponses, ExamplePostsDeleteResponses, ExamplePostsGetData, ExamplePostsGetResponses, ExamplePostsListCursorData, ExamplePostsListCursorResponses, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponses, ExamplePostsListResponses, ExamplePostsRestoreData, ExamplePostsRestoreResponses, ExamplePostsUpdateData, ExamplePostsUpdateResponses, FilesConfirmUploadData, FilesConfirmUploadResponses, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponses, FilesDeleteResponses, FilesDirectUploadData, FilesDirectUploadResponses, FilesDownloadData, FilesDownloadResponses, FilesGetData, FilesGetResponses, FilesInitiateUploadData, FilesInitiateUploadResponses, FilesListData, FilesListResponses, FilesUpdateData, FilesUpdateResponses, GlobalRolesCreateData, GlobalRolesCreateResponses, GlobalRolesDeleteData, GlobalRolesDeleteResponses, GlobalRolesGetData, GlobalRolesGetResponses, GlobalRolesListData, GlobalRolesListResponses, GlobalRolesUpdateData, GlobalRolesUpdateResponses, HealthCheckData, HealthCheckResponses, JobsCancelData, JobsCancelResponses, JobsGetData, JobsGetResponses, JobsListData, JobsListResponses, MigrationGetStatusData, MigrationGetStatusResponses, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponses, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponses, NotificationsDeleteData, NotificationsDeleteResponses, NotificationsGetData, NotificationsGetResponses, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponses, NotificationsListData, NotificationsListResponses, NotificationsMarkAllReadData, NotificationsMarkAllReadResponses, NotificationsMarkReadData, NotificationsMarkReadResponses, NotificationsMarkUnreadData, NotificationsMarkUnreadResponses, NotificationsRestoreData, NotificationsRestoreResponses, NotificationsSendData, NotificationsSendResponses, ReportExportsExportData, ReportExportsExportResponses, ReportExportsPreviewExportData, ReportExportsPreviewExportResponses, ReportExportsStreamExportData, ReportExportsStreamExportResponses, ReportJobsCancelData, ReportJobsCancelResponses, ReportJobsDownloadData, ReportJobsDownloadResponses, ReportJobsGetData, ReportJobsGetResponses, ReportJobsListData, ReportJobsListResponses, ReportJobsRetryData, ReportJobsRetryResponses, ReportTemplatesCloneData, ReportTemplatesCloneResponses, ReportTemplatesCreateData, ReportTemplatesCreateResponses, ReportTemplatesDeleteData, ReportTemplatesDeleteResponses, ReportTemplatesGetData, ReportTemplatesGetResponses, ReportTemplatesListData, ReportTemplatesListResponses, ReportTemplatesTestData, ReportTemplatesTestResponses, ReportTemplatesUpdateData, ReportTemplatesUpdateResponses, ScheduledReportsCreateData, ScheduledReportsCreateResponses, ScheduledReportsDeleteData, ScheduledReportsDeleteResponses, ScheduledReportsGetData, ScheduledReportsGetHistoryData, ScheduledReportsGetHistoryResponses, ScheduledReportsGetResponses, ScheduledReportsListData, ScheduledReportsListResponses, ScheduledReportsPauseData, ScheduledReportsPauseResponses, ScheduledReportsResumeData, ScheduledReportsResumeResponses, ScheduledReportsRunNowData, ScheduledReportsRunNowResponses, ScheduledReportsUpdateData, ScheduledReportsUpdateResponses, TenantRolesCreateData, TenantRolesCreateResponses, TenantRolesDeleteData, TenantRolesDeleteResponses, TenantRolesGetData, TenantRolesGetResponses, TenantRolesListData, TenantRolesListResponses, TenantRolesUpdateData, TenantRolesUpdateResponses, UserPermissionsGetData, UserPermissionsGetResponses, UserTenantRolesAssignData, UserTenantRolesAssignResponses, UserTenantRolesListData, UserTenantRolesListResponses, UserTenantRolesRemoveData, UserTenantRolesRemoveResponses, WebhooksCreateData, WebhooksCreateResponses, WebhooksDeleteData, WebhooksDeleteResponses, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponses, WebhooksGetResponses, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponses, WebhooksListEventTypesData, WebhooksListEventTypesResponses, WebhooksListResponses, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponses, WebhooksRotateSecretData, WebhooksRotateSecretResponses, WebhooksTestData, WebhooksTestResponses, WebhooksUpdateData, WebhooksUpdateResponses } from './types.gen';
+import { zAllUserRolesListData, zAllUserRolesListResponse, zAuditLogsExportData, zAuditLogsExportResponse, zAuditLogsGetData, zAuditLogsGetResponse, zAuditLogsListData, zAuditLogsListResponse, zAvailableContextsListData, zAvailableContextsListResponse, zContextSwitchSwitchData, zContextSwitchSwitchResponse, zCurrentUserContextGetData, zCurrentUserContextGetResponse, zExampleCommentsBatchCreateData, zExampleCommentsBatchCreateResponse, zExampleCommentsBatchSoftDeleteData, zExampleCommentsBatchSoftDeleteResponse, zExampleCommentsCreateData, zExampleCommentsCreateResponse, zExampleCommentsDeleteData, zExampleCommentsDeletePermanentData, zExampleCommentsDeletePermanentResponse, zExampleCommentsDeleteResponse, zExampleCommentsGetData, zExampleCommentsGetResponse, zExampleCommentsListData, zExampleCommentsListResponse, zExampleCommentsRestoreData, zExampleCommentsRestoreResponse, zExampleCommentsUpdateData, zExampleCommentsUpdateResponse, zExamplePostsBatchCreateData, zExamplePostsBatchCreateResponse, zExamplePostsBatchRestoreData, zExamplePostsBatchRestoreResponse, zExamplePostsBatchSoftDeleteData, zExamplePostsBatchSoftDeleteResponse, zExamplePostsBatchUpdateData, zExamplePostsBatchUpdateResponse, zExamplePostsCreateData, zExamplePostsCreateResponse, zExamplePostsDeleteData, zExamplePostsDeletePermanentData, zExamplePostsDeletePermanentResponse, zExamplePostsDeleteResponse, zExamplePostsGetData, zExamplePostsGetResponse, zExamplePostsListCursorData, zExamplePostsListCursorResponse, zExamplePostsListData, zExamplePostsListDeletedData, zExamplePostsListDeletedResponse, zExamplePostsListResponse, zExamplePostsRestoreData, zExamplePostsRestoreResponse, zExamplePostsUpdateData, zExamplePostsUpdateResponse, zFilesConfirmUploadData, zFilesConfirmUploadResponse, zFilesDeleteData, zFilesDeletePermanentData, zFilesDeletePermanentResponse, zFilesDeleteResponse, zFilesDirectUploadData, zFilesDirectUploadResponse, zFilesDownloadData, zFilesDownloadResponse, zFilesGetData, zFilesGetResponse, zFilesInitiateUploadData, zFilesInitiateUploadResponse, zFilesListData, zFilesListResponse, zFilesUpdateData, zFilesUpdateResponse, zGlobalRolesCreateData, zGlobalRolesCreateResponse, zGlobalRolesDeleteData, zGlobalRolesDeleteResponse, zGlobalRolesGetData, zGlobalRolesGetResponse, zGlobalRolesListData, zGlobalRolesListResponse, zGlobalRolesUpdateData, zGlobalRolesUpdateResponse, zHealthCheckData, zHealthCheckResponse, zJobsCancelData, zJobsCancelResponse, zJobsGetData, zJobsGetResponse, zJobsListData, zJobsListResponse, zMigrationGetStatusData, zMigrationGetStatusResponse, zNotificationPreferencesRoutesGetPreferencesData, zNotificationPreferencesRoutesGetPreferencesResponse, zNotificationPreferencesRoutesUpdatePreferencesData, zNotificationPreferencesRoutesUpdatePreferencesResponse, zNotificationsDeleteData, zNotificationsDeleteResponse, zNotificationsGetData, zNotificationsGetResponse, zNotificationsGetUnreadCountData, zNotificationsGetUnreadCountResponse, zNotificationsListData, zNotificationsListResponse, zNotificationsMarkAllReadData, zNotificationsMarkAllReadResponse, zNotificationsMarkReadData, zNotificationsMarkReadResponse, zNotificationsMarkUnreadData, zNotificationsMarkUnreadResponse, zNotificationsRestoreData, zNotificationsRestoreResponse, zNotificationsSendData, zNotificationsSendResponse, zReportExportsExportData, zReportExportsExportResponse, zReportExportsPreviewExportData, zReportExportsPreviewExportResponse, zReportExportsStreamExportData, zReportExportsStreamExportResponse, zReportJobsCancelData, zReportJobsCancelResponse, zReportJobsDownloadData, zReportJobsDownloadResponse, zReportJobsGetData, zReportJobsGetResponse, zReportJobsListData, zReportJobsListResponse, zReportJobsRetryData, zReportJobsRetryResponse, zReportTemplatesCloneData, zReportTemplatesCloneResponse, zReportTemplatesCreateData, zReportTemplatesCreateResponse, zReportTemplatesDeleteData, zReportTemplatesDeleteResponse, zReportTemplatesGetData, zReportTemplatesGetResponse, zReportTemplatesListData, zReportTemplatesListResponse, zReportTemplatesTestData, zReportTemplatesTestResponse, zReportTemplatesUpdateData, zReportTemplatesUpdateResponse, zScheduledReportsCreateData, zScheduledReportsCreateResponse, zScheduledReportsDeleteData, zScheduledReportsDeleteResponse, zScheduledReportsGetData, zScheduledReportsGetHistoryData, zScheduledReportsGetHistoryResponse, zScheduledReportsGetResponse, zScheduledReportsListData, zScheduledReportsListResponse, zScheduledReportsPauseData, zScheduledReportsPauseResponse, zScheduledReportsResumeData, zScheduledReportsResumeResponse, zScheduledReportsRunNowData, zScheduledReportsRunNowResponse, zScheduledReportsUpdateData, zScheduledReportsUpdateResponse, zTenantRolesCreateData, zTenantRolesCreateResponse, zTenantRolesDeleteData, zTenantRolesDeleteResponse, zTenantRolesGetData, zTenantRolesGetResponse, zTenantRolesListData, zTenantRolesListResponse, zTenantRolesUpdateData, zTenantRolesUpdateResponse, zUserPermissionsGetData, zUserPermissionsGetResponse, zUserTenantRolesAssignData, zUserTenantRolesAssignResponse, zUserTenantRolesListData, zUserTenantRolesListResponse, zUserTenantRolesRemoveData, zUserTenantRolesRemoveResponse, zWebhooksCreateData, zWebhooksCreateResponse, zWebhooksDeleteData, zWebhooksDeleteResponse, zWebhooksGetData, zWebhooksGetDeliveryData, zWebhooksGetDeliveryResponse, zWebhooksGetResponse, zWebhooksListData, zWebhooksListDeliveriesData, zWebhooksListDeliveriesResponse, zWebhooksListEventTypesData, zWebhooksListEventTypesResponse, zWebhooksListResponse, zWebhooksRetryDeliveryData, zWebhooksRetryDeliveryResponse, zWebhooksRotateSecretData, zWebhooksRotateSecretResponse, zWebhooksTestData, zWebhooksTestResponse, zWebhooksUpdateData, zWebhooksUpdateResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -721,6 +721,342 @@ export const jobsCancel = <ThrowOnError extends boolean = false>(options: Option
     responseValidator: async (data) => await zJobsCancelResponse.parseAsync(data),
     url: '/v1/orgs/{orgId}/jobs/{jobId}/cancel',
     ...options
+});
+
+/**
+ * Export data
+ *
+ * Export data synchronously
+ *
+ * For small datasets (<10,000 rows). Returns the file directly.
+ * For larger datasets, use async=true to get a job ID.
+ */
+export const reportExportsExport = <ThrowOnError extends boolean = false>(options: Options<ReportExportsExportData, ThrowOnError>) => (options.client ?? client).post<ReportExportsExportResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportExportsExportData.parseAsync(data),
+    responseValidator: async (data) => await zReportExportsExportResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/export',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Preview export
+ *
+ * Preview export (first N rows)
+ *
+ * Useful for testing templates and verifying data before full export.
+ */
+export const reportExportsPreviewExport = <ThrowOnError extends boolean = false>(options: Options<ReportExportsPreviewExportData, ThrowOnError>) => (options.client ?? client).post<ReportExportsPreviewExportResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportExportsPreviewExportData.parseAsync(data),
+    responseValidator: async (data) => await zReportExportsPreviewExportResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/export/preview',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Stream export data
+ *
+ * Export data as streaming response
+ *
+ * For large datasets. Streams data in chunks as it's generated.
+ * Only supports CSV and Excel formats.
+ */
+export const reportExportsStreamExport = <ThrowOnError extends boolean = false>(options: Options<ReportExportsStreamExportData, ThrowOnError>) => (options.client ?? client).post<ReportExportsStreamExportResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportExportsStreamExportData.parseAsync(data),
+    responseValidator: async (data) => await zReportExportsStreamExportResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/export/stream',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List report jobs
+ *
+ * List report jobs in an organization
+ */
+export const reportJobsList = <ThrowOnError extends boolean = false>(options: Options<ReportJobsListData, ThrowOnError>) => (options.client ?? client).get<ReportJobsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportJobsListData.parseAsync(data),
+    responseValidator: async (data) => await zReportJobsListResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/jobs',
+    ...options
+});
+
+/**
+ * Cancel report job
+ *
+ * Cancel a pending or processing job
+ */
+export const reportJobsCancel = <ThrowOnError extends boolean = false>(options: Options<ReportJobsCancelData, ThrowOnError>) => (options.client ?? client).delete<ReportJobsCancelResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportJobsCancelData.parseAsync(data),
+    responseValidator: async (data) => await zReportJobsCancelResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}',
+    ...options
+});
+
+/**
+ * Get report job
+ *
+ * Get a report job by ID
+ */
+export const reportJobsGet = <ThrowOnError extends boolean = false>(options: Options<ReportJobsGetData, ThrowOnError>) => (options.client ?? client).get<ReportJobsGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportJobsGetData.parseAsync(data),
+    responseValidator: async (data) => await zReportJobsGetResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}',
+    ...options
+});
+
+/**
+ * Download job result
+ *
+ * Download the result of a completed job
+ */
+export const reportJobsDownload = <ThrowOnError extends boolean = false>(options: Options<ReportJobsDownloadData, ThrowOnError>) => (options.client ?? client).get<ReportJobsDownloadResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportJobsDownloadData.parseAsync(data),
+    responseValidator: async (data) => await zReportJobsDownloadResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}/download',
+    ...options
+});
+
+/**
+ * Retry failed job
+ *
+ * Retry a failed job
+ */
+export const reportJobsRetry = <ThrowOnError extends boolean = false>(options: Options<ReportJobsRetryData, ThrowOnError>) => (options.client ?? client).post<ReportJobsRetryResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportJobsRetryData.parseAsync(data),
+    responseValidator: async (data) => await zReportJobsRetryResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}/retry',
+    ...options
+});
+
+/**
+ * List scheduled reports
+ *
+ * List scheduled reports in an organization
+ */
+export const scheduledReportsList = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsListData, ThrowOnError>) => (options.client ?? client).get<ScheduledReportsListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsListData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsListResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules',
+    ...options
+});
+
+/**
+ * Create scheduled report
+ *
+ * Create a new scheduled report
+ */
+export const scheduledReportsCreate = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsCreateData, ThrowOnError>) => (options.client ?? client).post<ScheduledReportsCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsCreateData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsCreateResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete scheduled report
+ *
+ * Delete a scheduled report
+ */
+export const scheduledReportsDelete = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsDeleteData, ThrowOnError>) => (options.client ?? client).delete<ScheduledReportsDeleteResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsDeleteData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsDeleteResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}',
+    ...options
+});
+
+/**
+ * Get scheduled report
+ *
+ * Get a scheduled report by ID
+ */
+export const scheduledReportsGet = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsGetData, ThrowOnError>) => (options.client ?? client).get<ScheduledReportsGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsGetData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsGetResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}',
+    ...options
+});
+
+/**
+ * Update scheduled report
+ *
+ * Update a scheduled report
+ */
+export const scheduledReportsUpdate = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsUpdateData, ThrowOnError>) => (options.client ?? client).patch<ScheduledReportsUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsUpdateResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get schedule run history
+ *
+ * Get run history for a scheduled report
+ */
+export const scheduledReportsGetHistory = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsGetHistoryData, ThrowOnError>) => (options.client ?? client).get<ScheduledReportsGetHistoryResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsGetHistoryData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsGetHistoryResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/history',
+    ...options
+});
+
+/**
+ * Pause scheduled report
+ *
+ * Pause a scheduled report
+ */
+export const scheduledReportsPause = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsPauseData, ThrowOnError>) => (options.client ?? client).post<ScheduledReportsPauseResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsPauseData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsPauseResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/pause',
+    ...options
+});
+
+/**
+ * Resume scheduled report
+ *
+ * Resume a paused scheduled report
+ */
+export const scheduledReportsResume = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsResumeData, ThrowOnError>) => (options.client ?? client).post<ScheduledReportsResumeResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsResumeData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsResumeResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/resume',
+    ...options
+});
+
+/**
+ * Run scheduled report now
+ *
+ * Trigger a scheduled report to run immediately
+ */
+export const scheduledReportsRunNow = <ThrowOnError extends boolean = false>(options: Options<ScheduledReportsRunNowData, ThrowOnError>) => (options.client ?? client).post<ScheduledReportsRunNowResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zScheduledReportsRunNowData.parseAsync(data),
+    responseValidator: async (data) => await zScheduledReportsRunNowResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/run',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List report templates
+ *
+ * List report templates in an organization
+ */
+export const reportTemplatesList = <ThrowOnError extends boolean = false>(options: Options<ReportTemplatesListData, ThrowOnError>) => (options.client ?? client).get<ReportTemplatesListResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportTemplatesListData.parseAsync(data),
+    responseValidator: async (data) => await zReportTemplatesListResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/templates',
+    ...options
+});
+
+/**
+ * Create report template
+ *
+ * Create a new report template
+ */
+export const reportTemplatesCreate = <ThrowOnError extends boolean = false>(options: Options<ReportTemplatesCreateData, ThrowOnError>) => (options.client ?? client).post<ReportTemplatesCreateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportTemplatesCreateData.parseAsync(data),
+    responseValidator: async (data) => await zReportTemplatesCreateResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/templates',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete report template
+ *
+ * Delete a report template
+ */
+export const reportTemplatesDelete = <ThrowOnError extends boolean = false>(options: Options<ReportTemplatesDeleteData, ThrowOnError>) => (options.client ?? client).delete<ReportTemplatesDeleteResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportTemplatesDeleteData.parseAsync(data),
+    responseValidator: async (data) => await zReportTemplatesDeleteResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}',
+    ...options
+});
+
+/**
+ * Get report template
+ *
+ * Get a report template by ID
+ */
+export const reportTemplatesGet = <ThrowOnError extends boolean = false>(options: Options<ReportTemplatesGetData, ThrowOnError>) => (options.client ?? client).get<ReportTemplatesGetResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportTemplatesGetData.parseAsync(data),
+    responseValidator: async (data) => await zReportTemplatesGetResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}',
+    ...options
+});
+
+/**
+ * Update report template
+ *
+ * Update a report template
+ */
+export const reportTemplatesUpdate = <ThrowOnError extends boolean = false>(options: Options<ReportTemplatesUpdateData, ThrowOnError>) => (options.client ?? client).patch<ReportTemplatesUpdateResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportTemplatesUpdateData.parseAsync(data),
+    responseValidator: async (data) => await zReportTemplatesUpdateResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Clone report template
+ *
+ * Clone a report template
+ */
+export const reportTemplatesClone = <ThrowOnError extends boolean = false>(options: Options<ReportTemplatesCloneData, ThrowOnError>) => (options.client ?? client).post<ReportTemplatesCloneResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportTemplatesCloneData.parseAsync(data),
+    responseValidator: async (data) => await zReportTemplatesCloneResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}/clone',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Test report template
+ *
+ * Test a report template with sample data
+ */
+export const reportTemplatesTest = <ThrowOnError extends boolean = false>(options: Options<ReportTemplatesTestData, ThrowOnError>) => (options.client ?? client).post<ReportTemplatesTestResponses, unknown, ThrowOnError>({
+    requestValidator: async (data) => await zReportTemplatesTestData.parseAsync(data),
+    responseValidator: async (data) => await zReportTemplatesTestResponse.parseAsync(data),
+    url: '/v1/orgs/{orgId}/reports/templates/{templateId}/test',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

@@ -1,6 +1,8 @@
 "use client";
 
+import { Toaster } from "@workspace/ui/components/sonner";
 import type * as React from "react";
+import { NotificationListener } from "./notification-listener";
 import { QueryProvider } from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
 
@@ -14,6 +16,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
       >
         {children}
+        <NotificationListener />
+        <Toaster position="top-right" richColors />
       </ThemeProvider>
     </QueryProvider>
   );

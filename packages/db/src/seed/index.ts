@@ -15,9 +15,10 @@ import { and, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import * as schema from "./schema";
-import { DEFAULT_APPLICATION_ID } from "./schema/applications";
-import { SystemRoles } from "./schema/roles";
+import * as schema from "../schema";
+import { DEFAULT_APPLICATION_ID } from "../schema/applications";
+import { SystemRoles } from "../schema/roles";
+import { getLocale, getRandomContent, type LocaleData } from "./locales";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -29,6 +30,7 @@ interface SeedContext {
   db: Database;
   now: Date;
   passwordHash: string;
+  locale: LocaleData;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -40,6 +42,8 @@ const DATABASE_URL =
   "postgresql://postgres:postgres@localhost:5432/postgres";
 const BCRYPT_ROUNDS = 10;
 const DEFAULT_PASSWORD = "password123";
+const SEED_LOCALE = process.env.SEED_LOCALE ?? "en";
+const TRAILING_PERIOD_REGEX = /\.$/;
 
 // ─────────────────────────────────────────────────────────────
 // Demo Data
@@ -363,8 +367,12 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     "webhooks",
     "settings",
     "users",
+    "reports",
   ];
   const actions = ["read", "create", "update", "delete", "manage"];
+
+  // Resources where members get owner-based update/delete permissions
+  const memberOwnerResources = new Set(["posts", "comments", "reports"]);
 
   // Policy rules (ptype="p"): role -> app -> tenant -> resource -> action -> effect -> condition
   const policies: Array<{
@@ -420,6 +428,23 @@ async function seedCasbinPolicies(ctx: SeedContext) {
           });
         }
 
+        // Member can update/delete own resources (owner condition)
+        if (
+          (action === "update" || action === "delete") &&
+          memberOwnerResources.has(resource)
+        ) {
+          policies.push({
+            ptype: "p",
+            v0: SystemRoles.MEMBER,
+            v1: DEFAULT_APPLICATION_ID,
+            v2: org.id,
+            v3: resource,
+            v4: action,
+            v5: "allow",
+            v6: "owner", // Requires ownership check
+          });
+        }
+
         // Viewer can only read
         if (action === "read") {
           policies.push({
@@ -452,90 +477,134 @@ async function seedCasbinPolicies(ctx: SeedContext) {
 // Seed: Content (Posts & Comments)
 // ─────────────────────────────────────────────────────────────
 
-async function seedContent(ctx: SeedContext) {
-  const { db, now } = ctx;
+interface TitleGenerators {
+  locale: () => string;
+  catchPhrase: () => string;
+  phrase: () => string;
+  sentence: () => string;
+}
 
-  console.log("\n📝 Creating example posts...");
-  const posts = [
-    {
-      id: "post_welcome",
-      orgId: "org_acme",
-      title: "Welcome to Acme Corporation",
-      content:
-        "This is the first post in our organization. We're excited to have you here!",
-      authorId: "user_admin",
-      status: "published" as const,
-      publishedAt: now,
-    },
-    {
-      id: "post_update",
-      orgId: "org_acme",
-      title: "Q4 Product Update",
-      content:
-        "We've shipped several new features this quarter including improved dashboards, better notifications, and enhanced security.",
-      authorId: "user_admin",
-      status: "published" as const,
-      publishedAt: now,
-    },
-    {
-      id: "post_draft",
-      orgId: "org_acme",
-      title: "Draft: Upcoming Features",
-      content:
-        "This is a draft post about upcoming features that hasn't been published yet.",
-      authorId: "user_member",
-      status: "draft" as const,
-      publishedAt: null,
-    },
-    {
-      id: "post_demo",
-      orgId: "org_demo",
-      title: "Demo Company Introduction",
-      content:
-        "Welcome to Demo Company! This is a sample organization for testing.",
-      authorId: "user_member",
-      status: "published" as const,
-      publishedAt: now,
-    },
+function generateTitle(index: number, generators: TitleGenerators): string {
+  const titleType = index % 4;
+  const titleGenerators = [
+    generators.locale,
+    generators.catchPhrase,
+    generators.phrase,
+    generators.sentence,
   ];
+  const title = titleGenerators[titleType]?.() ?? generators.sentence();
+  return title.length > 200 ? `${title.slice(0, 197)}...` : title;
+}
 
-  for (const post of posts) {
-    await db
-      .insert(schema.examplePosts)
-      .values({ ...post, createdAt: now, updatedAt: now })
-      .onConflictDoNothing();
+async function seedContent(ctx: SeedContext) {
+  const { db, locale } = ctx;
+
+  // Import falso functions for realistic data generation
+  const {
+    rand,
+    randCatchPhrase,
+    randNumber,
+    randParagraph,
+    randPastDate,
+    randPhrase,
+    randSentence,
+  } = await import("@ngneat/falso");
+
+  // Title generators mixing locale and falso
+  const titleGenerators: TitleGenerators = {
+    locale: () => getRandomContent(locale, "postTitles"),
+    catchPhrase: () => randCatchPhrase(),
+    phrase: () => randPhrase(),
+    sentence: () => randSentence().replace(TRAILING_PERIOD_REGEX, ""),
+  };
+
+  console.log("\n📝 Creating 125 example posts...");
+
+  const authors = ["user_admin", "user_member", "user_viewer"];
+  const statuses = ["published", "draft", "archived"] as const;
+  const POST_COUNT = 125;
+
+  const posts: Array<{
+    id: string;
+    orgId: string;
+    title: string;
+    content: string;
+    authorId: string;
+    status: "published" | "draft" | "archived";
+    publishedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }> = [];
+
+  for (let i = 0; i < POST_COUNT; i++) {
+    const status = rand(statuses);
+    const createdAt = randPastDate({ years: 1 });
+    const paragraphCount = randNumber({ min: 2, max: 5 });
+
+    posts.push({
+      id: `post_${String(i + 1).padStart(3, "0")}`,
+      orgId: i < 100 ? "org_acme" : "org_demo",
+      title: generateTitle(i, titleGenerators),
+      content: randParagraph({ length: paragraphCount }).join("\n\n"),
+      authorId: rand(authors),
+      status,
+      publishedAt: status === "published" ? createdAt : null,
+      createdAt,
+      updatedAt: createdAt,
+    });
+  }
+
+  // Batch insert posts
+  const BATCH_SIZE = 50;
+  for (let i = 0; i < posts.length; i += BATCH_SIZE) {
+    const batch = posts.slice(i, i + BATCH_SIZE);
+    await db.insert(schema.examplePosts).values(batch).onConflictDoNothing();
   }
   console.log(`   ✓ Created ${posts.length} example posts`);
 
   console.log("\n💬 Creating example comments...");
-  const comments = [
-    {
-      id: "cmt_1",
-      orgId: "org_acme",
-      postId: "post_welcome",
-      content: "Great to be here! Looking forward to collaborating.",
-      authorId: "user_member",
-    },
-    {
-      id: "cmt_2",
-      orgId: "org_acme",
-      postId: "post_welcome",
-      content: "Excited about the new platform!",
-      authorId: "user_viewer",
-    },
-    {
-      id: "cmt_3",
-      orgId: "org_acme",
-      postId: "post_update",
-      content: "The new dashboard is amazing. Thanks for the update!",
-      authorId: "user_member",
-    },
-  ];
 
-  for (const comment of comments) {
+  // Generate comments for the first 20 posts
+  const comments: Array<{
+    id: string;
+    orgId: string;
+    postId: string;
+    content: string;
+    authorId: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }> = [];
+
+  const publishedPosts = posts
+    .filter((p) => p.status === "published")
+    .slice(0, 20);
+
+  let commentId = 1;
+  for (const post of publishedPosts) {
+    // 1-3 comments per post
+    const commentCount = Math.floor(Math.random() * 3) + 1;
+    for (let j = 0; j < commentCount; j++) {
+      const commentDate = new Date(
+        post.createdAt.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000
+      );
+      comments.push({
+        id: `cmt_${String(commentId++).padStart(3, "0")}`,
+        orgId: post.orgId,
+        postId: post.id,
+        content: randSentence({
+          length: Math.floor(Math.random() * 2) + 1,
+        }).join(" "),
+        authorId: rand(authors.filter((a) => a !== post.authorId)),
+        createdAt: commentDate,
+        updatedAt: commentDate,
+      });
+    }
+  }
+
+  if (comments.length > 0) {
     await db
       .insert(schema.exampleComments)
-      .values({ ...comment, createdAt: now, updatedAt: now })
+      .values(comments)
       .onConflictDoNothing();
   }
   console.log(`   ✓ Created ${comments.length} example comments`);
@@ -842,11 +911,387 @@ async function seedNotifications(ctx: SeedContext) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Seed: Reports (Templates, Schedules, Jobs)
+// ─────────────────────────────────────────────────────────────
+
+async function seedReports(ctx: SeedContext) {
+  const { db, now } = ctx;
+
+  console.log("\n📊 Creating report templates...");
+  const templates = [
+    {
+      id: "tpl_sales_summary",
+      organizationId: "org_acme",
+      name: "Sales Summary Report",
+      description: "Monthly sales summary with totals and averages",
+      format: "excel" as const,
+      templateEngine: "eta",
+      templateContent: `<%# Sales Summary Report %>
+<% for (const row of data) { %>
+  <%= row.product %> | <%= formatCurrency(row.amount, 'USD') %> | <%= row.quantity %>
+<% } %>
+<%# Footer %>
+Total: <%= formatCurrency(sum(data, 'amount'), 'USD') %>
+Average: <%= formatCurrency(avg(data, 'amount'), 'USD') %>`,
+      options: {
+        sheetName: "Sales Summary",
+        autoFilter: true,
+        freezeHeader: true,
+      },
+      dataSource: {
+        type: "api" as const,
+        source: "/v1/orgs/{orgId}/sales",
+        defaultParams: { period: "monthly" },
+      },
+      columns: [
+        {
+          id: "product",
+          header: "Product",
+          accessorKey: "product",
+          align: "left" as const,
+        },
+        {
+          id: "amount",
+          header: "Amount",
+          accessorKey: "amount",
+          format: "currency" as const,
+          align: "right" as const,
+        },
+        {
+          id: "quantity",
+          header: "Qty",
+          accessorKey: "quantity",
+          format: "number" as const,
+          align: "center" as const,
+        },
+        {
+          id: "date",
+          header: "Date",
+          accessorKey: "date",
+          format: "date" as const,
+        },
+      ],
+      isPublic: false,
+      createdBy: "user_admin",
+    },
+    {
+      id: "tpl_user_activity",
+      organizationId: "org_acme",
+      name: "User Activity Report",
+      description: "Weekly user login and activity metrics",
+      format: "csv" as const,
+      templateEngine: "eta",
+      templateContent: `<%# User Activity Report %>
+<% for (const user of data) { %>
+<%= user.name %>,<%= user.email %>,<%= user.loginCount %>,<%= formatDate(user.lastLogin, 'YYYY-MM-DD') %>
+<% } %>`,
+      options: {
+        delimiter: ",",
+        includeHeaders: true,
+      },
+      dataSource: {
+        type: "query" as const,
+        source: "SELECT * FROM user_activity WHERE org_id = :orgId",
+      },
+      columns: [
+        { id: "name", header: "Name", accessorKey: "name" },
+        { id: "email", header: "Email", accessorKey: "email" },
+        {
+          id: "loginCount",
+          header: "Login Count",
+          accessorKey: "loginCount",
+          format: "number" as const,
+        },
+        {
+          id: "lastLogin",
+          header: "Last Login",
+          accessorKey: "lastLogin",
+          format: "datetime" as const,
+        },
+      ],
+      isPublic: true,
+      createdBy: "user_admin",
+    },
+    {
+      id: "tpl_receipt",
+      organizationId: "org_acme",
+      name: "POS Receipt",
+      description: "Thermal printer receipt for point of sale",
+      format: "thermal" as const,
+      templateEngine: "eta",
+      templateContent: `<%# Thermal Receipt %>
+================================
+        ACME CORPORATION
+================================
+Date: <%= formatDate(order.date, 'MM/DD/YYYY HH:mm') %>
+Receipt #: <%= order.id %>
+--------------------------------
+<% for (const item of order.items) { %>
+<%= item.name %>
+  <%= item.qty %> x <%= formatCurrency(item.price, 'USD') %>  <%= formatCurrency(item.total, 'USD') %>
+<% } %>
+--------------------------------
+Subtotal:    <%= formatCurrency(order.subtotal, 'USD') %>
+Tax:         <%= formatCurrency(order.tax, 'USD') %>
+================================
+TOTAL:       <%= formatCurrency(order.total, 'USD') %>
+================================
+     Thank you for your visit!
+================================`,
+      options: {
+        printerWidth: 32,
+        encoding: "utf-8",
+        autoCut: true,
+      },
+      columns: [],
+      isPublic: false,
+      createdBy: "user_member",
+    },
+    {
+      id: "tpl_invoice",
+      organizationId: "org_acme",
+      name: "Invoice PDF",
+      description: "Professional invoice for customers",
+      format: "pdf" as const,
+      templateEngine: "eta",
+      templateContent: `<%# Invoice Template %>
+INVOICE #<%= invoice.number %>
+Date: <%= formatDate(invoice.date, 'MMMM DD, YYYY') %>
+
+Bill To:
+<%= invoice.customer.name %>
+<%= invoice.customer.address %>
+
+<% for (const line of invoice.lines) { %>
+<%= line.description %> | <%= line.quantity %> | <%= formatCurrency(line.unitPrice, 'USD') %> | <%= formatCurrency(line.total, 'USD') %>
+<% } %>
+
+Subtotal: <%= formatCurrency(invoice.subtotal, 'USD') %>
+Tax (<%= invoice.taxRate %>%): <%= formatCurrency(invoice.tax, 'USD') %>
+Total Due: <%= formatCurrency(invoice.total, 'USD') %>
+
+Payment Terms: Net 30`,
+      options: {
+        orientation: "portrait" as const,
+        pageSize: "letter" as const,
+        marginTop: 50,
+        marginBottom: 50,
+        marginLeft: 50,
+        marginRight: 50,
+        title: "Invoice",
+        includePageNumbers: true,
+      },
+      columns: [
+        {
+          id: "description",
+          header: "Description",
+          accessorKey: "description",
+          width: 200,
+        },
+        {
+          id: "quantity",
+          header: "Qty",
+          accessorKey: "quantity",
+          format: "number" as const,
+          align: "center" as const,
+        },
+        {
+          id: "unitPrice",
+          header: "Unit Price",
+          accessorKey: "unitPrice",
+          format: "currency" as const,
+          align: "right" as const,
+        },
+        {
+          id: "total",
+          header: "Total",
+          accessorKey: "total",
+          format: "currency" as const,
+          align: "right" as const,
+        },
+      ],
+      isPublic: false,
+      createdBy: "user_admin",
+    },
+  ];
+
+  for (const template of templates) {
+    await db
+      .insert(schema.reportTemplates)
+      .values({ ...template, createdAt: now, updatedAt: now })
+      .onConflictDoNothing();
+  }
+  console.log(`   ✓ Created ${templates.length} report templates`);
+
+  console.log("\n📅 Creating scheduled reports...");
+  const schedules = [
+    {
+      id: "sched_weekly_sales",
+      organizationId: "org_acme",
+      templateId: "tpl_sales_summary",
+      name: "Weekly Sales Email",
+      description: "Send sales summary every Monday morning",
+      frequency: "weekly" as const,
+      dayOfWeek: "monday" as const,
+      hour: 9,
+      minute: 0,
+      timezone: "America/New_York",
+      startDate: now,
+      deliveryMethod: "email" as const,
+      deliveryConfig: {
+        email: {
+          recipients: ["sales@example.com", "manager@example.com"],
+          subject: "Weekly Sales Report",
+          body: "Please find attached the weekly sales summary report.",
+        },
+      },
+      isActive: true,
+      nextRunAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      createdBy: "user_admin",
+    },
+    {
+      id: "sched_daily_activity",
+      organizationId: "org_acme",
+      templateId: "tpl_user_activity",
+      name: "Daily Activity Backup",
+      description: "Daily backup of user activity to S3",
+      frequency: "daily" as const,
+      hour: 2,
+      minute: 0,
+      timezone: "UTC",
+      startDate: now,
+      deliveryMethod: "storage" as const,
+      deliveryConfig: {
+        storage: {
+          pathTemplate: "reports/activity/activity.csv",
+          provider: "s3",
+          bucket: "acme-reports",
+        },
+      },
+      isActive: true,
+      nextRunAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+      createdBy: "user_admin",
+    },
+    {
+      id: "sched_monthly_invoice",
+      organizationId: "org_acme",
+      templateId: "tpl_invoice",
+      name: "Monthly Invoice Generation",
+      description: "Generate invoices on the 1st of each month",
+      frequency: "monthly" as const,
+      dayOfMonth: 1,
+      hour: 8,
+      minute: 0,
+      timezone: "America/New_York",
+      startDate: now,
+      deliveryMethod: "webhook" as const,
+      deliveryConfig: {
+        webhook: {
+          url: "https://billing.example.com/webhooks/invoice",
+          headers: { "X-API-Key": "billing-api-key" },
+          attachmentMode: "base64" as const,
+        },
+      },
+      isActive: false,
+      createdBy: "user_admin",
+    },
+  ];
+
+  for (const schedule of schedules) {
+    await db
+      .insert(schema.scheduledReports)
+      .values({ ...schedule, createdAt: now, updatedAt: now })
+      .onConflictDoNothing();
+  }
+  console.log(`   ✓ Created ${schedules.length} scheduled reports`);
+
+  console.log("\n📋 Creating report jobs...");
+  const jobs = [
+    {
+      id: "rjob_completed",
+      organizationId: "org_acme",
+      templateId: "tpl_sales_summary",
+      scheduledReportId: "sched_weekly_sales",
+      type: "scheduled" as const,
+      status: "completed" as const,
+      format: "excel" as const,
+      progress: 100,
+      totalRows: 150,
+      processedRows: 150,
+      result: {
+        filePath: "/reports/org_acme/sales_2025_01.xlsx",
+        fileSize: 45_678,
+        rowCount: 150,
+        downloadUrl: "/v1/orgs/org_acme/reports/jobs/rjob_completed/download",
+        mimeType:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        deliveryStatus: "sent" as const,
+      },
+      createdBy: "user_admin",
+      startedAt: new Date(now.getTime() - 3_600_000),
+      completedAt: new Date(now.getTime() - 3_500_000),
+    },
+    {
+      id: "rjob_processing",
+      organizationId: "org_acme",
+      templateId: "tpl_user_activity",
+      type: "manual" as const,
+      status: "processing" as const,
+      format: "csv" as const,
+      progress: 65,
+      totalRows: 1000,
+      processedRows: 650,
+      createdBy: "user_member",
+      startedAt: new Date(now.getTime() - 300_000),
+      estimatedCompletion: new Date(now.getTime() + 180_000),
+    },
+    {
+      id: "rjob_failed",
+      organizationId: "org_acme",
+      templateId: "tpl_invoice",
+      scheduledReportId: "sched_monthly_invoice",
+      type: "scheduled" as const,
+      status: "failed" as const,
+      format: "pdf" as const,
+      progress: 30,
+      error: {
+        code: "DATA_SOURCE_ERROR",
+        message: "Failed to connect to billing API: Connection timeout",
+        retryable: true,
+      },
+      createdBy: "user_admin",
+      startedAt: new Date(now.getTime() - 7_200_000),
+      completedAt: new Date(now.getTime() - 7_100_000),
+    },
+    {
+      id: "rjob_pending",
+      organizationId: "org_acme",
+      templateId: "tpl_receipt",
+      type: "manual" as const,
+      status: "pending" as const,
+      format: "thermal" as const,
+      parameters: { orderId: "order_12345" },
+      createdBy: "user_member",
+    },
+  ];
+
+  for (const job of jobs) {
+    await db
+      .insert(schema.reportJobs)
+      .values({ ...job, createdAt: now })
+      .onConflictDoNothing();
+  }
+  console.log(`   ✓ Created ${jobs.length} report jobs`);
+}
+
+// ─────────────────────────────────────────────────────────────
 // Main Seed Function
 // ─────────────────────────────────────────────────────────────
 
 async function seed() {
-  console.log("🌱 Starting database seed...\n");
+  const locale = getLocale(SEED_LOCALE);
+
+  console.log(`🌱 Starting database seed (locale: ${locale.name})...\n`);
 
   const pool = new Pool({ connectionString: DATABASE_URL });
   const db = drizzle(pool, { schema });
@@ -854,7 +1299,7 @@ async function seed() {
   try {
     const passwordHash = await hash(DEFAULT_PASSWORD, BCRYPT_ROUNDS);
     const now = new Date();
-    const ctx: SeedContext = { db, now, passwordHash };
+    const ctx: SeedContext = { db, now, passwordHash, locale };
 
     await seedApplicationAndUsers(ctx);
     await seedOrganizations(ctx);
@@ -865,6 +1310,7 @@ async function seed() {
     await seedFilesAndJobs(ctx);
     await seedWebhooks(ctx);
     await seedNotifications(ctx);
+    await seedReports(ctx);
 
     console.log("\n✅ Database seeding complete!\n");
     console.log("Demo credentials:");

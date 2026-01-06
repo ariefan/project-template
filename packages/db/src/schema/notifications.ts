@@ -18,6 +18,7 @@ export const notificationChannelEnum = pgEnum("notification_channel", [
   "whatsapp",
   "telegram",
   "push",
+  "none",
 ]);
 
 export const notificationStatusEnum = pgEnum("notification_status", [

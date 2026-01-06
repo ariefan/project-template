@@ -214,86 +214,88 @@ export function DataViewPagination({
           </div>
         )}
 
-        {/* Pagination */}
-        <nav aria-label="Pagination" className="flex items-center space-x-1">
-          {/* Previous */}
-          <Button
-            aria-label="Go to previous page"
-            disabled={!canPreviousPage}
-            onClick={() => setPage(page - 1)}
-            size="icon"
-            variant="ghost"
-          >
-            <ChevronLeft />
-          </Button>
+        {/* Pagination - only show when there are multiple pages */}
+        {totalPages > 1 && (
+          <nav aria-label="Pagination" className="flex items-center space-x-1">
+            {/* Previous */}
+            <Button
+              aria-label="Go to previous page"
+              disabled={!canPreviousPage}
+              onClick={() => setPage(page - 1)}
+              size="icon"
+              variant="ghost"
+            >
+              <ChevronLeft />
+            </Button>
 
-          {/* Desktop numbers */}
-          {showPageNumbers && (
-            <div className="hidden items-center space-x-1 lg:flex">
-              {generateDesktopPages().map((item) =>
-                item.type === "ellipsis" ? (
-                  <span
-                    aria-hidden="true"
-                    className="select-none px-2"
-                    key={`desktop-ellipsis-${item.afterPage}`}
-                  >
-                    …
-                  </span>
-                ) : (
-                  <Button
-                    aria-current={item.value === page ? "page" : undefined}
-                    aria-label={`Go to page ${item.value}`}
-                    key={`desktop-page-${item.value}`}
-                    onClick={() => setPage(item.value)}
-                    size="sm"
-                    variant={item.value === page ? "default" : "ghost"}
-                  >
-                    {item.value}
-                  </Button>
-                )
-              )}
-            </div>
-          )}
+            {/* Desktop numbers */}
+            {showPageNumbers && (
+              <div className="hidden items-center space-x-1 lg:flex">
+                {generateDesktopPages().map((item) =>
+                  item.type === "ellipsis" ? (
+                    <span
+                      aria-hidden="true"
+                      className="select-none px-2"
+                      key={`desktop-ellipsis-${item.afterPage}`}
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      aria-current={item.value === page ? "page" : undefined}
+                      aria-label={`Go to page ${item.value}`}
+                      key={`desktop-page-${item.value}`}
+                      onClick={() => setPage(item.value)}
+                      size="sm"
+                      variant={item.value === page ? "default" : "ghost"}
+                    >
+                      {item.value}
+                    </Button>
+                  )
+                )}
+              </div>
+            )}
 
-          {/* Tablet numbers */}
-          {showPageNumbers && (
-            <div className="hidden items-center space-x-1 sm:flex lg:hidden">
-              {generateTabletPages().map((item) =>
-                item.type === "ellipsis" ? (
-                  <span
-                    aria-hidden="true"
-                    className="select-none px-2"
-                    key={`tablet-ellipsis-${item.afterPage}`}
-                  >
-                    …
-                  </span>
-                ) : (
-                  <Button
-                    aria-current={item.value === page ? "page" : undefined}
-                    aria-label={`Go to page ${item.value}`}
-                    key={`tablet-page-${item.value}`}
-                    onClick={() => setPage(item.value)}
-                    size="sm"
-                    variant={item.value === page ? "default" : "ghost"}
-                  >
-                    {item.value}
-                  </Button>
-                )
-              )}
-            </div>
-          )}
+            {/* Tablet numbers */}
+            {showPageNumbers && (
+              <div className="hidden items-center space-x-1 sm:flex lg:hidden">
+                {generateTabletPages().map((item) =>
+                  item.type === "ellipsis" ? (
+                    <span
+                      aria-hidden="true"
+                      className="select-none px-2"
+                      key={`tablet-ellipsis-${item.afterPage}`}
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      aria-current={item.value === page ? "page" : undefined}
+                      aria-label={`Go to page ${item.value}`}
+                      key={`tablet-page-${item.value}`}
+                      onClick={() => setPage(item.value)}
+                      size="sm"
+                      variant={item.value === page ? "default" : "ghost"}
+                    >
+                      {item.value}
+                    </Button>
+                  )
+                )}
+              </div>
+            )}
 
-          {/* Next */}
-          <Button
-            aria-label="Go to next page"
-            disabled={!canNextPage}
-            onClick={() => setPage(page + 1)}
-            size="icon"
-            variant="ghost"
-          >
-            <ChevronRight />
-          </Button>
-        </nav>
+            {/* Next */}
+            <Button
+              aria-label="Go to next page"
+              disabled={!canNextPage}
+              onClick={() => setPage(page + 1)}
+              size="icon"
+              variant="ghost"
+            >
+              <ChevronRight />
+            </Button>
+          </nav>
+        )}
       </div>
     </div>
   );

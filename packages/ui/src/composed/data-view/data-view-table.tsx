@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { cn } from "@workspace/ui/lib/utils";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
@@ -8,7 +9,7 @@ import { DataViewActionMenu } from "./action-menu";
 import { ContentPlaceholder } from "./content-placeholder";
 import { useDataView } from "./context";
 import type { ColumnDef, RowAction } from "./types";
-import { getFieldValue } from "./utils";
+import { filterVisibleActions, getFieldValue, isActionDisabled } from "./utils";
 
 // ============================================================================
 // Table Components
@@ -150,6 +151,54 @@ export function DataViewTable<T>({
     );
   };
 
+  const renderActionCell = (row: T) => {
+    if (!rowActions || rowActions.length === 0) {
+      return null;
+    }
+
+    const visibleActions = filterVisibleActions(rowActions, row);
+    const inlineActions = visibleActions.filter((action) => action.inline);
+    const menuActions = visibleActions.filter((action) => !action.inline);
+
+    return (
+      <div className="flex items-center justify-end gap-1">
+        {inlineActions.map((action) => {
+          const disabled = isActionDisabled(action, row);
+          return (
+            <Button
+              className="size-8"
+              disabled={disabled}
+              key={action.id}
+              onClick={() => action.onAction(row)}
+              size="icon"
+              title={action.label}
+              variant={action.variant === "destructive" ? "ghost" : "ghost"}
+            >
+              {action.icon && (
+                <action.icon
+                  className={cn(
+                    "size-4",
+                    action.variant === "destructive" && "text-destructive"
+                  )}
+                />
+              )}
+              <span className="sr-only">{action.label}</span>
+            </Button>
+          );
+        })}
+        {menuActions.length > 0 && (
+          <DataViewActionMenu
+            actions={menuActions}
+            row={row}
+            triggerVariant="icon"
+          />
+        )}
+      </div>
+    );
+  };
+
+  const hasActions = rowActions && rowActions.length > 0;
+
   // Use ContentPlaceholder for loading/empty states
   if (loading || paginatedData.length === 0) {
     return (
@@ -205,7 +254,7 @@ export function DataViewTable<T>({
               )}
             </TableHead>
           ))}
-          {rowActions && rowActions.length > 0 && (
+          {hasActions && (
             <TableHead className="w-10">
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -253,15 +302,7 @@ export function DataViewTable<T>({
                   {renderCellContent(row, column)}
                 </TableCell>
               ))}
-              {rowActions && rowActions.length > 0 && (
-                <TableCell>
-                  <DataViewActionMenu
-                    actions={rowActions}
-                    row={row}
-                    triggerVariant="icon"
-                  />
-                </TableCell>
-              )}
+              {hasActions && <TableCell>{renderActionCell(row)}</TableCell>}
             </TableRow>
           );
         })}

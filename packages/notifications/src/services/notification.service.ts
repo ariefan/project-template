@@ -50,6 +50,16 @@ export interface NotificationServiceDeps {
   providers: ProviderRegistry;
   queue?: NotificationQueue;
   preferenceService?: PreferenceService;
+  eventBroadcaster?: {
+    broadcastToUser: <T = unknown>(
+      userId: string,
+      event: {
+        type: string;
+        data: T;
+        id: string;
+      }
+    ) => Promise<void>;
+  };
 }
 
 type AnyPayload =
@@ -74,6 +84,7 @@ export function createNotificationService(
 ): NotificationService {
   const preferenceService = deps.preferenceService ?? createPreferenceService();
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Payload builder handles multiple channel types with different field mappings
   function buildPayloadFromRequest(
     request: SendNotificationRequest
   ): AnyPayload {
@@ -110,6 +121,14 @@ export function createNotificationService(
           title: request.subject ?? "",
           body: request.body ?? "",
         } satisfies PushPayload;
+
+      case "none":
+        // In-app only - return minimal payload (won't be used for delivery)
+        return {
+          to: "",
+          subject: request.subject ?? "",
+          body: request.body ?? "",
+        } satisfies EmailPayload;
 
       default:
         throw new Error(`Unknown channel: ${request.channel}`);
@@ -199,6 +218,14 @@ export function createNotificationService(
         }
         return deps.providers.telegram.send(payload as TelegramPayload);
 
+      case "none":
+        // In-app only notification - no external delivery
+        return Promise.resolve({
+          success: true,
+          provider: "none",
+          messageId: `none-${Date.now()}`,
+        });
+
       case "push":
         return Promise.resolve({
           success: false,
@@ -277,6 +304,24 @@ export function createNotificationService(
       campaignId: request.campaignId,
       maxRetries: 3,
     });
+
+    // Emit notification:created event
+    if (deps.eventBroadcaster && request.userId) {
+      await deps.eventBroadcaster.broadcastToUser(request.userId, {
+        type: "notification:created",
+        data: {
+          id,
+          userId: request.userId,
+          channel: request.channel,
+          category: request.category,
+          priority: request.priority ?? "normal",
+          subject: request.subject,
+          body: bodyText,
+          createdAt: new Date().toISOString(),
+        },
+        id: `notif_created_${id}`,
+      });
+    }
   }
 
   async function updateNotificationStatus(
@@ -308,7 +353,12 @@ export function createNotificationService(
 
       await insertNotificationRecord(notificationId, request, bodyText);
 
-      if (deps.queue && request.priority !== "urgent") {
+      // Skip queue for "none" channel (in-app only) since there's no external delivery
+      if (
+        deps.queue &&
+        request.priority !== "urgent" &&
+        request.channel !== "none"
+      ) {
         await deps.queue.enqueue({
           id: notificationId,
           channel: request.channel,
@@ -415,6 +465,27 @@ export function createNotificationService(
             isNull(notifications.deletedAt)
           )
         );
+
+      // Emit notification:read event
+      if (deps.eventBroadcaster) {
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:read",
+          data: {
+            id: notificationId,
+            status: "read",
+            timestamp: new Date().toISOString(),
+          },
+          id: `notif_read_${notificationId}`,
+        });
+
+        // Also emit updated unread count
+        const unreadCount = await this.getUnreadCount(userId);
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:unread_count",
+          data: { userId, count: unreadCount },
+          id: `notif_unread_count_${userId}_${Date.now()}`,
+        });
+      }
     },
 
     async markAsUnread(notificationId: string, userId: string): Promise<void> {
@@ -428,6 +499,27 @@ export function createNotificationService(
             isNull(notifications.deletedAt)
           )
         );
+
+      // Emit notification:unread event
+      if (deps.eventBroadcaster) {
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:unread",
+          data: {
+            id: notificationId,
+            status: "unread",
+            timestamp: new Date().toISOString(),
+          },
+          id: `notif_unread_${notificationId}`,
+        });
+
+        // Also emit updated unread count
+        const unreadCount = await this.getUnreadCount(userId);
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:unread_count",
+          data: { userId, count: unreadCount },
+          id: `notif_unread_count_${userId}_${Date.now()}`,
+        });
+      }
     },
 
     async markAllAsRead(userId: string): Promise<number> {
@@ -442,7 +534,25 @@ export function createNotificationService(
           )
         );
 
-      return result.rowCount ?? 0;
+      const markedCount = result.rowCount ?? 0;
+
+      // Emit bulk read event
+      if (deps.eventBroadcaster && markedCount > 0) {
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:bulk_read",
+          data: { markedCount, timestamp: new Date().toISOString() },
+          id: `notif_bulk_read_${userId}_${Date.now()}`,
+        });
+
+        // Also emit updated unread count (should be 0 now)
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:unread_count",
+          data: { userId, count: 0 },
+          id: `notif_unread_count_${userId}_${Date.now()}`,
+        });
+      }
+
+      return markedCount;
     },
 
     async getUnreadCount(userId: string): Promise<number> {
@@ -474,6 +584,26 @@ export function createNotificationService(
             isNull(notifications.deletedAt)
           )
         );
+
+      // Emit notification:deleted event
+      if (deps.eventBroadcaster) {
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:deleted",
+          data: {
+            id: notificationId,
+            timestamp: new Date().toISOString(),
+          },
+          id: `notif_deleted_${notificationId}`,
+        });
+
+        // Also emit updated unread count
+        const unreadCount = await this.getUnreadCount(userId);
+        await deps.eventBroadcaster.broadcastToUser(userId, {
+          type: "notification:unread_count",
+          data: { userId, count: unreadCount },
+          id: `notif_unread_count_${userId}_${Date.now()}`,
+        });
+      }
     },
 
     async restoreNotification(

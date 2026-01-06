@@ -365,7 +365,7 @@ export function CustomDataView() {
 
 export default function CustomDataViewPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       <div className="mb-6">
         <h1 className="font-bold text-2xl">Custom Data View</h1>
         <p className="mt-1 text-muted-foreground">

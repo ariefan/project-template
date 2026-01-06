@@ -2,6 +2,7 @@ import type { SendNotificationRequest } from "@workspace/contracts";
 import { zSendNotificationRequest } from "@workspace/contracts/zod";
 import type { FastifyInstance } from "fastify";
 import { validateBody } from "../../../lib/validation";
+import { CachePresets } from "../../../plugins/caching";
 import { requireAuth } from "../../auth";
 
 // Helper function to convert null values to undefined for API responses
@@ -42,7 +43,7 @@ function transformNotificationForResponse(
 export function notificationRoutes(app: FastifyInstance): void {
   app.get(
     "/notifications",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth], config: { cache: CachePresets.noStore } },
     async (request, reply) => {
       const userId = request.user?.id;
       if (!userId) {
@@ -135,7 +136,7 @@ export function notificationRoutes(app: FastifyInstance): void {
 
   app.get(
     "/notifications/:id",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth], config: { cache: CachePresets.noStore } },
     async (request, reply) => {
       const notifications = app.notifications;
       if (!notifications) {
@@ -175,6 +176,7 @@ export function notificationRoutes(app: FastifyInstance): void {
         data: transformNotificationForResponse(
           notification as Record<string, unknown>
         ),
+        meta: { requestId: request.id, timestamp: new Date().toISOString() },
       };
     }
   );
@@ -251,6 +253,10 @@ export function notificationRoutes(app: FastifyInstance): void {
 
       return {
         data: { messageId: result.messageId, provider: result.provider },
+        meta: {
+          requestId: request.id,
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   );
@@ -359,7 +365,7 @@ export function notificationRoutes(app: FastifyInstance): void {
 
   app.get(
     "/notifications/unread/count",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireAuth], config: { cache: CachePresets.noStore } },
     async (request, reply) => {
       const userId = request.user?.id;
       if (!userId) {

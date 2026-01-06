@@ -271,7 +271,7 @@ const bulkActions: BulkAction<User>[] = [
 
 export default function CrudPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
       <div className="mb-6">
         <h1 className="font-bold text-2xl">Users Management</h1>
         <p className="mt-1 text-muted-foreground">

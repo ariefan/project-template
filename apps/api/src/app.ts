@@ -22,6 +22,7 @@ import { healthRoutes } from "./modules/health";
 import { jobsModule } from "./modules/jobs";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
+import { reportsModule } from "./modules/reports";
 import { webhooksModule } from "./modules/webhooks";
 import authorizationPlugin from "./plugins/authorization";
 import rateLimitPlugin from "./plugins/rate-limit";
@@ -45,6 +46,15 @@ function loadOpenApiSpec() {
 
 // Build notification system config from environment
 function buildEmailConfig() {
+  // Console provider (development/testing) - no API keys required
+  if (env.EMAIL_PROVIDER === "console") {
+    return {
+      provider: "console" as const,
+      defaultFrom: env.EMAIL_FROM,
+    };
+  }
+
+  // Production providers require API keys
   if (!env.RESEND_API_KEY) {
     return;
   }
@@ -120,6 +130,7 @@ function buildStorageConfig() {
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: App bootstrap requires sequential plugin registration with conditional logic
 export async function buildApp(config: AppConfig) {
   const app = Fastify({ logger: true });
 
@@ -201,6 +212,41 @@ export async function buildApp(config: AppConfig) {
   const storageProvider = createStorageProvider(buildStorageConfig());
   filesService.initFilesService(storageProvider);
 
+  // Initialize real-time event broadcaster (before notification system)
+  let eventBroadcaster: import("@workspace/realtime").EventBroadcaster | null =
+    null;
+  let connectionManager:
+    | import("@workspace/realtime").ConnectionManager
+    | null = null;
+
+  if (env.REALTIME_ENABLED) {
+    const {
+      createRedisBroadcaster,
+      createMemoryBroadcaster,
+      createConnectionManager,
+    } = await import("@workspace/realtime");
+
+    // Use Redis broadcaster if Redis is available, otherwise memory
+    eventBroadcaster =
+      env.CACHE_PROVIDER === "redis" && env.REDIS_URL
+        ? createRedisBroadcaster({ url: env.REDIS_URL })
+        : createMemoryBroadcaster();
+
+    connectionManager = createConnectionManager();
+
+    // Close broadcaster on shutdown
+    app.addHook("onClose", async () => {
+      if (eventBroadcaster) {
+        await eventBroadcaster.close();
+      }
+      if (connectionManager) {
+        connectionManager.close();
+      }
+    });
+
+    app.log.info("Real-time event broadcaster initialized");
+  }
+
   // Initialize notification system
   const notificationConfig = buildNotificationConfig();
   const hasAnyProvider =
@@ -210,7 +256,11 @@ export async function buildApp(config: AppConfig) {
     notificationConfig.telegram;
 
   const notificationSystem = hasAnyProvider
-    ? createNotificationSystem(notificationConfig)
+    ? createNotificationSystem({
+        ...notificationConfig,
+        // biome-ignore lint/suspicious/noExplicitAny: EventBroadcaster types are compatible at runtime
+        eventBroadcaster: eventBroadcaster as any,
+      })
     : null;
 
   app.decorate("notifications", notificationSystem);
@@ -221,6 +271,28 @@ export async function buildApp(config: AppConfig) {
     app.addHook("onClose", async () => {
       await notificationSystem.stop();
     });
+  }
+
+  // Register WebSocket and SSE plugins
+  if (env.REALTIME_ENABLED && eventBroadcaster && connectionManager) {
+    const websocketPlugin = await import("./plugins/websocket");
+    const ssePlugin = await import("./plugins/sse");
+
+    await app.register(websocketPlugin.default, {
+      broadcaster: eventBroadcaster,
+      connectionManager,
+      heartbeatInterval: env.REALTIME_HEARTBEAT_INTERVAL,
+    });
+
+    // Register SSE with /v1 prefix to match API routes
+    await app.register(ssePlugin.default, {
+      prefix: "/v1",
+      broadcaster: eventBroadcaster,
+      connectionManager,
+      heartbeatInterval: env.REALTIME_HEARTBEAT_INTERVAL,
+    });
+
+    app.log.info("Real-time notifications enabled (WebSocket + SSE)");
   }
 
   // Initialize webhook delivery queue (uses same QUEUE_ENABLED setting)
@@ -240,6 +312,24 @@ export async function buildApp(config: AppConfig) {
 
     app.addHook("onClose", async () => {
       await webhookQueue.stop();
+    });
+
+    // Initialize report job queue
+    const { createReportQueue } = await import("./modules/reports");
+    const { initQueue: initReportQueue } = await import(
+      "./modules/reports/services/jobs.service"
+    );
+
+    const reportQueue = createReportQueue({
+      connectionString: env.DATABASE_URL,
+      concurrency: env.QUEUE_CONCURRENCY,
+    });
+
+    initReportQueue(reportQueue);
+    await reportQueue.start();
+
+    app.addHook("onClose", async () => {
+      await reportQueue.stop();
     });
   }
 
@@ -293,6 +383,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(filesModule, { prefix: "/v1/orgs" });
   await app.register(webhooksModule, { prefix: "/v1/orgs" });
   await app.register(notificationsModule, { prefix: "/v1" });
+  await app.register(reportsModule, { prefix: "/v1/orgs" });
 
   return app;
 }

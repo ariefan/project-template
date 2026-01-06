@@ -1,0 +1,97 @@
+import { useEffect, useRef } from "react";
+
+export interface SSEEvent<T = unknown> {
+  type: string;
+  data: T;
+  metadata: {
+    serverId: string;
+    timestamp: string;
+    userId?: string;
+    orgId?: string;
+  };
+  id: string;
+}
+
+export function useSSE<T = unknown>(
+  onEvent: (event: SSEEvent<T>) => void,
+  enabled = true
+): void {
+  const onEventRef = useRef(onEvent);
+
+  // Update ref when callback changes
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let reconnectAttempts = 0;
+    const maxReconnectDelay = 30_000; // 30 seconds
+
+    function connect() {
+      try {
+        // Create SSE connection with credentials (session cookie)
+        // SSE endpoint is at /v1/sse/events on the API server
+        eventSource = new EventSource("/api/v1/sse/events", {
+          withCredentials: true,
+        });
+
+        eventSource.onopen = () => {
+          console.log("[SSE] Connection established");
+          reconnectAttempts = 0;
+        };
+
+        eventSource.onmessage = (e) => {
+          try {
+            const event = JSON.parse(e.data) as SSEEvent<T>;
+            onEventRef.current(event);
+          } catch (error) {
+            console.error("[SSE] Failed to parse event:", error);
+          }
+        };
+
+        eventSource.onerror = (error) => {
+          console.error("[SSE] Connection error:", error);
+
+          // Close the connection
+          eventSource?.close();
+
+          // Calculate exponential backoff delay
+          const delay = Math.min(
+            1000 * 2 ** reconnectAttempts,
+            maxReconnectDelay
+          );
+          reconnectAttempts++;
+
+          console.log(
+            `[SSE] Reconnecting in ${delay}ms (attempt ${reconnectAttempts})...`
+          );
+
+          // Schedule reconnection
+          reconnectTimeout = setTimeout(() => {
+            connect();
+          }, delay);
+        };
+      } catch (error) {
+        console.error("[SSE] Failed to create connection:", error);
+      }
+    }
+
+    connect();
+
+    // Cleanup on unmount
+    return () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, [enabled]);
+}

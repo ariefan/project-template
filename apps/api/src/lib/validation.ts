@@ -21,9 +21,14 @@ interface ValidationErrorResponse {
  * Validate request body against a Zod schema
  */
 export function validateBody<T>(schema: ZodSchema<T>) {
-  return (request: FastifyRequest, reply: FastifyReply): void => {
+  return (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    done: () => void
+  ): void => {
     try {
       request.body = schema.parse(request.body);
+      done(); // Signal completion to Fastify
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError: ValidationErrorResponse = {
@@ -55,9 +60,14 @@ export function validateBody<T>(schema: ZodSchema<T>) {
  * Validate request query parameters against a Zod schema
  */
 export function validateQuery<T>(schema: ZodSchema<T>) {
-  return (request: FastifyRequest, reply: FastifyReply): void => {
+  return (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    done: () => void
+  ): void => {
     try {
       request.query = schema.parse(request.query);
+      done(); // Signal completion to Fastify
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError: ValidationErrorResponse = {
@@ -89,9 +99,14 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
  * Validate request path parameters against a Zod schema
  */
 export function validateParams<T>(schema: ZodSchema<T>) {
-  return (request: FastifyRequest, reply: FastifyReply): void => {
+  return (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    done: () => void
+  ): void => {
     try {
       request.params = schema.parse(request.params);
+      done(); // Signal completion to Fastify
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError: ValidationErrorResponse = {

@@ -10,6 +10,15 @@ export type NotificationSystemConfig = NotificationServiceConfig & {
     concurrency?: number;
     maxRetries?: number;
   };
+  eventBroadcaster?: Pick<
+    {
+      broadcastToUser: <T = unknown>(
+        userId: string,
+        event: { type: string; data: T; id: string; metadata?: unknown }
+      ) => Promise<void>;
+    },
+    "broadcastToUser"
+  >;
 };
 
 export interface NotificationSystem {
@@ -31,7 +40,8 @@ export function createNotificationSystem(
           concurrency: config.queue.concurrency,
           maxRetries: config.queue.maxRetries,
         },
-        providers
+        providers,
+        config.eventBroadcaster
       )
     : undefined;
 
@@ -39,6 +49,7 @@ export function createNotificationSystem(
     providers,
     queue,
     preferenceService,
+    eventBroadcaster: config.eventBroadcaster,
   });
 
   return {

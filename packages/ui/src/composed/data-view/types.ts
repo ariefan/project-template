@@ -180,6 +180,8 @@ export interface RowAction<T = unknown> {
   disabled?: boolean | ((row: T) => boolean);
   /** Hide action or function */
   hidden?: boolean | ((row: T) => boolean);
+  /** Show as inline button instead of in dropdown menu */
+  inline?: boolean;
 }
 
 // ============================================================================

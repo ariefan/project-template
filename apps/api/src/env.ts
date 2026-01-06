@@ -37,7 +37,9 @@ const envSchema = z
     PASSKEY_RP_NAME: z.string().optional(),
 
     // Email
-    EMAIL_PROVIDER: z.enum(["resend", "nodemailer"]).default("resend"),
+    EMAIL_PROVIDER: z
+      .enum(["resend", "nodemailer", "console"])
+      .default("resend"),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().email().optional(),
 
@@ -107,6 +109,10 @@ const envSchema = z
 
     // Deprecation Headers
     DEPRECATION_ENABLED: z.coerce.boolean().default(true),
+
+    // Real-Time Notifications (WebSocket + SSE)
+    REALTIME_ENABLED: z.coerce.boolean().default(true),
+    REALTIME_HEARTBEAT_INTERVAL: z.coerce.number().default(30_000), // 30 seconds
   })
   .refine(
     (data) => {

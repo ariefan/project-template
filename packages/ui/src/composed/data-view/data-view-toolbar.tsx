@@ -327,7 +327,7 @@ export function FilterButton({ className }: FilterButtonProps) {
           variant={activeFilterCount > 0 ? "secondary" : "outline"}
         >
           <Filter className="size-4" />
-          <span className="hidden sm:inline">Filters</span>
+          <span className="hidden md:inline">Filters</span>
           {activeFilterCount > 0 && (
             <Badge className="ml-1 px-1.5 py-0 text-xs" variant="secondary">
               {activeFilterCount}
@@ -628,7 +628,7 @@ export function SortButton({ className }: SortButtonProps) {
           variant="outline"
         >
           <ArrowUpDown className="size-4" />
-          <span className="hidden sm:inline">Sort</span>
+          <span className="hidden md:inline">Sort</span>
           {currentSortLabel && (
             <Badge
               className="ml-1 max-w-32 truncate px-1.5 py-0 text-xs"

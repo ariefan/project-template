@@ -9,75 +9,37 @@ import {
   notificationsMarkReadMutation,
   notificationsMarkUnreadMutation,
 } from "@workspace/contracts/query";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
+  type BulkAction,
+  type ColumnDef,
+  DataView as DataViewComponent,
+  FilterButton,
+  type RowAction,
+  SearchInput,
+  SortButton,
+  type ViewMode,
+  ViewToggle,
+} from "@workspace/ui/composed/data-view";
 import { formatDistanceToNow } from "date-fns";
-import {
-  Bell,
-  Check,
-  CheckCheck,
-  Loader2,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
-import { useCallback, useState } from "react";
+import { Bell, Check, CheckCheck, Circle, Trash2 } from "lucide-react";
+import { useCallback } from "react";
+import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient } from "@/lib/api-client";
 
-const CATEGORY_COLORS: Record<NotificationCategory, string> = {
-  transactional: "bg-blue-100 text-blue-800",
-  marketing: "bg-purple-100 text-purple-800",
-  security: "bg-red-100 text-red-800",
-  system: "bg-gray-100 text-gray-800",
+const CATEGORY_COLORS: Record<
+  NotificationCategory,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  transactional: "default",
+  marketing: "secondary",
+  security: "destructive",
+  system: "outline",
 };
 
 export function NotificationsList() {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [categoryFilter, setCategoryFilter] = useState<
-    NotificationCategory | "all"
-  >("all");
-  const [readFilter, setReadFilter] = useState<"all" | "read" | "unread">(
-    "all"
-  );
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const invalidateNotifications = useCallback(() => {
     queryClient.invalidateQueries({
@@ -94,15 +56,10 @@ export function NotificationsList() {
     });
   }, [queryClient]);
 
-  const { data, isLoading, error } = useQuery({
+  const { data } = useQuery({
     ...notificationsListOptions({
       client: apiClient,
-      query: {
-        page,
-        pageSize: 20,
-        category: categoryFilter === "all" ? undefined : categoryFilter,
-        readStatus: readFilter === "all" ? undefined : readFilter,
-      },
+      query: { page: 1, pageSize: 100 },
     }),
   });
 
@@ -123,277 +80,197 @@ export function NotificationsList() {
 
   const deleteMutation = useMutation({
     ...notificationsDeleteMutation({ client: apiClient }),
-    onSuccess: () => {
-      invalidateNotifications();
-      setDeleteTarget(null);
-    },
+    onSuccess: invalidateNotifications,
   });
 
-  function handleDeleteConfirm() {
-    if (deleteTarget) {
-      deleteMutation.mutate({ path: { id: deleteTarget } });
-    }
-  }
-
   const notifications = (data as { data?: Notification[] })?.data ?? [];
-  const pagination = (
-    data as {
-      pagination?: {
-        totalPages: number;
-        hasNext: boolean;
-        hasPrevious: boolean;
-        totalCount: number;
-      };
-    }
-  )?.pagination;
+  const unreadCount = notifications.filter((n) => !n.readAt).length;
 
-  function renderContent() {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+  // Column definitions
+  const columns: ColumnDef<Notification>[] = [
+    {
+      id: "status",
+      header: "",
+      accessorKey: "readAt",
+      width: 40,
+      cell: ({ value }) => {
+        const isUnread = !value;
+        return isUnread ? (
+          <Circle className="size-2 fill-primary text-primary" />
+        ) : null;
+      },
+    },
+    {
+      id: "subject",
+      header: "Notification",
+      accessorKey: "subject",
+      sortable: true,
+      filterable: true,
+      filterType: "text",
+      minWidth: 300,
+      cell: ({ row, value }) => (
+        <div className="space-y-1">
+          <p className={row.readAt ? "font-normal" : "font-semibold"}>
+            {String(value) || row.category}
+          </p>
+          <p className="line-clamp-2 text-muted-foreground text-sm">
+            {row.body || "No content"}
+          </p>
         </div>
-      );
-    }
+      ),
+    },
+    {
+      id: "category",
+      header: "Category",
+      accessorKey: "category",
+      sortable: true,
+      filterable: true,
+      filterType: "select",
+      filterOptions: [
+        { value: "transactional", label: "Transactional" },
+        { value: "marketing", label: "Marketing" },
+        { value: "security", label: "Security" },
+        { value: "system", label: "System" },
+      ],
+      width: 150,
+      cell: ({ value }) => (
+        <Badge variant={CATEGORY_COLORS[value as NotificationCategory]}>
+          {String(value)}
+        </Badge>
+      ),
+    },
+    {
+      id: "createdAt",
+      header: "Received",
+      accessorKey: "createdAt",
+      sortable: true,
+      width: 150,
+      cell: ({ value }) =>
+        formatDistanceToNow(new Date(String(value)), { addSuffix: true }),
+    },
+  ];
 
-    if (error) {
-      console.error("Notifications loading error:", error);
-      return (
-        <div className="py-12 text-center text-destructive">
-          Failed to load notifications:{" "}
-          {error instanceof Error ? error.message : "Unknown error"}
-        </div>
-      );
-    }
+  // Row actions
+  const rowActions: RowAction<Notification>[] = [
+    {
+      id: "mark-read",
+      label: "Mark as read",
+      icon: Check,
+      onAction: async (row) => {
+        await markReadMutation.mutateAsync({ path: { id: row.id } });
+      },
+      hidden: (row) => Boolean(row.readAt),
+    },
+    {
+      id: "mark-unread",
+      label: "Mark as unread",
+      icon: Bell,
+      onAction: async (row) => {
+        await markUnreadMutation.mutateAsync({ path: { id: row.id } });
+      },
+      hidden: (row) => !row.readAt,
+    },
+    {
+      id: "delete",
+      label: "Delete",
+      icon: Trash2,
+      variant: "destructive",
+      onAction: async (row) => {
+        await deleteMutation.mutateAsync({ path: { id: row.id } });
+      },
+    },
+  ];
 
-    if (notifications.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Bell className="mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-muted-foreground">No notifications found</p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[40px]" />
-              <TableHead>Subject</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Received</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {notifications.map((notification) => (
-              <TableRow
-                className={notification.readAt ? "opacity-60" : ""}
-                key={notification.id}
-              >
-                <TableCell>
-                  {!notification.readAt && (
-                    <span className="block h-2 w-2 rounded-full bg-primary" />
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <p className="font-medium">
-                      {notification.subject ?? notification.category}
-                    </p>
-                    <p className="line-clamp-1 text-muted-foreground text-sm">
-                      {notification.body ?? "No content"}
-                    </p>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={CATEGORY_COLORS[notification.category]}
-                    variant="secondary"
-                  >
-                    {notification.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {formatDistanceToNow(new Date(notification.createdAt), {
-                    addSuffix: true,
-                  })}
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {notification.readAt ? (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            markUnreadMutation.mutate({
-                              path: { id: notification.id },
-                            })
-                          }
-                        >
-                          <Bell className="mr-2 h-4 w-4" />
-                          Mark as unread
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem
-                          onClick={() =>
-                            markReadMutation.mutate({
-                              path: { id: notification.id },
-                            })
-                          }
-                        >
-                          <Check className="mr-2 h-4 w-4" />
-                          Mark as read
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => setDeleteTarget(notification.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {pagination && (
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-muted-foreground text-sm">
-              Page {page} of {pagination.totalPages} ({pagination.totalCount}{" "}
-              total)
-            </div>
-            <div className="flex gap-2">
-              <Button
-                disabled={!pagination.hasPrevious}
-                onClick={() => setPage((p) => p - 1)}
-                size="sm"
-                variant="outline"
-              >
-                Previous
-              </Button>
-              <Button
-                disabled={!pagination.hasNext}
-                onClick={() => setPage((p) => p + 1)}
-                size="sm"
-                variant="outline"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
+  // Bulk actions
+  const bulkActions: BulkAction<Notification>[] = [
+    {
+      id: "mark-all-read",
+      label: "Mark as Read",
+      icon: CheckCheck,
+      onAction: async (rows) => {
+        await Promise.all(
+          rows
+            .filter((r) => !r.readAt)
+            .map((row) =>
+              markReadMutation.mutateAsync({ path: { id: row.id } })
+            )
+        );
+      },
+      disabled: (rows) => rows.every((r) => Boolean(r.readAt)),
+    },
+    {
+      id: "delete",
+      label: "Delete Selected",
+      icon: Trash2,
+      variant: "destructive",
+      confirmMessage:
+        "Are you sure you want to delete the selected notifications?",
+      onAction: async (rows) => {
+        await Promise.all(
+          rows.map((row) =>
+            deleteMutation.mutateAsync({ path: { id: row.id } })
+          )
+        );
+      },
+    },
+  ];
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bell className="h-6 w-6 text-primary" />
-              <div>
-                <CardTitle>Notifications</CardTitle>
-                <CardDescription>
-                  View and manage your notifications
-                </CardDescription>
-              </div>
-            </div>
-            <Button
-              disabled={markAllReadMutation.isPending}
-              onClick={() => markAllReadMutation.mutate({})}
-              variant="outline"
-            >
-              {markAllReadMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCheck className="mr-2 h-4 w-4" />
-              )}
-              Mark all as read
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4 flex gap-4">
-            <Select
-              onValueChange={(value) => {
-                setCategoryFilter(value as NotificationCategory | "all");
-                setPage(1);
-              }}
-              value={categoryFilter}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="transactional">Transactional</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-                <SelectItem value="security">Security</SelectItem>
-                <SelectItem value="system">System</SelectItem>
-              </SelectContent>
-            </Select>
+    <div className="container mx-auto max-w-7xl px-4 py-8">
+      <PageHeader
+        actions={
+          <Button
+            disabled={markAllReadMutation.isPending || unreadCount === 0}
+            onClick={() => markAllReadMutation.mutate({})}
+            size="sm"
+            variant="outline"
+          >
+            <CheckCheck className="size-4" />
+            <span className="hidden sm:inline">Mark all as read</span>
+          </Button>
+        }
+        badge={
+          unreadCount > 0 ? (
+            <Badge variant="default">{unreadCount} unread</Badge>
+          ) : null
+        }
+        description="View and manage your notifications. Stay updated on important events and activities."
+        title="Notifications"
+      />
 
-            <Select
-              onValueChange={(value) => {
-                setReadFilter(value as "all" | "read" | "unread");
-                setPage(1);
-              }}
-              value={readFilter}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="unread">Unread only</SelectItem>
-                <SelectItem value="read">Read only</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {renderContent()}
-        </CardContent>
-      </Card>
-
-      <AlertDialog
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        open={Boolean(deleteTarget)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Notification</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this notification? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={deleteMutation.isPending}
-              onClick={handleDeleteConfirm}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+      <DataViewComponent<Notification>
+        availableViews={["table", "list"] as ViewMode[]}
+        bulkActions={bulkActions}
+        columns={columns}
+        data={notifications}
+        defaultPageSize={20}
+        defaultView="list"
+        emptyMessage="No notifications found"
+        filterable
+        getRowId={(row) => row.id}
+        hoverable
+        loadingMessage="Loading notifications..."
+        multiSelect
+        pageSizeOptions={[10, 20, 50, 100]}
+        paginated
+        responsiveBreakpoints={{
+          list: 1024,
+          grid: 640,
+        }}
+        rowActions={rowActions}
+        searchable
+        selectable
+        sortable
+        striped
+        toolbarLeft={<SearchInput showFieldSelector />}
+        toolbarRight={
+          <>
+            <FilterButton />
+            <SortButton />
+            <ViewToggle />
+          </>
+        }
+      />
+    </div>
   );
 }

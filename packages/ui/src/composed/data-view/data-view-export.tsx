@@ -9,7 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
-import { Check, Copy, Download, FileSpreadsheet, FileText } from "lucide-react";
+import {
+  Check,
+  ClipboardCopy,
+  Download,
+  FileSpreadsheet,
+  FileText,
+} from "lucide-react";
 import * as React from "react";
 import { useDataView } from "./context";
 import { type ExportOptions, useDataExport } from "./use-data-export";
@@ -74,31 +80,31 @@ export function DataViewExport({
       <DropdownMenuTrigger asChild>
         <Button className={className} size="sm" variant="outline">
           <Download className="size-4" />
-          <span className="hidden sm:inline">Export</span>
+          <span className="hidden md:inline">Export</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>Export Data</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuLabel>Export</DropdownMenuLabel>
         <DropdownMenuSeparator />
-
-        {formats.csv && (
-          <DropdownMenuItem onClick={() => handleExport(exportCSV)}>
-            <FileText className="mr-2 size-4" />
-            Export as CSV
-          </DropdownMenuItem>
-        )}
 
         {formats.excel && (
           <DropdownMenuItem onClick={() => handleExport(exportExcel)}>
             <FileSpreadsheet className="mr-2 size-4" />
-            Export as Excel
+            Excel
           </DropdownMenuItem>
         )}
 
         {formats.pdf && (
           <DropdownMenuItem onClick={() => handleExport(exportPDF)}>
             <FileText className="mr-2 size-4" />
-            Export as PDF
+            PDF
+          </DropdownMenuItem>
+        )}
+
+        {formats.csv && (
+          <DropdownMenuItem onClick={() => handleExport(exportCSV)}>
+            <FileText className="mr-2 size-4" />
+            CSV
           </DropdownMenuItem>
         )}
 
@@ -108,8 +114,8 @@ export function DataViewExport({
               <DropdownMenuSeparator />
             )}
             <DropdownMenuItem onClick={() => handleExport(exportToClipboard)}>
-              <Copy className="mr-2 size-4" />
-              Copy to Clipboard
+              <ClipboardCopy className="mr-2 size-4" />
+              Clipboard
             </DropdownMenuItem>
           </>
         )}

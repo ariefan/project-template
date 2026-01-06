@@ -84,6 +84,9 @@ import "./models/webhook.tsp";
 import "./models/example-post.tsp";
 import "./models/example-comment.tsp";
 import "./models/notification.tsp";
+import "./models/report-template.tsp";
+import "./models/scheduled-report.tsp";
+import "./models/report-job.tsp";
 // import "./models/product.tsp";     ← Example: Add new models
 
 // ============================================================================
@@ -99,6 +102,7 @@ import "./routes/migration.tsp";
 import "./routes/example-posts.tsp";
 import "./routes/example-comments.tsp";
 import "./routes/notifications.tsp";
+import "./routes/reports.tsp";
 // import "./routes/products.tsp";    ← Example: Add new routes
 
 using TypeSpec.Http;
