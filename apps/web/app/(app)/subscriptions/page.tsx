@@ -69,7 +69,7 @@ export default function SubscriptionDashboard() {
   }
 
   const isCanceled = subscription.status === "canceled";
-  const isTrial = subscription.status === "trialing";
+  // const _isTrial = subscription.status === "trialing";
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-8">
@@ -134,11 +134,11 @@ export default function SubscriptionDashboard() {
               </div>
             </div>
 
-            {isCanceled && (
+            {isCanceled && subscription.currentPeriodEnd && (
               <div className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/10 p-4">
                 <p className="font-medium text-destructive text-sm">
                   Your subscription will end on{" "}
-                  {format(new Date(subscription.currentPeriodEnd!), "MMM dd")}.
+                  {format(new Date(subscription.currentPeriodEnd), "MMM dd")}.
                 </p>
                 <Button className="font-bold" size="sm" variant="destructive">
                   Resume Subscription

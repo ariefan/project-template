@@ -56,6 +56,59 @@ const PRIORITY_CONFIG = {
   },
 };
 
+function AnnouncementCardHeader({
+  announcement,
+  compact,
+  config,
+  isUnread,
+  Icon,
+}: {
+  announcement: AnnouncementWithInteraction;
+  compact: boolean;
+  config: (typeof PRIORITY_CONFIG)[keyof typeof PRIORITY_CONFIG];
+  isUnread: boolean;
+  Icon: React.ElementType;
+}) {
+  return (
+    <CardHeader className={cn("pb-3", compact && "pb-2")}>
+      <div className="flex items-start gap-3">
+        <div className={cn("rounded-full p-2", config.bgColor, "shrink-0")}>
+          <Icon className={cn("size-5", config.iconColor)} />
+        </div>
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center gap-2">
+            <CardTitle className={cn(compact ? "text-base" : "text-lg")}>
+              {announcement.title}
+            </CardTitle>
+            <Badge className="capitalize" variant={config.badgeVariant}>
+              {announcement.priority}
+            </Badge>
+            {isUnread && (
+              <Badge className="bg-blue-50" variant="outline">
+                New
+              </Badge>
+            )}
+          </div>
+          <CardDescription className="text-xs">
+            {formatDistanceToNow(new Date(announcement.publishAt), {
+              addSuffix: true,
+            })}
+            {announcement.expiresAt && (
+              <>
+                {" • "}
+                Expires{" "}
+                {formatDistanceToNow(new Date(announcement.expiresAt), {
+                  addSuffix: true,
+                })}
+              </>
+            )}
+          </CardDescription>
+        </div>
+      </div>
+    </CardHeader>
+  );
+}
+
 export function AnnouncementCard({
   announcement,
   onMarkRead,
@@ -91,42 +144,13 @@ export function AnnouncementCard({
         </Button>
       )}
 
-      <CardHeader className={cn("pb-3", compact && "pb-2")}>
-        <div className="flex items-start gap-3">
-          <div className={cn("rounded-full p-2", config.bgColor, "shrink-0")}>
-            <Icon className={cn("size-5", config.iconColor)} />
-          </div>
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center gap-2">
-              <CardTitle className={cn(compact ? "text-base" : "text-lg")}>
-                {announcement.title}
-              </CardTitle>
-              <Badge className="capitalize" variant={config.badgeVariant}>
-                {announcement.priority}
-              </Badge>
-              {isUnread && (
-                <Badge className="bg-blue-50" variant="outline">
-                  New
-                </Badge>
-              )}
-            </div>
-            <CardDescription className="text-xs">
-              {formatDistanceToNow(new Date(announcement.publishAt), {
-                addSuffix: true,
-              })}
-              {announcement.expiresAt && (
-                <>
-                  {" • "}
-                  Expires{" "}
-                  {formatDistanceToNow(new Date(announcement.expiresAt), {
-                    addSuffix: true,
-                  })}
-                </>
-              )}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
+      <AnnouncementCardHeader
+        announcement={announcement}
+        compact={compact}
+        config={config}
+        Icon={Icon}
+        isUnread={isUnread}
+      />
 
       <CardContent className={cn("pb-3", compact && "pb-2")}>
         <div className="prose prose-sm dark:prose-invert max-w-none">

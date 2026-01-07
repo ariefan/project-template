@@ -22,6 +22,24 @@ interface PlanCardProps {
   className?: string;
 }
 
+function PlanFeature({ label }: { label: string }) {
+  return (
+    <div className="flex items-start gap-3 text-sm">
+      <div className="mt-1 rounded-full bg-primary/10 p-0.5">
+        <Check className="h-3.5 w-3.5 text-primary" />
+      </div>
+      <span className="text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function getActionLabel(isCurrent: boolean) {
+  if (isCurrent) {
+    return "Current Plan";
+  }
+  return "Select Plan";
+}
+
 export function PlanCard({
   plan,
   isPopular,
@@ -87,27 +105,15 @@ export function PlanCard({
               <span className="text-muted-foreground">
                 {plan.features.maxStorageGb === -1
                   ? "Unlimited"
-                  : plan.features.maxStorageGb + "GB"}{" "}
+                  : `${plan.features.maxStorageGb}GB`}{" "}
                 Storage
               </span>
             </div>
           )}
           {plan.features?.advancedReporting && (
-            <div className="flex items-start gap-3 text-sm">
-              <div className="mt-1 rounded-full bg-primary/10 p-0.5">
-                <Check className="h-3.5 w-3.5 text-primary" />
-              </div>
-              <span className="text-muted-foreground">Advanced Reporting</span>
-            </div>
+            <PlanFeature label="Advanced Reporting" />
           )}
-          {plan.features?.apiAccess && (
-            <div className="flex items-start gap-3 text-sm">
-              <div className="mt-1 rounded-full bg-primary/10 p-0.5">
-                <Check className="h-3.5 w-3.5 text-primary" />
-              </div>
-              <span className="text-muted-foreground">API Access</span>
-            </div>
-          )}
+          {plan.features?.apiAccess && <PlanFeature label="API Access" />}
         </div>
       </CardContent>
 
@@ -123,7 +129,7 @@ export function PlanCard({
           onClick={() => onSelect?.(plan.id)}
           variant={isCurrent ? "outline" : "default"}
         >
-          {isCurrent ? "Current Plan" : isCurrent ? "Downgrade" : "Select Plan"}
+          {getActionLabel(isCurrent)}
         </Button>
       </CardFooter>
 

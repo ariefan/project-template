@@ -80,9 +80,9 @@ export default function AdminPlansPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {isLoading &&
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
+                  <TableRow key={`skeleton-${i.toString()}`}>
                     <TableCell className="pl-6">
                       <Skeleton className="h-5 w-32" />
                     </TableCell>
@@ -99,8 +99,9 @@ export default function AdminPlansPage() {
                       <Skeleton className="ml-auto h-8 w-24" />
                     </TableCell>
                   </TableRow>
-                ))
-              ) : plans.length > 0 ? (
+                ))}
+              {!isLoading &&
+                plans.length > 0 &&
                 plans.map((plan) => (
                   <TableRow
                     className="group transition-colors hover:bg-muted/50"
@@ -156,8 +157,8 @@ export default function AdminPlansPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
+                ))}
+              {!isLoading && plans.length === 0 && (
                 <TableRow>
                   <TableCell
                     className="h-32 text-center text-muted-foreground italic"

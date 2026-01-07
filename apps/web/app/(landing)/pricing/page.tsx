@@ -19,7 +19,9 @@ export default function PricingPage() {
   }
   console.log("[DEBUG] PricingPage - API Response:", response);
   const plans: SubscriptionPlan[] =
-    response && !("error" in response) ? (response as any).data : [];
+    response && !("error" in response) && response.data
+      ? (response.data as unknown as SubscriptionPlan[])
+      : [];
   console.log("[DEBUG] PricingPage - Processed Plans:", plans);
 
   return (
@@ -70,12 +72,12 @@ export default function PricingPage() {
 
           {/* Pricing Grid */}
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {isLoading ? (
+            {isLoading &&
               // Loading Skeletons
               Array.from({ length: 3 }).map((_, i) => (
                 <div
                   className="space-y-6 rounded-xl border border-border/50 p-8"
-                  key={i}
+                  key={`skeleton-${i.toString()}`}
                 >
                   <Skeleton className="mx-auto h-8 w-3/4" />
                   <Skeleton className="mx-auto h-12 w-1/2" />
@@ -86,8 +88,9 @@ export default function PricingPage() {
                   </div>
                   <Skeleton className="mt-8 h-12 w-full" />
                 </div>
-              ))
-            ) : plans.length > 0 ? (
+              ))}
+            {!isLoading &&
+              plans.length > 0 &&
               plans.map((plan) => (
                 <PlanCard
                   isPopular={plan.id === "pro-plan"}
@@ -98,8 +101,8 @@ export default function PricingPage() {
                   }} // Hardcoded for demo, normally from API
                   plan={plan}
                 />
-              ))
-            ) : (
+              ))}
+            {!isLoading && plans.length === 0 && (
               <div className="col-span-full rounded-xl border-2 border-border border-dashed py-20 text-center">
                 <p className="text-lg text-muted-foreground italic">
                   No public plans found for this billing period.

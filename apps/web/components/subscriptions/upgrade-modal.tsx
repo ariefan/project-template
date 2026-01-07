@@ -60,10 +60,10 @@ export function UpgradeModal({
               "Advanced Analytics & Reporting",
               "Priority 24/7 Support",
               "Custom Branding & Domains",
-            ].map((feature, i) => (
+            ].map((feature, _i) => (
               <div
                 className="flex items-center gap-3 font-bold text-sm italic"
-                key={i}
+                key={feature}
               >
                 <div className="rounded-full bg-primary/10 p-1">
                   <Check className="h-3 w-3 text-primary" />

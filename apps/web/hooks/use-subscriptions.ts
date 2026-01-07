@@ -50,7 +50,8 @@ export function useFeatureAccess(featureKey: string) {
   const { data: response, isLoading } = useCurrentSubscription();
   const subscription =
     response && !("error" in response) ? response.data : null;
-  const features = (subscription?.plan?.features as Record<string, any>) || {};
+  const features =
+    (subscription?.plan?.features as Record<string, unknown>) || {};
 
   return {
     hasAccess: Boolean(features[featureKey]),
