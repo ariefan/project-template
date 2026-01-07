@@ -148,8 +148,8 @@ model AnnouncementInteraction {
  * Request body for creating an announcement
  */
 model CreateAnnouncementRequest {
-  /** Organization ID (omit for system-wide announcements) */
-  orgId?: string;
+  /** Organization ID (null for system-wide announcements visible to all organizations) */
+  orgId?: string | null;
 
   /** Announcement title */
   @minLength(1)
@@ -197,6 +197,12 @@ model CreateAnnouncementRequest {
  * Request body for updating an announcement
  */
 model UpdateAnnouncementRequest {
+  /** Organization ID (null for system-wide announcements visible to all organizations) */
+  orgId?: string | null;
+
+  /** Scope (system or organization) */
+  scope?: AnnouncementScope;
+
   /** Announcement title */
   @minLength(1)
   @maxLength(200)

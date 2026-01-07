@@ -132,7 +132,10 @@
       "Bash(pnpm --filter @workspace/contracts openapi-ts:*)",
       "Bash(pnpm --filter @workspace/api typecheck:*)",
       "Bash(pnpm --filter api tsc:*)",
-      "Bash(pnpm --filter api dlx ultracite check:*)"
+      "Bash(pnpm --filter api dlx ultracite check:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm tsx:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm:*)",
+      "Bash(pnpm --filter @workspace/contracts build:*)"
     ]
   }
 }

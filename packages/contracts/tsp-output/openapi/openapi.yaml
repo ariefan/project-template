@@ -6578,7 +6578,8 @@ components:
       properties:
         orgId:
           type: string
-          description: Organization ID (omit for system-wide announcements)
+          nullable: true
+          description: Organization ID (null for system-wide announcements visible to all organizations)
         title:
           type: string
           minLength: 1
@@ -9509,6 +9510,14 @@ components:
     UpdateAnnouncementRequest:
       type: object
       properties:
+        orgId:
+          type: string
+          nullable: true
+          description: Organization ID (null for system-wide announcements visible to all organizations)
+        scope:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementScope'
+          description: Scope (system or organization)
         title:
           type: string
           minLength: 1

@@ -37,15 +37,15 @@ export function proxy(request: NextRequest) {
   const isAuthenticated = Boolean(sessionToken);
 
   // Debug: log to help verify cookie is being read correctly
-  console.log("[proxy]", {
-    pathname,
-    cookieName: SESSION_COOKIE_NAME,
-    hasSession: Boolean(sessionToken),
-    sessionTokenPreview: sessionToken
-      ? `${sessionToken.slice(0, 10)}...`
-      : null,
-    allCookies: request.cookies.getAll().map((c) => c.name),
-  });
+  // console.log("[proxy]", {
+  //   pathname,
+  //   cookieName: SESSION_COOKIE_NAME,
+  //   hasSession: Boolean(sessionToken),
+  //   sessionTokenPreview: sessionToken
+  //     ? `${sessionToken.slice(0, 10)}...`
+  //     : null,
+  //   allCookies: request.cookies.getAll().map((c) => c.name),
+  // });
 
   // Check if current path is an auth route
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));

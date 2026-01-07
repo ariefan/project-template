@@ -50,9 +50,7 @@ const announcementFormSchema = z.object({
   linkText: z.string().optional(),
   priority: z.enum(["info", "warning", "critical"]),
   scope: z.enum(["system", "organization"]),
-  targetRoles: z
-    .array(z.enum(["all", "admin", "member"]))
-    .min(1, "Select at least one role"),
+  targetRoles: z.enum(["all", "admin", "member"]),
   isDismissible: z.boolean(),
   publishAt: z.string().optional(),
   expiresAt: z.string().optional(),
@@ -83,7 +81,8 @@ export function AnnouncementForm({
       linkText: announcement?.linkText ?? "",
       priority: announcement?.priority ?? "info",
       scope: announcement?.scope ?? "organization",
-      targetRoles: announcement?.targetRoles ?? ["all"],
+      // Use first role as default, or "all" if available
+      targetRoles: announcement?.targetRoles?.[0] ?? "all",
       isDismissible: announcement?.isDismissible ?? true,
       publishAt: announcement?.publishAt
         ? format(new Date(announcement.publishAt), "yyyy-MM-dd'T'HH:mm")
@@ -145,7 +144,10 @@ export function AnnouncementForm({
       linkText: values.linkText || undefined,
       priority: values.priority,
       scope: values.scope,
-      targetRoles: values.targetRoles,
+      // Set orgId to null for global announcements, or the actual org ID for organization-scoped
+      orgId: values.scope === "system" ? null : activeOrganization.id,
+      // API expects array, wrap the single value
+      targetRoles: [values.targetRoles],
       isDismissible: values.isDismissible,
       publishAt: values.publishAt
         ? new Date(values.publishAt).toISOString()
@@ -303,7 +305,9 @@ export function AnnouncementForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="system">System-wide</SelectItem>
+                        <SelectItem value="system">
+                          Global (all organizations)
+                        </SelectItem>
                         <SelectItem value="organization">
                           Organization only
                         </SelectItem>
@@ -345,79 +349,66 @@ export function AnnouncementForm({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="targetRoles"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Target roles</FormLabel>
-                  <div className="flex gap-4">
-                    {(["all", "admin", "member"] as const).map((role) => (
-                      <FormField
-                        control={form.control}
-                        key={role}
-                        name="targetRoles"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(role)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...field.value, role])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== role
-                                        )
-                                      );
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal capitalize">
-                              {role}
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex gap-6">
+            <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
-                name="isDismissible"
+                name="targetRoles"
                 render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel>Dismissible</FormLabel>
+                  <FormItem>
+                    <FormLabel>Target roles</FormLabel>
+                    <Select
+                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select target role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="all">All users</SelectItem>
+                        <SelectItem value="admin">Admin only</SelectItem>
+                        <SelectItem value="member">Member only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel>Active</FormLabel>
-                  </FormItem>
-                )}
-              />
+              <div className="flex items-center justify-end gap-6">
+                <FormField
+                  control={form.control}
+                  name="isDismissible"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel>Dismissible</FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel>Active</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

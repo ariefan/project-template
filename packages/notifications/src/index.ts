@@ -82,4 +82,21 @@ export {
   isValidTemplateId,
   renderTemplate,
 } from "./templates";
+export type { GenericNotificationEmailProps } from "./templates/email/generic-notification";
+export { GenericNotificationEmail } from "./templates/email/generic-notification";
+export type { InvoiceReceiptEmailProps } from "./templates/email/invoice-receipt";
+export { InvoiceReceiptEmail } from "./templates/email/invoice-receipt";
+// Email template exports - also exported from main index for easier importing
+export type { PasswordResetEmailProps } from "./templates/email/password-reset";
+export { PasswordResetEmail } from "./templates/email/password-reset";
+export type { PaymentFailedEmailProps } from "./templates/email/payment-failed";
+export { PaymentFailedEmail } from "./templates/email/payment-failed";
+export type { SecurityAlertEmailProps } from "./templates/email/security-alert";
+export { SecurityAlertEmail } from "./templates/email/security-alert";
+export type { TeamInviteEmailProps } from "./templates/email/team-invite";
+export { TeamInviteEmail } from "./templates/email/team-invite";
+export type { VerificationEmailProps } from "./templates/email/verification";
+export { VerificationEmail } from "./templates/email/verification";
+export type { WelcomeEmailProps } from "./templates/email/welcome";
+export { WelcomeEmail } from "./templates/email/welcome";
 export type * from "./types";

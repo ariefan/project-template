@@ -62,7 +62,11 @@ type TemplateId =
   | "welcome"
   | "password-reset"
   | "verification"
-  | "security-alert";
+  | "security-alert"
+  | "team-invite"
+  | "invoice-receipt"
+  | "payment-failed"
+  | "generic-notification";
 
 interface TemplateConfig {
   id: TemplateId;
@@ -118,6 +122,53 @@ const EMAIL_TEMPLATES: TemplateConfig[] = [
       ipAddress: "192.168.1.1",
     },
     requiredFields: ["userName", "alertType", "alertMessage"],
+  },
+  {
+    id: "team-invite",
+    name: "Team Invite",
+    description: "Invitation to join a team",
+    defaultProps: {
+      inviterName: "Sarah Connor",
+      teamName: "Resistance Tech",
+      inviteLink: "https://example.com/join/123",
+      role: "Member",
+    },
+    requiredFields: ["inviterName", "teamName", "inviteLink"],
+  },
+  {
+    id: "invoice-receipt",
+    name: "Invoice Receipt",
+    description: "Payment receipt",
+    defaultProps: {
+      invoiceId: "INV-001",
+      date: "Jan 01, 2024",
+      totalAmount: "$29.00",
+      items: JSON.stringify([{ description: "Pro Plan", amount: "$29.00" }]),
+    },
+    requiredFields: ["invoiceId", "totalAmount"],
+  },
+  {
+    id: "payment-failed",
+    name: "Payment Failed",
+    description: "Notice of failed payment",
+    defaultProps: {
+      last4: "4242",
+      amount: "$29.00",
+      actionUrl: "https://example.com/billing",
+    },
+    requiredFields: ["amount", "actionUrl"],
+  },
+  {
+    id: "generic-notification",
+    name: "Generic Notification",
+    description: "General purpose system notification",
+    defaultProps: {
+      title: "System Update",
+      body: "We have updated our terms of service.",
+      actionLabel: "Read More",
+      actionUrl: "https://example.com/terms",
+    },
+    requiredFields: ["title", "body"],
   },
 ];
 
