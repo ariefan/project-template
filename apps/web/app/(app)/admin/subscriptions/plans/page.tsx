@@ -48,7 +48,7 @@ export default function AdminPlansPage() {
 
       <Card className="overflow-hidden border-border/50 shadow-sm">
         <CardHeader className="bg-muted/30">
-          <CardTitle className="font-bold text-xl uppercase italic tracking-tight underline decoration-primary/30 underline-offset-4">
+          <CardTitle className="font-bold text-xl uppercase tracking-tight decoration-primary/30 underline-offset-4">
             Active Plans
           </CardTitle>
           <CardDescription>
