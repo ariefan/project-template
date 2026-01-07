@@ -191,7 +191,7 @@ export function DataViewPagination({
             onValueChange={(value) => setPageSize(Number(value))}
             value={String(pageSize)}
           >
-            <SelectTrigger className="w-16" size="sm">
+            <SelectTrigger className="w-18" size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

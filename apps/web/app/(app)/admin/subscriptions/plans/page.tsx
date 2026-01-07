@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 import { Edit, Plus, Trash2 } from "lucide-react";
+import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient } from "@/lib/api-client";
 
 export default function AdminPlansPage() {
@@ -35,19 +36,15 @@ export default function AdminPlansPage() {
 
   return (
     <div className="space-y-6 p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-black text-3xl uppercase italic tracking-tighter">
-            Subscription Plans
-          </h1>
-          <p className="text-muted-foreground">
-            Manage service tiers, pricing, and features.
-          </p>
-        </div>
-        <Button className="gap-2 font-bold shadow-lg shadow-primary/20">
-          <Plus className="h-4 w-4" /> Create Plan
-        </Button>
-      </div>
+      <PageHeader
+        actions={
+          <Button className="gap-2 font-bold shadow-lg shadow-primary/20">
+            <Plus className="h-4 w-4" /> Create Plan
+          </Button>
+        }
+        description="Manage service tiers, pricing, and features."
+        title="Subscription Plans"
+      />
 
       <Card className="overflow-hidden border-border/50 shadow-sm">
         <CardHeader className="bg-muted/30">
