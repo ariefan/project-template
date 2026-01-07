@@ -12,9 +12,13 @@ const sampleJob: JobRow = {
   status: "pending" as JobStatus,
   progress: 0,
   message: null,
-  result: null,
-  errorCode: null,
-  errorMessage: null,
+  input: null,
+  output: null,
+  metadata: null,
+  error: null,
+  queueJobId: null,
+  totalItems: null,
+  processedItems: 0,
   createdBy: "user1",
   createdAt: new Date("2024-01-15T10:00:00Z"),
   startedAt: null,
@@ -32,6 +36,9 @@ vi.mock("../repositories/jobs.repository", () => ({
   updateJobProgress: vi.fn(),
   completeJob: vi.fn(),
   failJob: vi.fn(),
+  updateProcessedItems: vi.fn(),
+  getJobByIdInternal: vi.fn(),
+  updateQueueJobId: vi.fn(),
 }));
 
 // Import after mocking
@@ -44,7 +51,6 @@ const {
   updateProgress,
   completeJob,
   failJob,
-  createJobHelpers,
 } = await import("../services/jobs.service");
 const jobsRepository = await import("../repositories/jobs.repository");
 
@@ -307,12 +313,12 @@ describe("Jobs Service", () => {
   });
 
   describe("completeJob", () => {
-    it("should complete job with result", async () => {
+    it("should complete job with output", async () => {
       const completedJob = {
         ...sampleJob,
         status: "completed" as JobStatus,
         progress: 100,
-        result: { downloadUrl: "https://example.com/file.zip" },
+        output: { downloadUrl: "https://example.com/file.zip" },
         completedAt: new Date(),
       };
       vi.mocked(jobsRepository.completeJob).mockResolvedValue(completedJob);
@@ -322,7 +328,7 @@ describe("Jobs Service", () => {
       });
 
       expect(result?.status).toBe("completed");
-      expect(result?.result).toEqual({
+      expect(result?.output).toEqual({
         downloadUrl: "https://example.com/file.zip",
       });
     });
@@ -333,49 +339,19 @@ describe("Jobs Service", () => {
       const failedJob = {
         ...sampleJob,
         status: "failed" as JobStatus,
-        errorCode: "PROCESSING_ERROR",
-        errorMessage: "Failed to process file",
+        error: { code: "PROCESSING_ERROR", message: "Failed to process file" },
         completedAt: new Date(),
       };
       vi.mocked(jobsRepository.failJob).mockResolvedValue(failedJob);
 
-      const result = await failJob(
-        "job_abc123def456",
-        "PROCESSING_ERROR",
-        "Failed to process file"
-      );
+      const result = await failJob("job_abc123def456", {
+        code: "PROCESSING_ERROR",
+        message: "Failed to process file",
+      });
 
       expect(result?.status).toBe("failed");
-      expect(result?.errorCode).toBe("PROCESSING_ERROR");
-      expect(result?.errorMessage).toBe("Failed to process file");
-    });
-  });
-
-  describe("createJobHelpers", () => {
-    it("should create helper functions for updating progress", async () => {
-      vi.mocked(jobsRepository.updateJobProgress).mockResolvedValue(sampleJob);
-
-      const helpers = createJobHelpers("job_abc123def456");
-      await helpers.updateProgress(75, "Almost done");
-
-      expect(jobsRepository.updateJobProgress).toHaveBeenCalledWith(
-        "job_abc123def456",
-        75,
-        "Almost done"
-      );
-    });
-
-    it("should create helper functions for logging", async () => {
-      vi.mocked(jobsRepository.updateJobProgress).mockResolvedValue(sampleJob);
-
-      const helpers = createJobHelpers("job_abc123def456");
-      await helpers.log("Step 3 complete");
-
-      expect(jobsRepository.updateJobProgress).toHaveBeenCalledWith(
-        "job_abc123def456",
-        -1,
-        "Step 3 complete"
-      );
+      expect(result?.error?.code).toBe("PROCESSING_ERROR");
+      expect(result?.error?.message).toBe("Failed to process file");
     });
   });
 });

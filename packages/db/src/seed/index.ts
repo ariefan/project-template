@@ -368,11 +368,17 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     "settings",
     "users",
     "reports",
+    "announcements",
   ];
   const actions = ["read", "create", "update", "delete", "manage"];
 
   // Resources where members get owner-based update/delete permissions
-  const memberOwnerResources = new Set(["posts", "comments", "reports"]);
+  const memberOwnerResources = new Set([
+    "posts",
+    "comments",
+    "reports",
+    "announcements",
+  ]);
 
   // Policy rules (ptype="p"): role -> app -> tenant -> resource -> action -> effect -> condition
   const policies: Array<{
@@ -1205,55 +1211,70 @@ Payment Terms: Net 30`,
   }
   console.log(`   ✓ Created ${schedules.length} scheduled reports`);
 
-  console.log("\n📋 Creating report jobs...");
+  console.log("\n📋 Creating jobs...");
   const jobs = [
     {
-      id: "rjob_completed",
-      organizationId: "org_acme",
-      templateId: "tpl_sales_summary",
-      scheduledReportId: "sched_weekly_sales",
-      type: "scheduled" as const,
+      id: "job_completed",
+      orgId: "org_acme",
+      type: "report",
       status: "completed" as const,
-      format: "excel" as const,
       progress: 100,
-      totalRows: 150,
-      processedRows: 150,
-      result: {
+      totalItems: 150,
+      processedItems: 150,
+      input: {
+        templateId: "tpl_sales_summary",
+      },
+      metadata: {
+        templateId: "tpl_sales_summary",
+        scheduledReportId: "sched_weekly_sales",
+        format: "excel" as const,
+      },
+      output: {
         filePath: "/reports/org_acme/sales_2025_01.xlsx",
         fileSize: 45_678,
         rowCount: 150,
-        downloadUrl: "/v1/orgs/org_acme/reports/jobs/rjob_completed/download",
+        downloadUrl: "/v1/orgs/org_acme/jobs/job_completed/download",
         mimeType:
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        deliveryStatus: "sent" as const,
       },
       createdBy: "user_admin",
       startedAt: new Date(now.getTime() - 3_600_000),
       completedAt: new Date(now.getTime() - 3_500_000),
     },
     {
-      id: "rjob_processing",
-      organizationId: "org_acme",
-      templateId: "tpl_user_activity",
-      type: "manual" as const,
+      id: "job_processing",
+      orgId: "org_acme",
+      type: "report",
       status: "processing" as const,
-      format: "csv" as const,
       progress: 65,
-      totalRows: 1000,
-      processedRows: 650,
+      totalItems: 1000,
+      processedItems: 650,
+      message: "Processing records...",
+      input: {
+        templateId: "tpl_user_activity",
+      },
+      metadata: {
+        templateId: "tpl_user_activity",
+        format: "csv" as const,
+      },
       createdBy: "user_member",
       startedAt: new Date(now.getTime() - 300_000),
       estimatedCompletion: new Date(now.getTime() + 180_000),
     },
     {
-      id: "rjob_failed",
-      organizationId: "org_acme",
-      templateId: "tpl_invoice",
-      scheduledReportId: "sched_monthly_invoice",
-      type: "scheduled" as const,
+      id: "job_failed",
+      orgId: "org_acme",
+      type: "report",
       status: "failed" as const,
-      format: "pdf" as const,
       progress: 30,
+      input: {
+        templateId: "tpl_invoice",
+      },
+      metadata: {
+        templateId: "tpl_invoice",
+        scheduledReportId: "sched_monthly_invoice",
+        format: "pdf" as const,
+      },
       error: {
         code: "DATA_SOURCE_ERROR",
         message: "Failed to connect to billing API: Connection timeout",
@@ -1264,24 +1285,29 @@ Payment Terms: Net 30`,
       completedAt: new Date(now.getTime() - 7_100_000),
     },
     {
-      id: "rjob_pending",
-      organizationId: "org_acme",
-      templateId: "tpl_receipt",
-      type: "manual" as const,
+      id: "job_pending",
+      orgId: "org_acme",
+      type: "report",
       status: "pending" as const,
-      format: "thermal" as const,
-      parameters: { orderId: "order_12345" },
+      input: {
+        templateId: "tpl_receipt",
+        parameters: { orderId: "order_12345" },
+      },
+      metadata: {
+        templateId: "tpl_receipt",
+        format: "thermal" as const,
+      },
       createdBy: "user_member",
     },
   ];
 
   for (const job of jobs) {
     await db
-      .insert(schema.reportJobs)
+      .insert(schema.jobs)
       .values({ ...job, createdAt: now })
       .onConflictDoNothing();
   }
-  console.log(`   ✓ Created ${jobs.length} report jobs`);
+  console.log(`   ✓ Created ${jobs.length} jobs`);
 }
 
 // ─────────────────────────────────────────────────────────────

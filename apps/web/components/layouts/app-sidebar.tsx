@@ -9,8 +9,10 @@ import {
 } from "@workspace/ui/components/sidebar";
 import {
   Bell,
+  BellRing,
   Briefcase,
   Code,
+  CreditCard,
   FileSpreadsheet,
   FileText,
   FolderOpen,
@@ -21,11 +23,13 @@ import {
   Webhook,
 } from "lucide-react";
 import type * as React from "react";
+import { UnreadAnnouncementsBadge } from "@/app/(app)/announcements/unread-badge";
 import { NavMain } from "@/components/layouts/nav-main";
 import { NavUser } from "@/components/layouts/nav-user";
 import { OrgSwitcher } from "@/components/layouts/org-switcher";
 
-const navMain = [
+// Core application features
+const navApplication = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -42,6 +46,15 @@ const navMain = [
     icon: FolderOpen,
   },
   {
+    title: "Subscriptions",
+    url: "/subscriptions",
+    icon: CreditCard,
+  },
+];
+
+// System integration features
+const navSystem = [
+  {
     title: "Jobs",
     url: "/jobs",
     icon: Briefcase,
@@ -55,6 +68,12 @@ const navMain = [
     title: "Notifications",
     url: "/notifications",
     icon: Bell,
+  },
+  {
+    title: "Announcements",
+    url: "/announcements",
+    icon: BellRing,
+    badge: UnreadAnnouncementsBadge,
   },
   {
     title: "Reports",
@@ -71,6 +90,10 @@ const navMain = [
       },
     ],
   },
+];
+
+// Developer tools
+const navDeveloper = [
   {
     title: "Developer",
     url: "/developer/notifications",
@@ -90,6 +113,10 @@ const navMain = [
       },
     ],
   },
+];
+
+// Administration and settings
+const navAdmin = [
   {
     title: "Settings",
     url: "/settings",
@@ -108,8 +135,20 @@ const navMain = [
         title: "Roles",
         url: "/admin/roles",
       },
+      {
+        title: "Announcements",
+        url: "/admin/announcements",
+      },
+      {
+        title: "Subscription Plans",
+        url: "/admin/subscriptions/plans",
+      },
     ],
   },
+];
+
+// Demo pages (can be removed in production)
+const navExamples = [
   {
     title: "Pages",
     url: "/pages/crud",
@@ -130,7 +169,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <OrgSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMain} />
+        <NavMain items={navApplication} label="Application" />
+        <NavMain items={navSystem} label="System" />
+        <NavMain items={navDeveloper} label="Developer" />
+        <NavMain items={navAdmin} label="Administration" />
+        <NavMain items={navExamples} label="Examples" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

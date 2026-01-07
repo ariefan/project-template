@@ -326,3 +326,90 @@ model ReportTemplateListResponse {
   pagination: Pagination;
   meta: ResponseMeta;
 }
+
+// ============================================================================
+// EXPORT REQUEST/RESPONSE MODELS
+// ============================================================================
+
+/**
+ * Request body for triggering an export
+ */
+model ExportRequest {
+  /** Report template ID (optional, for template-based exports) */
+  templateId?: string;
+
+  /** Output format (required if no templateId) */
+  format?: ReportFormat;
+
+  /** Data to export (for client-side data) */
+  data?: unknown[];
+
+  /** Column definitions (required if no templateId) */
+  columns?: ReportColumnConfig[];
+
+  /** Format-specific options */
+  options?: ReportOptions;
+
+  /** Filters to apply to data source */
+  filters?: Record<unknown>;
+
+  /** Sort configuration */
+  sort?: {
+    field: string;
+    direction: "asc" | "desc";
+  }[];
+
+  /** Additional parameters for template */
+  parameters?: Record<unknown>;
+
+  /** Export only selected rows (by ID) */
+  selectedIds?: string[];
+
+  /** Use async processing (returns job ID) */
+  async?: boolean;
+}
+
+/**
+ * Request body for streaming export
+ */
+model StreamExportRequest {
+  /** Report template ID */
+  templateId?: string;
+
+  /** Output format (only csv and excel supported) */
+  format: "csv" | "excel";
+
+  /** Filters to apply */
+  filters?: Record<unknown>;
+
+  /** Sort configuration */
+  sort?: {
+    field: string;
+    direction: "asc" | "desc";
+  }[];
+
+  /** Batch size for streaming */
+  batchSize?: int32;
+}
+
+/**
+ * Async export response (returns job info)
+ */
+model AsyncExportResponse {
+  /** Job ID for tracking */
+  @example("job_abc123xyz")
+  jobId: string;
+
+  /** Current status */
+  status: "pending" | "processing" | "completed" | "failed" | "cancelled";
+
+  /** URL to check job status */
+  @example("/v1/orgs/org_xyz/jobs/job_abc123xyz")
+  statusUrl: string;
+
+  /** Estimated completion time */
+  estimatedCompletion?: utcDateTime;
+
+  /** Response metadata */
+  meta: ResponseMeta;
+}

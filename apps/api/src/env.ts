@@ -113,6 +113,16 @@ const envSchema = z
     // Real-Time Notifications (WebSocket + SSE)
     REALTIME_ENABLED: z.coerce.boolean().default(true),
     REALTIME_HEARTBEAT_INTERVAL: z.coerce.number().default(30_000), // 30 seconds
+
+    // Subscription Payment Gateway
+    SUBSCRIPTION_PAYMENT_PROVIDER: z
+      .enum(["xendit", "stripe"])
+      .default("xendit"),
+
+    // Xendit Configuration
+    XENDIT_SECRET_KEY: z.string().optional(),
+    XENDIT_WEBHOOK_SECRET: z.string().optional(),
+    XENDIT_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
   })
   .refine(
     (data) => {

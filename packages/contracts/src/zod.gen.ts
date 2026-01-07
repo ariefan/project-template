@@ -13,6 +13,110 @@ export const zActiveContext = z.object({
 });
 
 /**
+ * Announcement interaction tracking
+ */
+export const zAnnouncementInteraction = z.object({
+    id: z.string(),
+    announcementId: z.string(),
+    userId: z.string(),
+    viewedAt: z.optional(z.iso.datetime()),
+    readAt: z.optional(z.iso.datetime()),
+    dismissedAt: z.optional(z.iso.datetime()),
+    acknowledgedAt: z.optional(z.iso.datetime()),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+});
+
+/**
+ * Announcement priority level
+ */
+export const zAnnouncementPriority = z.enum([
+    'info',
+    'warning',
+    'critical'
+]);
+
+/**
+ * Announcement scope
+ */
+export const zAnnouncementScope = z.enum(['system', 'organization']);
+
+/**
+ * User role for targeting
+ */
+export const zAnnouncementTargetRole = z.enum([
+    'all',
+    'admin',
+    'member'
+]);
+
+/**
+ * Announcement resource model
+ */
+export const zAnnouncement = z.object({
+    id: z.string(),
+    orgId: z.optional(z.string()),
+    title: z.string(),
+    content: z.string(),
+    linkUrl: z.optional(z.string()),
+    linkText: z.optional(z.string()),
+    priority: zAnnouncementPriority,
+    scope: zAnnouncementScope,
+    targetRoles: z.array(zAnnouncementTargetRole),
+    isDismissible: z.boolean(),
+    publishAt: z.iso.datetime(),
+    expiresAt: z.optional(z.iso.datetime()),
+    isActive: z.boolean(),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    deletedAt: z.optional(z.iso.datetime()),
+    viewCount: z.optional(z.int()),
+    readCount: z.optional(z.int()),
+    acknowledgeCount: z.optional(z.int()),
+    dismissCount: z.optional(z.int())
+});
+
+/**
+ * Announcement with user interaction data
+ */
+export const zAnnouncementWithInteraction = z.object({
+    id: z.string(),
+    orgId: z.optional(z.string()),
+    title: z.string(),
+    content: z.string(),
+    linkUrl: z.optional(z.string()),
+    linkText: z.optional(z.string()),
+    priority: zAnnouncementPriority,
+    scope: zAnnouncementScope,
+    targetRoles: z.array(zAnnouncementTargetRole),
+    isDismissible: z.boolean(),
+    publishAt: z.iso.datetime(),
+    expiresAt: z.optional(z.iso.datetime()),
+    isActive: z.boolean(),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    deletedAt: z.optional(z.iso.datetime()),
+    viewCount: z.optional(z.int()),
+    readCount: z.optional(z.int()),
+    acknowledgeCount: z.optional(z.int()),
+    dismissCount: z.optional(z.int()),
+    interaction: z.optional(zAnnouncementInteraction),
+    hasViewed: z.optional(z.boolean()),
+    hasRead: z.optional(z.boolean()),
+    hasDismissed: z.optional(z.boolean()),
+    hasAcknowledged: z.optional(z.boolean())
+});
+
+/**
+ * Apply coupon request
+ */
+export const zApplyCouponRequest = z.object({
+    couponCode: z.string().min(1).max(50)
+});
+
+/**
  * Request to assign a role to a user
  */
 export const zAssignRoleRequest = z.object({
@@ -126,6 +230,14 @@ export const zBatchSummary = z.object({
 });
 
 /**
+ * Cancel subscription request
+ */
+export const zCancelSubscriptionRequest = z.object({
+    immediate: z.optional(z.boolean()),
+    reason: z.optional(z.string().max(500))
+});
+
+/**
  * Column alignment
  */
 export const zColumnAlignment = z.enum([
@@ -155,11 +267,90 @@ export const zConfirmUploadRequest = z.object({
 });
 
 /**
+ * Coupon discount type
+ */
+export const zCouponType = z.enum([
+    'percent',
+    'fixed',
+    'trial_extension'
+]);
+
+/**
+ * Discount coupon
+ *
+ * Represents a promotional discount code.
+ */
+export const zCoupon = z.object({
+    id: z.string(),
+    code: z.string().min(1).max(50),
+    name: z.optional(z.string().max(200)),
+    type: zCouponType,
+    percentOff: z.optional(z.int().gte(1).lte(100)),
+    amountOffCents: z.optional(z.int().gte(1)),
+    trialExtensionDays: z.optional(z.int().gte(1)),
+    isActive: z.boolean(),
+    startsAt: z.optional(z.iso.datetime()),
+    expiresAt: z.optional(z.iso.datetime()),
+    maxRedemptions: z.optional(z.int().gte(1)),
+    currentRedemptions: z.int().gte(0),
+    firstTimeOnly: z.boolean(),
+    planIds: z.optional(z.string()),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+});
+
+/**
+ * Request body for creating an announcement
+ */
+export const zCreateAnnouncementRequest = z.object({
+    orgId: z.optional(z.string()),
+    title: z.string().min(1).max(200),
+    content: z.string().min(1).max(5000),
+    linkUrl: z.optional(z.string()),
+    linkText: z.optional(z.string()),
+    priority: z.optional(zAnnouncementPriority),
+    scope: z.optional(zAnnouncementScope),
+    targetRoles: z.optional(z.array(zAnnouncementTargetRole)),
+    isDismissible: z.optional(z.boolean()),
+    publishAt: z.optional(z.iso.datetime()),
+    expiresAt: z.optional(z.iso.datetime()),
+    isActive: z.optional(z.boolean())
+});
+
+/**
+ * Create coupon request
+ */
+export const zCreateCouponRequest = z.object({
+    code: z.string().min(1).max(50),
+    name: z.optional(z.string().max(200)),
+    type: zCouponType,
+    percentOff: z.optional(z.int().gte(1).lte(100)),
+    amountOffCents: z.optional(z.int().gte(1)),
+    trialExtensionDays: z.optional(z.int().gte(1)),
+    isActive: z.optional(z.boolean()),
+    startsAt: z.optional(z.iso.datetime()),
+    expiresAt: z.optional(z.iso.datetime()),
+    maxRedemptions: z.optional(z.int().gte(1)),
+    firstTimeOnly: z.optional(z.boolean()),
+    planIds: z.optional(z.string())
+});
+
+/**
  * Request body for creating a new comment
  */
 export const zCreateExampleCommentRequest = z.object({
     content: z.string(),
     authorId: z.string()
+});
+
+/**
+ * Create subscription request
+ */
+export const zCreateSubscriptionRequest = z.object({
+    planId: z.string(),
+    couponCode: z.optional(z.string().max(50)),
+    paymentMethodId: z.optional(z.string()),
+    returnUrl: z.optional(z.string())
 });
 
 /**
@@ -367,6 +558,26 @@ export const zInitiateUploadRequest = z.object({
 });
 
 /**
+ * Job error details
+ */
+export const zJobError = z.object({
+    code: z.string(),
+    message: z.string(),
+    retryable: z.optional(z.boolean())
+});
+
+/**
+ * Job metadata for type-specific references
+ */
+export const zJobMetadata = z.object({
+    templateId: z.optional(z.string()),
+    scheduledReportId: z.optional(z.string()),
+    format: z.optional(z.string()),
+    parentJobId: z.optional(z.string()),
+    retryCount: z.optional(z.int())
+});
+
+/**
  * Job status
  */
 export const zJobStatus = z.enum([
@@ -381,6 +592,7 @@ export const zJobStatus = z.enum([
  * Async job resource
  *
  * Represents a long-running operation that can be polled for status.
+ * Unified job system with pg-boss queue integration.
  */
 export const zJob = z.object({
     jobId: z.string(),
@@ -389,12 +601,12 @@ export const zJob = z.object({
     status: zJobStatus,
     progress: z.optional(z.int().gte(0).lte(100)),
     message: z.optional(z.string()),
-    result: z.optional(z.record(z.string(), z.unknown())),
-    error: z.optional(z.object({
-        code: z.string(),
-        message: z.string(),
-        details: z.optional(z.record(z.string(), z.unknown()))
-    })),
+    totalItems: z.optional(z.int()),
+    processedItems: z.optional(z.int()),
+    input: z.optional(z.record(z.string(), z.unknown())),
+    output: z.optional(z.record(z.string(), z.unknown())),
+    metadata: z.optional(zJobMetadata),
+    error: z.optional(zJobError),
     createdBy: z.string(),
     createdAt: z.iso.datetime(),
     startedAt: z.optional(z.iso.datetime()),
@@ -644,6 +856,53 @@ export const zCreateRoleRequest = z.object({
 });
 
 /**
+ * Billing period for subscription plans
+ */
+export const zPlanBillingPeriod = z.enum(['monthly', 'yearly']);
+
+/**
+ * Plan feature configuration
+ */
+export const zPlanFeatures = z.object({
+    maxUsers: z.optional(z.int()),
+    maxLocations: z.optional(z.int()),
+    maxStorageGb: z.optional(z.int()),
+    advancedReporting: z.optional(z.boolean()),
+    apiAccess: z.optional(z.boolean()),
+    customBranding: z.optional(z.boolean()),
+    prioritySupport: z.optional(z.boolean())
+});
+
+/**
+ * Plan visibility level
+ */
+export const zPlanVisibility = z.enum([
+    'public',
+    'private',
+    'archived'
+]);
+
+/**
+ * Create subscription plan request
+ */
+export const zCreatePlanRequest = z.object({
+    applicationId: z.string(),
+    name: z.string().min(1).max(100),
+    slug: z.string().min(1).max(50),
+    description: z.optional(z.string().max(500)),
+    priceCents: z.int().gte(0),
+    currency: z.optional(z.string()),
+    billingPeriod: zPlanBillingPeriod,
+    trialDays: z.optional(z.int().gte(0)),
+    features: z.optional(zPlanFeatures),
+    metadata: z.optional(z.record(z.string(), z.unknown())),
+    sortOrder: z.optional(z.int()),
+    visibility: z.optional(zPlanVisibility),
+    isActive: z.optional(z.boolean()),
+    isPopular: z.optional(z.boolean())
+});
+
+/**
  * Request body for previewing an email template
  */
 export const zPreviewEmailRequest = z.object({
@@ -676,81 +935,6 @@ export const zReportFormat = z.enum([
     'thermal',
     'dotmatrix'
 ]);
-
-/**
- * Job error data (when failed)
- */
-export const zReportJobError = z.object({
-    code: z.string(),
-    message: z.string(),
-    stack: z.optional(z.string()),
-    retryable: z.boolean()
-});
-
-/**
- * Job result data (when completed successfully)
- */
-export const zReportJobResult = z.object({
-    filePath: z.optional(z.string()),
-    fileSize: z.optional(z.coerce.bigint()),
-    rowCount: z.optional(z.int()),
-    downloadUrl: z.optional(z.string()),
-    downloadExpiresAt: z.optional(z.iso.datetime()),
-    mimeType: z.optional(z.string()),
-    deliveryStatus: z.optional(z.enum([
-        'pending',
-        'sent',
-        'failed'
-    ])),
-    deliveryError: z.optional(z.string())
-});
-
-/**
- * Report job status
- */
-export const zReportJobStatus = z.enum([
-    'pending',
-    'processing',
-    'completed',
-    'failed',
-    'cancelled'
-]);
-
-/**
- * Report job type
- */
-export const zReportJobType = z.enum(['manual', 'scheduled']);
-
-/**
- * Report Job resource model
- *
- * Tracks individual report generation jobs with:
- * - Progress tracking
- * - Result/error information
- * - Queue integration (pg-boss)
- * - Both manual and scheduled jobs
- */
-export const zReportJob = z.object({
-    id: z.string(),
-    orgId: z.string(),
-    templateId: z.optional(z.string()),
-    scheduledReportId: z.optional(z.string()),
-    type: zReportJobType,
-    status: zReportJobStatus,
-    format: zReportFormat,
-    progress: z.optional(z.int()),
-    totalRows: z.optional(z.int()),
-    processedRows: z.optional(z.int()),
-    parameters: z.optional(z.record(z.string(), z.unknown())),
-    result: z.optional(zReportJobResult),
-    error: z.optional(zReportJobError),
-    queueJobId: z.optional(z.string()),
-    createdBy: z.string(),
-    createdAt: z.iso.datetime(),
-    startedAt: z.optional(z.iso.datetime()),
-    completedAt: z.optional(z.iso.datetime()),
-    estimatedCompletion: z.optional(z.iso.datetime())
-});
 
 /**
  * Page orientation for PDF reports
@@ -866,6 +1050,17 @@ export const zResponseMeta = z.object({
 });
 
 /**
+ * Acknowledge announcement response
+ */
+export const zAcknowledgeAnnouncementResponse = z.object({
+    data: z.object({
+        announcementId: z.string(),
+        acknowledgedAt: z.iso.datetime()
+    }),
+    meta: zResponseMeta
+});
+
+/**
  * Active context response
  */
 export const zActiveContextResponse = z.object({
@@ -874,11 +1069,58 @@ export const zActiveContextResponse = z.object({
 });
 
 /**
+ * Announcement collection response
+ */
+export const zAnnouncementListResponse = z.object({
+    data: z.array(zAnnouncementWithInteraction),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single announcement response
+ */
+export const zAnnouncementResponse = z.object({
+    data: zAnnouncement,
+    meta: zResponseMeta
+});
+
+/**
+ * Announcement statistics response
+ */
+export const zAnnouncementStatsResponse = z.object({
+    data: z.object({
+        viewCount: z.int(),
+        readCount: z.int(),
+        acknowledgeCount: z.int(),
+        dismissCount: z.int(),
+        viewRate: z.number(),
+        readRate: z.number(),
+        acknowledgeRate: z.number()
+    }),
+    meta: zResponseMeta
+});
+
+/**
+ * Announcement with interaction response
+ */
+export const zAnnouncementWithInteractionResponse = z.object({
+    data: zAnnouncementWithInteraction,
+    meta: zResponseMeta
+});
+
+/**
  * Async export response (returns job info)
  */
 export const zAsyncExportResponse = z.object({
     jobId: z.string(),
-    status: zReportJobStatus,
+    status: z.enum([
+        'pending',
+        'processing',
+        'completed',
+        'failed',
+        'cancelled'
+    ]),
     statusUrl: z.string(),
     estimatedCompletion: z.optional(z.iso.datetime()),
     meta: zResponseMeta
@@ -923,6 +1165,34 @@ export const zAuditLogResponse = z.object({
 export const zBatchDeleteResponse = z.object({
     results: z.array(zBatchDeleteResult),
     summary: zBatchSummary,
+    meta: zResponseMeta
+});
+
+/**
+ * Coupon list response
+ */
+export const zCouponListResponse = z.object({
+    data: z.array(zCoupon),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Coupon response
+ */
+export const zCouponResponse = z.object({
+    data: zCoupon,
+    meta: zResponseMeta
+});
+
+/**
+ * Dismiss announcement response
+ */
+export const zDismissAnnouncementResponse = z.object({
+    data: z.object({
+        announcementId: z.string(),
+        dismissedAt: z.iso.datetime()
+    }),
     meta: zResponseMeta
 });
 
@@ -1026,6 +1296,28 @@ export const zMarkAllReadResponse = z.object({
 });
 
 /**
+ * Mark as read response
+ */
+export const zMarkReadResponse = z.object({
+    data: z.object({
+        announcementId: z.string(),
+        readAt: z.iso.datetime()
+    }),
+    meta: zResponseMeta
+});
+
+/**
+ * Mark as viewed response
+ */
+export const zMarkViewedResponse = z.object({
+    data: z.object({
+        announcementId: z.string(),
+        viewedAt: z.iso.datetime()
+    }),
+    meta: zResponseMeta
+});
+
+/**
  * Notification collection response
  */
 export const zNotificationListResponse = z.object({
@@ -1059,23 +1351,6 @@ export const zPreviewEmailResponse = z.object({
         text: z.string(),
         subject: z.string()
     }),
-    meta: zResponseMeta
-});
-
-/**
- * Report job collection response (page-based)
- */
-export const zReportJobListResponse = z.object({
-    data: z.array(zReportJob),
-    pagination: zPagination,
-    meta: zResponseMeta
-});
-
-/**
- * Single report job response
- */
-export const zReportJobResponse = z.object({
-    data: zReportJob,
     meta: zResponseMeta
 });
 
@@ -1225,6 +1500,104 @@ export const zStreamExportRequest = z.object({
 });
 
 /**
+ * Subscription plan
+ *
+ * Represents a pricing tier with features and limits.
+ */
+export const zSubscriptionPlan = z.object({
+    id: z.string(),
+    applicationId: z.string(),
+    name: z.string().min(1).max(100),
+    slug: z.string().min(1).max(50),
+    description: z.optional(z.string().max(500)),
+    priceCents: z.int().gte(0),
+    currency: z.string(),
+    billingPeriod: zPlanBillingPeriod,
+    trialDays: z.optional(z.int().gte(0)),
+    features: z.optional(zPlanFeatures),
+    metadata: z.optional(z.record(z.string(), z.unknown())),
+    sortOrder: z.optional(z.int()),
+    visibility: zPlanVisibility,
+    isActive: z.boolean(),
+    isPopular: z.optional(z.boolean()),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime()
+});
+
+/**
+ * Subscription plan list response
+ */
+export const zPlanListResponse = z.object({
+    data: z.array(zSubscriptionPlan),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Subscription plan response
+ */
+export const zPlanResponse = z.object({
+    data: zSubscriptionPlan,
+    meta: zResponseMeta
+});
+
+/**
+ * Subscription status
+ */
+export const zSubscriptionStatus = z.enum([
+    'trialing',
+    'active',
+    'past_due',
+    'canceled',
+    'paused',
+    'expired'
+]);
+
+/**
+ * Organization subscription
+ *
+ * Represents an active subscription for an organization.
+ */
+export const zSubscription = z.object({
+    id: z.string(),
+    organizationId: z.string(),
+    applicationId: z.string(),
+    planId: z.string(),
+    status: zSubscriptionStatus,
+    trialStartsAt: z.optional(z.iso.datetime()),
+    trialEndsAt: z.optional(z.iso.datetime()),
+    currentPeriodStart: z.iso.datetime(),
+    currentPeriodEnd: z.iso.datetime(),
+    couponId: z.optional(z.string()),
+    discountPercent: z.optional(z.int().gte(0).lte(100)),
+    discountAmountCents: z.optional(z.int().gte(0)),
+    cancelAtPeriodEnd: z.boolean(),
+    canceledAt: z.optional(z.iso.datetime()),
+    providerSubscriptionId: z.optional(z.string()),
+    providerCustomerId: z.optional(z.string()),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    plan: z.optional(zSubscriptionPlan)
+});
+
+/**
+ * Subscription creation response (with payment link)
+ */
+export const zCreateSubscriptionResponse = z.object({
+    data: zSubscription,
+    linkingUrl: z.optional(z.string()),
+    meta: zResponseMeta
+});
+
+/**
+ * Subscription response
+ */
+export const zSubscriptionResponse = z.object({
+    data: zSubscription,
+    meta: zResponseMeta
+});
+
+/**
  * Request to switch active context (application and/or tenant)
  */
 export const zSwitchContextRequest = z.object({
@@ -1247,6 +1620,17 @@ export const zSwitchContextResponse = z.object({
 });
 
 /**
+ * Unread announcement count response
+ */
+export const zUnreadAnnouncementsResponse = z.object({
+    data: z.object({
+        unreadCount: z.int(),
+        criticalCount: z.int()
+    }),
+    meta: zResponseMeta
+});
+
+/**
  * Unread count response
  */
 export const zUnreadCountResponse = z.object({
@@ -1254,6 +1638,38 @@ export const zUnreadCountResponse = z.object({
         unreadCount: z.int()
     }),
     meta: zResponseMeta
+});
+
+/**
+ * Request body for updating an announcement
+ */
+export const zUpdateAnnouncementRequest = z.object({
+    title: z.optional(z.string().min(1).max(200)),
+    content: z.optional(z.string().min(1).max(5000)),
+    linkUrl: z.optional(z.string()),
+    linkText: z.optional(z.string()),
+    priority: z.optional(zAnnouncementPriority),
+    targetRoles: z.optional(z.array(zAnnouncementTargetRole)),
+    isDismissible: z.optional(z.boolean()),
+    publishAt: z.optional(z.iso.datetime()),
+    expiresAt: z.optional(z.iso.datetime()),
+    isActive: z.optional(z.boolean())
+});
+
+/**
+ * Update coupon request
+ */
+export const zUpdateCouponRequest = z.object({
+    name: z.optional(z.string().max(200)),
+    percentOff: z.optional(z.int().gte(1).lte(100)),
+    amountOffCents: z.optional(z.int().gte(1)),
+    trialExtensionDays: z.optional(z.int().gte(1)),
+    isActive: z.optional(z.boolean()),
+    startsAt: z.optional(z.iso.datetime()),
+    expiresAt: z.optional(z.iso.datetime()),
+    maxRedemptions: z.optional(z.int().gte(1)),
+    firstTimeOnly: z.optional(z.boolean()),
+    planIds: z.optional(z.string())
 });
 
 /**
@@ -1277,6 +1693,25 @@ export const zUpdateExamplePostRequest = z.object({
  */
 export const zUpdateFileRequest = z.object({
     access: z.optional(zFileAccess)
+});
+
+/**
+ * Update subscription plan request
+ */
+export const zUpdatePlanRequest = z.object({
+    name: z.optional(z.string().min(1).max(100)),
+    slug: z.optional(z.string().min(1).max(50)),
+    description: z.optional(z.string().max(500)),
+    priceCents: z.optional(z.int().gte(0)),
+    currency: z.optional(z.string()),
+    billingPeriod: z.optional(zPlanBillingPeriod),
+    trialDays: z.optional(z.int().gte(0)),
+    features: z.optional(zPlanFeatures),
+    metadata: z.optional(z.record(z.string(), z.unknown())),
+    sortOrder: z.optional(z.int()),
+    visibility: z.optional(zPlanVisibility),
+    isActive: z.optional(z.boolean()),
+    isPopular: z.optional(z.boolean())
 });
 
 /**
@@ -1322,6 +1757,14 @@ export const zUpdateRoleRequest = z.object({
     name: z.optional(z.string().min(1).max(100)),
     description: z.optional(z.string().max(500)),
     permissions: z.optional(z.array(zPermissionInput))
+});
+
+/**
+ * Update subscription request
+ */
+export const zUpdateSubscriptionRequest = z.object({
+    planId: z.optional(z.string()),
+    cancelAtPeriodEnd: z.optional(z.boolean())
 });
 
 /**
@@ -1421,6 +1864,24 @@ export const zUserRoleAssignmentResponse = z.object({
 });
 
 /**
+ * Validate coupon request
+ */
+export const zValidateCouponRequest = z.object({
+    code: z.string().min(1).max(50),
+    planId: z.string()
+});
+
+/**
+ * Coupon validation response
+ */
+export const zValidateCouponResponse = z.object({
+    valid: z.boolean(),
+    coupon: z.optional(zCoupon),
+    discountAmount: z.optional(z.int()),
+    message: z.optional(z.string())
+});
+
+/**
  * Virus scan status for uploaded files
  */
 export const zVirusScanStatus = z.enum([
@@ -1492,6 +1953,15 @@ export const zWebhook = z.object({
     createdBy: z.string(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime()
+});
+
+/**
+ * Webhook received acknowledgment
+ */
+export const zWebhookAcknowledgment = z.object({
+    received: z.boolean(),
+    eventId: z.optional(z.string()),
+    note: z.optional(z.string())
 });
 
 /**
@@ -1762,6 +2232,169 @@ export const zHealthCheckResponse = z.object({
     }))
 });
 
+export const zCouponsAdminListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        type: z.optional(zCouponType),
+        isActive: z.optional(z.boolean()),
+        code: z.optional(z.string()),
+        sortBy: z.optional(z.string()).default('createdAt'),
+        sortOrder: z.optional(z.string()).default('desc')
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zCouponsAdminListResponse = z.union([
+    zCouponListResponse,
+    zErrorResponse
+]);
+
+export const zCouponsAdminCreateData = z.object({
+    body: zCreateCouponRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zCouponsAdminCreateResponse = z.union([
+    zErrorResponse,
+    zCouponResponse
+]);
+
+export const zCouponsAdminDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        couponId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zCouponsAdminDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zCouponsAdminGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        couponId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zCouponsAdminGetResponse = z.union([
+    zCouponResponse,
+    zErrorResponse
+]);
+
+export const zCouponsAdminUpdateData = z.object({
+    body: zUpdateCouponRequest,
+    path: z.object({
+        couponId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zCouponsAdminUpdateResponse = z.union([
+    zCouponResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionPlansAdminListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        applicationId: z.optional(z.string()),
+        visibility: z.optional(zPlanVisibility),
+        isActive: z.optional(z.boolean()),
+        billingPeriod: z.optional(zPlanBillingPeriod),
+        sortBy: z.optional(z.string()).default('sortOrder'),
+        sortOrder: z.optional(z.string()).default('asc')
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionPlansAdminListResponse = z.union([
+    zPlanListResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionPlansAdminCreateData = z.object({
+    body: zCreatePlanRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zSubscriptionPlansAdminCreateResponse = z.union([
+    zErrorResponse,
+    zPlanResponse
+]);
+
+export const zSubscriptionPlansAdminDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        planId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionPlansAdminDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionPlansAdminGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        planId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionPlansAdminGetResponse = z.union([
+    zPlanResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionPlansAdminUpdateData = z.object({
+    body: zUpdatePlanRequest,
+    path: z.object({
+        planId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionPlansAdminUpdateResponse = z.union([
+    zPlanResponse,
+    zErrorResponse
+]);
+
 export const zMigrationGetStatusData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -1917,6 +2550,197 @@ export const zNotificationsMarkUnreadData = z.object({
 export const zNotificationsMarkUnreadResponse = z.union([
     zErrorResponse,
     z.void()
+]);
+
+export const zAnnouncementsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(20),
+        priority: z.optional(zAnnouncementPriority),
+        scope: z.optional(zAnnouncementScope),
+        readStatus: z.optional(z.enum(['read', 'unread'])),
+        dismissedStatus: z.optional(z.enum(['dismissed', 'not-dismissed'])),
+        includeExpired: z.optional(z.boolean()).default(false),
+        includeInactive: z.optional(z.boolean()).default(false),
+        orderBy: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsListResponse = z.union([
+    zAnnouncementListResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsCreateData = z.object({
+    body: zCreateAnnouncementRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zAnnouncementsCreateResponse = z.union([
+    zErrorResponse,
+    zAnnouncementResponse
+]);
+
+export const zAnnouncementsGetUnreadCountData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsGetUnreadCountResponse = z.union([
+    zUnreadAnnouncementsResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsGetResponse = z.union([
+    zAnnouncementWithInteractionResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsUpdateData = z.object({
+    body: zUpdateAnnouncementRequest,
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsUpdateResponse = z.union([
+    zAnnouncementResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsAcknowledgeData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsAcknowledgeResponse = z.union([
+    zAcknowledgeAnnouncementResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsDismissData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsDismissResponse = z.union([
+    zDismissAnnouncementResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsMarkReadData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsMarkReadResponse = z.union([
+    zMarkReadResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsGetStatsData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsGetStatsResponse = z.union([
+    zAnnouncementStatsResponse,
+    zErrorResponse
+]);
+
+export const zAnnouncementsMarkViewedData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        announcementId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zAnnouncementsMarkViewedResponse = z.union([
+    zMarkViewedResponse,
+    zErrorResponse
 ]);
 
 export const zAuditLogsListData = z.object({
@@ -2636,7 +3460,10 @@ export const zJobsListData = z.object({
         pageSize: z.optional(z.int()).default(50),
         status: z.optional(zJobStatus),
         type: z.optional(z.string()),
-        createdAfter: z.optional(z.iso.datetime())
+        format: z.optional(z.string()),
+        templateId: z.optional(z.string()),
+        createdAfter: z.optional(z.iso.datetime()),
+        createdBefore: z.optional(z.iso.datetime())
     }))
 });
 
@@ -2678,6 +3505,37 @@ export const zJobsCancelData = z.object({
  * The request has succeeded.
  */
 export const zJobsCancelResponse = z.union([
+    zJobResponse,
+    zErrorResponse
+]);
+
+export const zJobsDownloadData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        jobId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zJobsDownloadResponse = zErrorResponse;
+
+export const zJobsRetryData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        jobId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zJobsRetryResponse = z.union([
     zJobResponse,
     zErrorResponse
 ]);
@@ -2748,95 +3606,6 @@ export const zReportExportsStreamExportData = z.object({
  * The request has succeeded.
  */
 export const zReportExportsStreamExportResponse = zErrorResponse;
-
-export const zReportJobsListData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.optional(z.object({
-        page: z.optional(z.int()).default(1),
-        pageSize: z.optional(z.int()).default(50),
-        orderBy: z.optional(z.string()),
-        templateId: z.optional(z.string()),
-        scheduledReportId: z.optional(z.string()),
-        type: z.optional(zReportJobType),
-        status: z.optional(zReportJobStatus),
-        format: z.optional(zReportFormat),
-        createdAfter: z.optional(z.iso.datetime()),
-        createdBefore: z.optional(z.iso.datetime())
-    }))
-});
-
-/**
- * The request has succeeded.
- */
-export const zReportJobsListResponse = z.union([
-    zReportJobListResponse,
-    zErrorResponse
-]);
-
-export const zReportJobsCancelData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        jobId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-export const zReportJobsCancelResponse = z.union([
-    zErrorResponse,
-    z.void()
-]);
-
-export const zReportJobsGetData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        jobId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zReportJobsGetResponse = z.union([
-    zReportJobResponse,
-    zErrorResponse
-]);
-
-export const zReportJobsDownloadData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        jobId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zReportJobsDownloadResponse = zErrorResponse;
-
-export const zReportJobsRetryData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        jobId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zReportJobsRetryResponse = z.union([
-    zReportJobResponse,
-    zErrorResponse
-]);
 
 export const zScheduledReportsListData = z.object({
     body: z.optional(z.never()),
@@ -2936,7 +3705,7 @@ export const zScheduledReportsGetHistoryData = z.object({
     query: z.optional(z.object({
         page: z.optional(z.int()).default(1),
         pageSize: z.optional(z.int()).default(20),
-        status: z.optional(zReportJobStatus)
+        status: z.optional(zJobStatus)
     }))
 });
 
@@ -2944,7 +3713,7 @@ export const zScheduledReportsGetHistoryData = z.object({
  * The request has succeeded.
  */
 export const zScheduledReportsGetHistoryResponse = z.union([
-    zReportJobListResponse,
+    zJobListResponse,
     zErrorResponse
 ]);
 
@@ -2997,7 +3766,7 @@ export const zScheduledReportsRunNowData = z.object({
  * The request has succeeded.
  */
 export const zScheduledReportsRunNowResponse = z.union([
-    zReportJobResponse,
+    zJobResponse,
     zErrorResponse
 ]);
 
@@ -3205,6 +3974,121 @@ export const zTenantRolesUpdateData = z.object({
  */
 export const zTenantRolesUpdateResponse = z.union([
     zRoleResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionsCreateData = z.object({
+    body: zCreateSubscriptionRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zSubscriptionsCreateResponse = z.union([
+    zErrorResponse,
+    zCreateSubscriptionResponse
+]);
+
+export const zSubscriptionsGetCurrentData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.object({
+        applicationId: z.string()
+    })
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionsGetCurrentResponse = z.union([
+    zSubscriptionResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionsValidateCouponData = z.object({
+    body: zValidateCouponRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionsValidateCouponResponse = z.union([
+    zValidateCouponResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionsUpdateData = z.object({
+    body: zUpdateSubscriptionRequest,
+    path: z.object({
+        orgId: z.string(),
+        subscriptionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionsUpdateResponse = z.union([
+    zSubscriptionResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionsCancelData = z.object({
+    body: z.optional(zCancelSubscriptionRequest),
+    path: z.object({
+        orgId: z.string(),
+        subscriptionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionsCancelResponse = z.union([
+    zSubscriptionResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionsApplyCouponData = z.object({
+    body: zApplyCouponRequest,
+    path: z.object({
+        orgId: z.string(),
+        subscriptionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionsApplyCouponResponse = z.union([
+    zSubscriptionResponse,
+    zErrorResponse
+]);
+
+export const zSubscriptionsResumeData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        subscriptionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSubscriptionsResumeResponse = z.union([
+    zSubscriptionResponse,
     zErrorResponse
 ]);
 
@@ -3497,6 +4381,24 @@ export const zNotificationPreferencesRoutesUpdatePreferencesResponse = z.union([
     zErrorResponse
 ]);
 
+export const zPublicPricingListPublicPlansData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        applicationId: z.optional(z.string()),
+        billingPeriod: z.optional(zPlanBillingPeriod),
+        includePopular: z.optional(z.boolean()).default(true)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zPublicPricingListPublicPlansResponse = z.union([
+    zPlanListResponse,
+    zErrorResponse
+]);
+
 export const zGlobalRolesListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -3626,5 +4528,36 @@ export const zAllUserRolesListData = z.object({
  */
 export const zAllUserRolesListResponse = z.union([
     zUserRoleAssignmentListResponse,
+    zErrorResponse
+]);
+
+export const zPaymentWebhooksHandleMidtransData = z.object({
+    body: z.record(z.string(), z.unknown()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zPaymentWebhooksHandleMidtransResponse = z.union([
+    zWebhookAcknowledgment,
+    zErrorResponse
+]);
+
+export const zPaymentWebhooksHandleXenditData = z.object({
+    body: z.record(z.string(), z.unknown()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never()),
+    headers: z.object({
+        'x-callback-token': z.string()
+    })
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zPaymentWebhooksHandleXenditResponse = z.union([
+    zWebhookAcknowledgment,
     zErrorResponse
 ]);

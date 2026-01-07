@@ -18,7 +18,6 @@ export function JobCategoryFilter({ value, onChange }: JobCategoryFilterProps) {
     >
       <TabsList>
         <TabsTrigger value="all">All Jobs</TabsTrigger>
-        <TabsTrigger value="background">Background</TabsTrigger>
         <TabsTrigger value="report">Reports</TabsTrigger>
       </TabsList>
     </Tabs>
@@ -34,8 +33,7 @@ export function useJobCategoryFromUrl(): {
   const searchParams = useSearchParams();
 
   const typeParam = searchParams.get("type");
-  const category: JobCategory =
-    typeParam === "background" || typeParam === "report" ? typeParam : "all";
+  const category: JobCategory = typeParam === "report" ? typeParam : "all";
 
   const setCategory = (newCategory: JobCategory) => {
     const params = new URLSearchParams(searchParams.toString());

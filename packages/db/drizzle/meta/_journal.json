@@ -43,6 +43,13 @@
       "when": 1767692917435,
       "tag": "0005_dizzy_mother_askani",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1767779200000,
+      "tag": "0006_consolidated_jobs",
+      "breakpoints": true
     }
   ]
 }

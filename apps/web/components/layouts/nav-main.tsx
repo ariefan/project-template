@@ -18,11 +18,13 @@ import {
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type React from "react";
 
 interface NavItem {
   title: string;
   url: string;
   icon?: LucideIcon;
+  badge?: React.ComponentType;
   items?: {
     title: string;
     url: string;
@@ -39,12 +41,18 @@ function isNestedMatch(pathname: string, url: string): boolean {
   return pathname === urlPath || pathname.startsWith(`${urlPath}/`);
 }
 
-export function NavMain({ items }: { items: NavItem[] }) {
+export function NavMain({
+  items,
+  label,
+}: {
+  items: NavItem[];
+  label?: string;
+}) {
   const pathname = usePathname();
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
       <SidebarMenu>
         {items.map((item) =>
           item.items && item.items.length > 0 ? (
@@ -70,6 +78,7 @@ function SimpleMenuItem({
   pathname: string;
 }) {
   const isActive = isNestedMatch(pathname, item.url);
+  const Badge = item.badge;
 
   return (
     <SidebarMenuItem>
@@ -77,6 +86,7 @@ function SimpleMenuItem({
         <Link href={item.url}>
           {item.icon ? <item.icon /> : null}
           <span>{item.title}</span>
+          {Badge ? <Badge /> : null}
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>

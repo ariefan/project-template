@@ -1,0 +1,44 @@
+{
+  "apps": [
+    {
+      "id": "app_default",
+      "name": "Default Application",
+      "slug": "default",
+      "description": "Default application for single-app setups",
+      "createdAt": "2025-12-31T07:02:33.673Z",
+      "updatedAt": "2025-12-31T07:02:33.673Z"
+    }
+  ],
+  "plans": [
+    {
+      "id": "plan_basic_monthly",
+      "appId": "app_default",
+      "visibility": "public",
+      "active": true
+    },
+    {
+      "id": "plan_basic_yearly",
+      "appId": "app_default",
+      "visibility": "public",
+      "active": true
+    },
+    {
+      "id": "plan_pro_monthly",
+      "appId": "app_default",
+      "visibility": "public",
+      "active": true
+    },
+    {
+      "id": "plan_pro_yearly",
+      "appId": "app_default",
+      "visibility": "public",
+      "active": true
+    },
+    {
+      "id": "plan_ent_monthly",
+      "appId": "app_default",
+      "visibility": "public",
+      "active": true
+    }
+  ]
+}

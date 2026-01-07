@@ -13,6 +13,7 @@ import { createStorageProvider } from "@workspace/storage";
 import Fastify from "fastify";
 import YAML from "yaml";
 import { env } from "./env";
+import { announcementsModule } from "./modules/announcements";
 import { applicationsModule } from "./modules/applications";
 import { authRoutes } from "./modules/auth";
 import { authorizationModule, contextRoutes } from "./modules/authorization";
@@ -23,6 +24,9 @@ import { jobsModule } from "./modules/jobs";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
 import { reportsModule } from "./modules/reports";
+import subscriptionsModule, {
+  registerSubscriptionHandlers,
+} from "./modules/subscriptions";
 import { webhooksModule } from "./modules/webhooks";
 import authorizationPlugin from "./plugins/authorization";
 import rateLimitPlugin from "./plugins/rate-limit";
@@ -313,22 +317,28 @@ export async function buildApp(config: AppConfig) {
       await webhookQueue.stop();
     });
 
-    // Initialize report job queue
-    const { createReportQueue } = await import("./modules/reports");
-    const { initQueue: initReportQueue } = await import(
-      "./modules/reports/services/jobs.service"
+    // Initialize generic job queue with handlers
+    const { createJobQueue, registerReportHandler, jobsService } = await import(
+      "./modules/jobs"
     );
 
-    const reportQueue = createReportQueue({
+    // Register job handlers before starting queue
+    registerReportHandler();
+    registerSubscriptionHandlers();
+
+    const jobQueue = createJobQueue({
       connectionString: env.DATABASE_URL,
-      concurrency: env.QUEUE_CONCURRENCY,
+      defaultConcurrency: env.QUEUE_CONCURRENCY,
     });
 
-    initReportQueue(reportQueue);
-    await reportQueue.start();
+    jobsService.initQueue(jobQueue);
+    await jobQueue.start();
+
+    // Schedule recurring maintenance jobs
+    await jobQueue.schedule("subscription:monitor", "0 * * * *");
 
     app.addHook("onClose", async () => {
-      await reportQueue.stop();
+      await jobQueue.stop();
     });
   }
 
@@ -370,6 +380,12 @@ export async function buildApp(config: AppConfig) {
     },
   });
 
+  app.get("/debug/info", async () => ({
+    time: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    routes: app.printRoutes(),
+  }));
+
   // Modules
   await app.register(healthRoutes);
   await app.register(migrationRoutes);
@@ -377,12 +393,14 @@ export async function buildApp(config: AppConfig) {
   await app.register(applicationsModule, { prefix: "/v1" });
   await app.register(contextRoutes, { prefix: "/v1" });
   await app.register(authorizationModule, { prefix: "/v1/orgs" });
+  await app.register(announcementsModule, { prefix: "/v1/orgs" });
   await app.register(examplePostsModule, { prefix: "/v1/orgs" });
   await app.register(jobsModule, { prefix: "/v1/orgs" });
   await app.register(filesModule, { prefix: "/v1/orgs" });
   await app.register(webhooksModule, { prefix: "/v1/orgs" });
   await app.register(notificationsModule, { prefix: "/v1" });
   await app.register(reportsModule, { prefix: "/v1/orgs" });
+  await app.register(subscriptionsModule, { prefix: "/v1" });
 
   return app;
 }

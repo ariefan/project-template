@@ -1,6 +1,34 @@
 import { randomBytes } from "node:crypto";
-import type { JobRow, JobStatus } from "@workspace/db/schema";
+import type { JobMetadata, JobRow, JobStatus } from "@workspace/db/schema";
+import type { JobQueue } from "../queue/job-queue";
 import * as jobsRepository from "../repositories/jobs.repository";
+
+// Module-level queue reference
+let jobQueue: JobQueue | null = null;
+
+/**
+ * Initialize the job queue reference
+ */
+export function initQueue(queue: JobQueue): void {
+  jobQueue = queue;
+}
+
+/**
+ * Get the job queue (throws if not initialized)
+ */
+export function getQueue(): JobQueue {
+  if (!jobQueue) {
+    throw new Error("Job queue not initialized. Call initQueue() first.");
+  }
+  return jobQueue;
+}
+
+/**
+ * Check if queue is available
+ */
+export function isQueueEnabled(): boolean {
+  return jobQueue !== null;
+}
 
 /**
  * Generate a unique job ID
@@ -13,6 +41,8 @@ export interface CreateJobInput {
   orgId: string;
   type: string;
   createdBy: string;
+  input?: Record<string, unknown>;
+  metadata?: JobMetadata;
   estimatedCompletion?: Date;
 }
 
@@ -21,7 +51,10 @@ export interface ListJobsInput {
   pageSize?: number;
   status?: JobStatus;
   type?: string;
+  format?: string;
+  templateId?: string;
   createdAfter?: Date;
+  createdBefore?: Date;
 }
 
 /**
@@ -34,6 +67,8 @@ export async function createJob(input: CreateJobInput): Promise<JobRow> {
     type: input.type,
     status: "pending",
     createdBy: input.createdBy,
+    input: input.input ?? null,
+    metadata: input.metadata ?? null,
     estimatedCompletion: input.estimatedCompletion ?? null,
   });
 
@@ -119,9 +154,9 @@ export function updateProgress(
  */
 export function completeJob(
   jobId: string,
-  result: unknown
+  output: Record<string, unknown>
 ): Promise<JobRow | null> {
-  return jobsRepository.completeJob(jobId, result);
+  return jobsRepository.completeJob(jobId, output);
 }
 
 /**
@@ -129,34 +164,106 @@ export function completeJob(
  */
 export function failJob(
   jobId: string,
-  errorCode: string,
-  errorMessage: string
+  error: { code: string; message: string; retryable?: boolean }
 ): Promise<JobRow | null> {
-  return jobsRepository.failJob(jobId, errorCode, errorMessage);
+  return jobsRepository.failJob(jobId, error);
 }
 
 /**
- * Job processor helpers for use in job handlers
+ * Update pg-boss queue job ID
  */
-export interface JobHelpers {
-  updateProgress: (progress: number, message?: string) => Promise<void>;
-  log: (message: string) => Promise<void>;
+export function updateQueueJobId(
+  jobId: string,
+  queueJobId: string
+): Promise<JobRow | null> {
+  return jobsRepository.updateQueueJobId(jobId, queueJobId);
 }
 
 /**
- * Create job helpers for a specific job
+ * Update processed items count
  */
-export function createJobHelpers(jobId: string): JobHelpers {
-  return {
-    async updateProgress(progress: number, message?: string) {
-      await jobsRepository.updateJobProgress(jobId, progress, message);
+export function updateProcessedItems(
+  jobId: string,
+  processed: number,
+  total?: number
+): Promise<JobRow | null> {
+  return jobsRepository.updateProcessedItems(jobId, processed, total);
+}
+
+/**
+ * Get a job by ID (internal - no org check, for queue processing)
+ */
+export function getJobInternal(jobId: string): Promise<JobRow | null> {
+  return jobsRepository.getJobByIdInternal(jobId);
+}
+
+/**
+ * Retry a failed job
+ * Creates a new job with the same parameters
+ */
+export async function retryJob(
+  orgId: string,
+  jobId: string,
+  userId: string
+): Promise<{ success: boolean; job?: JobRow; error?: string }> {
+  const originalJob = await jobsRepository.getJobById(orgId, jobId);
+
+  if (!originalJob) {
+    return { success: false, error: "Job not found" };
+  }
+
+  if (originalJob.status !== "failed") {
+    return { success: false, error: "Only failed jobs can be retried" };
+  }
+
+  // Create new job with same parameters
+  const newJob = await createJob({
+    orgId,
+    type: originalJob.type,
+    createdBy: userId,
+    input: originalJob.input as Record<string, unknown> | undefined,
+    metadata: {
+      ...originalJob.metadata,
+      parentJobId: originalJob.id,
+      retryCount: ((originalJob.metadata?.retryCount ?? 0) as number) + 1,
     },
-    async log(message: string) {
-      await jobsRepository.updateJobProgress(
-        jobId,
-        -1, // Don't update progress, just message
-        message
-      );
-    },
-  };
+  });
+
+  return { success: true, job: newJob };
+}
+
+/**
+ * Get job owner ID (for authorization)
+ */
+export async function getJobOwnerId(
+  orgId: string,
+  jobId: string
+): Promise<string | null> {
+  const job = await jobsRepository.getJobById(orgId, jobId);
+  return job?.createdBy ?? null;
+}
+
+/**
+ * Enqueue a job for processing
+ * Sends the job to pg-boss for async processing
+ */
+export async function enqueueJob(
+  jobId: string,
+  type: string,
+  delay?: number
+): Promise<string> {
+  const queue = getQueue();
+  return await queue.enqueue(jobId, type, delay);
+}
+
+/**
+ * Create and enqueue a job in one operation
+ */
+export async function createAndEnqueueJob(
+  input: CreateJobInput,
+  delay?: number
+): Promise<JobRow> {
+  const job = await createJob(input);
+  await enqueueJob(job.id, input.type, delay);
+  return job;
 }

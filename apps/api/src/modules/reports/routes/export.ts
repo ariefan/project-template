@@ -9,7 +9,7 @@ import type { FastifyInstance } from "fastify";
 import { handleError, ValidationError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
 import { requirePermission } from "../../auth/authorization-middleware";
-import * as jobsService from "../services/jobs.service";
+import { jobsService } from "../../jobs";
 import * as templatesService from "../services/templates.service";
 
 // Import from @workspace/reports package
@@ -65,24 +65,27 @@ export function exportRoutes(app: FastifyInstance) {
         if (validatedBody.async) {
           const format = validatedBody.format ?? "csv";
 
-          const job = await jobsService.createJob(orgId, userId, {
-            templateId: validatedBody.templateId,
-            type: "manual",
-            format,
-            parameters: validatedBody.parameters,
+          const job = await jobsService.createJob({
+            orgId,
+            type: "report",
+            createdBy: userId,
+            input: {
+              templateId: validatedBody.templateId,
+              parameters: validatedBody.parameters,
+            },
+            metadata: {
+              templateId: validatedBody.templateId,
+              format,
+            },
           });
 
           // Queue the job for processing with pg-boss
-          await jobsService.enqueueJob(job.id, orgId, {
-            templateId: validatedBody.templateId,
-            format,
-            parameters: validatedBody.parameters,
-          });
+          await jobsService.enqueueJob(job.id, "report");
 
           return {
             jobId: job.id,
             status: job.status,
-            statusUrl: `/v1/orgs/${orgId}/reports/jobs/${job.id}`,
+            statusUrl: `/v1/orgs/${orgId}/jobs/${job.id}`,
             meta: createMeta(request.id),
           };
         }

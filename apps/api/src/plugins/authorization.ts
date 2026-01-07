@@ -259,6 +259,13 @@ declare module "fastify" {
      * @param orgId Organization ID
      */
     invalidateOrgAuthzCache(orgId: string): Promise<void>;
+
+    /**
+     * Check if an organization has access to a specific feature based on their subscription
+     * @param orgId Organization ID
+     * @param featureKey Feature key to check
+     */
+    checkFeature(orgId: string, featureKey: string): Promise<boolean>;
   }
 }
 
@@ -313,7 +320,7 @@ function authorizationPlugin(
       resourceOwnerId?: string
     ): Promise<boolean> => {
       // Runtime check: db is required for authorization
-      if (!deps.db) {
+      if (!opts.db) {
         throw new Error(
           "Database connection required for authorization. " +
             "Ensure db is passed to authorization plugin."
@@ -339,6 +346,17 @@ function authorizationPlugin(
         );
         return false;
       }
+    }
+  );
+
+  // Decorate fastify with feature check method
+  fastify.decorate(
+    "checkFeature",
+    async (orgId: string, featureKey: string): Promise<boolean> => {
+      const { checkFeatureAccess } = await import(
+        "../modules/subscriptions/services/subscriptions.service"
+      );
+      return checkFeatureAccess(orgId, DEFAULT_APPLICATION_ID, featureKey);
     }
   );
 

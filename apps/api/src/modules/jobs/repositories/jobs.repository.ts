@@ -12,7 +12,10 @@ export interface ListJobsOptions {
   pageSize?: number;
   status?: JobStatus;
   type?: string;
+  format?: string;
+  templateId?: string;
   createdAfter?: Date;
+  createdBefore?: Date;
 }
 
 export interface ListJobsResult {
@@ -55,13 +58,33 @@ export async function getJobById(
 }
 
 /**
+ * Get a job by ID (internal - no org check)
+ */
+export async function getJobByIdInternal(
+  jobId: string
+): Promise<JobRow | null> {
+  const [job] = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
+
+  return job ?? null;
+}
+
+/**
  * List jobs with pagination and filtering
  */
 export async function listJobs(
   orgId: string,
   options: ListJobsOptions = {}
 ): Promise<ListJobsResult> {
-  const { page = 1, pageSize = 50, status, type, createdAfter } = options;
+  const {
+    page = 1,
+    pageSize = 50,
+    status,
+    type,
+    format,
+    templateId,
+    createdAfter,
+    createdBefore,
+  } = options;
 
   // Build where conditions
   const conditions = [eq(jobs.orgId, orgId)];
@@ -74,6 +97,19 @@ export async function listJobs(
   }
   if (createdAfter) {
     conditions.push(gte(jobs.createdAt, createdAfter));
+  }
+  if (createdBefore) {
+    const { lte } = await import("drizzle-orm");
+    conditions.push(lte(jobs.createdAt, createdBefore));
+  }
+  // Filter by metadata fields using JSONB operators
+  if (format) {
+    const { sql } = await import("drizzle-orm");
+    conditions.push(sql`${jobs.metadata}->>'format' = ${format}`);
+  }
+  if (templateId) {
+    const { sql } = await import("drizzle-orm");
+    conditions.push(sql`${jobs.metadata}->>'templateId' = ${templateId}`);
   }
 
   const whereClause = and(...conditions);
@@ -128,17 +164,17 @@ export async function updateJobStatus(
 }
 
 /**
- * Complete a job with result
+ * Complete a job with output
  */
 export async function completeJob(
   jobId: string,
-  result: unknown
+  output: Record<string, unknown>
 ): Promise<JobRow | null> {
   const [updated] = await db
     .update(jobs)
     .set({
       status: "completed",
-      result,
+      output,
       completedAt: new Date(),
       progress: 100,
     })
@@ -153,15 +189,13 @@ export async function completeJob(
  */
 export async function failJob(
   jobId: string,
-  errorCode: string,
-  errorMessage: string
+  error: { code: string; message: string; retryable?: boolean }
 ): Promise<JobRow | null> {
   const [updated] = await db
     .update(jobs)
     .set({
       status: "failed",
-      errorCode,
-      errorMessage,
+      error,
       completedAt: new Date(),
     })
     .where(eq(jobs.id, jobId))
@@ -195,12 +229,56 @@ export async function updateJobProgress(
   progress: number,
   message?: string
 ): Promise<JobRow | null> {
+  // If progress is -1, only update message
+  const updates =
+    progress < 0
+      ? { message }
+      : { progress: Math.min(100, Math.max(0, progress)), message };
+
   const [updated] = await db
     .update(jobs)
-    .set({
-      progress: Math.min(100, Math.max(0, progress)),
-      message,
-    })
+    .set(updates)
+    .where(eq(jobs.id, jobId))
+    .returning();
+
+  return updated ?? null;
+}
+
+/**
+ * Update queue job ID
+ */
+export async function updateQueueJobId(
+  jobId: string,
+  queueJobId: string
+): Promise<JobRow | null> {
+  const [updated] = await db
+    .update(jobs)
+    .set({ queueJobId })
+    .where(eq(jobs.id, jobId))
+    .returning();
+
+  return updated ?? null;
+}
+
+/**
+ * Update processed items count
+ */
+export async function updateProcessedItems(
+  jobId: string,
+  processed: number,
+  total?: number
+): Promise<JobRow | null> {
+  const updates: { processedItems: number; totalItems?: number } = {
+    processedItems: processed,
+  };
+
+  if (total !== undefined) {
+    updates.totalItems = total;
+  }
+
+  const [updated] = await db
+    .update(jobs)
+    .set(updates)
     .where(eq(jobs.id, jobId))
     .returning();
 

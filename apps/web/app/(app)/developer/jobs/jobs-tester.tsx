@@ -1,12 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Job, ReportJob } from "@workspace/contracts";
-import {
-  jobsList,
-  reportJobsList,
-  reportTemplatesTest,
-} from "@workspace/contracts";
+import type { Job, JobStatus } from "@workspace/contracts";
+import { jobsList, reportTemplatesTest } from "@workspace/contracts";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -25,6 +21,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { formatDistanceToNow } from "date-fns";
+import type { LucideIcon } from "lucide-react";
 import {
   CheckCircle,
   Clock,
@@ -40,7 +37,7 @@ import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 
-const STATUS_COLORS = {
+const STATUS_COLORS: Record<JobStatus, string> = {
   pending: "bg-gray-100 text-gray-800",
   processing: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-800",
@@ -48,7 +45,7 @@ const STATUS_COLORS = {
   cancelled: "bg-orange-100 text-orange-800",
 };
 
-const STATUS_ICONS = {
+const STATUS_ICONS: Record<JobStatus, LucideIcon> = {
   pending: Clock,
   processing: Loader2,
   completed: CheckCircle,
@@ -62,30 +59,16 @@ export function JobsTester() {
   const orgId = orgData?.id ?? "";
   const [templateId, setTemplateId] = useState("template-1");
 
-  // Fetch recent jobs
-  const { data: bgJobsData } = useQuery({
+  // Fetch recent jobs (unified endpoint)
+  const { data: jobsData } = useQuery({
     queryKey: ["jobsList", orgId, "recent"],
     queryFn: async () => {
       const response = await jobsList({
         client: apiClient,
         path: { orgId },
-        query: { page: 1, pageSize: 5 },
+        query: { page: 1, pageSize: 10 },
       });
       return response.data as { data?: Job[] };
-    },
-    enabled: Boolean(orgId),
-    refetchInterval: 3000,
-  });
-
-  const { data: reportJobsData } = useQuery({
-    queryKey: ["reportJobsList", orgId, "recent"],
-    queryFn: async () => {
-      const response = await reportJobsList({
-        client: apiClient,
-        path: { orgId },
-        query: { page: 1, pageSize: 5 },
-      });
-      return response.data as { data?: ReportJob[] };
     },
     enabled: Boolean(orgId),
     refetchInterval: 3000,
@@ -103,13 +86,12 @@ export function JobsTester() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["reportJobsList", orgId],
+        queryKey: ["jobsList", orgId],
       });
     },
   });
 
-  const bgJobs = bgJobsData?.data ?? [];
-  const reportJobs = reportJobsData?.data ?? [];
+  const jobs = jobsData?.data ?? [];
 
   const codeExample = `import { reportTemplatesTest } from "@workspace/contracts";
 import { apiClient } from "@/lib/api-client";
@@ -220,110 +202,65 @@ await reportTemplatesTest({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {reportJobs.length === 0 && bgJobs.length === 0 ? (
+            {jobs.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">
                 No recent jobs found. Generate a test report to see it appear
                 here.
               </div>
             ) : (
-              <>
-                {reportJobs.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Report Jobs</h4>
-                    <div className="space-y-2">
-                      {reportJobs.map((job) => {
-                        const StatusIcon = STATUS_ICONS[job.status];
-                        return (
-                          <div
-                            className="flex items-start gap-3 rounded-lg border p-3"
-                            key={job.id}
+              <div className="space-y-2">
+                {jobs.map((job) => {
+                  const StatusIcon = STATUS_ICONS[job.status];
+                  return (
+                    <div
+                      className="flex items-start gap-3 rounded-lg border p-3"
+                      key={job.jobId}
+                    >
+                      <StatusIcon
+                        className={`size-5 shrink-0 ${
+                          job.status === "processing" ? "animate-spin" : ""
+                        }`}
+                      />
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            className={STATUS_COLORS[job.status]}
+                            variant="secondary"
                           >
-                            <StatusIcon
-                              className={`size-5 shrink-0 ${
-                                job.status === "processing"
-                                  ? "animate-spin"
-                                  : ""
-                              }`}
-                            />
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  className={STATUS_COLORS[job.status]}
-                                  variant="secondary"
-                                >
-                                  {job.status}
-                                </Badge>
-                                <Badge variant="outline">{job.format}</Badge>
-                              </div>
-                              <p className="text-muted-foreground text-xs">
-                                {formatDistanceToNow(new Date(job.createdAt), {
-                                  addSuffix: true,
-                                })}
-                              </p>
-                              {job.progress !== undefined && (
-                                <div className="space-y-1">
-                                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                                    <div
-                                      className="h-full bg-primary transition-all"
-                                      style={{ width: `${job.progress}%` }}
-                                    />
-                                  </div>
-                                  <p className="text-muted-foreground text-xs">
-                                    {job.progress}%
-                                  </p>
-                                </div>
-                              )}
+                            {job.status}
+                          </Badge>
+                          <span className="font-medium text-sm">
+                            {job.type}
+                          </span>
+                          {job.metadata?.format && (
+                            <Badge variant="outline">
+                              {job.metadata.format}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-muted-foreground text-xs">
+                          {formatDistanceToNow(new Date(job.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                        {job.progress !== undefined && (
+                          <div className="space-y-1">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full bg-primary transition-all"
+                                style={{ width: `${job.progress}%` }}
+                              />
                             </div>
+                            <p className="text-muted-foreground text-xs">
+                              {job.progress}%
+                            </p>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {bgJobs.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Background Jobs</h4>
-                    <div className="space-y-2">
-                      {bgJobs.map((job) => {
-                        const StatusIcon = STATUS_ICONS[job.status];
-                        return (
-                          <div
-                            className="flex items-start gap-3 rounded-lg border p-3"
-                            key={job.jobId}
-                          >
-                            <StatusIcon
-                              className={`size-5 shrink-0 ${
-                                job.status === "processing"
-                                  ? "animate-spin"
-                                  : ""
-                              }`}
-                            />
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  className={STATUS_COLORS[job.status]}
-                                  variant="secondary"
-                                >
-                                  {job.status}
-                                </Badge>
-                                <span className="font-medium text-sm">
-                                  {job.type}
-                                </span>
-                              </div>
-                              <p className="text-muted-foreground text-xs">
-                                {formatDistanceToNow(new Date(job.createdAt), {
-                                  addSuffix: true,
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </>
+                  );
+                })}
+              </div>
             )}
           </div>
         </CardContent>

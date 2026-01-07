@@ -86,7 +86,11 @@ import "./models/example-comment.tsp";
 import "./models/notification.tsp";
 import "./models/report-template.tsp";
 import "./models/scheduled-report.tsp";
-import "./models/report-job.tsp";
+import "./models/announcement.tsp";
+import "./models/subscription-plan.tsp";
+import "./models/subscription.tsp";
+import "./models/coupon.tsp";
+import "./models/payment-event.tsp";
 // import "./models/product.tsp";     ← Example: Add new models
 
 // ============================================================================
@@ -103,6 +107,12 @@ import "./routes/example-posts.tsp";
 import "./routes/example-comments.tsp";
 import "./routes/notifications.tsp";
 import "./routes/reports.tsp";
+import "./routes/announcements.tsp";
+import "./routes/subscription-plans.tsp";
+import "./routes/subscriptions.tsp";
+import "./routes/coupons.tsp";
+import "./routes/pricing.tsp";
+import "./routes/payment-webhooks.tsp";
 // import "./routes/products.tsp";    ← Example: Add new routes
 
 using TypeSpec.Http;

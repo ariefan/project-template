@@ -43,9 +43,46 @@ enum JobStatus {
 // ============================================================================
 
 /**
+ * Job metadata for type-specific references
+ */
+model JobMetadata {
+  /** Template ID (for report jobs) */
+  templateId?: string;
+
+  /** Scheduled report ID (for scheduled report jobs) */
+  scheduledReportId?: string;
+
+  /** Format (for report jobs) */
+  format?: string;
+
+  /** Parent job ID (for retried jobs) */
+  parentJobId?: string;
+
+  /** Retry count */
+  retryCount?: int32;
+}
+
+/**
+ * Job error details
+ */
+model JobError {
+  /** Error code */
+  @example("GENERATION_FAILED")
+  code: string;
+
+  /** Error message */
+  @example("Failed to connect to data source")
+  message: string;
+
+  /** Whether the error is retryable */
+  retryable?: boolean;
+}
+
+/**
  * Async job resource
  *
  * Represents a long-running operation that can be polled for status.
+ * Unified job system with pg-boss queue integration.
  */
 model Job {
   /** Unique job identifier (format: job_abc123) */
@@ -56,8 +93,8 @@ model Job {
   @example("org_xyz789")
   tenantId: string;
 
-  /** Type of operation (e.g., "bulkImport", "reportGeneration") */
-  @example("bulkImport")
+  /** Type of operation (e.g., "report", "import", "export") */
+  @example("report")
   type: string;
 
   /** Current job status */
@@ -72,20 +109,23 @@ model Job {
   @example("Processing 150 of 500 records...")
   message?: string;
 
-  /** Result data (when completed) */
-  result?: Record<unknown>;
+  /** Total items to process */
+  totalItems?: int32;
+
+  /** Items processed so far */
+  processedItems?: int32;
+
+  /** Job input parameters */
+  input?: Record<unknown>;
+
+  /** Job output/result data (when completed) */
+  output?: Record<unknown>;
+
+  /** Job metadata (references, format, etc.) */
+  metadata?: JobMetadata;
 
   /** Error details (when failed) */
-  error?: {
-    /** Error code */
-    code: string;
-
-    /** Error message */
-    message: string;
-
-    /** Additional error details */
-    details?: Record<unknown>;
-  };
+  error?: JobError;
 
   /** Who initiated the job */
   @example("usr_123")

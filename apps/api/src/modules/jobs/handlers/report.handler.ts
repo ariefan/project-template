@@ -1,11 +1,11 @@
 /**
- * Report Job Queue using pg-boss
+ * Report Job Handler
  *
- * Provides async processing of report generation jobs with:
- * - Progress tracking
- * - Concurrent processing
- * - Job status updates
- * - Real file generation using @workspace/reports exporters
+ * Handles report generation jobs including:
+ * - Template loading
+ * - Data fetching/generation
+ * - Export via @workspace/reports
+ * - File storage
  */
 
 import * as fs from "node:fs/promises";
@@ -15,43 +15,15 @@ import {
   createExporterRegistry,
   type ReportFormat,
 } from "@workspace/reports";
-import PgBoss, { type Job } from "pg-boss";
-import * as jobsService from "../services/jobs.service";
-import * as templatesService from "../services/templates.service";
+import * as templatesService from "../../reports/services/templates.service";
+import { jobHandlerRegistry } from "./registry";
+import type { JobContext, JobResult } from "./types";
 
-const QUEUE_NAME = "report-jobs";
+// Storage path for generated reports
+const STORAGE_BASE_PATH = "./uploads";
 
-// Storage path for generated reports (configurable via config)
-const storageBasePath = "./uploads";
+// ============ SAMPLE DATA GENERATION ============
 
-export interface ReportQueueConfig {
-  connectionString: string;
-  concurrency?: number;
-  storagePath?: string;
-}
-
-export interface ReportJobData {
-  jobId: string;
-  orgId: string;
-  templateId?: string;
-  format: string;
-  parameters?: Record<string, unknown>;
-  data?: Record<string, unknown>[];
-}
-
-export interface ReportQueue {
-  start(): Promise<void>;
-  stop(): Promise<void>;
-  enqueue(data: ReportJobData): Promise<string>;
-  getStats(): Promise<{
-    pending: number;
-    active: number;
-    completed: number;
-    failed: number;
-  }>;
-}
-
-// Sample data constants
 const SAMPLE_NAMES = [
   "Alice Johnson",
   "Bob Smith",
@@ -59,6 +31,7 @@ const SAMPLE_NAMES = [
   "David Brown",
   "Emma Davis",
 ];
+
 const SAMPLE_PRODUCTS = [
   "Widget Pro",
   "Gadget Plus",
@@ -66,6 +39,7 @@ const SAMPLE_PRODUCTS = [
   "Mega Pack",
   "Basic Kit",
 ];
+
 const SAMPLE_STATUSES = ["Active", "Pending", "Completed"];
 
 type ValueGenerator = (key: string, header: string, idx: number) => unknown;
@@ -141,13 +115,39 @@ function generateSampleData(
   });
 }
 
-async function processReportJob(jobData: ReportJobData): Promise<void> {
-  const { jobId, orgId, templateId, format, data: providedData } = jobData;
+// ============ REPORT JOB HANDLER ============
+
+/**
+ * Input structure for report jobs
+ */
+export interface ReportJobInput {
+  templateId?: string;
+  parameters?: Record<string, unknown>;
+  data?: Record<string, unknown>[];
+}
+
+/**
+ * Output structure for report jobs
+ */
+export interface ReportJobOutput {
+  filePath: string;
+  fileSize: number;
+  rowCount: number;
+  mimeType: string;
+}
+
+/**
+ * Handle report generation job
+ */
+async function handleReportJob(context: JobContext): Promise<JobResult> {
+  const { jobId, orgId, input, metadata, helpers } = context;
+
+  const { data: providedData, templateId: inputTemplateId } =
+    input as ReportJobInput;
+  const { templateId = inputTemplateId, format = "csv" } = metadata;
 
   try {
-    // Mark job as processing
-    await jobsService.startJob(jobId);
-    await jobsService.updateJobProgress(jobId, 0, 100);
+    await helpers.updateProgress(0, "Starting report generation");
 
     // Get template columns if templateId provided
     let columns: ColumnConfig[] = [];
@@ -156,21 +156,29 @@ async function processReportJob(jobData: ReportJobData): Promise<void> {
       columns = template.columns as ColumnConfig[];
     }
 
+    await helpers.updateProgress(25, "Fetching data");
+
     // Get data - use provided data, or generate sample data
     const data = providedData ?? generateSampleData(columns, 50);
     const totalRows = data.length;
 
-    await jobsService.updateJobProgress(jobId, 25, 100);
+    await helpers.updateProcessedItems(0, totalRows);
 
     // Create exporter and generate file
     const exporterRegistry = createExporterRegistry();
     const exportFormat = format as ReportFormat;
 
     if (!exporterRegistry.supports(exportFormat)) {
-      throw new Error(`Unsupported export format: ${format}`);
+      return {
+        error: {
+          code: "UNSUPPORTED_FORMAT",
+          message: `Unsupported export format: ${format}`,
+          retryable: false,
+        },
+      };
     }
 
-    await jobsService.updateJobProgress(jobId, 50, 100);
+    await helpers.updateProgress(50, "Generating export");
 
     // Generate export
     const result = await exporterRegistry.export(
@@ -180,99 +188,55 @@ async function processReportJob(jobData: ReportJobData): Promise<void> {
       {}
     );
 
-    await jobsService.updateJobProgress(jobId, 75, 100);
+    await helpers.updateProgress(75, "Saving file");
 
     // Save file to storage
-    const reportsDir = path.join(storageBasePath, "reports", jobId);
+    const reportsDir = path.join(STORAGE_BASE_PATH, "reports", jobId);
     await fs.mkdir(reportsDir, { recursive: true });
 
     const extension = format === "excel" ? "xlsx" : format;
     const filePath = path.join(reportsDir, `report.${extension}`);
     await fs.writeFile(filePath, result.buffer);
 
-    // Complete the job with result metadata
-    await jobsService.completeJob(jobId, {
-      fileSize: result.size,
-      rowCount: totalRows,
-      filePath,
-      mimeType: result.mimeType,
-    });
+    await helpers.updateProcessedItems(totalRows, totalRows);
 
     console.log(
       `Report job ${jobId} completed: ${filePath} (${result.size} bytes)`
     );
+
+    return {
+      output: {
+        filePath,
+        fileSize: result.size,
+        rowCount: totalRows,
+        mimeType: result.mimeType,
+      } satisfies ReportJobOutput,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Report job ${jobId} failed:`, message);
 
-    await jobsService.failJob(jobId, {
-      code: "GENERATION_FAILED",
-      message,
-      retryable: true,
-    });
+    return {
+      error: {
+        code: "GENERATION_FAILED",
+        message,
+        retryable: true,
+      },
+    };
   }
 }
 
-export function createReportQueue(config: ReportQueueConfig): ReportQueue {
-  const boss = new PgBoss(config.connectionString);
-  const concurrency = config.concurrency ?? 3;
-  let isStarted = false;
+// ============ REGISTER HANDLER ============
 
-  return {
-    async start(): Promise<void> {
-      await boss.start();
-
-      // Create the queue explicitly to ensure it exists
-      await boss.createQueue(QUEUE_NAME);
-
-      await boss.work<ReportJobData>(
-        QUEUE_NAME,
-        { batchSize: concurrency },
-        async (jobs: Job<ReportJobData>[]) => {
-          for (const job of jobs) {
-            await processReportJob(job.data);
-          }
-        }
-      );
-
-      isStarted = true;
-      console.log(`Report queue started with concurrency: ${concurrency}`);
-    },
-
-    async stop(): Promise<void> {
-      await boss.stop();
-      console.log("Report queue stopped");
-    },
-
-    async enqueue(data: ReportJobData): Promise<string> {
-      if (!isStarted) {
-        throw new Error("Report queue not started");
-      }
-
-      const queueJobId = await boss.send(QUEUE_NAME, data);
-
-      if (!queueJobId) {
-        throw new Error("Failed to enqueue report job - pg-boss returned null");
-      }
-
-      console.log(`Report job ${data.jobId} enqueued as ${queueJobId}`);
-      return queueJobId;
-    },
-
-    async getStats() {
-      const [pending, active, completed, failed] = await Promise.all([
-        boss.getQueueSize(QUEUE_NAME, { before: "active" }),
-        boss.getQueueSize(QUEUE_NAME, { before: "completed" }),
-        boss.getQueueSize(QUEUE_NAME, { before: "failed" }),
-        boss.getQueueSize(QUEUE_NAME, { before: "cancelled" }),
-      ]);
-
-      return {
-        pending,
-        active: active - pending,
-        completed: completed - active,
-        failed,
-      };
-    },
-  };
+/**
+ * Register the report job handler
+ */
+export function registerReportHandler(): void {
+  jobHandlerRegistry.register({
+    type: "report",
+    handler: handleReportJob,
+    concurrency: 3,
+    retryLimit: 3,
+    expireInSeconds: 3600, // 1 hour
+  });
 }

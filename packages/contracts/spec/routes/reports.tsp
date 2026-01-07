@@ -3,7 +3,7 @@ import "../common/responses.tsp";
 import "../common/errors.tsp";
 import "../models/report-template.tsp";
 import "../models/scheduled-report.tsp";
-import "../models/report-job.tsp";
+import "../models/job.tsp";
 
 using TypeSpec.Http;
 
@@ -302,7 +302,7 @@ namespace ProjectAPI {
       @body body?: {
         parameters?: Record<unknown>;
       }
-    ): ReportJobResponse | ErrorResponse;
+    ): JobResponse | ErrorResponse;
 
     /**
      * Pause a scheduled report
@@ -352,131 +352,8 @@ namespace ProjectAPI {
       @query pageSize?: int32 = 20,
 
       /** Filter by status */
-      @query status?: ReportJobStatus
-    ): ReportJobListResponse | ErrorResponse;
-  }
-
-  // ==========================================================================
-  // REPORT JOBS
-  // ==========================================================================
-
-  /**
-   * Report Jobs API endpoints
-   *
-   * Track and manage report generation jobs with:
-   * - Progress monitoring
-   * - Result download
-   * - Retry failed jobs
-   */
-  @route("/v1/orgs/{orgId}/reports/jobs")
-  @tag("Reports")
-  interface ReportJobs {
-    /**
-     * List report jobs in an organization
-     */
-    @get
-    @summary("List report jobs")
-    list(
-      /** Organization ID */
-      @path orgId: string,
-
-      /** Page number (1-indexed) */
-      @query page?: int32 = 1,
-
-      /** Number of items per page (max: 100) */
-      @query pageSize?: int32 = 50,
-
-      /** Sort order (default: -createdAt) */
-      @query orderBy?: string,
-
-      /** Filter by template ID */
-      @query templateId?: string,
-
-      /** Filter by schedule ID */
-      @query scheduledReportId?: string,
-
-      /** Filter by job type */
-      @query type?: ReportJobType,
-
-      /** Filter by status */
-      @query status?: ReportJobStatus,
-
-      /** Filter by format */
-      @query format?: ReportFormat,
-
-      /** Filter jobs created after this timestamp */
-      @query createdAfter?: utcDateTime,
-
-      /** Filter jobs created before this timestamp */
-      @query createdBefore?: utcDateTime
-    ): ReportJobListResponse | ErrorResponse;
-
-    /**
-     * Get a report job by ID
-     */
-    @route("/{jobId}")
-    @get
-    @summary("Get report job")
-    get(
-      /** Organization ID */
-      @path orgId: string,
-
-      /** Job ID */
-      @path jobId: string
-    ): ReportJobResponse | ErrorResponse;
-
-    /**
-     * Cancel a pending or processing job
-     */
-    @route("/{jobId}")
-    @delete
-    @summary("Cancel report job")
-    cancel(
-      /** Organization ID */
-      @path orgId: string,
-
-      /** Job ID */
-      @path jobId: string
-    ):
-      | {
-          @statusCode statusCode: 204;
-        }
-      | ErrorResponse;
-
-    /**
-     * Retry a failed job
-     */
-    @route("/{jobId}/retry")
-    @post
-    @summary("Retry failed job")
-    retry(
-      /** Organization ID */
-      @path orgId: string,
-
-      /** Job ID */
-      @path jobId: string
-    ): ReportJobResponse | ErrorResponse;
-
-    /**
-     * Download the result of a completed job
-     */
-    @route("/{jobId}/download")
-    @get
-    @summary("Download job result")
-    download(
-      /** Organization ID */
-      @path orgId: string,
-
-      /** Job ID */
-      @path jobId: string
-    ):
-      | {
-          @statusCode statusCode: 200;
-          @header contentType: string;
-          @header contentDisposition: string;
-          @body body: bytes;
-        }
-      | ErrorResponse;
+      @query status?: JobStatus
+    ): JobListResponse | ErrorResponse;
   }
 
   // ==========================================================================

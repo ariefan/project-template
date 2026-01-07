@@ -37,7 +37,7 @@ export function Navigation({ className }: NavigationProps) {
             </Link>
             <Link
               className="font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
-              href="#stats"
+              href="/pricing"
             >
               Pricing
             </Link>

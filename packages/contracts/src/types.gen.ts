@@ -5,6 +5,23 @@ export type ClientOptions = {
 };
 
 /**
+ * Acknowledge announcement response
+ */
+export type AcknowledgeAnnouncementResponse = {
+    data: {
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+        /**
+         * Timestamp when acknowledged
+         */
+        acknowledgedAt: string;
+    };
+    meta: ResponseMeta;
+};
+
+/**
  * User's active context (current app/tenant selection)
  */
 export type ActiveContext = {
@@ -35,6 +52,335 @@ export type ActiveContextResponse = {
 };
 
 /**
+ * Announcement resource model
+ */
+export type Announcement = {
+    /**
+     * Unique announcement identifier
+     */
+    id: string;
+    /**
+     * Organization ID (null for system-wide announcements)
+     */
+    orgId?: string;
+    /**
+     * Announcement title
+     */
+    title: string;
+    /**
+     * Announcement content (supports markdown)
+     */
+    content: string;
+    /**
+     * Optional link for more information
+     */
+    linkUrl?: string;
+    /**
+     * Link text
+     */
+    linkText?: string;
+    /**
+     * Priority level
+     */
+    priority: AnnouncementPriority;
+    /**
+     * Scope of announcement
+     */
+    scope: AnnouncementScope;
+    /**
+     * Target roles (empty array means all roles)
+     */
+    targetRoles: Array<AnnouncementTargetRole>;
+    /**
+     * Whether users can dismiss this announcement
+     */
+    isDismissible: boolean;
+    /**
+     * Scheduled publish date/time
+     */
+    publishAt: string;
+    /**
+     * Optional expiration date/time
+     */
+    expiresAt?: string;
+    /**
+     * Whether announcement is active (manually toggled)
+     */
+    isActive: boolean;
+    /**
+     * User ID who created the announcement
+     */
+    createdBy: string;
+    /**
+     * Timestamp when created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when last updated
+     */
+    updatedAt: string;
+    /**
+     * Timestamp when soft deleted
+     */
+    deletedAt?: string;
+    /**
+     * Analytics: total view count
+     */
+    viewCount?: number;
+    /**
+     * Analytics: total read count
+     */
+    readCount?: number;
+    /**
+     * Analytics: total acknowledgment count
+     */
+    acknowledgeCount?: number;
+    /**
+     * Analytics: total dismissal count
+     */
+    dismissCount?: number;
+};
+
+/**
+ * Announcement interaction tracking
+ */
+export type AnnouncementInteraction = {
+    /**
+     * Unique interaction identifier
+     */
+    id: string;
+    /**
+     * Announcement ID
+     */
+    announcementId: string;
+    /**
+     * User ID
+     */
+    userId: string;
+    /**
+     * Timestamp when user first viewed the announcement
+     */
+    viewedAt?: string;
+    /**
+     * Timestamp when user read (opened/expanded) the announcement
+     */
+    readAt?: string;
+    /**
+     * Timestamp when user dismissed the announcement
+     */
+    dismissedAt?: string;
+    /**
+     * Timestamp when user acknowledged the announcement (critical only)
+     */
+    acknowledgedAt?: string;
+    /**
+     * Timestamp when created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Announcement collection response
+ */
+export type AnnouncementListResponse = {
+    data: Array<AnnouncementWithInteraction>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Announcement priority level
+ */
+export type AnnouncementPriority = 'info' | 'warning' | 'critical';
+
+/**
+ * Single announcement response
+ */
+export type AnnouncementResponse = {
+    data: Announcement;
+    meta: ResponseMeta;
+};
+
+/**
+ * Announcement scope
+ */
+export type AnnouncementScope = 'system' | 'organization';
+
+/**
+ * Announcement statistics response
+ */
+export type AnnouncementStatsResponse = {
+    data: {
+        /**
+         * Total view count
+         */
+        viewCount: number;
+        /**
+         * Total read count
+         */
+        readCount: number;
+        /**
+         * Total acknowledgment count
+         */
+        acknowledgeCount: number;
+        /**
+         * Total dismissal count
+         */
+        dismissCount: number;
+        /**
+         * View rate percentage
+         */
+        viewRate: number;
+        /**
+         * Read rate percentage
+         */
+        readRate: number;
+        /**
+         * Acknowledgment rate percentage (for critical announcements)
+         */
+        acknowledgeRate: number;
+    };
+    meta: ResponseMeta;
+};
+
+/**
+ * User role for targeting
+ */
+export type AnnouncementTargetRole = 'all' | 'admin' | 'member';
+
+/**
+ * Announcement with user interaction data
+ */
+export type AnnouncementWithInteraction = {
+    /**
+     * Unique announcement identifier
+     */
+    id: string;
+    /**
+     * Organization ID (null for system-wide announcements)
+     */
+    orgId?: string;
+    /**
+     * Announcement title
+     */
+    title: string;
+    /**
+     * Announcement content (supports markdown)
+     */
+    content: string;
+    /**
+     * Optional link for more information
+     */
+    linkUrl?: string;
+    /**
+     * Link text
+     */
+    linkText?: string;
+    /**
+     * Priority level
+     */
+    priority: AnnouncementPriority;
+    /**
+     * Scope of announcement
+     */
+    scope: AnnouncementScope;
+    /**
+     * Target roles (empty array means all roles)
+     */
+    targetRoles: Array<AnnouncementTargetRole>;
+    /**
+     * Whether users can dismiss this announcement
+     */
+    isDismissible: boolean;
+    /**
+     * Scheduled publish date/time
+     */
+    publishAt: string;
+    /**
+     * Optional expiration date/time
+     */
+    expiresAt?: string;
+    /**
+     * Whether announcement is active (manually toggled)
+     */
+    isActive: boolean;
+    /**
+     * User ID who created the announcement
+     */
+    createdBy: string;
+    /**
+     * Timestamp when created
+     */
+    createdAt: string;
+    /**
+     * Timestamp when last updated
+     */
+    updatedAt: string;
+    /**
+     * Timestamp when soft deleted
+     */
+    deletedAt?: string;
+    /**
+     * Analytics: total view count
+     */
+    viewCount?: number;
+    /**
+     * Analytics: total read count
+     */
+    readCount?: number;
+    /**
+     * Analytics: total acknowledgment count
+     */
+    acknowledgeCount?: number;
+    /**
+     * Analytics: total dismissal count
+     */
+    dismissCount?: number;
+    /**
+     * User's interaction with this announcement
+     */
+    interaction?: AnnouncementInteraction;
+    /**
+     * Whether current user has viewed
+     */
+    hasViewed?: boolean;
+    /**
+     * Whether current user has read
+     */
+    hasRead?: boolean;
+    /**
+     * Whether current user has dismissed
+     */
+    hasDismissed?: boolean;
+    /**
+     * Whether current user has acknowledged
+     */
+    hasAcknowledged?: boolean;
+};
+
+/**
+ * Announcement with interaction response
+ */
+export type AnnouncementWithInteractionResponse = {
+    data: AnnouncementWithInteraction;
+    meta: ResponseMeta;
+};
+
+/**
+ * Apply coupon request
+ */
+export type ApplyCouponRequest = {
+    /**
+     * Coupon code to apply
+     */
+    couponCode: string;
+};
+
+/**
  * Request to assign a role to a user
  */
 export type AssignRoleRequest = {
@@ -55,7 +401,7 @@ export type AsyncExportResponse = {
     /**
      * Current status
      */
-    status: ReportJobStatus;
+    status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
     /**
      * URL to check job status
      */
@@ -361,6 +707,20 @@ export type BatchSummary = {
 };
 
 /**
+ * Cancel subscription request
+ */
+export type CancelSubscriptionRequest = {
+    /**
+     * Cancel immediately (vs. at period end)
+     */
+    immediate?: boolean;
+    /**
+     * Optional cancellation reason
+     */
+    reason?: string;
+};
+
+/**
  * Column alignment
  */
 export type ColumnAlignment = 'left' | 'center' | 'right';
@@ -378,6 +738,208 @@ export type ConfirmUploadRequest = {
      * Optional: ETag from S3 response for verification
      */
     etag?: string;
+};
+
+/**
+ * Discount coupon
+ *
+ * Represents a promotional discount code.
+ */
+export type Coupon = {
+    /**
+     * Unique coupon identifier (format: coupon_abc123)
+     */
+    id: string;
+    /**
+     * Coupon code that users enter
+     */
+    code: string;
+    /**
+     * Internal name for reference
+     */
+    name?: string;
+    /**
+     * Discount type
+     */
+    type: CouponType;
+    /**
+     * Percentage off (for percent type, 1-100)
+     */
+    percentOff?: number;
+    /**
+     * Amount off in cents (for fixed type)
+     */
+    amountOffCents?: number;
+    /**
+     * Trial extension in days (for trial_extension type)
+     */
+    trialExtensionDays?: number;
+    /**
+     * Whether coupon is active
+     */
+    isActive: boolean;
+    /**
+     * When coupon becomes valid
+     */
+    startsAt?: string;
+    /**
+     * When coupon expires
+     */
+    expiresAt?: string;
+    /**
+     * Maximum number of redemptions (null = unlimited)
+     */
+    maxRedemptions?: number;
+    /**
+     * Current redemption count
+     */
+    currentRedemptions: number;
+    /**
+     * Only valid for first-time customers
+     */
+    firstTimeOnly: boolean;
+    /**
+     * Comma-separated plan IDs (null = all plans)
+     */
+    planIds?: string;
+    /**
+     * When the coupon was created
+     */
+    createdAt: string;
+    /**
+     * When the coupon was last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Coupon list response
+ */
+export type CouponListResponse = {
+    data: Array<Coupon>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Coupon response
+ */
+export type CouponResponse = {
+    data: Coupon;
+    meta: ResponseMeta;
+};
+
+/**
+ * Coupon discount type
+ */
+export type CouponType = 'percent' | 'fixed' | 'trial_extension';
+
+/**
+ * Request body for creating an announcement
+ */
+export type CreateAnnouncementRequest = {
+    /**
+     * Organization ID (omit for system-wide announcements)
+     */
+    orgId?: string;
+    /**
+     * Announcement title
+     */
+    title: string;
+    /**
+     * Announcement content (supports markdown)
+     */
+    content: string;
+    /**
+     * Optional link for more information
+     */
+    linkUrl?: string;
+    /**
+     * Link text
+     */
+    linkText?: string;
+    /**
+     * Priority level (default: info)
+     */
+    priority?: AnnouncementPriority;
+    /**
+     * Scope (default: organization)
+     */
+    scope?: AnnouncementScope;
+    /**
+     * Target roles (empty means all roles)
+     */
+    targetRoles?: Array<AnnouncementTargetRole>;
+    /**
+     * Whether users can dismiss (default: true)
+     */
+    isDismissible?: boolean;
+    /**
+     * Scheduled publish date/time (default: now)
+     */
+    publishAt?: string;
+    /**
+     * Optional expiration date/time
+     */
+    expiresAt?: string;
+    /**
+     * Whether announcement is active (default: true)
+     */
+    isActive?: boolean;
+};
+
+/**
+ * Create coupon request
+ */
+export type CreateCouponRequest = {
+    /**
+     * Coupon code (uppercase recommended)
+     */
+    code: string;
+    /**
+     * Internal name
+     */
+    name?: string;
+    /**
+     * Discount type
+     */
+    type: CouponType;
+    /**
+     * Percentage off (required if type=percent)
+     */
+    percentOff?: number;
+    /**
+     * Amount off in cents (required if type=fixed)
+     */
+    amountOffCents?: number;
+    /**
+     * Trial extension days (required if type=trial_extension)
+     */
+    trialExtensionDays?: number;
+    /**
+     * Is active
+     */
+    isActive?: boolean;
+    /**
+     * Validity start
+     */
+    startsAt?: string;
+    /**
+     * Validity end
+     */
+    expiresAt?: string;
+    /**
+     * Max redemptions
+     */
+    maxRedemptions?: number;
+    /**
+     * First-time only
+     */
+    firstTimeOnly?: boolean;
+    /**
+     * Plan IDs (comma-separated)
+     */
+    planIds?: string;
 };
 
 /**
@@ -414,6 +976,70 @@ export type CreateExamplePostRequest = {
      * Post status (default: draft)
      */
     status?: ExamplePostStatus;
+};
+
+/**
+ * Create subscription plan request
+ */
+export type CreatePlanRequest = {
+    /**
+     * Application ID
+     */
+    applicationId: string;
+    /**
+     * Plan name
+     */
+    name: string;
+    /**
+     * Plan slug
+     */
+    slug: string;
+    /**
+     * Plan description
+     */
+    description?: string;
+    /**
+     * Price in cents
+     */
+    priceCents: number;
+    /**
+     * Currency code
+     */
+    currency?: string;
+    /**
+     * Billing period
+     */
+    billingPeriod: PlanBillingPeriod;
+    /**
+     * Trial days
+     */
+    trialDays?: number;
+    /**
+     * Features
+     */
+    features?: PlanFeatures;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Sort order
+     */
+    sortOrder?: number;
+    /**
+     * Visibility
+     */
+    visibility?: PlanVisibility;
+    /**
+     * Is active
+     */
+    isActive?: boolean;
+    /**
+     * Is popular
+     */
+    isPopular?: boolean;
 };
 
 /**
@@ -542,6 +1168,40 @@ export type CreateScheduledReportRequest = {
      * Whether the schedule is active (default: true)
      */
     isActive?: boolean;
+};
+
+/**
+ * Create subscription request
+ */
+export type CreateSubscriptionRequest = {
+    /**
+     * Plan ID to subscribe to
+     */
+    planId: string;
+    /**
+     * Optional coupon code to apply
+     */
+    couponCode?: string;
+    /**
+     * Payment method ID (if already exists)
+     */
+    paymentMethodId?: string;
+    /**
+     * Return URL after payment setup
+     */
+    returnUrl?: string;
+};
+
+/**
+ * Subscription creation response (with payment link)
+ */
+export type CreateSubscriptionResponse = {
+    data: Subscription;
+    /**
+     * Payment method linking URL (if payment setup required)
+     */
+    linkingUrl?: string;
+    meta: ResponseMeta;
 };
 
 /**
@@ -677,6 +1337,23 @@ export type DeliveryConfigUpdate = {
  * Report delivery method
  */
 export type DeliveryMethod = 'email' | 'download' | 'webhook' | 'storage';
+
+/**
+ * Dismiss announcement response
+ */
+export type DismissAnnouncementResponse = {
+    data: {
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+        /**
+         * Timestamp when dismissed
+         */
+        dismissedAt: string;
+    };
+    meta: ResponseMeta;
+};
 
 /**
  * Email delivery configuration
@@ -1179,6 +1856,7 @@ export type InitiateUploadResponse = {
  * Async job resource
  *
  * Represents a long-running operation that can be polled for status.
+ * Unified job system with pg-boss queue integration.
  */
 export type Job = {
     /**
@@ -1190,7 +1868,7 @@ export type Job = {
      */
     tenantId: string;
     /**
-     * Type of operation (e.g., "bulkImport", "reportGeneration")
+     * Type of operation (e.g., "report", "import", "export")
      */
     type: string;
     /**
@@ -1206,30 +1884,33 @@ export type Job = {
      */
     message?: string;
     /**
-     * Result data (when completed)
+     * Total items to process
      */
-    result?: {
+    totalItems?: number;
+    /**
+     * Items processed so far
+     */
+    processedItems?: number;
+    /**
+     * Job input parameters
+     */
+    input?: {
         [key: string]: unknown;
     };
     /**
+     * Job output/result data (when completed)
+     */
+    output?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Job metadata (references, format, etc.)
+     */
+    metadata?: JobMetadata;
+    /**
      * Error details (when failed)
      */
-    error?: {
-        /**
-         * Error code
-         */
-        code: string;
-        /**
-         * Error message
-         */
-        message: string;
-        /**
-         * Additional error details
-         */
-        details?: {
-            [key: string]: unknown;
-        };
-    };
+    error?: JobError;
     /**
      * Who initiated the job
      */
@@ -1253,12 +1934,56 @@ export type Job = {
 };
 
 /**
+ * Job error details
+ */
+export type JobError = {
+    /**
+     * Error code
+     */
+    code: string;
+    /**
+     * Error message
+     */
+    message: string;
+    /**
+     * Whether the error is retryable
+     */
+    retryable?: boolean;
+};
+
+/**
  * Job list response
  */
 export type JobListResponse = {
     data: Array<Job>;
     pagination: Pagination;
     meta: ResponseMeta;
+};
+
+/**
+ * Job metadata for type-specific references
+ */
+export type JobMetadata = {
+    /**
+     * Template ID (for report jobs)
+     */
+    templateId?: string;
+    /**
+     * Scheduled report ID (for scheduled report jobs)
+     */
+    scheduledReportId?: string;
+    /**
+     * Format (for report jobs)
+     */
+    format?: string;
+    /**
+     * Parent job ID (for retried jobs)
+     */
+    parentJobId?: string;
+    /**
+     * Retry count
+     */
+    retryCount?: number;
 };
 
 /**
@@ -1283,6 +2008,40 @@ export type MarkAllReadResponse = {
          * Number of notifications marked as read
          */
         markedCount: number;
+    };
+    meta: ResponseMeta;
+};
+
+/**
+ * Mark as read response
+ */
+export type MarkReadResponse = {
+    data: {
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+        /**
+         * Timestamp when read
+         */
+        readAt: string;
+    };
+    meta: ResponseMeta;
+};
+
+/**
+ * Mark as viewed response
+ */
+export type MarkViewedResponse = {
+    data: {
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+        /**
+         * Timestamp when viewed
+         */
+        viewedAt: string;
     };
     meta: ResponseMeta;
 };
@@ -1731,6 +2490,67 @@ export type PermissionInput = {
 };
 
 /**
+ * Billing period for subscription plans
+ */
+export type PlanBillingPeriod = 'monthly' | 'yearly';
+
+/**
+ * Plan feature configuration
+ */
+export type PlanFeatures = {
+    /**
+     * Maximum users allowed (-1 = unlimited)
+     */
+    maxUsers?: number;
+    /**
+     * Maximum locations allowed (-1 = unlimited)
+     */
+    maxLocations?: number;
+    /**
+     * Maximum storage in GB (-1 = unlimited)
+     */
+    maxStorageGb?: number;
+    /**
+     * Access to advanced reporting
+     */
+    advancedReporting?: boolean;
+    /**
+     * API access enabled
+     */
+    apiAccess?: boolean;
+    /**
+     * Custom branding enabled
+     */
+    customBranding?: boolean;
+    /**
+     * Priority support
+     */
+    prioritySupport?: boolean;
+};
+
+/**
+ * Subscription plan list response
+ */
+export type PlanListResponse = {
+    data: Array<SubscriptionPlan>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Subscription plan response
+ */
+export type PlanResponse = {
+    data: SubscriptionPlan;
+    meta: ResponseMeta;
+};
+
+/**
+ * Plan visibility level
+ */
+export type PlanVisibility = 'public' | 'private' | 'archived';
+
+/**
  * Request body for previewing an email template
  */
 export type PreviewEmailRequest = {
@@ -1813,183 +2633,6 @@ export type ReportColumnConfig = {
  * Report output format
  */
 export type ReportFormat = 'csv' | 'excel' | 'pdf' | 'thermal' | 'dotmatrix';
-
-/**
- * Report Job resource model
- *
- * Tracks individual report generation jobs with:
- * - Progress tracking
- * - Result/error information
- * - Queue integration (pg-boss)
- * - Both manual and scheduled jobs
- */
-export type ReportJob = {
-    /**
-     * Unique job identifier (format: rjob_{randomString})
-     */
-    id: string;
-    /**
-     * Organization ID (tenant scope)
-     */
-    orgId: string;
-    /**
-     * Associated report template ID
-     */
-    templateId?: string;
-    /**
-     * Associated scheduled report ID (null for manual jobs)
-     */
-    scheduledReportId?: string;
-    /**
-     * Job type
-     */
-    type: ReportJobType;
-    /**
-     * Current job status
-     */
-    status: ReportJobStatus;
-    /**
-     * Output format
-     */
-    format: ReportFormat;
-    /**
-     * Progress percentage (0-100)
-     */
-    progress?: number;
-    /**
-     * Total rows to process
-     */
-    totalRows?: number;
-    /**
-     * Rows processed so far
-     */
-    processedRows?: number;
-    /**
-     * Runtime parameters used for this job
-     */
-    parameters?: {
-        [key: string]: unknown;
-    };
-    /**
-     * Job result (when completed)
-     */
-    result?: ReportJobResult;
-    /**
-     * Error information (when failed)
-     */
-    error?: ReportJobError;
-    /**
-     * pg-boss queue job ID
-     */
-    queueJobId?: string;
-    /**
-     * User ID who created/triggered the job
-     */
-    createdBy: string;
-    /**
-     * Timestamp when the job was created
-     */
-    createdAt: string;
-    /**
-     * Timestamp when the job started processing
-     */
-    startedAt?: string;
-    /**
-     * Timestamp when the job completed (success or failure)
-     */
-    completedAt?: string;
-    /**
-     * Estimated completion time
-     */
-    estimatedCompletion?: string;
-};
-
-/**
- * Job error data (when failed)
- */
-export type ReportJobError = {
-    /**
-     * Error code
-     */
-    code: string;
-    /**
-     * Error message
-     */
-    message: string;
-    /**
-     * Stack trace (only in development)
-     */
-    stack?: string;
-    /**
-     * Whether the error is retryable
-     */
-    retryable: boolean;
-};
-
-/**
- * Report job collection response (page-based)
- */
-export type ReportJobListResponse = {
-    data: Array<ReportJob>;
-    pagination: Pagination;
-    meta: ResponseMeta;
-};
-
-/**
- * Single report job response
- */
-export type ReportJobResponse = {
-    data: ReportJob;
-    meta: ResponseMeta;
-};
-
-/**
- * Job result data (when completed successfully)
- */
-export type ReportJobResult = {
-    /**
-     * Path to generated file (server-side)
-     */
-    filePath?: string;
-    /**
-     * Generated file size in bytes
-     */
-    fileSize?: number;
-    /**
-     * Number of rows in the report
-     */
-    rowCount?: number;
-    /**
-     * Temporary download URL (expires)
-     */
-    downloadUrl?: string;
-    /**
-     * Download URL expiration time
-     */
-    downloadExpiresAt?: string;
-    /**
-     * MIME type of the generated file
-     */
-    mimeType?: string;
-    /**
-     * Delivery status (for scheduled reports)
-     */
-    deliveryStatus?: 'pending' | 'sent' | 'failed';
-    /**
-     * Delivery error message (if failed)
-     */
-    deliveryError?: string;
-};
-
-/**
- * Report job status
- */
-export type ReportJobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
-
-/**
- * Report job type
- */
-export type ReportJobType = 'manual' | 'scheduled';
 
 /**
  * Report format-specific options
@@ -2586,6 +3229,181 @@ export type StreamExportRequest = {
 };
 
 /**
+ * Organization subscription
+ *
+ * Represents an active subscription for an organization.
+ */
+export type Subscription = {
+    /**
+     * Unique subscription identifier (format: sub_abc123)
+     */
+    id: string;
+    /**
+     * Organization ID
+     */
+    organizationId: string;
+    /**
+     * Application ID
+     */
+    applicationId: string;
+    /**
+     * Current plan ID
+     */
+    planId: string;
+    /**
+     * Subscription status
+     */
+    status: SubscriptionStatus;
+    /**
+     * Trial start date
+     */
+    trialStartsAt?: string;
+    /**
+     * Trial end date
+     */
+    trialEndsAt?: string;
+    /**
+     * Current billing period start
+     */
+    currentPeriodStart: string;
+    /**
+     * Current billing period end
+     */
+    currentPeriodEnd: string;
+    /**
+     * Applied coupon ID
+     */
+    couponId?: string;
+    /**
+     * Discount percentage (for percent coupons)
+     */
+    discountPercent?: number;
+    /**
+     * Discount amount in cents (for fixed coupons)
+     */
+    discountAmountCents?: number;
+    /**
+     * Cancel at end of current period
+     */
+    cancelAtPeriodEnd: boolean;
+    /**
+     * When subscription was canceled
+     */
+    canceledAt?: string;
+    /**
+     * Payment provider subscription ID (Xendit, Stripe, etc.)
+     */
+    providerSubscriptionId?: string;
+    /**
+     * Payment provider customer ID
+     */
+    providerCustomerId?: string;
+    /**
+     * When the subscription was created
+     */
+    createdAt: string;
+    /**
+     * When the subscription was last updated
+     */
+    updatedAt: string;
+    /**
+     * Nested plan details (populated when requested)
+     */
+    plan?: SubscriptionPlan;
+};
+
+/**
+ * Subscription plan
+ *
+ * Represents a pricing tier with features and limits.
+ */
+export type SubscriptionPlan = {
+    /**
+     * Unique plan identifier (format: plan_basic_monthly)
+     */
+    id: string;
+    /**
+     * Application this plan belongs to
+     */
+    applicationId: string;
+    /**
+     * Plan display name
+     */
+    name: string;
+    /**
+     * URL-friendly slug
+     */
+    slug: string;
+    /**
+     * Plan description
+     */
+    description?: string;
+    /**
+     * Price in smallest currency unit (cents for USD, sen for IDR)
+     */
+    priceCents: number;
+    /**
+     * Currency code
+     */
+    currency: string;
+    /**
+     * Billing period
+     */
+    billingPeriod: PlanBillingPeriod;
+    /**
+     * Trial period in days (0 = no trial)
+     */
+    trialDays?: number;
+    /**
+     * Plan features and limits
+     */
+    features?: PlanFeatures;
+    /**
+     * Additional metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Sort order for display
+     */
+    sortOrder?: number;
+    /**
+     * Visibility level
+     */
+    visibility: PlanVisibility;
+    /**
+     * Whether plan is active
+     */
+    isActive: boolean;
+    /**
+     * Whether to show "Popular" badge
+     */
+    isPopular?: boolean;
+    /**
+     * When the plan was created
+     */
+    createdAt: string;
+    /**
+     * When the plan was last updated
+     */
+    updatedAt: string;
+};
+
+/**
+ * Subscription response
+ */
+export type SubscriptionResponse = {
+    data: Subscription;
+    meta: ResponseMeta;
+};
+
+/**
+ * Subscription status
+ */
+export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'paused' | 'expired';
+
+/**
  * Request to switch active context (application and/or tenant)
  */
 export type SwitchContextRequest = {
@@ -2629,6 +3447,23 @@ export type SwitchContextResponse = {
 };
 
 /**
+ * Unread announcement count response
+ */
+export type UnreadAnnouncementsResponse = {
+    data: {
+        /**
+         * Number of unread announcements
+         */
+        unreadCount: number;
+        /**
+         * Number of critical announcements requiring acknowledgment
+         */
+        criticalCount: number;
+    };
+    meta: ResponseMeta;
+};
+
+/**
  * Unread count response
  */
 export type UnreadCountResponse = {
@@ -2639,6 +3474,98 @@ export type UnreadCountResponse = {
         unreadCount: number;
     };
     meta: ResponseMeta;
+};
+
+/**
+ * Request body for updating an announcement
+ */
+export type UpdateAnnouncementRequest = {
+    /**
+     * Announcement title
+     */
+    title?: string;
+    /**
+     * Announcement content
+     */
+    content?: string;
+    /**
+     * Optional link for more information
+     */
+    linkUrl?: string;
+    /**
+     * Link text
+     */
+    linkText?: string;
+    /**
+     * Priority level
+     */
+    priority?: AnnouncementPriority;
+    /**
+     * Target roles
+     */
+    targetRoles?: Array<AnnouncementTargetRole>;
+    /**
+     * Whether users can dismiss
+     */
+    isDismissible?: boolean;
+    /**
+     * Scheduled publish date/time
+     */
+    publishAt?: string;
+    /**
+     * Optional expiration date/time
+     */
+    expiresAt?: string;
+    /**
+     * Whether announcement is active
+     */
+    isActive?: boolean;
+};
+
+/**
+ * Update coupon request
+ */
+export type UpdateCouponRequest = {
+    /**
+     * Internal name
+     */
+    name?: string;
+    /**
+     * Percentage off
+     */
+    percentOff?: number;
+    /**
+     * Amount off in cents
+     */
+    amountOffCents?: number;
+    /**
+     * Trial extension days
+     */
+    trialExtensionDays?: number;
+    /**
+     * Is active
+     */
+    isActive?: boolean;
+    /**
+     * Validity start
+     */
+    startsAt?: string;
+    /**
+     * Validity end
+     */
+    expiresAt?: string;
+    /**
+     * Max redemptions
+     */
+    maxRedemptions?: number;
+    /**
+     * First-time only
+     */
+    firstTimeOnly?: boolean;
+    /**
+     * Plan IDs (comma-separated)
+     */
+    planIds?: string;
 };
 
 /**
@@ -2677,6 +3604,66 @@ export type UpdateFileRequest = {
      * New access level
      */
     access?: FileAccess;
+};
+
+/**
+ * Update subscription plan request
+ */
+export type UpdatePlanRequest = {
+    /**
+     * Plan name
+     */
+    name?: string;
+    /**
+     * Plan slug
+     */
+    slug?: string;
+    /**
+     * Plan description
+     */
+    description?: string;
+    /**
+     * Price in cents
+     */
+    priceCents?: number;
+    /**
+     * Currency code
+     */
+    currency?: string;
+    /**
+     * Billing period
+     */
+    billingPeriod?: PlanBillingPeriod;
+    /**
+     * Trial days
+     */
+    trialDays?: number;
+    /**
+     * Features
+     */
+    features?: PlanFeatures;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Sort order
+     */
+    sortOrder?: number;
+    /**
+     * Visibility
+     */
+    visibility?: PlanVisibility;
+    /**
+     * Is active
+     */
+    isActive?: boolean;
+    /**
+     * Is popular
+     */
+    isPopular?: boolean;
 };
 
 /**
@@ -2878,6 +3865,20 @@ export type UpdateScheduledReportRequest = {
 };
 
 /**
+ * Update subscription request
+ */
+export type UpdateSubscriptionRequest = {
+    /**
+     * New plan ID (for upgrade/downgrade)
+     */
+    planId?: string;
+    /**
+     * Cancel at end of period
+     */
+    cancelAtPeriodEnd?: boolean;
+};
+
+/**
  * Request to update a webhook
  */
 export type UpdateWebhookRequest = {
@@ -3070,6 +4071,42 @@ export type UserRoleAssignmentResponse = {
 };
 
 /**
+ * Validate coupon request
+ */
+export type ValidateCouponRequest = {
+    /**
+     * Coupon code to validate
+     */
+    code: string;
+    /**
+     * Plan ID to apply coupon to
+     */
+    planId: string;
+};
+
+/**
+ * Coupon validation response
+ */
+export type ValidateCouponResponse = {
+    /**
+     * Whether the coupon is valid
+     */
+    valid: boolean;
+    /**
+     * Coupon details (if valid)
+     */
+    coupon?: Coupon;
+    /**
+     * Calculated discount amount in cents (if applicable)
+     */
+    discountAmount?: number;
+    /**
+     * Validation message
+     */
+    message?: string;
+};
+
+/**
  * Virus scan status for uploaded files
  */
 export type VirusScanStatus = 'pending' | 'scanning' | 'clean' | 'infected' | 'failed';
@@ -3140,6 +4177,24 @@ export type Webhook = {
      * When the webhook was last updated
      */
     updatedAt: string;
+};
+
+/**
+ * Webhook received acknowledgment
+ */
+export type WebhookAcknowledgment = {
+    /**
+     * Whether webhook was received
+     */
+    received: boolean;
+    /**
+     * Event ID (if processed)
+     */
+    eventId?: string;
+    /**
+     * Processing note
+     */
+    note?: string;
 };
 
 /**
@@ -3384,6 +4439,278 @@ export type HealthCheckResponses = {
 
 export type HealthCheckResponse = HealthCheckResponses[keyof HealthCheckResponses];
 
+export type CouponsAdminListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         */
+        pageSize?: number;
+        /**
+         * Filter by coupon type
+         */
+        type?: CouponType;
+        /**
+         * Filter by active status
+         */
+        isActive?: boolean;
+        /**
+         * Search by code
+         */
+        code?: string;
+        /**
+         * Sort by field
+         */
+        sortBy?: string;
+        /**
+         * Sort order
+         */
+        sortOrder?: string;
+    };
+    url: '/v1/admin/coupons';
+};
+
+export type CouponsAdminListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: CouponListResponse | ErrorResponse;
+};
+
+export type CouponsAdminListResponse = CouponsAdminListResponses[keyof CouponsAdminListResponses];
+
+export type CouponsAdminCreateData = {
+    /**
+     * Coupon details
+     */
+    body: CreateCouponRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/admin/coupons';
+};
+
+export type CouponsAdminCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: CouponResponse;
+};
+
+export type CouponsAdminCreateResponse = CouponsAdminCreateResponses[keyof CouponsAdminCreateResponses];
+
+export type CouponsAdminDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Coupon ID
+         */
+        couponId: string;
+    };
+    query?: never;
+    url: '/v1/admin/coupons/{couponId}';
+};
+
+export type CouponsAdminDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type CouponsAdminDeleteResponse = CouponsAdminDeleteResponses[keyof CouponsAdminDeleteResponses];
+
+export type CouponsAdminGetData = {
+    body?: never;
+    path: {
+        /**
+         * Coupon ID
+         */
+        couponId: string;
+    };
+    query?: never;
+    url: '/v1/admin/coupons/{couponId}';
+};
+
+export type CouponsAdminGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: CouponResponse | ErrorResponse;
+};
+
+export type CouponsAdminGetResponse = CouponsAdminGetResponses[keyof CouponsAdminGetResponses];
+
+export type CouponsAdminUpdateData = {
+    /**
+     * Updated coupon details
+     */
+    body: UpdateCouponRequest;
+    path: {
+        /**
+         * Coupon ID
+         */
+        couponId: string;
+    };
+    query?: never;
+    url: '/v1/admin/coupons/{couponId}';
+};
+
+export type CouponsAdminUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: CouponResponse | ErrorResponse;
+};
+
+export type CouponsAdminUpdateResponse = CouponsAdminUpdateResponses[keyof CouponsAdminUpdateResponses];
+
+export type SubscriptionPlansAdminListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         */
+        pageSize?: number;
+        /**
+         * Filter by application ID
+         */
+        applicationId?: string;
+        /**
+         * Filter by visibility
+         */
+        visibility?: PlanVisibility;
+        /**
+         * Filter by active status
+         */
+        isActive?: boolean;
+        /**
+         * Filter by billing period
+         */
+        billingPeriod?: PlanBillingPeriod;
+        /**
+         * Sort by field
+         */
+        sortBy?: string;
+        /**
+         * Sort order
+         */
+        sortOrder?: string;
+    };
+    url: '/v1/admin/plans';
+};
+
+export type SubscriptionPlansAdminListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: PlanListResponse | ErrorResponse;
+};
+
+export type SubscriptionPlansAdminListResponse = SubscriptionPlansAdminListResponses[keyof SubscriptionPlansAdminListResponses];
+
+export type SubscriptionPlansAdminCreateData = {
+    /**
+     * Plan details
+     */
+    body: CreatePlanRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/admin/plans';
+};
+
+export type SubscriptionPlansAdminCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: PlanResponse;
+};
+
+export type SubscriptionPlansAdminCreateResponse = SubscriptionPlansAdminCreateResponses[keyof SubscriptionPlansAdminCreateResponses];
+
+export type SubscriptionPlansAdminDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Plan ID
+         */
+        planId: string;
+    };
+    query?: never;
+    url: '/v1/admin/plans/{planId}';
+};
+
+export type SubscriptionPlansAdminDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type SubscriptionPlansAdminDeleteResponse = SubscriptionPlansAdminDeleteResponses[keyof SubscriptionPlansAdminDeleteResponses];
+
+export type SubscriptionPlansAdminGetData = {
+    body?: never;
+    path: {
+        /**
+         * Plan ID
+         */
+        planId: string;
+    };
+    query?: never;
+    url: '/v1/admin/plans/{planId}';
+};
+
+export type SubscriptionPlansAdminGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: PlanResponse | ErrorResponse;
+};
+
+export type SubscriptionPlansAdminGetResponse = SubscriptionPlansAdminGetResponses[keyof SubscriptionPlansAdminGetResponses];
+
+export type SubscriptionPlansAdminUpdateData = {
+    /**
+     * Updated plan details
+     */
+    body: UpdatePlanRequest;
+    path: {
+        /**
+         * Plan ID
+         */
+        planId: string;
+    };
+    query?: never;
+    url: '/v1/admin/plans/{planId}';
+};
+
+export type SubscriptionPlansAdminUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: PlanResponse | ErrorResponse;
+};
+
+export type SubscriptionPlansAdminUpdateResponse = SubscriptionPlansAdminUpdateResponses[keyof SubscriptionPlansAdminUpdateResponses];
+
 export type MigrationGetStatusData = {
     body?: never;
     path?: never;
@@ -3614,6 +4941,316 @@ export type NotificationsMarkUnreadResponses = {
 };
 
 export type NotificationsMarkUnreadResponse = NotificationsMarkUnreadResponses[keyof NotificationsMarkUnreadResponses];
+
+export type AnnouncementsListData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed, default: 1)
+         */
+        page?: number;
+        /**
+         * Number of items per page (max: 100, default: 20)
+         */
+        pageSize?: number;
+        /**
+         * Filter by priority
+         */
+        priority?: AnnouncementPriority;
+        /**
+         * Filter by scope
+         */
+        scope?: AnnouncementScope;
+        /**
+         * Filter by read status ("read" or "unread")
+         */
+        readStatus?: 'read' | 'unread';
+        /**
+         * Filter by dismissed status ("dismissed" or "not-dismissed")
+         */
+        dismissedStatus?: 'dismissed' | 'not-dismissed';
+        /**
+         * Include expired announcements (default: false)
+         */
+        includeExpired?: boolean;
+        /**
+         * Include inactive announcements (default: false)
+         */
+        includeInactive?: boolean;
+        /**
+         * Sort order. Use "-field" for descending. Supports: publishAt, createdAt, priority
+         */
+        orderBy?: string;
+    };
+    url: '/v1/orgs/{orgId}/announcements';
+};
+
+export type AnnouncementsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AnnouncementListResponse | ErrorResponse;
+};
+
+export type AnnouncementsListResponse = AnnouncementsListResponses[keyof AnnouncementsListResponses];
+
+export type AnnouncementsCreateData = {
+    /**
+     * Announcement data
+     */
+    body: CreateAnnouncementRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements';
+};
+
+export type AnnouncementsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: AnnouncementResponse;
+};
+
+export type AnnouncementsCreateResponse = AnnouncementsCreateResponses[keyof AnnouncementsCreateResponses];
+
+export type AnnouncementsGetUnreadCountData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/unread-count';
+};
+
+export type AnnouncementsGetUnreadCountResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: UnreadAnnouncementsResponse | ErrorResponse;
+};
+
+export type AnnouncementsGetUnreadCountResponse = AnnouncementsGetUnreadCountResponses[keyof AnnouncementsGetUnreadCountResponses];
+
+export type AnnouncementsDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}';
+};
+
+export type AnnouncementsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type AnnouncementsDeleteResponse = AnnouncementsDeleteResponses[keyof AnnouncementsDeleteResponses];
+
+export type AnnouncementsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}';
+};
+
+export type AnnouncementsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AnnouncementWithInteractionResponse | ErrorResponse;
+};
+
+export type AnnouncementsGetResponse = AnnouncementsGetResponses[keyof AnnouncementsGetResponses];
+
+export type AnnouncementsUpdateData = {
+    /**
+     * Updated announcement data
+     */
+    body: UpdateAnnouncementRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}';
+};
+
+export type AnnouncementsUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AnnouncementResponse | ErrorResponse;
+};
+
+export type AnnouncementsUpdateResponse = AnnouncementsUpdateResponses[keyof AnnouncementsUpdateResponses];
+
+export type AnnouncementsAcknowledgeData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}/acknowledge';
+};
+
+export type AnnouncementsAcknowledgeResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AcknowledgeAnnouncementResponse | ErrorResponse;
+};
+
+export type AnnouncementsAcknowledgeResponse = AnnouncementsAcknowledgeResponses[keyof AnnouncementsAcknowledgeResponses];
+
+export type AnnouncementsDismissData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}/dismiss';
+};
+
+export type AnnouncementsDismissResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: DismissAnnouncementResponse | ErrorResponse;
+};
+
+export type AnnouncementsDismissResponse = AnnouncementsDismissResponses[keyof AnnouncementsDismissResponses];
+
+export type AnnouncementsMarkReadData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}/read';
+};
+
+export type AnnouncementsMarkReadResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: MarkReadResponse | ErrorResponse;
+};
+
+export type AnnouncementsMarkReadResponse = AnnouncementsMarkReadResponses[keyof AnnouncementsMarkReadResponses];
+
+export type AnnouncementsGetStatsData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}/stats';
+};
+
+export type AnnouncementsGetStatsResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AnnouncementStatsResponse | ErrorResponse;
+};
+
+export type AnnouncementsGetStatsResponse = AnnouncementsGetStatsResponses[keyof AnnouncementsGetStatsResponses];
+
+export type AnnouncementsMarkViewedData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Announcement ID
+         */
+        announcementId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/announcements/{announcementId}/view';
+};
+
+export type AnnouncementsMarkViewedResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: MarkViewedResponse | ErrorResponse;
+};
+
+export type AnnouncementsMarkViewedResponse = AnnouncementsMarkViewedResponses[keyof AnnouncementsMarkViewedResponses];
 
 export type AuditLogsListData = {
     body?: never;
@@ -5012,13 +6649,25 @@ export type JobsListData = {
          */
         status?: JobStatus;
         /**
-         * Filter by job type
+         * Filter by job type (e.g., "report", "import")
          */
         type?: string;
+        /**
+         * Filter by format (for report jobs)
+         */
+        format?: string;
+        /**
+         * Filter by template ID (for report jobs)
+         */
+        templateId?: string;
         /**
          * Filter jobs created after this timestamp
          */
         createdAfter?: string;
+        /**
+         * Filter jobs created before this timestamp
+         */
+        createdBefore?: string;
     };
     url: '/v1/orgs/{orgId}/jobs';
 };
@@ -5081,6 +6730,56 @@ export type JobsCancelResponses = {
 };
 
 export type JobsCancelResponse = JobsCancelResponses[keyof JobsCancelResponses];
+
+export type JobsDownloadData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Job ID
+         */
+        jobId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/jobs/{jobId}/download';
+};
+
+export type JobsDownloadResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+};
+
+export type JobsDownloadResponse = JobsDownloadResponses[keyof JobsDownloadResponses];
+
+export type JobsRetryData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Job ID
+         */
+        jobId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/jobs/{jobId}/retry';
+};
+
+export type JobsRetryResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: JobResponse | ErrorResponse;
+};
+
+export type JobsRetryResponse = JobsRetryResponses[keyof JobsRetryResponses];
 
 export type ReportExportsExportData = {
     /**
@@ -5221,172 +6920,6 @@ export type ReportExportsStreamExportResponses = {
 };
 
 export type ReportExportsStreamExportResponse = ReportExportsStreamExportResponses[keyof ReportExportsStreamExportResponses];
-
-export type ReportJobsListData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: {
-        /**
-         * Page number (1-indexed)
-         */
-        page?: number;
-        /**
-         * Number of items per page (max: 100)
-         */
-        pageSize?: number;
-        /**
-         * Sort order (default: -createdAt)
-         */
-        orderBy?: string;
-        /**
-         * Filter by template ID
-         */
-        templateId?: string;
-        /**
-         * Filter by schedule ID
-         */
-        scheduledReportId?: string;
-        /**
-         * Filter by job type
-         */
-        type?: ReportJobType;
-        /**
-         * Filter by status
-         */
-        status?: ReportJobStatus;
-        /**
-         * Filter by format
-         */
-        format?: ReportFormat;
-        /**
-         * Filter jobs created after this timestamp
-         */
-        createdAfter?: string;
-        /**
-         * Filter jobs created before this timestamp
-         */
-        createdBefore?: string;
-    };
-    url: '/v1/orgs/{orgId}/reports/jobs';
-};
-
-export type ReportJobsListResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ReportJobListResponse | ErrorResponse;
-};
-
-export type ReportJobsListResponse = ReportJobsListResponses[keyof ReportJobsListResponses];
-
-export type ReportJobsCancelData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Job ID
-         */
-        jobId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}';
-};
-
-export type ReportJobsCancelResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ErrorResponse;
-    /**
-     * There is no content to send for this request, but the headers may be useful.
-     */
-    204: void;
-};
-
-export type ReportJobsCancelResponse = ReportJobsCancelResponses[keyof ReportJobsCancelResponses];
-
-export type ReportJobsGetData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Job ID
-         */
-        jobId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}';
-};
-
-export type ReportJobsGetResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ReportJobResponse | ErrorResponse;
-};
-
-export type ReportJobsGetResponse = ReportJobsGetResponses[keyof ReportJobsGetResponses];
-
-export type ReportJobsDownloadData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Job ID
-         */
-        jobId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}/download';
-};
-
-export type ReportJobsDownloadResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ErrorResponse;
-};
-
-export type ReportJobsDownloadResponse = ReportJobsDownloadResponses[keyof ReportJobsDownloadResponses];
-
-export type ReportJobsRetryData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Job ID
-         */
-        jobId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/jobs/{jobId}/retry';
-};
-
-export type ReportJobsRetryResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ReportJobResponse | ErrorResponse;
-};
-
-export type ReportJobsRetryResponse = ReportJobsRetryResponses[keyof ReportJobsRetryResponses];
 
 export type ScheduledReportsListData = {
     body?: never;
@@ -5572,7 +7105,7 @@ export type ScheduledReportsGetHistoryData = {
         /**
          * Filter by status
          */
-        status?: ReportJobStatus;
+        status?: JobStatus;
     };
     url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/history';
 };
@@ -5581,7 +7114,7 @@ export type ScheduledReportsGetHistoryResponses = {
     /**
      * The request has succeeded.
      */
-    200: ReportJobListResponse | ErrorResponse;
+    200: JobListResponse | ErrorResponse;
 };
 
 export type ScheduledReportsGetHistoryResponse = ScheduledReportsGetHistoryResponses[keyof ScheduledReportsGetHistoryResponses];
@@ -5663,7 +7196,7 @@ export type ScheduledReportsRunNowResponses = {
     /**
      * The request has succeeded.
      */
-    200: ReportJobResponse | ErrorResponse;
+    200: JobResponse | ErrorResponse;
 };
 
 export type ScheduledReportsRunNowResponse = ScheduledReportsRunNowResponses[keyof ScheduledReportsRunNowResponses];
@@ -6045,6 +7578,193 @@ export type TenantRolesUpdateResponses = {
 };
 
 export type TenantRolesUpdateResponse = TenantRolesUpdateResponses[keyof TenantRolesUpdateResponses];
+
+export type SubscriptionsCreateData = {
+    /**
+     * Subscription details
+     */
+    body: CreateSubscriptionRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/subscriptions';
+};
+
+export type SubscriptionsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: CreateSubscriptionResponse;
+};
+
+export type SubscriptionsCreateResponse = SubscriptionsCreateResponses[keyof SubscriptionsCreateResponses];
+
+export type SubscriptionsGetCurrentData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query: {
+        /**
+         * Application ID
+         */
+        applicationId: string;
+    };
+    url: '/v1/orgs/{orgId}/subscriptions/current';
+};
+
+export type SubscriptionsGetCurrentResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SubscriptionResponse | ErrorResponse;
+};
+
+export type SubscriptionsGetCurrentResponse = SubscriptionsGetCurrentResponses[keyof SubscriptionsGetCurrentResponses];
+
+export type SubscriptionsValidateCouponData = {
+    /**
+     * Coupon validation details
+     */
+    body: ValidateCouponRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/subscriptions/validate-coupon';
+};
+
+export type SubscriptionsValidateCouponResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ValidateCouponResponse | ErrorResponse;
+};
+
+export type SubscriptionsValidateCouponResponse = SubscriptionsValidateCouponResponses[keyof SubscriptionsValidateCouponResponses];
+
+export type SubscriptionsUpdateData = {
+    /**
+     * Update details
+     */
+    body: UpdateSubscriptionRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Subscription ID
+         */
+        subscriptionId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/subscriptions/{subscriptionId}';
+};
+
+export type SubscriptionsUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SubscriptionResponse | ErrorResponse;
+};
+
+export type SubscriptionsUpdateResponse = SubscriptionsUpdateResponses[keyof SubscriptionsUpdateResponses];
+
+export type SubscriptionsCancelData = {
+    /**
+     * Cancellation options
+     */
+    body?: CancelSubscriptionRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Subscription ID
+         */
+        subscriptionId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/subscriptions/{subscriptionId}/cancel';
+};
+
+export type SubscriptionsCancelResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SubscriptionResponse | ErrorResponse;
+};
+
+export type SubscriptionsCancelResponse = SubscriptionsCancelResponses[keyof SubscriptionsCancelResponses];
+
+export type SubscriptionsApplyCouponData = {
+    /**
+     * Coupon details
+     */
+    body: ApplyCouponRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Subscription ID
+         */
+        subscriptionId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/subscriptions/{subscriptionId}/coupon';
+};
+
+export type SubscriptionsApplyCouponResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SubscriptionResponse | ErrorResponse;
+};
+
+export type SubscriptionsApplyCouponResponse = SubscriptionsApplyCouponResponses[keyof SubscriptionsApplyCouponResponses];
+
+export type SubscriptionsResumeData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Subscription ID
+         */
+        subscriptionId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/subscriptions/{subscriptionId}/resume';
+};
+
+export type SubscriptionsResumeResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SubscriptionResponse | ErrorResponse;
+};
+
+export type SubscriptionsResumeResponse = SubscriptionsResumeResponses[keyof SubscriptionsResumeResponses];
 
 export type UserPermissionsGetData = {
     body?: never;
@@ -6532,6 +8252,35 @@ export type NotificationPreferencesRoutesUpdatePreferencesResponses = {
 
 export type NotificationPreferencesRoutesUpdatePreferencesResponse = NotificationPreferencesRoutesUpdatePreferencesResponses[keyof NotificationPreferencesRoutesUpdatePreferencesResponses];
 
+export type PublicPricingListPublicPlansData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Filter by application ID
+         */
+        applicationId?: string;
+        /**
+         * Filter by billing period
+         */
+        billingPeriod?: PlanBillingPeriod;
+        /**
+         * Include popular badge
+         */
+        includePopular?: boolean;
+    };
+    url: '/v1/pricing/plans';
+};
+
+export type PublicPricingListPublicPlansResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: PlanListResponse | ErrorResponse;
+};
+
+export type PublicPricingListPublicPlansResponse = PublicPricingListPublicPlansResponses[keyof PublicPricingListPublicPlansResponses];
+
 export type GlobalRolesListData = {
     body?: never;
     path?: never;
@@ -6725,3 +8474,51 @@ export type AllUserRolesListResponses = {
 };
 
 export type AllUserRolesListResponse = AllUserRolesListResponses[keyof AllUserRolesListResponses];
+
+export type PaymentWebhooksHandleMidtransData = {
+    /**
+     * Webhook payload
+     */
+    body: {
+        [key: string]: unknown;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/webhooks/payments/midtrans';
+};
+
+export type PaymentWebhooksHandleMidtransResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: WebhookAcknowledgment | ErrorResponse;
+};
+
+export type PaymentWebhooksHandleMidtransResponse = PaymentWebhooksHandleMidtransResponses[keyof PaymentWebhooksHandleMidtransResponses];
+
+export type PaymentWebhooksHandleXenditData = {
+    /**
+     * Webhook payload
+     */
+    body: {
+        [key: string]: unknown;
+    };
+    headers: {
+        /**
+         * Xendit callback token (signature)
+         */
+        'x-callback-token': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/webhooks/payments/xendit';
+};
+
+export type PaymentWebhooksHandleXenditResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: WebhookAcknowledgment | ErrorResponse;
+};
+
+export type PaymentWebhooksHandleXenditResponse = PaymentWebhooksHandleXenditResponses[keyof PaymentWebhooksHandleXenditResponses];

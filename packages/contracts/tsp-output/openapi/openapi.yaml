@@ -28,6 +28,8 @@ tags:
   - name: Notifications
   - name: Notification Preferences
   - name: Reports
+  - name: Announcements
+  - name: Subscriptions
 paths:
   /health:
     get:
@@ -86,6 +88,392 @@ paths:
                   - timestamp
       tags:
         - Health
+  /v1/admin/coupons:
+    get:
+      operationId: CouponsAdmin_list
+      summary: List coupons
+      description: |-
+        List coupons
+
+        Returns all coupons with optional filtering.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: type
+          in: query
+          required: false
+          description: Filter by coupon type
+          schema:
+            $ref: '#/components/schemas/CouponType'
+          explode: false
+        - name: isActive
+          in: query
+          required: false
+          description: Filter by active status
+          schema:
+            type: boolean
+          explode: false
+        - name: code
+          in: query
+          required: false
+          description: Search by code
+          schema:
+            type: string
+          explode: false
+        - name: sortBy
+          in: query
+          required: false
+          description: Sort by field
+          schema:
+            type: string
+            default: createdAt
+          explode: false
+        - name: sortOrder
+          in: query
+          required: false
+          description: Sort order
+          schema:
+            type: string
+            default: desc
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/CouponListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+    post:
+      operationId: CouponsAdmin_create
+      summary: Create coupon
+      description: |-
+        Create coupon
+
+        Creates a new discount coupon.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CouponResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCouponRequest'
+        description: Coupon details
+  /v1/admin/coupons/{couponId}:
+    get:
+      operationId: CouponsAdmin_get
+      summary: Get coupon
+      description: |-
+        Get coupon
+
+        Returns a single coupon by ID.
+      parameters:
+        - name: couponId
+          in: path
+          required: true
+          description: Coupon ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/CouponResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+    patch:
+      operationId: CouponsAdmin_update
+      summary: Update coupon
+      description: |-
+        Update coupon
+
+        Updates an existing coupon.
+      parameters:
+        - name: couponId
+          in: path
+          required: true
+          description: Coupon ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/CouponResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCouponRequest'
+        description: Updated coupon details
+    delete:
+      operationId: CouponsAdmin_delete
+      summary: Delete coupon
+      description: |-
+        Delete coupon
+
+        Soft deletes a coupon (sets isActive to false).
+      parameters:
+        - name: couponId
+          in: path
+          required: true
+          description: Coupon ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+  /v1/admin/plans:
+    get:
+      operationId: SubscriptionPlansAdmin_list
+      summary: List subscription plans
+      description: |-
+        List subscription plans
+
+        Returns all plans with optional filtering.
+        Admin endpoint - returns all plans including archived.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: applicationId
+          in: query
+          required: false
+          description: Filter by application ID
+          schema:
+            type: string
+          explode: false
+        - name: visibility
+          in: query
+          required: false
+          description: Filter by visibility
+          schema:
+            $ref: '#/components/schemas/PlanVisibility'
+          explode: false
+        - name: isActive
+          in: query
+          required: false
+          description: Filter by active status
+          schema:
+            type: boolean
+          explode: false
+        - name: billingPeriod
+          in: query
+          required: false
+          description: Filter by billing period
+          schema:
+            $ref: '#/components/schemas/PlanBillingPeriod'
+          explode: false
+        - name: sortBy
+          in: query
+          required: false
+          description: Sort by field
+          schema:
+            type: string
+            default: sortOrder
+          explode: false
+        - name: sortOrder
+          in: query
+          required: false
+          description: Sort order
+          schema:
+            type: string
+            default: asc
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PlanListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+    post:
+      operationId: SubscriptionPlansAdmin_create
+      summary: Create subscription plan
+      description: |-
+        Create subscription plan
+
+        Creates a new subscription plan.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+        description: Plan details
+  /v1/admin/plans/{planId}:
+    get:
+      operationId: SubscriptionPlansAdmin_get
+      summary: Get subscription plan
+      description: |-
+        Get subscription plan
+
+        Returns a single plan by ID.
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: Plan ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PlanResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+    patch:
+      operationId: SubscriptionPlansAdmin_update
+      summary: Update subscription plan
+      description: |-
+        Update subscription plan
+
+        Updates an existing subscription plan.
+        Warning: Changing pricing affects future billing only.
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: Plan ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PlanResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanRequest'
+        description: Updated plan details
+    delete:
+      operationId: SubscriptionPlansAdmin_delete
+      summary: Delete subscription plan
+      description: |-
+        Delete subscription plan
+
+        Soft deletes a plan (sets visibility to archived).
+        Plans with active subscriptions cannot be hard deleted.
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          description: Plan ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
   /v1/migration/status:
     get:
       operationId: Migration_getStatus
@@ -391,6 +779,421 @@ paths:
           description: 'There is no content to send for this request, but the headers may be useful. '
       tags:
         - Notifications
+  /v1/orgs/{orgId}/announcements:
+    get:
+      operationId: Announcements_list
+      summary: List active announcements
+      description: |-
+        List active announcements for the organization
+        Returns only published, non-expired announcements targeted to the user's role
+        Includes user interaction data (viewed, read, dismissed, acknowledged)
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: 'Page number (1-indexed, default: 1)'
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: 'Number of items per page (max: 100, default: 20)'
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          explode: false
+        - name: priority
+          in: query
+          required: false
+          description: Filter by priority
+          schema:
+            $ref: '#/components/schemas/AnnouncementPriority'
+          explode: false
+        - name: scope
+          in: query
+          required: false
+          description: Filter by scope
+          schema:
+            $ref: '#/components/schemas/AnnouncementScope'
+          explode: false
+        - name: readStatus
+          in: query
+          required: false
+          description: Filter by read status ("read" or "unread")
+          schema:
+            type: string
+            enum:
+              - read
+              - unread
+          explode: false
+        - name: dismissedStatus
+          in: query
+          required: false
+          description: Filter by dismissed status ("dismissed" or "not-dismissed")
+          schema:
+            type: string
+            enum:
+              - dismissed
+              - not-dismissed
+          explode: false
+        - name: includeExpired
+          in: query
+          required: false
+          description: 'Include expired announcements (default: false)'
+          schema:
+            type: boolean
+            default: false
+          explode: false
+        - name: includeInactive
+          in: query
+          required: false
+          description: 'Include inactive announcements (default: false)'
+          schema:
+            type: boolean
+            default: false
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: 'Sort order. Use "-field" for descending. Supports: publishAt, createdAt, priority'
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AnnouncementListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+    post:
+      operationId: Announcements_create
+      summary: Create announcement
+      description: |-
+        Create a new announcement
+        Requires admin permission
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnouncementResponse'
+      tags:
+        - Announcements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnnouncementRequest'
+        description: Announcement data
+  /v1/orgs/{orgId}/announcements/unread-count:
+    get:
+      operationId: Announcements_getUnreadCount
+      summary: Get unread announcement count
+      description: |-
+        Get unread announcement count for current user
+        Returns count of unread announcements and critical announcements needing acknowledgment
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/UnreadAnnouncementsResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+  /v1/orgs/{orgId}/announcements/{announcementId}:
+    get:
+      operationId: Announcements_get
+      summary: Get announcement by ID
+      description: |-
+        Get a specific announcement by ID
+        Includes user interaction data
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AnnouncementWithInteractionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+    patch:
+      operationId: Announcements_update
+      summary: Update announcement
+      description: |-
+        Update an announcement
+        Requires admin permission or ownership
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AnnouncementResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAnnouncementRequest'
+        description: Updated announcement data
+    delete:
+      operationId: Announcements_delete
+      summary: Delete announcement
+      description: |-
+        Delete an announcement (soft delete)
+        Requires admin permission or ownership
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+  /v1/orgs/{orgId}/announcements/{announcementId}/acknowledge:
+    post:
+      operationId: Announcements_acknowledge
+      summary: Acknowledge critical announcement
+      description: |-
+        Acknowledge a critical announcement
+        Required for critical priority announcements
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AcknowledgeAnnouncementResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+  /v1/orgs/{orgId}/announcements/{announcementId}/dismiss:
+    post:
+      operationId: Announcements_dismiss
+      summary: Dismiss announcement
+      description: |-
+        Dismiss an announcement
+        Hides the announcement from the user's view
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/DismissAnnouncementResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+  /v1/orgs/{orgId}/announcements/{announcementId}/read:
+    post:
+      operationId: Announcements_markRead
+      summary: Mark announcement as read
+      description: |-
+        Mark announcement as read
+        Called when user opens/expands the announcement
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/MarkReadResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+  /v1/orgs/{orgId}/announcements/{announcementId}/stats:
+    get:
+      operationId: Announcements_getStats
+      summary: Get announcement statistics
+      description: |-
+        Get announcement statistics
+        Returns analytics data for a specific announcement
+        Requires admin permission
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AnnouncementStatsResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
+  /v1/orgs/{orgId}/announcements/{announcementId}/view:
+    post:
+      operationId: Announcements_markViewed
+      summary: Mark announcement as viewed
+      description: |-
+        Mark announcement as viewed
+        Automatically called when announcement is displayed to user
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: announcementId
+          in: path
+          required: true
+          description: Announcement ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/MarkViewedResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Announcements
   /v1/orgs/{orgId}/audit-logs:
     get:
       operationId: AuditLogs_list
@@ -2313,7 +3116,7 @@ paths:
       description: |-
         List async jobs
 
-        Returns jobs for the current tenant.
+        Returns jobs for the current tenant with optional filtering.
       parameters:
         - name: orgId
           in: path
@@ -2349,7 +3152,21 @@ paths:
         - name: type
           in: query
           required: false
-          description: Filter by job type
+          description: Filter by job type (e.g., "report", "import")
+          schema:
+            type: string
+          explode: false
+        - name: format
+          in: query
+          required: false
+          description: Filter by format (for report jobs)
+          schema:
+            type: string
+          explode: false
+        - name: templateId
+          in: query
+          required: false
+          description: Filter by template ID (for report jobs)
           schema:
             type: string
           explode: false
@@ -2357,6 +3174,14 @@ paths:
           in: query
           required: false
           description: Filter jobs created after this timestamp
+          schema:
+            type: string
+            format: date-time
+          explode: false
+        - name: createdBefore
+          in: query
+          required: false
+          description: Filter jobs created before this timestamp
           schema:
             type: string
             format: date-time
@@ -2412,6 +3237,73 @@ paths:
         Cancel a job
 
         Only pending or processing jobs can be cancelled.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/JobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Jobs
+  /v1/orgs/{orgId}/jobs/{jobId}/download:
+    get:
+      operationId: Jobs_download
+      summary: Download job result
+      description: |-
+        Download job result
+
+        Downloads the file generated by a completed job (e.g., report exports).
+        Only available for jobs that produce downloadable files.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Jobs
+  /v1/orgs/{orgId}/jobs/{jobId}/retry:
+    post:
+      operationId: Jobs_retry
+      summary: Retry job
+      description: |-
+        Retry a failed job
+
+        Creates a new job with the same parameters as the failed job.
       parameters:
         - name: orgId
           in: path
@@ -2641,227 +3533,6 @@ paths:
             schema:
               $ref: '#/components/schemas/StreamExportRequest'
         description: Stream export request
-  /v1/orgs/{orgId}/reports/jobs:
-    get:
-      operationId: ReportJobs_list
-      summary: List report jobs
-      description: List report jobs in an organization
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: page
-          in: query
-          required: false
-          description: Page number (1-indexed)
-          schema:
-            type: integer
-            format: int32
-            default: 1
-          explode: false
-        - name: pageSize
-          in: query
-          required: false
-          description: 'Number of items per page (max: 100)'
-          schema:
-            type: integer
-            format: int32
-            default: 50
-          explode: false
-        - name: orderBy
-          in: query
-          required: false
-          description: 'Sort order (default: -createdAt)'
-          schema:
-            type: string
-          explode: false
-        - name: templateId
-          in: query
-          required: false
-          description: Filter by template ID
-          schema:
-            type: string
-          explode: false
-        - name: scheduledReportId
-          in: query
-          required: false
-          description: Filter by schedule ID
-          schema:
-            type: string
-          explode: false
-        - name: type
-          in: query
-          required: false
-          description: Filter by job type
-          schema:
-            $ref: '#/components/schemas/ReportJobType'
-          explode: false
-        - name: status
-          in: query
-          required: false
-          description: Filter by status
-          schema:
-            $ref: '#/components/schemas/ReportJobStatus'
-          explode: false
-        - name: format
-          in: query
-          required: false
-          description: Filter by format
-          schema:
-            $ref: '#/components/schemas/ReportFormat'
-          explode: false
-        - name: createdAfter
-          in: query
-          required: false
-          description: Filter jobs created after this timestamp
-          schema:
-            type: string
-            format: date-time
-          explode: false
-        - name: createdBefore
-          in: query
-          required: false
-          description: Filter jobs created before this timestamp
-          schema:
-            type: string
-            format: date-time
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ReportJobListResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-  /v1/orgs/{orgId}/reports/jobs/{jobId}:
-    get:
-      operationId: ReportJobs_get
-      summary: Get report job
-      description: Get a report job by ID
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: jobId
-          in: path
-          required: true
-          description: Job ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ReportJobResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-    delete:
-      operationId: ReportJobs_cancel
-      summary: Cancel report job
-      description: Cancel a pending or processing job
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: jobId
-          in: path
-          required: true
-          description: Job ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
-      tags:
-        - Reports
-  /v1/orgs/{orgId}/reports/jobs/{jobId}/download:
-    get:
-      operationId: ReportJobs_download
-      summary: Download job result
-      description: Download the result of a completed job
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: jobId
-          in: path
-          required: true
-          description: Job ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          headers:
-            content-disposition:
-              required: true
-              schema:
-                type: string
-          content:
-            '*/*':
-              schema:
-                type: string
-                format: binary
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-  /v1/orgs/{orgId}/reports/jobs/{jobId}/retry:
-    post:
-      operationId: ReportJobs_retry
-      summary: Retry failed job
-      description: Retry a failed job
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: jobId
-          in: path
-          required: true
-          description: Job ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ReportJobResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
   /v1/orgs/{orgId}/reports/schedules:
     get:
       operationId: ScheduledReports_list
@@ -3116,7 +3787,7 @@ paths:
           required: false
           description: Filter by status
           schema:
-            $ref: '#/components/schemas/ReportJobStatus'
+            $ref: '#/components/schemas/JobStatus'
           explode: false
       responses:
         '200':
@@ -3125,7 +3796,7 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - $ref: '#/components/schemas/ReportJobListResponse'
+                  - $ref: '#/components/schemas/JobListResponse'
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Reports
@@ -3212,7 +3883,7 @@ paths:
             application/json:
               schema:
                 anyOf:
-                  - $ref: '#/components/schemas/ReportJobResponse'
+                  - $ref: '#/components/schemas/JobResponse'
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Reports
@@ -3720,6 +4391,262 @@ paths:
           description: 'There is no content to send for this request, but the headers may be useful. '
       tags:
         - Roles
+  /v1/orgs/{orgId}/subscriptions:
+    post:
+      operationId: Subscriptions_create
+      summary: Create subscription
+      description: |-
+        Create subscription
+
+        Creates a new subscription for the organization.
+        Starts trial if configured, otherwise requires payment.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSubscriptionResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+        description: Subscription details
+  /v1/orgs/{orgId}/subscriptions/current:
+    get:
+      operationId: Subscriptions_getCurrent
+      summary: Get current subscription
+      description: |-
+        Get current subscription
+
+        Returns the active subscription for the organization and application.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: applicationId
+          in: query
+          required: true
+          description: Application ID
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SubscriptionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+  /v1/orgs/{orgId}/subscriptions/validate-coupon:
+    post:
+      operationId: Subscriptions_validateCoupon
+      summary: Validate coupon
+      description: |-
+        Validate coupon
+
+        Check if a coupon code is valid for a plan.
+        Does not apply the coupon.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ValidateCouponResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateCouponRequest'
+        description: Coupon validation details
+  /v1/orgs/{orgId}/subscriptions/{subscriptionId}:
+    patch:
+      operationId: Subscriptions_update
+      summary: Update subscription
+      description: |-
+        Update subscription
+
+        Update subscription (change plan, update settings).
+        Plan changes may be immediate or scheduled for period end.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Subscription ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SubscriptionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubscriptionRequest'
+        description: Update details
+  /v1/orgs/{orgId}/subscriptions/{subscriptionId}/cancel:
+    post:
+      operationId: Subscriptions_cancel
+      summary: Cancel subscription
+      description: |-
+        Cancel subscription
+
+        Cancel the subscription.
+        By default, access continues until period end.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Subscription ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SubscriptionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelSubscriptionRequest'
+        description: Cancellation options
+  /v1/orgs/{orgId}/subscriptions/{subscriptionId}/coupon:
+    post:
+      operationId: Subscriptions_applyCoupon
+      summary: Apply coupon
+      description: |-
+        Apply coupon
+
+        Apply a discount coupon to the subscription.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Subscription ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SubscriptionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyCouponRequest'
+        description: Coupon details
+  /v1/orgs/{orgId}/subscriptions/{subscriptionId}/resume:
+    post:
+      operationId: Subscriptions_resume
+      summary: Resume subscription
+      description: |-
+        Resume subscription
+
+        Reactivate a canceled subscription before it expires.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Subscription ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SubscriptionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
   /v1/orgs/{orgId}/users/{userId}/permissions:
     get:
       operationId: UserPermissions_get
@@ -4339,6 +5266,49 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdatePreferencesRequest'
+  /v1/pricing/plans:
+    get:
+      operationId: PublicPricing_listPublicPlans
+      summary: List public subscription plans
+      description: |-
+        List public plans
+
+        Returns all public, active subscription plans.
+        Used for the public pricing page.
+      parameters:
+        - name: applicationId
+          in: query
+          required: false
+          description: Filter by application ID
+          schema:
+            type: string
+          explode: false
+        - name: billingPeriod
+          in: query
+          required: false
+          description: Filter by billing period
+          schema:
+            $ref: '#/components/schemas/PlanBillingPeriod'
+          explode: false
+        - name: includePopular
+          in: query
+          required: false
+          description: Include popular badge
+          schema:
+            type: boolean
+            default: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PlanListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
   /v1/roles:
     get:
       operationId: GlobalRoles_list
@@ -4590,8 +5560,93 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Roles
+  /v1/webhooks/payments/midtrans:
+    post:
+      operationId: PaymentWebhooks_handleMidtrans
+      summary: Handle Midtrans webhook
+      description: |-
+        Midtrans webhook handler
+
+        Receives webhook events from Midtrans.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/WebhookAcknowledgment'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+        description: Webhook payload
+  /v1/webhooks/payments/xendit:
+    post:
+      operationId: PaymentWebhooks_handleXendit
+      summary: Handle Xendit webhook
+      description: |-
+        Xendit webhook handler
+
+        Receives webhook events from Xendit.
+        Verifies signature via x-callback-token header.
+      parameters:
+        - name: x-callback-token
+          in: header
+          required: true
+          description: Xendit callback token (signature)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/WebhookAcknowledgment'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Subscriptions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+        description: Webhook payload
 components:
   schemas:
+    AcknowledgeAnnouncementResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            announcementId:
+              type: string
+              description: Announcement ID
+            acknowledgedAt:
+              type: string
+              format: date-time
+              description: Timestamp when acknowledged
+          required:
+            - announcementId
+            - acknowledgedAt
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Acknowledge announcement response
     ActiveContext:
       type: object
       required:
@@ -4627,6 +5682,383 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Active context response
+    Announcement:
+      type: object
+      required:
+        - id
+        - title
+        - content
+        - priority
+        - scope
+        - targetRoles
+        - isDismissible
+        - publishAt
+        - isActive
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique announcement identifier
+          example: ann_abc123
+        orgId:
+          type: string
+          description: Organization ID (null for system-wide announcements)
+          example: org_xyz789
+        title:
+          type: string
+          description: Announcement title
+          example: Scheduled Maintenance
+        content:
+          type: string
+          description: Announcement content (supports markdown)
+          example: We will be performing scheduled maintenance on...
+        linkUrl:
+          type: string
+          description: Optional link for more information
+          example: https://status.example.com
+        linkText:
+          type: string
+          description: Link text
+          example: View Status Page
+        priority:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementPriority'
+          description: Priority level
+        scope:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementScope'
+          description: Scope of announcement
+        targetRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnouncementTargetRole'
+          description: Target roles (empty array means all roles)
+        isDismissible:
+          type: boolean
+          description: Whether users can dismiss this announcement
+        publishAt:
+          type: string
+          format: date-time
+          description: Scheduled publish date/time
+        expiresAt:
+          type: string
+          format: date-time
+          description: Optional expiration date/time
+        isActive:
+          type: boolean
+          description: Whether announcement is active (manually toggled)
+        createdBy:
+          type: string
+          description: User ID who created the announcement
+          example: usr_admin123
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when last updated
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when soft deleted
+        viewCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total view count'
+        readCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total read count'
+        acknowledgeCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total acknowledgment count'
+        dismissCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total dismissal count'
+      description: Announcement resource model
+    AnnouncementInteraction:
+      type: object
+      required:
+        - id
+        - announcementId
+        - userId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique interaction identifier
+        announcementId:
+          type: string
+          description: Announcement ID
+        userId:
+          type: string
+          description: User ID
+        viewedAt:
+          type: string
+          format: date-time
+          description: Timestamp when user first viewed the announcement
+        readAt:
+          type: string
+          format: date-time
+          description: Timestamp when user read (opened/expanded) the announcement
+        dismissedAt:
+          type: string
+          format: date-time
+          description: Timestamp when user dismissed the announcement
+        acknowledgedAt:
+          type: string
+          format: date-time
+          description: Timestamp when user acknowledged the announcement (critical only)
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when last updated
+      description: Announcement interaction tracking
+    AnnouncementListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnouncementWithInteraction'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Announcement collection response
+    AnnouncementPriority:
+      type: string
+      enum:
+        - info
+        - warning
+        - critical
+      description: Announcement priority level
+    AnnouncementResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Announcement'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single announcement response
+    AnnouncementScope:
+      type: string
+      enum:
+        - system
+        - organization
+      description: Announcement scope
+    AnnouncementStatsResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            viewCount:
+              type: integer
+              format: int32
+              description: Total view count
+            readCount:
+              type: integer
+              format: int32
+              description: Total read count
+            acknowledgeCount:
+              type: integer
+              format: int32
+              description: Total acknowledgment count
+            dismissCount:
+              type: integer
+              format: int32
+              description: Total dismissal count
+            viewRate:
+              type: number
+              format: float
+              description: View rate percentage
+            readRate:
+              type: number
+              format: float
+              description: Read rate percentage
+            acknowledgeRate:
+              type: number
+              format: float
+              description: Acknowledgment rate percentage (for critical announcements)
+          required:
+            - viewCount
+            - readCount
+            - acknowledgeCount
+            - dismissCount
+            - viewRate
+            - readRate
+            - acknowledgeRate
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Announcement statistics response
+    AnnouncementTargetRole:
+      type: string
+      enum:
+        - all
+        - admin
+        - member
+      description: User role for targeting
+    AnnouncementWithInteraction:
+      type: object
+      required:
+        - id
+        - title
+        - content
+        - priority
+        - scope
+        - targetRoles
+        - isDismissible
+        - publishAt
+        - isActive
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique announcement identifier
+          example: ann_abc123
+        orgId:
+          type: string
+          description: Organization ID (null for system-wide announcements)
+          example: org_xyz789
+        title:
+          type: string
+          description: Announcement title
+          example: Scheduled Maintenance
+        content:
+          type: string
+          description: Announcement content (supports markdown)
+          example: We will be performing scheduled maintenance on...
+        linkUrl:
+          type: string
+          description: Optional link for more information
+          example: https://status.example.com
+        linkText:
+          type: string
+          description: Link text
+          example: View Status Page
+        priority:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementPriority'
+          description: Priority level
+        scope:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementScope'
+          description: Scope of announcement
+        targetRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnouncementTargetRole'
+          description: Target roles (empty array means all roles)
+        isDismissible:
+          type: boolean
+          description: Whether users can dismiss this announcement
+        publishAt:
+          type: string
+          format: date-time
+          description: Scheduled publish date/time
+        expiresAt:
+          type: string
+          format: date-time
+          description: Optional expiration date/time
+        isActive:
+          type: boolean
+          description: Whether announcement is active (manually toggled)
+        createdBy:
+          type: string
+          description: User ID who created the announcement
+          example: usr_admin123
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when last updated
+        deletedAt:
+          type: string
+          format: date-time
+          description: Timestamp when soft deleted
+        viewCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total view count'
+        readCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total read count'
+        acknowledgeCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total acknowledgment count'
+        dismissCount:
+          type: integer
+          format: int32
+          description: 'Analytics: total dismissal count'
+        interaction:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementInteraction'
+          description: User's interaction with this announcement
+        hasViewed:
+          type: boolean
+          description: Whether current user has viewed
+        hasRead:
+          type: boolean
+          description: Whether current user has read
+        hasDismissed:
+          type: boolean
+          description: Whether current user has dismissed
+        hasAcknowledged:
+          type: boolean
+          description: Whether current user has acknowledged
+      description: Announcement with user interaction data
+    AnnouncementWithInteractionResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/AnnouncementWithInteraction'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Announcement with interaction response
+    ApplyCouponRequest:
+      type: object
+      required:
+        - couponCode
+      properties:
+        couponCode:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Coupon code to apply
+          example: LAUNCH50
+      description: Apply coupon request
     AssignRoleRequest:
       type: object
       required:
@@ -4647,15 +6079,20 @@ components:
         jobId:
           type: string
           description: Job ID for tracking
-          example: rjob_abc123xyz
+          example: job_abc123xyz
         status:
-          allOf:
-            - $ref: '#/components/schemas/ReportJobStatus'
+          type: string
+          enum:
+            - pending
+            - processing
+            - completed
+            - failed
+            - cancelled
           description: Current status
         statusUrl:
           type: string
           description: URL to check job status
-          example: /v1/orgs/org_xyz/reports/jobs/rjob_abc123xyz
+          example: /v1/orgs/org_xyz/jobs/job_abc123xyz
         estimatedCompletion:
           type: string
           format: date-time
@@ -4971,6 +6408,17 @@ components:
           format: int32
           description: Number of skipped items (e.g., duplicates)
       description: Summary of batch operation results
+    CancelSubscriptionRequest:
+      type: object
+      properties:
+        immediate:
+          type: boolean
+          description: Cancel immediately (vs. at period end)
+        reason:
+          type: string
+          maxLength: 500
+          description: Optional cancellation reason
+      description: Cancel subscription request
     ColumnAlignment:
       type: string
       enum:
@@ -4996,6 +6444,247 @@ components:
           type: string
           description: 'Optional: ETag from S3 response for verification'
       description: Request to confirm an upload completed successfully
+    Coupon:
+      type: object
+      required:
+        - id
+        - code
+        - type
+        - isActive
+        - currentRedemptions
+        - firstTimeOnly
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: 'Unique coupon identifier (format: coupon_abc123)'
+          example: coupon_launch50
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Coupon code that users enter
+          example: LAUNCH50
+        name:
+          type: string
+          maxLength: 200
+          description: Internal name for reference
+          example: Launch Promotion 50% Off
+        type:
+          allOf:
+            - $ref: '#/components/schemas/CouponType'
+          description: Discount type
+        percentOff:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+          description: Percentage off (for percent type, 1-100)
+          example: 20
+        amountOffCents:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Amount off in cents (for fixed type)
+          example: 50000
+        trialExtensionDays:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Trial extension in days (for trial_extension type)
+          example: 7
+        isActive:
+          type: boolean
+          description: Whether coupon is active
+        startsAt:
+          type: string
+          format: date-time
+          description: When coupon becomes valid
+        expiresAt:
+          type: string
+          format: date-time
+          description: When coupon expires
+        maxRedemptions:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Maximum number of redemptions (null = unlimited)
+          example: 100
+        currentRedemptions:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Current redemption count
+          example: 5
+        firstTimeOnly:
+          type: boolean
+          description: Only valid for first-time customers
+        planIds:
+          type: string
+          description: Comma-separated plan IDs (null = all plans)
+          example: plan_basic_monthly,plan_pro_monthly
+        createdAt:
+          type: string
+          format: date-time
+          description: When the coupon was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the coupon was last updated
+      description: |-
+        Discount coupon
+
+        Represents a promotional discount code.
+    CouponListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Coupon list response
+    CouponResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Coupon'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Coupon response
+    CouponType:
+      type: string
+      enum:
+        - percent
+        - fixed
+        - trial_extension
+      description: Coupon discount type
+    CreateAnnouncementRequest:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        orgId:
+          type: string
+          description: Organization ID (omit for system-wide announcements)
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Announcement title
+          example: System Upgrade Scheduled
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: Announcement content (supports markdown)
+          example: We will be upgrading our systems this weekend...
+        linkUrl:
+          type: string
+          description: Optional link for more information
+          example: https://docs.example.com/upgrade
+        linkText:
+          type: string
+          description: Link text
+          example: Learn More
+        priority:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementPriority'
+          description: 'Priority level (default: info)'
+        scope:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementScope'
+          description: 'Scope (default: organization)'
+        targetRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnouncementTargetRole'
+          description: Target roles (empty means all roles)
+        isDismissible:
+          type: boolean
+          description: 'Whether users can dismiss (default: true)'
+        publishAt:
+          type: string
+          format: date-time
+          description: 'Scheduled publish date/time (default: now)'
+        expiresAt:
+          type: string
+          format: date-time
+          description: Optional expiration date/time
+        isActive:
+          type: boolean
+          description: 'Whether announcement is active (default: true)'
+      description: Request body for creating an announcement
+    CreateCouponRequest:
+      type: object
+      required:
+        - code
+        - type
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Coupon code (uppercase recommended)
+        name:
+          type: string
+          maxLength: 200
+          description: Internal name
+        type:
+          allOf:
+            - $ref: '#/components/schemas/CouponType'
+          description: Discount type
+        percentOff:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+          description: Percentage off (required if type=percent)
+        amountOffCents:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Amount off in cents (required if type=fixed)
+        trialExtensionDays:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Trial extension days (required if type=trial_extension)
+        isActive:
+          type: boolean
+          description: Is active
+        startsAt:
+          type: string
+          format: date-time
+          description: Validity start
+        expiresAt:
+          type: string
+          format: date-time
+          description: Validity end
+        maxRedemptions:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Max redemptions
+        firstTimeOnly:
+          type: boolean
+          description: First-time only
+        planIds:
+          type: string
+          description: Plan IDs (comma-separated)
+      description: Create coupon request
     CreateExampleCommentRequest:
       type: object
       required:
@@ -5035,6 +6724,74 @@ components:
             - $ref: '#/components/schemas/ExamplePostStatus'
           description: 'Post status (default: draft)'
       description: Request body for creating a new post
+    CreatePlanRequest:
+      type: object
+      required:
+        - applicationId
+        - name
+        - slug
+        - priceCents
+        - billingPeriod
+      properties:
+        applicationId:
+          type: string
+          description: Application ID
+          example: app_main
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Plan name
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Plan slug
+        description:
+          type: string
+          maxLength: 500
+          description: Plan description
+        priceCents:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Price in cents
+        currency:
+          type: string
+          description: Currency code
+          example: IDR
+        billingPeriod:
+          allOf:
+            - $ref: '#/components/schemas/PlanBillingPeriod'
+          description: Billing period
+        trialDays:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Trial days
+        features:
+          allOf:
+            - $ref: '#/components/schemas/PlanFeatures'
+          description: Features
+        metadata:
+          type: object
+          additionalProperties: {}
+          description: Metadata
+        sortOrder:
+          type: integer
+          format: int32
+          description: Sort order
+        visibility:
+          allOf:
+            - $ref: '#/components/schemas/PlanVisibility'
+          description: Visibility
+        isActive:
+          type: boolean
+          description: Is active
+        isPopular:
+          type: boolean
+          description: Is popular
+      description: Create subscription plan request
     CreateReportTemplateRequest:
       type: object
       required:
@@ -5167,6 +6924,41 @@ components:
           type: boolean
           description: 'Whether the schedule is active (default: true)'
       description: Request body for creating a scheduled report
+    CreateSubscriptionRequest:
+      type: object
+      required:
+        - planId
+      properties:
+        planId:
+          type: string
+          description: Plan ID to subscribe to
+          example: plan_basic_monthly
+        couponCode:
+          type: string
+          maxLength: 50
+          description: Optional coupon code to apply
+          example: LAUNCH50
+        paymentMethodId:
+          type: string
+          description: Payment method ID (if already exists)
+        returnUrl:
+          type: string
+          description: Return URL after payment setup
+      description: Create subscription request
+    CreateSubscriptionResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Subscription'
+        linkingUrl:
+          type: string
+          description: Payment method linking URL (if payment setup required)
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Subscription creation response (with payment link)
     CreateWebhookRequest:
       type: object
       required:
@@ -5308,6 +7100,28 @@ components:
         - webhook
         - storage
       description: Report delivery method
+    DismissAnnouncementResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            announcementId:
+              type: string
+              description: Announcement ID
+            dismissedAt:
+              type: string
+              format: date-time
+              description: Timestamp when dismissed
+          required:
+            - announcementId
+            - dismissedAt
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Dismiss announcement response
     EmailDeliveryConfig:
       type: object
       required:
@@ -5906,8 +7720,8 @@ components:
           example: org_xyz789
         type:
           type: string
-          description: Type of operation (e.g., "bulkImport", "reportGeneration")
-          example: bulkImport
+          description: Type of operation (e.g., "report", "import", "export")
+          example: report
         status:
           allOf:
             - $ref: '#/components/schemas/JobStatus'
@@ -5922,26 +7736,29 @@ components:
           type: string
           description: Human-readable status message
           example: Processing 150 of 500 records...
-        result:
+        totalItems:
+          type: integer
+          format: int32
+          description: Total items to process
+        processedItems:
+          type: integer
+          format: int32
+          description: Items processed so far
+        input:
           type: object
           additionalProperties: {}
-          description: Result data (when completed)
-        error:
+          description: Job input parameters
+        output:
           type: object
-          properties:
-            code:
-              type: string
-              description: Error code
-            message:
-              type: string
-              description: Error message
-            details:
-              type: object
-              additionalProperties: {}
-              description: Additional error details
-          required:
-            - code
-            - message
+          additionalProperties: {}
+          description: Job output/result data (when completed)
+        metadata:
+          allOf:
+            - $ref: '#/components/schemas/JobMetadata'
+          description: Job metadata (references, format, etc.)
+        error:
+          allOf:
+            - $ref: '#/components/schemas/JobError'
           description: Error details (when failed)
         createdBy:
           type: string
@@ -5967,6 +7784,25 @@ components:
         Async job resource
 
         Represents a long-running operation that can be polled for status.
+        Unified job system with pg-boss queue integration.
+    JobError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: GENERATION_FAILED
+        message:
+          type: string
+          description: Error message
+          example: Failed to connect to data source
+        retryable:
+          type: boolean
+          description: Whether the error is retryable
+      description: Job error details
     JobListResponse:
       type: object
       required:
@@ -5983,6 +7819,26 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Job list response
+    JobMetadata:
+      type: object
+      properties:
+        templateId:
+          type: string
+          description: Template ID (for report jobs)
+        scheduledReportId:
+          type: string
+          description: Scheduled report ID (for scheduled report jobs)
+        format:
+          type: string
+          description: Format (for report jobs)
+        parentJobId:
+          type: string
+          description: Parent job ID (for retried jobs)
+        retryCount:
+          type: integer
+          format: int32
+          description: Retry count
+      description: Job metadata for type-specific references
     JobResponse:
       type: object
       required:
@@ -6021,6 +7877,50 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Mark all as read response
+    MarkReadResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            announcementId:
+              type: string
+              description: Announcement ID
+            readAt:
+              type: string
+              format: date-time
+              description: Timestamp when read
+          required:
+            - announcementId
+            - readAt
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Mark as read response
+    MarkViewedResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            announcementId:
+              type: string
+              description: Announcement ID
+            viewedAt:
+              type: string
+              format: date-time
+              description: Timestamp when viewed
+          required:
+            - announcementId
+            - viewedAt
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Mark as viewed response
     MigrationStatus:
       type: string
       enum:
@@ -6502,6 +8402,74 @@ components:
             - $ref: '#/components/schemas/PermissionCondition'
           description: Optional condition
       description: Permission input for creating/updating roles
+    PlanBillingPeriod:
+      type: string
+      enum:
+        - monthly
+        - yearly
+      description: Billing period for subscription plans
+    PlanFeatures:
+      type: object
+      properties:
+        maxUsers:
+          type: integer
+          format: int32
+          description: Maximum users allowed (-1 = unlimited)
+        maxLocations:
+          type: integer
+          format: int32
+          description: Maximum locations allowed (-1 = unlimited)
+        maxStorageGb:
+          type: integer
+          format: int32
+          description: Maximum storage in GB (-1 = unlimited)
+        advancedReporting:
+          type: boolean
+          description: Access to advanced reporting
+        apiAccess:
+          type: boolean
+          description: API access enabled
+        customBranding:
+          type: boolean
+          description: Custom branding enabled
+        prioritySupport:
+          type: boolean
+          description: Priority support
+      description: Plan feature configuration
+    PlanListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionPlan'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Subscription plan list response
+    PlanResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/SubscriptionPlan'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Subscription plan response
+    PlanVisibility:
+      type: string
+      enum:
+        - public
+        - private
+        - archived
+      description: Plan visibility level
     PreviewEmailRequest:
       type: object
       required:
@@ -6587,206 +8555,6 @@ components:
         - thermal
         - dotmatrix
       description: Report output format
-    ReportJob:
-      type: object
-      required:
-        - id
-        - orgId
-        - type
-        - status
-        - format
-        - createdBy
-        - createdAt
-      properties:
-        id:
-          type: string
-          description: 'Unique job identifier (format: rjob_{randomString})'
-          example: rjob_abc123xyz
-        orgId:
-          type: string
-          description: Organization ID (tenant scope)
-          example: org_xyz789
-        templateId:
-          type: string
-          description: Associated report template ID
-          example: tpl_template123
-        scheduledReportId:
-          type: string
-          description: Associated scheduled report ID (null for manual jobs)
-          example: sched_schedule123
-        type:
-          allOf:
-            - $ref: '#/components/schemas/ReportJobType'
-          description: Job type
-        status:
-          allOf:
-            - $ref: '#/components/schemas/ReportJobStatus'
-          description: Current job status
-        format:
-          allOf:
-            - $ref: '#/components/schemas/ReportFormat'
-          description: Output format
-        progress:
-          type: integer
-          format: int32
-          description: Progress percentage (0-100)
-          example: 75
-        totalRows:
-          type: integer
-          format: int32
-          description: Total rows to process
-          example: 10000
-        processedRows:
-          type: integer
-          format: int32
-          description: Rows processed so far
-          example: 7500
-        parameters:
-          type: object
-          additionalProperties: {}
-          description: Runtime parameters used for this job
-        result:
-          allOf:
-            - $ref: '#/components/schemas/ReportJobResult'
-          description: Job result (when completed)
-        error:
-          allOf:
-            - $ref: '#/components/schemas/ReportJobError'
-          description: Error information (when failed)
-        queueJobId:
-          type: string
-          description: pg-boss queue job ID
-        createdBy:
-          type: string
-          description: User ID who created/triggered the job
-          example: usr_creator123
-        createdAt:
-          type: string
-          format: date-time
-          description: Timestamp when the job was created
-        startedAt:
-          type: string
-          format: date-time
-          description: Timestamp when the job started processing
-        completedAt:
-          type: string
-          format: date-time
-          description: Timestamp when the job completed (success or failure)
-        estimatedCompletion:
-          type: string
-          format: date-time
-          description: Estimated completion time
-      description: |-
-        Report Job resource model
-
-        Tracks individual report generation jobs with:
-        - Progress tracking
-        - Result/error information
-        - Queue integration (pg-boss)
-        - Both manual and scheduled jobs
-    ReportJobError:
-      type: object
-      required:
-        - code
-        - message
-        - retryable
-      properties:
-        code:
-          type: string
-          description: Error code
-          example: exportFailed
-        message:
-          type: string
-          description: Error message
-          example: Failed to connect to data source
-        stack:
-          type: string
-          description: Stack trace (only in development)
-        retryable:
-          type: boolean
-          description: Whether the error is retryable
-      description: Job error data (when failed)
-    ReportJobListResponse:
-      type: object
-      required:
-        - data
-        - pagination
-        - meta
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReportJob'
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        meta:
-          $ref: '#/components/schemas/ResponseMeta'
-      description: Report job collection response (page-based)
-    ReportJobResponse:
-      type: object
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          $ref: '#/components/schemas/ReportJob'
-        meta:
-          $ref: '#/components/schemas/ResponseMeta'
-      description: Single report job response
-    ReportJobResult:
-      type: object
-      properties:
-        filePath:
-          type: string
-          description: Path to generated file (server-side)
-        fileSize:
-          type: integer
-          format: int64
-          description: Generated file size in bytes
-          example: 102400
-        rowCount:
-          type: integer
-          format: int32
-          description: Number of rows in the report
-          example: 1500
-        downloadUrl:
-          type: string
-          description: Temporary download URL (expires)
-          example: https://storage.example.com/reports/abc123.csv?token=xyz
-        downloadExpiresAt:
-          type: string
-          format: date-time
-          description: Download URL expiration time
-        mimeType:
-          type: string
-          description: MIME type of the generated file
-          example: text/csv
-        deliveryStatus:
-          type: string
-          enum:
-            - pending
-            - sent
-            - failed
-          description: Delivery status (for scheduled reports)
-        deliveryError:
-          type: string
-          description: Delivery error message (if failed)
-      description: Job result data (when completed successfully)
-    ReportJobStatus:
-      type: string
-      enum:
-        - pending
-        - processing
-        - completed
-        - failed
-        - cancelled
-      description: Report job status
-    ReportJobType:
-      type: string
-      enum:
-        - manual
-        - scheduled
-      description: Report job type
     ReportOptions:
       type: object
       properties:
@@ -7439,6 +9207,218 @@ components:
           format: int32
           description: Batch size for streaming
       description: Request body for streaming export
+    Subscription:
+      type: object
+      required:
+        - id
+        - organizationId
+        - applicationId
+        - planId
+        - status
+        - currentPeriodStart
+        - currentPeriodEnd
+        - cancelAtPeriodEnd
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: 'Unique subscription identifier (format: sub_abc123)'
+          example: sub_abc123
+        organizationId:
+          type: string
+          description: Organization ID
+          example: org_xyz789
+        applicationId:
+          type: string
+          description: Application ID
+          example: app_main
+        planId:
+          type: string
+          description: Current plan ID
+          example: plan_basic_monthly
+        status:
+          allOf:
+            - $ref: '#/components/schemas/SubscriptionStatus'
+          description: Subscription status
+        trialStartsAt:
+          type: string
+          format: date-time
+          description: Trial start date
+        trialEndsAt:
+          type: string
+          format: date-time
+          description: Trial end date
+        currentPeriodStart:
+          type: string
+          format: date-time
+          description: Current billing period start
+        currentPeriodEnd:
+          type: string
+          format: date-time
+          description: Current billing period end
+        couponId:
+          type: string
+          description: Applied coupon ID
+          example: coupon_launch50
+        discountPercent:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: Discount percentage (for percent coupons)
+          example: 20
+        discountAmountCents:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Discount amount in cents (for fixed coupons)
+          example: 50000
+        cancelAtPeriodEnd:
+          type: boolean
+          description: Cancel at end of current period
+        canceledAt:
+          type: string
+          format: date-time
+          description: When subscription was canceled
+        providerSubscriptionId:
+          type: string
+          description: Payment provider subscription ID (Xendit, Stripe, etc.)
+        providerCustomerId:
+          type: string
+          description: Payment provider customer ID
+        createdAt:
+          type: string
+          format: date-time
+          description: When the subscription was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the subscription was last updated
+        plan:
+          allOf:
+            - $ref: '#/components/schemas/SubscriptionPlan'
+          description: Nested plan details (populated when requested)
+      description: |-
+        Organization subscription
+
+        Represents an active subscription for an organization.
+    SubscriptionPlan:
+      type: object
+      required:
+        - id
+        - applicationId
+        - name
+        - slug
+        - priceCents
+        - currency
+        - billingPeriod
+        - visibility
+        - isActive
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: 'Unique plan identifier (format: plan_basic_monthly)'
+          example: plan_basic_monthly
+        applicationId:
+          type: string
+          description: Application this plan belongs to
+          example: app_main
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Plan display name
+          example: Professional
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: URL-friendly slug
+          example: professional
+        description:
+          type: string
+          maxLength: 500
+          description: Plan description
+          example: Perfect for growing teams
+        priceCents:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Price in smallest currency unit (cents for USD, sen for IDR)
+          example: 100000
+        currency:
+          type: string
+          description: Currency code
+          example: IDR
+        billingPeriod:
+          allOf:
+            - $ref: '#/components/schemas/PlanBillingPeriod'
+          description: Billing period
+        trialDays:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Trial period in days (0 = no trial)
+          example: 14
+        features:
+          allOf:
+            - $ref: '#/components/schemas/PlanFeatures'
+          description: Plan features and limits
+        metadata:
+          type: object
+          additionalProperties: {}
+          description: Additional metadata
+        sortOrder:
+          type: integer
+          format: int32
+          description: Sort order for display
+          example: 1
+        visibility:
+          allOf:
+            - $ref: '#/components/schemas/PlanVisibility'
+          description: Visibility level
+        isActive:
+          type: boolean
+          description: Whether plan is active
+        isPopular:
+          type: boolean
+          description: Whether to show "Popular" badge
+        createdAt:
+          type: string
+          format: date-time
+          description: When the plan was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the plan was last updated
+      description: |-
+        Subscription plan
+
+        Represents a pricing tier with features and limits.
+    SubscriptionResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Subscription'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Subscription response
+    SubscriptionStatus:
+      type: string
+      enum:
+        - trialing
+        - active
+        - past_due
+        - canceled
+        - paused
+        - expired
+      description: Subscription status
     SwitchContextRequest:
       type: object
       properties:
@@ -7484,6 +9464,29 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Context switch response
+    UnreadAnnouncementsResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            unreadCount:
+              type: integer
+              format: int32
+              description: Number of unread announcements
+            criticalCount:
+              type: integer
+              format: int32
+              description: Number of critical announcements requiring acknowledgment
+          required:
+            - unreadCount
+            - criticalCount
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Unread announcement count response
     UnreadCountResponse:
       type: object
       required:
@@ -7502,6 +9505,95 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Unread count response
+    UpdateAnnouncementRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Announcement title
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: Announcement content
+        linkUrl:
+          type: string
+          description: Optional link for more information
+        linkText:
+          type: string
+          description: Link text
+        priority:
+          allOf:
+            - $ref: '#/components/schemas/AnnouncementPriority'
+          description: Priority level
+        targetRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnouncementTargetRole'
+          description: Target roles
+        isDismissible:
+          type: boolean
+          description: Whether users can dismiss
+        publishAt:
+          type: string
+          format: date-time
+          description: Scheduled publish date/time
+        expiresAt:
+          type: string
+          format: date-time
+          description: Optional expiration date/time
+        isActive:
+          type: boolean
+          description: Whether announcement is active
+      description: Request body for updating an announcement
+    UpdateCouponRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          description: Internal name
+        percentOff:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+          description: Percentage off
+        amountOffCents:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Amount off in cents
+        trialExtensionDays:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Trial extension days
+        isActive:
+          type: boolean
+          description: Is active
+        startsAt:
+          type: string
+          format: date-time
+          description: Validity start
+        expiresAt:
+          type: string
+          format: date-time
+          description: Validity end
+        maxRedemptions:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Max redemptions
+        firstTimeOnly:
+          type: boolean
+          description: First-time only
+        planIds:
+          type: string
+          description: Plan IDs (comma-separated)
+      description: Update coupon request
     UpdateExampleCommentRequest:
       type: object
       properties:
@@ -7531,6 +9623,63 @@ components:
             - $ref: '#/components/schemas/FileAccess'
           description: New access level
       description: Request to update file properties
+    UpdatePlanRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Plan name
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Plan slug
+        description:
+          type: string
+          maxLength: 500
+          description: Plan description
+        priceCents:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Price in cents
+        currency:
+          type: string
+          description: Currency code
+        billingPeriod:
+          allOf:
+            - $ref: '#/components/schemas/PlanBillingPeriod'
+          description: Billing period
+        trialDays:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Trial days
+        features:
+          allOf:
+            - $ref: '#/components/schemas/PlanFeatures'
+          description: Features
+        metadata:
+          type: object
+          additionalProperties: {}
+          description: Metadata
+        sortOrder:
+          type: integer
+          format: int32
+          description: Sort order
+        visibility:
+          allOf:
+            - $ref: '#/components/schemas/PlanVisibility'
+          description: Visibility
+        isActive:
+          type: boolean
+          description: Is active
+        isPopular:
+          type: boolean
+          description: Is popular
+      description: Update subscription plan request
     UpdatePreferencesRequest:
       type: object
       properties:
@@ -7696,6 +9845,17 @@ components:
           type: boolean
           description: Whether the schedule is active
       description: Request body for updating a scheduled report
+    UpdateSubscriptionRequest:
+      type: object
+      properties:
+        planId:
+          type: string
+          description: New plan ID (for upgrade/downgrade)
+          example: plan_pro_monthly
+        cancelAtPeriodEnd:
+          type: boolean
+          description: Cancel at end of period
+      description: Update subscription request
     UpdateWebhookRequest:
       type: object
       properties:
@@ -7937,6 +10097,44 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: User role assignment response
+    ValidateCouponRequest:
+      type: object
+      required:
+        - code
+        - planId
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Coupon code to validate
+        planId:
+          type: string
+          description: Plan ID to apply coupon to
+          example: plan_basic_monthly
+      description: Validate coupon request
+    ValidateCouponResponse:
+      type: object
+      required:
+        - valid
+      properties:
+        valid:
+          type: boolean
+          description: Whether the coupon is valid
+        coupon:
+          allOf:
+            - $ref: '#/components/schemas/Coupon'
+          description: Coupon details (if valid)
+        discountAmount:
+          type: integer
+          format: int32
+          description: Calculated discount amount in cents (if applicable)
+          example: 10000
+        message:
+          type: string
+          description: Validation message
+          example: Coupon is valid. 20% discount applied.
+      description: Coupon validation response
     VirusScanStatus:
       type: string
       enum:
@@ -8027,6 +10225,21 @@ components:
         Webhook configuration
 
         Defines an endpoint to receive event notifications.
+    WebhookAcknowledgment:
+      type: object
+      required:
+        - received
+      properties:
+        received:
+          type: boolean
+          description: Whether webhook was received
+        eventId:
+          type: string
+          description: Event ID (if processed)
+        note:
+          type: string
+          description: Processing note
+      description: Webhook received acknowledgment
     WebhookCreatedResponse:
       type: object
       required:

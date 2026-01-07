@@ -114,3 +114,32 @@ export function requireOwnershipOrPermission(
     throw new ForbiddenError(`You can only ${action} your own ${resource}`);
   };
 }
+
+/**
+ * Middleware that requires a specific feature to be enabled for the organization
+ * Must be used after requireAuth and route must have orgId in params
+ *
+ * @param featureKey The feature key to check in the subscription plan
+ * @param orgIdParam Parameter name containing orgId (default: "orgId")
+ * @returns Fastify preHandler middleware function
+ */
+export function requireFeature(featureKey: string, orgIdParam = "orgId") {
+  return async (
+    request: FastifyRequest,
+    _reply: FastifyReply
+  ): Promise<void> => {
+    // Get organization ID from route params
+    const orgId = (request.params as Record<string, string>)[orgIdParam];
+    if (!orgId) {
+      throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
+    }
+
+    const hasFeature = await request.server.checkFeature(orgId, featureKey);
+
+    if (!hasFeature) {
+      throw new ForbiddenError(
+        `Your current subscription plan does not include the "${featureKey}" feature. Please upgrade your plan.`
+      );
+    }
+  };
+}

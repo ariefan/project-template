@@ -62,9 +62,12 @@ const statusIcons: Record<string, typeof Clock> = {
   cancelled: XCircle,
 };
 
-const categoryLabels: Record<string, string> = {
-  background: "Background",
+const typeLabels: Record<string, string> = {
   report: "Report",
+  reportGeneration: "Report Generation",
+  bulkImport: "Bulk Import",
+  dataSync: "Data Sync",
+  emailCampaign: "Email Campaign",
 };
 
 const formatLabels: Record<string, string> = {
@@ -93,23 +96,14 @@ function JobsContent() {
       },
     },
     {
-      id: "jobCategory",
-      header: "Category",
-      accessorKey: "jobCategory",
-      width: 100,
-      cell: ({ value }) => (
-        <Badge variant="outline">
-          {categoryLabels[String(value)] ?? String(value)}
-        </Badge>
-      ),
-    },
-    {
       id: "type",
       header: "Type",
       accessorKey: "type",
       width: 100,
       cell: ({ value }) => (
-        <span className="text-muted-foreground">{String(value)}</span>
+        <Badge variant="outline">
+          {typeLabels[String(value)] ?? String(value)}
+        </Badge>
       ),
     },
     {
@@ -171,7 +165,7 @@ function JobsContent() {
       accessorKey: "format",
       width: 80,
       cell: ({ row, value }) => {
-        if (row.jobCategory !== "report" || !value) {
+        if (row.type !== "report" || !value) {
           return <span className="text-muted-foreground">-</span>;
         }
         return formatLabels[String(value)] ?? String(value);
@@ -219,7 +213,7 @@ function JobsContent() {
           const apiUrl =
             process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
           window.open(
-            `${apiUrl}/v1/orgs/${orgId}/reports/jobs/${row.id}/download`,
+            `${apiUrl}/v1/orgs/${orgId}/jobs/${row.id}/download`,
             "_blank"
           );
         } catch (error) {
@@ -229,8 +223,7 @@ function JobsContent() {
           });
         }
       },
-      hidden: (row) =>
-        row.jobCategory !== "report" || row.status !== "completed",
+      hidden: (row) => row.type !== "report" || row.status !== "completed",
     },
     {
       id: "cancel",
@@ -249,7 +242,7 @@ function JobsContent() {
       onAction: async (row) => {
         await retryJob(row.id);
       },
-      hidden: (row) => row.jobCategory !== "report" || row.status !== "failed",
+      hidden: (row) => row.type !== "report" || row.status !== "failed",
     },
   ];
 
@@ -277,12 +270,12 @@ function JobsContent() {
       onAction: async (rows) => {
         await Promise.all(
           rows
-            .filter((r) => r.jobCategory === "report" && r.status === "failed")
+            .filter((r) => r.type === "report" && r.status === "failed")
             .map((row) => retryJob(row.id))
         );
       },
       disabled: (rows) =>
-        rows.every((r) => r.jobCategory !== "report" || r.status !== "failed"),
+        rows.every((r) => r.type !== "report" || r.status !== "failed"),
     },
   ];
 

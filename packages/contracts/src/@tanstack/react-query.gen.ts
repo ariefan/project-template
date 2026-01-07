@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { allUserRolesList, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsGet, jobsList, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportJobsCancel, reportJobsDownload, reportJobsGet, reportJobsList, reportJobsRetry, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesTest, reportTemplatesUpdate, scheduledReportsCreate, scheduledReportsDelete, scheduledReportsGet, scheduledReportsGetHistory, scheduledReportsList, scheduledReportsPause, scheduledReportsResume, scheduledReportsRunNow, scheduledReportsUpdate, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
-import type { AllUserRolesListData, AllUserRolesListResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportJobsCancelData, ReportJobsCancelResponse, ReportJobsDownloadData, ReportJobsDownloadResponse, ReportJobsGetData, ReportJobsGetResponse, ReportJobsListData, ReportJobsListResponse, ReportJobsRetryData, ReportJobsRetryResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesTestData, ReportTemplatesTestResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledReportsCreateData, ScheduledReportsCreateResponse, ScheduledReportsDeleteData, ScheduledReportsDeleteResponse, ScheduledReportsGetData, ScheduledReportsGetHistoryData, ScheduledReportsGetHistoryResponse, ScheduledReportsGetResponse, ScheduledReportsListData, ScheduledReportsListResponse, ScheduledReportsPauseData, ScheduledReportsPauseResponse, ScheduledReportsResumeData, ScheduledReportsResumeResponse, ScheduledReportsRunNowData, ScheduledReportsRunNowResponse, ScheduledReportsUpdateData, ScheduledReportsUpdateResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
+import { allUserRolesList, announcementsAcknowledge, announcementsCreate, announcementsDelete, announcementsDismiss, announcementsGet, announcementsGetStats, announcementsGetUnreadCount, announcementsList, announcementsMarkRead, announcementsMarkViewed, announcementsUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, couponsAdminCreate, couponsAdminDelete, couponsAdminGet, couponsAdminList, couponsAdminUpdate, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsDownload, jobsGet, jobsList, jobsRetry, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, paymentWebhooksHandleMidtrans, paymentWebhooksHandleXendit, publicPricingListPublicPlans, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesTest, reportTemplatesUpdate, scheduledReportsCreate, scheduledReportsDelete, scheduledReportsGet, scheduledReportsGetHistory, scheduledReportsList, scheduledReportsPause, scheduledReportsResume, scheduledReportsRunNow, scheduledReportsUpdate, subscriptionPlansAdminCreate, subscriptionPlansAdminDelete, subscriptionPlansAdminGet, subscriptionPlansAdminList, subscriptionPlansAdminUpdate, subscriptionsApplyCoupon, subscriptionsCancel, subscriptionsCreate, subscriptionsGetCurrent, subscriptionsResume, subscriptionsUpdate, subscriptionsValidateCoupon, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { AllUserRolesListData, AllUserRolesListResponse, AnnouncementsAcknowledgeData, AnnouncementsAcknowledgeResponse, AnnouncementsCreateData, AnnouncementsCreateResponse, AnnouncementsDeleteData, AnnouncementsDeleteResponse, AnnouncementsDismissData, AnnouncementsDismissResponse, AnnouncementsGetData, AnnouncementsGetResponse, AnnouncementsGetStatsData, AnnouncementsGetStatsResponse, AnnouncementsGetUnreadCountData, AnnouncementsGetUnreadCountResponse, AnnouncementsListData, AnnouncementsListResponse, AnnouncementsMarkReadData, AnnouncementsMarkReadResponse, AnnouncementsMarkViewedData, AnnouncementsMarkViewedResponse, AnnouncementsUpdateData, AnnouncementsUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CouponsAdminCreateData, CouponsAdminCreateResponse, CouponsAdminDeleteData, CouponsAdminDeleteResponse, CouponsAdminGetData, CouponsAdminGetResponse, CouponsAdminListData, CouponsAdminListResponse, CouponsAdminUpdateData, CouponsAdminUpdateResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsDownloadData, JobsDownloadResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, JobsRetryData, JobsRetryResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, PaymentWebhooksHandleMidtransData, PaymentWebhooksHandleMidtransResponse, PaymentWebhooksHandleXenditData, PaymentWebhooksHandleXenditResponse, PublicPricingListPublicPlansData, PublicPricingListPublicPlansResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesTestData, ReportTemplatesTestResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledReportsCreateData, ScheduledReportsCreateResponse, ScheduledReportsDeleteData, ScheduledReportsDeleteResponse, ScheduledReportsGetData, ScheduledReportsGetHistoryData, ScheduledReportsGetHistoryResponse, ScheduledReportsGetResponse, ScheduledReportsListData, ScheduledReportsListResponse, ScheduledReportsPauseData, ScheduledReportsPauseResponse, ScheduledReportsResumeData, ScheduledReportsResumeResponse, ScheduledReportsRunNowData, ScheduledReportsRunNowResponse, ScheduledReportsUpdateData, ScheduledReportsUpdateResponse, SubscriptionPlansAdminCreateData, SubscriptionPlansAdminCreateResponse, SubscriptionPlansAdminDeleteData, SubscriptionPlansAdminDeleteResponse, SubscriptionPlansAdminGetData, SubscriptionPlansAdminGetResponse, SubscriptionPlansAdminListData, SubscriptionPlansAdminListResponse, SubscriptionPlansAdminUpdateData, SubscriptionPlansAdminUpdateResponse, SubscriptionsApplyCouponData, SubscriptionsApplyCouponResponse, SubscriptionsCancelData, SubscriptionsCancelResponse, SubscriptionsCreateData, SubscriptionsCreateResponse, SubscriptionsGetCurrentData, SubscriptionsGetCurrentResponse, SubscriptionsResumeData, SubscriptionsResumeResponse, SubscriptionsUpdateData, SubscriptionsUpdateResponse, SubscriptionsValidateCouponData, SubscriptionsValidateCouponResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -60,6 +60,315 @@ export const healthCheckOptions = (options?: Options<HealthCheckData>) => queryO
     queryKey: healthCheckQueryKey(options)
 });
 
+export const couponsAdminListQueryKey = (options?: Options<CouponsAdminListData>) => createQueryKey('couponsAdminList', options);
+
+/**
+ * List coupons
+ *
+ * List coupons
+ *
+ * Returns all coupons with optional filtering.
+ */
+export const couponsAdminListOptions = (options?: Options<CouponsAdminListData>) => queryOptions<CouponsAdminListResponse, DefaultError, CouponsAdminListResponse, ReturnType<typeof couponsAdminListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await couponsAdminList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: couponsAdminListQueryKey(options)
+});
+
+const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
+    const params = { ...queryKey[0] };
+    if (page.body) {
+        params.body = {
+            ...queryKey[0].body as any,
+            ...page.body as any
+        };
+    }
+    if (page.headers) {
+        params.headers = {
+            ...queryKey[0].headers,
+            ...page.headers
+        };
+    }
+    if (page.path) {
+        params.path = {
+            ...queryKey[0].path as any,
+            ...page.path as any
+        };
+    }
+    if (page.query) {
+        params.query = {
+            ...queryKey[0].query as any,
+            ...page.query as any
+        };
+    }
+    return params as unknown as typeof page;
+};
+
+export const couponsAdminListInfiniteQueryKey = (options?: Options<CouponsAdminListData>): QueryKey<Options<CouponsAdminListData>> => createQueryKey('couponsAdminList', options, true);
+
+/**
+ * List coupons
+ *
+ * List coupons
+ *
+ * Returns all coupons with optional filtering.
+ */
+export const couponsAdminListInfiniteOptions = (options?: Options<CouponsAdminListData>) => infiniteQueryOptions<CouponsAdminListResponse, DefaultError, InfiniteData<CouponsAdminListResponse>, QueryKey<Options<CouponsAdminListData>>, number | Pick<QueryKey<Options<CouponsAdminListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<CouponsAdminListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await couponsAdminList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: couponsAdminListInfiniteQueryKey(options)
+});
+
+/**
+ * Create coupon
+ *
+ * Create coupon
+ *
+ * Creates a new discount coupon.
+ */
+export const couponsAdminCreateMutation = (options?: Partial<Options<CouponsAdminCreateData>>): UseMutationOptions<CouponsAdminCreateResponse, DefaultError, Options<CouponsAdminCreateData>> => {
+    const mutationOptions: UseMutationOptions<CouponsAdminCreateResponse, DefaultError, Options<CouponsAdminCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await couponsAdminCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete coupon
+ *
+ * Delete coupon
+ *
+ * Soft deletes a coupon (sets isActive to false).
+ */
+export const couponsAdminDeleteMutation = (options?: Partial<Options<CouponsAdminDeleteData>>): UseMutationOptions<CouponsAdminDeleteResponse, DefaultError, Options<CouponsAdminDeleteData>> => {
+    const mutationOptions: UseMutationOptions<CouponsAdminDeleteResponse, DefaultError, Options<CouponsAdminDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await couponsAdminDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const couponsAdminGetQueryKey = (options: Options<CouponsAdminGetData>) => createQueryKey('couponsAdminGet', options);
+
+/**
+ * Get coupon
+ *
+ * Get coupon
+ *
+ * Returns a single coupon by ID.
+ */
+export const couponsAdminGetOptions = (options: Options<CouponsAdminGetData>) => queryOptions<CouponsAdminGetResponse, DefaultError, CouponsAdminGetResponse, ReturnType<typeof couponsAdminGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await couponsAdminGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: couponsAdminGetQueryKey(options)
+});
+
+/**
+ * Update coupon
+ *
+ * Update coupon
+ *
+ * Updates an existing coupon.
+ */
+export const couponsAdminUpdateMutation = (options?: Partial<Options<CouponsAdminUpdateData>>): UseMutationOptions<CouponsAdminUpdateResponse, DefaultError, Options<CouponsAdminUpdateData>> => {
+    const mutationOptions: UseMutationOptions<CouponsAdminUpdateResponse, DefaultError, Options<CouponsAdminUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await couponsAdminUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const subscriptionPlansAdminListQueryKey = (options?: Options<SubscriptionPlansAdminListData>) => createQueryKey('subscriptionPlansAdminList', options);
+
+/**
+ * List subscription plans
+ *
+ * List subscription plans
+ *
+ * Returns all plans with optional filtering.
+ * Admin endpoint - returns all plans including archived.
+ */
+export const subscriptionPlansAdminListOptions = (options?: Options<SubscriptionPlansAdminListData>) => queryOptions<SubscriptionPlansAdminListResponse, DefaultError, SubscriptionPlansAdminListResponse, ReturnType<typeof subscriptionPlansAdminListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await subscriptionPlansAdminList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: subscriptionPlansAdminListQueryKey(options)
+});
+
+export const subscriptionPlansAdminListInfiniteQueryKey = (options?: Options<SubscriptionPlansAdminListData>): QueryKey<Options<SubscriptionPlansAdminListData>> => createQueryKey('subscriptionPlansAdminList', options, true);
+
+/**
+ * List subscription plans
+ *
+ * List subscription plans
+ *
+ * Returns all plans with optional filtering.
+ * Admin endpoint - returns all plans including archived.
+ */
+export const subscriptionPlansAdminListInfiniteOptions = (options?: Options<SubscriptionPlansAdminListData>) => infiniteQueryOptions<SubscriptionPlansAdminListResponse, DefaultError, InfiniteData<SubscriptionPlansAdminListResponse>, QueryKey<Options<SubscriptionPlansAdminListData>>, number | Pick<QueryKey<Options<SubscriptionPlansAdminListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<SubscriptionPlansAdminListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await subscriptionPlansAdminList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: subscriptionPlansAdminListInfiniteQueryKey(options)
+});
+
+/**
+ * Create subscription plan
+ *
+ * Create subscription plan
+ *
+ * Creates a new subscription plan.
+ */
+export const subscriptionPlansAdminCreateMutation = (options?: Partial<Options<SubscriptionPlansAdminCreateData>>): UseMutationOptions<SubscriptionPlansAdminCreateResponse, DefaultError, Options<SubscriptionPlansAdminCreateData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionPlansAdminCreateResponse, DefaultError, Options<SubscriptionPlansAdminCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionPlansAdminCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete subscription plan
+ *
+ * Delete subscription plan
+ *
+ * Soft deletes a plan (sets visibility to archived).
+ * Plans with active subscriptions cannot be hard deleted.
+ */
+export const subscriptionPlansAdminDeleteMutation = (options?: Partial<Options<SubscriptionPlansAdminDeleteData>>): UseMutationOptions<SubscriptionPlansAdminDeleteResponse, DefaultError, Options<SubscriptionPlansAdminDeleteData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionPlansAdminDeleteResponse, DefaultError, Options<SubscriptionPlansAdminDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionPlansAdminDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const subscriptionPlansAdminGetQueryKey = (options: Options<SubscriptionPlansAdminGetData>) => createQueryKey('subscriptionPlansAdminGet', options);
+
+/**
+ * Get subscription plan
+ *
+ * Get subscription plan
+ *
+ * Returns a single plan by ID.
+ */
+export const subscriptionPlansAdminGetOptions = (options: Options<SubscriptionPlansAdminGetData>) => queryOptions<SubscriptionPlansAdminGetResponse, DefaultError, SubscriptionPlansAdminGetResponse, ReturnType<typeof subscriptionPlansAdminGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await subscriptionPlansAdminGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: subscriptionPlansAdminGetQueryKey(options)
+});
+
+/**
+ * Update subscription plan
+ *
+ * Update subscription plan
+ *
+ * Updates an existing subscription plan.
+ * Warning: Changing pricing affects future billing only.
+ */
+export const subscriptionPlansAdminUpdateMutation = (options?: Partial<Options<SubscriptionPlansAdminUpdateData>>): UseMutationOptions<SubscriptionPlansAdminUpdateResponse, DefaultError, Options<SubscriptionPlansAdminUpdateData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionPlansAdminUpdateResponse, DefaultError, Options<SubscriptionPlansAdminUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionPlansAdminUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const migrationGetStatusQueryKey = (options?: Options<MigrationGetStatusData>) => createQueryKey('migrationGetStatus', options);
 
 /**
@@ -106,35 +415,6 @@ export const notificationsListOptions = (options?: Options<NotificationsListData
     },
     queryKey: notificationsListQueryKey(options)
 });
-
-const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
-    const params = { ...queryKey[0] };
-    if (page.body) {
-        params.body = {
-            ...queryKey[0].body as any,
-            ...page.body as any
-        };
-    }
-    if (page.headers) {
-        params.headers = {
-            ...queryKey[0].headers,
-            ...page.headers
-        };
-    }
-    if (page.path) {
-        params.path = {
-            ...queryKey[0].path as any,
-            ...page.path as any
-        };
-    }
-    if (page.query) {
-        params.query = {
-            ...queryKey[0].query as any,
-            ...page.query as any
-        };
-    }
-    return params as unknown as typeof page;
-};
 
 export const notificationsListInfiniteQueryKey = (options?: Options<NotificationsListData>): QueryKey<Options<NotificationsListData>> => createQueryKey('notificationsList', options, true);
 
@@ -339,6 +619,263 @@ export const notificationsMarkUnreadMutation = (options?: Partial<Options<Notifi
     const mutationOptions: UseMutationOptions<NotificationsMarkUnreadResponse, DefaultError, Options<NotificationsMarkUnreadData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await notificationsMarkUnread({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const announcementsListQueryKey = (options: Options<AnnouncementsListData>) => createQueryKey('announcementsList', options);
+
+/**
+ * List active announcements
+ *
+ * List active announcements for the organization
+ * Returns only published, non-expired announcements targeted to the user's role
+ * Includes user interaction data (viewed, read, dismissed, acknowledged)
+ */
+export const announcementsListOptions = (options: Options<AnnouncementsListData>) => queryOptions<AnnouncementsListResponse, DefaultError, AnnouncementsListResponse, ReturnType<typeof announcementsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await announcementsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: announcementsListQueryKey(options)
+});
+
+export const announcementsListInfiniteQueryKey = (options: Options<AnnouncementsListData>): QueryKey<Options<AnnouncementsListData>> => createQueryKey('announcementsList', options, true);
+
+/**
+ * List active announcements
+ *
+ * List active announcements for the organization
+ * Returns only published, non-expired announcements targeted to the user's role
+ * Includes user interaction data (viewed, read, dismissed, acknowledged)
+ */
+export const announcementsListInfiniteOptions = (options: Options<AnnouncementsListData>) => infiniteQueryOptions<AnnouncementsListResponse, DefaultError, InfiniteData<AnnouncementsListResponse>, QueryKey<Options<AnnouncementsListData>>, number | Pick<QueryKey<Options<AnnouncementsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<AnnouncementsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await announcementsList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: announcementsListInfiniteQueryKey(options)
+});
+
+/**
+ * Create announcement
+ *
+ * Create a new announcement
+ * Requires admin permission
+ */
+export const announcementsCreateMutation = (options?: Partial<Options<AnnouncementsCreateData>>): UseMutationOptions<AnnouncementsCreateResponse, DefaultError, Options<AnnouncementsCreateData>> => {
+    const mutationOptions: UseMutationOptions<AnnouncementsCreateResponse, DefaultError, Options<AnnouncementsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await announcementsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const announcementsGetUnreadCountQueryKey = (options: Options<AnnouncementsGetUnreadCountData>) => createQueryKey('announcementsGetUnreadCount', options);
+
+/**
+ * Get unread announcement count
+ *
+ * Get unread announcement count for current user
+ * Returns count of unread announcements and critical announcements needing acknowledgment
+ */
+export const announcementsGetUnreadCountOptions = (options: Options<AnnouncementsGetUnreadCountData>) => queryOptions<AnnouncementsGetUnreadCountResponse, DefaultError, AnnouncementsGetUnreadCountResponse, ReturnType<typeof announcementsGetUnreadCountQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await announcementsGetUnreadCount({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: announcementsGetUnreadCountQueryKey(options)
+});
+
+/**
+ * Delete announcement
+ *
+ * Delete an announcement (soft delete)
+ * Requires admin permission or ownership
+ */
+export const announcementsDeleteMutation = (options?: Partial<Options<AnnouncementsDeleteData>>): UseMutationOptions<AnnouncementsDeleteResponse, DefaultError, Options<AnnouncementsDeleteData>> => {
+    const mutationOptions: UseMutationOptions<AnnouncementsDeleteResponse, DefaultError, Options<AnnouncementsDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await announcementsDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const announcementsGetQueryKey = (options: Options<AnnouncementsGetData>) => createQueryKey('announcementsGet', options);
+
+/**
+ * Get announcement by ID
+ *
+ * Get a specific announcement by ID
+ * Includes user interaction data
+ */
+export const announcementsGetOptions = (options: Options<AnnouncementsGetData>) => queryOptions<AnnouncementsGetResponse, DefaultError, AnnouncementsGetResponse, ReturnType<typeof announcementsGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await announcementsGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: announcementsGetQueryKey(options)
+});
+
+/**
+ * Update announcement
+ *
+ * Update an announcement
+ * Requires admin permission or ownership
+ */
+export const announcementsUpdateMutation = (options?: Partial<Options<AnnouncementsUpdateData>>): UseMutationOptions<AnnouncementsUpdateResponse, DefaultError, Options<AnnouncementsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<AnnouncementsUpdateResponse, DefaultError, Options<AnnouncementsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await announcementsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Acknowledge critical announcement
+ *
+ * Acknowledge a critical announcement
+ * Required for critical priority announcements
+ */
+export const announcementsAcknowledgeMutation = (options?: Partial<Options<AnnouncementsAcknowledgeData>>): UseMutationOptions<AnnouncementsAcknowledgeResponse, DefaultError, Options<AnnouncementsAcknowledgeData>> => {
+    const mutationOptions: UseMutationOptions<AnnouncementsAcknowledgeResponse, DefaultError, Options<AnnouncementsAcknowledgeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await announcementsAcknowledge({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Dismiss announcement
+ *
+ * Dismiss an announcement
+ * Hides the announcement from the user's view
+ */
+export const announcementsDismissMutation = (options?: Partial<Options<AnnouncementsDismissData>>): UseMutationOptions<AnnouncementsDismissResponse, DefaultError, Options<AnnouncementsDismissData>> => {
+    const mutationOptions: UseMutationOptions<AnnouncementsDismissResponse, DefaultError, Options<AnnouncementsDismissData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await announcementsDismiss({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Mark announcement as read
+ *
+ * Mark announcement as read
+ * Called when user opens/expands the announcement
+ */
+export const announcementsMarkReadMutation = (options?: Partial<Options<AnnouncementsMarkReadData>>): UseMutationOptions<AnnouncementsMarkReadResponse, DefaultError, Options<AnnouncementsMarkReadData>> => {
+    const mutationOptions: UseMutationOptions<AnnouncementsMarkReadResponse, DefaultError, Options<AnnouncementsMarkReadData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await announcementsMarkRead({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const announcementsGetStatsQueryKey = (options: Options<AnnouncementsGetStatsData>) => createQueryKey('announcementsGetStats', options);
+
+/**
+ * Get announcement statistics
+ *
+ * Get announcement statistics
+ * Returns analytics data for a specific announcement
+ * Requires admin permission
+ */
+export const announcementsGetStatsOptions = (options: Options<AnnouncementsGetStatsData>) => queryOptions<AnnouncementsGetStatsResponse, DefaultError, AnnouncementsGetStatsResponse, ReturnType<typeof announcementsGetStatsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await announcementsGetStats({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: announcementsGetStatsQueryKey(options)
+});
+
+/**
+ * Mark announcement as viewed
+ *
+ * Mark announcement as viewed
+ * Automatically called when announcement is displayed to user
+ */
+export const announcementsMarkViewedMutation = (options?: Partial<Options<AnnouncementsMarkViewedData>>): UseMutationOptions<AnnouncementsMarkViewedResponse, DefaultError, Options<AnnouncementsMarkViewedData>> => {
+    const mutationOptions: UseMutationOptions<AnnouncementsMarkViewedResponse, DefaultError, Options<AnnouncementsMarkViewedData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await announcementsMarkViewed({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -1243,7 +1780,7 @@ export const jobsListQueryKey = (options: Options<JobsListData>) => createQueryK
  *
  * List async jobs
  *
- * Returns jobs for the current tenant.
+ * Returns jobs for the current tenant with optional filtering.
  */
 export const jobsListOptions = (options: Options<JobsListData>) => queryOptions<JobsListResponse, DefaultError, JobsListResponse, ReturnType<typeof jobsListQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
@@ -1265,7 +1802,7 @@ export const jobsListInfiniteQueryKey = (options: Options<JobsListData>): QueryK
  *
  * List async jobs
  *
- * Returns jobs for the current tenant.
+ * Returns jobs for the current tenant with optional filtering.
  */
 export const jobsListInfiniteOptions = (options: Options<JobsListData>) => infiniteQueryOptions<JobsListResponse, DefaultError, InfiniteData<JobsListResponse>, QueryKey<Options<JobsListData>>, number | Pick<QueryKey<Options<JobsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
 // @ts-ignore
@@ -1332,6 +1869,50 @@ export const jobsCancelMutation = (options?: Partial<Options<JobsCancelData>>): 
     return mutationOptions;
 };
 
+export const jobsDownloadQueryKey = (options: Options<JobsDownloadData>) => createQueryKey('jobsDownload', options);
+
+/**
+ * Download job result
+ *
+ * Download job result
+ *
+ * Downloads the file generated by a completed job (e.g., report exports).
+ * Only available for jobs that produce downloadable files.
+ */
+export const jobsDownloadOptions = (options: Options<JobsDownloadData>) => queryOptions<JobsDownloadResponse, DefaultError, JobsDownloadResponse, ReturnType<typeof jobsDownloadQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await jobsDownload({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: jobsDownloadQueryKey(options)
+});
+
+/**
+ * Retry job
+ *
+ * Retry a failed job
+ *
+ * Creates a new job with the same parameters as the failed job.
+ */
+export const jobsRetryMutation = (options?: Partial<Options<JobsRetryData>>): UseMutationOptions<JobsRetryResponse, DefaultError, Options<JobsRetryData>> => {
+    const mutationOptions: UseMutationOptions<JobsRetryResponse, DefaultError, Options<JobsRetryData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await jobsRetry({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 /**
  * Export data
  *
@@ -1387,133 +1968,6 @@ export const reportExportsStreamExportMutation = (options?: Partial<Options<Repo
     const mutationOptions: UseMutationOptions<ReportExportsStreamExportResponse, DefaultError, Options<ReportExportsStreamExportData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await reportExportsStreamExport({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const reportJobsListQueryKey = (options: Options<ReportJobsListData>) => createQueryKey('reportJobsList', options);
-
-/**
- * List report jobs
- *
- * List report jobs in an organization
- */
-export const reportJobsListOptions = (options: Options<ReportJobsListData>) => queryOptions<ReportJobsListResponse, DefaultError, ReportJobsListResponse, ReturnType<typeof reportJobsListQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await reportJobsList({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: reportJobsListQueryKey(options)
-});
-
-export const reportJobsListInfiniteQueryKey = (options: Options<ReportJobsListData>): QueryKey<Options<ReportJobsListData>> => createQueryKey('reportJobsList', options, true);
-
-/**
- * List report jobs
- *
- * List report jobs in an organization
- */
-export const reportJobsListInfiniteOptions = (options: Options<ReportJobsListData>) => infiniteQueryOptions<ReportJobsListResponse, DefaultError, InfiniteData<ReportJobsListResponse>, QueryKey<Options<ReportJobsListData>>, number | Pick<QueryKey<Options<ReportJobsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ReportJobsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await reportJobsList({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: reportJobsListInfiniteQueryKey(options)
-});
-
-/**
- * Cancel report job
- *
- * Cancel a pending or processing job
- */
-export const reportJobsCancelMutation = (options?: Partial<Options<ReportJobsCancelData>>): UseMutationOptions<ReportJobsCancelResponse, DefaultError, Options<ReportJobsCancelData>> => {
-    const mutationOptions: UseMutationOptions<ReportJobsCancelResponse, DefaultError, Options<ReportJobsCancelData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await reportJobsCancel({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const reportJobsGetQueryKey = (options: Options<ReportJobsGetData>) => createQueryKey('reportJobsGet', options);
-
-/**
- * Get report job
- *
- * Get a report job by ID
- */
-export const reportJobsGetOptions = (options: Options<ReportJobsGetData>) => queryOptions<ReportJobsGetResponse, DefaultError, ReportJobsGetResponse, ReturnType<typeof reportJobsGetQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await reportJobsGet({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: reportJobsGetQueryKey(options)
-});
-
-export const reportJobsDownloadQueryKey = (options: Options<ReportJobsDownloadData>) => createQueryKey('reportJobsDownload', options);
-
-/**
- * Download job result
- *
- * Download the result of a completed job
- */
-export const reportJobsDownloadOptions = (options: Options<ReportJobsDownloadData>) => queryOptions<ReportJobsDownloadResponse, DefaultError, ReportJobsDownloadResponse, ReturnType<typeof reportJobsDownloadQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await reportJobsDownload({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: reportJobsDownloadQueryKey(options)
-});
-
-/**
- * Retry failed job
- *
- * Retry a failed job
- */
-export const reportJobsRetryMutation = (options?: Partial<Options<ReportJobsRetryData>>): UseMutationOptions<ReportJobsRetryResponse, DefaultError, Options<ReportJobsRetryData>> => {
-    const mutationOptions: UseMutationOptions<ReportJobsRetryResponse, DefaultError, Options<ReportJobsRetryData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await reportJobsRetry({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -2057,6 +2511,158 @@ export const tenantRolesUpdateMutation = (options?: Partial<Options<TenantRolesU
     return mutationOptions;
 };
 
+/**
+ * Create subscription
+ *
+ * Create subscription
+ *
+ * Creates a new subscription for the organization.
+ * Starts trial if configured, otherwise requires payment.
+ */
+export const subscriptionsCreateMutation = (options?: Partial<Options<SubscriptionsCreateData>>): UseMutationOptions<SubscriptionsCreateResponse, DefaultError, Options<SubscriptionsCreateData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionsCreateResponse, DefaultError, Options<SubscriptionsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const subscriptionsGetCurrentQueryKey = (options: Options<SubscriptionsGetCurrentData>) => createQueryKey('subscriptionsGetCurrent', options);
+
+/**
+ * Get current subscription
+ *
+ * Get current subscription
+ *
+ * Returns the active subscription for the organization and application.
+ */
+export const subscriptionsGetCurrentOptions = (options: Options<SubscriptionsGetCurrentData>) => queryOptions<SubscriptionsGetCurrentResponse, DefaultError, SubscriptionsGetCurrentResponse, ReturnType<typeof subscriptionsGetCurrentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await subscriptionsGetCurrent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: subscriptionsGetCurrentQueryKey(options)
+});
+
+/**
+ * Validate coupon
+ *
+ * Validate coupon
+ *
+ * Check if a coupon code is valid for a plan.
+ * Does not apply the coupon.
+ */
+export const subscriptionsValidateCouponMutation = (options?: Partial<Options<SubscriptionsValidateCouponData>>): UseMutationOptions<SubscriptionsValidateCouponResponse, DefaultError, Options<SubscriptionsValidateCouponData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionsValidateCouponResponse, DefaultError, Options<SubscriptionsValidateCouponData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionsValidateCoupon({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update subscription
+ *
+ * Update subscription
+ *
+ * Update subscription (change plan, update settings).
+ * Plan changes may be immediate or scheduled for period end.
+ */
+export const subscriptionsUpdateMutation = (options?: Partial<Options<SubscriptionsUpdateData>>): UseMutationOptions<SubscriptionsUpdateResponse, DefaultError, Options<SubscriptionsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionsUpdateResponse, DefaultError, Options<SubscriptionsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Cancel subscription
+ *
+ * Cancel subscription
+ *
+ * Cancel the subscription.
+ * By default, access continues until period end.
+ */
+export const subscriptionsCancelMutation = (options?: Partial<Options<SubscriptionsCancelData>>): UseMutationOptions<SubscriptionsCancelResponse, DefaultError, Options<SubscriptionsCancelData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionsCancelResponse, DefaultError, Options<SubscriptionsCancelData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionsCancel({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Apply coupon
+ *
+ * Apply coupon
+ *
+ * Apply a discount coupon to the subscription.
+ */
+export const subscriptionsApplyCouponMutation = (options?: Partial<Options<SubscriptionsApplyCouponData>>): UseMutationOptions<SubscriptionsApplyCouponResponse, DefaultError, Options<SubscriptionsApplyCouponData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionsApplyCouponResponse, DefaultError, Options<SubscriptionsApplyCouponData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionsApplyCoupon({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Resume subscription
+ *
+ * Resume subscription
+ *
+ * Reactivate a canceled subscription before it expires.
+ */
+export const subscriptionsResumeMutation = (options?: Partial<Options<SubscriptionsResumeData>>): UseMutationOptions<SubscriptionsResumeResponse, DefaultError, Options<SubscriptionsResumeData>> => {
+    const mutationOptions: UseMutationOptions<SubscriptionsResumeResponse, DefaultError, Options<SubscriptionsResumeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await subscriptionsResume({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const userPermissionsGetQueryKey = (options: Options<UserPermissionsGetData>) => createQueryKey('userPermissionsGet', options);
 
 /**
@@ -2468,6 +3074,29 @@ export const notificationPreferencesRoutesUpdatePreferencesMutation = (options?:
     return mutationOptions;
 };
 
+export const publicPricingListPublicPlansQueryKey = (options?: Options<PublicPricingListPublicPlansData>) => createQueryKey('publicPricingListPublicPlans', options);
+
+/**
+ * List public subscription plans
+ *
+ * List public plans
+ *
+ * Returns all public, active subscription plans.
+ * Used for the public pricing page.
+ */
+export const publicPricingListPublicPlansOptions = (options?: Options<PublicPricingListPublicPlansData>) => queryOptions<PublicPricingListPublicPlansResponse, DefaultError, PublicPricingListPublicPlansResponse, ReturnType<typeof publicPricingListPublicPlansQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await publicPricingListPublicPlans({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: publicPricingListPublicPlansQueryKey(options)
+});
+
 export const globalRolesListQueryKey = (options?: Options<GlobalRolesListData>) => createQueryKey('globalRolesList', options);
 
 /**
@@ -2693,3 +3322,46 @@ export const allUserRolesListOptions = (options: Options<AllUserRolesListData>) 
     },
     queryKey: allUserRolesListQueryKey(options)
 });
+
+/**
+ * Handle Midtrans webhook
+ *
+ * Midtrans webhook handler
+ *
+ * Receives webhook events from Midtrans.
+ */
+export const paymentWebhooksHandleMidtransMutation = (options?: Partial<Options<PaymentWebhooksHandleMidtransData>>): UseMutationOptions<PaymentWebhooksHandleMidtransResponse, DefaultError, Options<PaymentWebhooksHandleMidtransData>> => {
+    const mutationOptions: UseMutationOptions<PaymentWebhooksHandleMidtransResponse, DefaultError, Options<PaymentWebhooksHandleMidtransData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await paymentWebhooksHandleMidtrans({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Handle Xendit webhook
+ *
+ * Xendit webhook handler
+ *
+ * Receives webhook events from Xendit.
+ * Verifies signature via x-callback-token header.
+ */
+export const paymentWebhooksHandleXenditMutation = (options?: Partial<Options<PaymentWebhooksHandleXenditData>>): UseMutationOptions<PaymentWebhooksHandleXenditResponse, DefaultError, Options<PaymentWebhooksHandleXenditData>> => {
+    const mutationOptions: UseMutationOptions<PaymentWebhooksHandleXenditResponse, DefaultError, Options<PaymentWebhooksHandleXenditData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await paymentWebhooksHandleXendit({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};

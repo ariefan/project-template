@@ -2,8 +2,6 @@ import type {
   CreateScheduledReportRequest,
   DeliveryMethod,
   ErrorResponse,
-  ReportJobListResponse,
-  ReportJobStatus,
   ScheduledReportListResponse,
   ScheduledReportResponse,
   ScheduleFrequency,
@@ -21,7 +19,7 @@ import {
   requireOwnershipOrPermission,
   requirePermission,
 } from "../../auth/authorization-middleware";
-import * as jobsService from "../services/jobs.service";
+import { jobsService } from "../../jobs";
 import * as schedulesService from "../services/schedules.service";
 
 function mapScheduleToResponse(
@@ -404,53 +402,58 @@ export function schedulesRoutes(app: FastifyInstance) {
     Querystring: {
       page?: number;
       pageSize?: number;
-      status?: ReportJobStatus;
+      status?: string;
     };
   }>(
     "/:orgId/reports/schedules/:scheduleId/history",
     { preHandler: [requirePermission("reports", "read")] },
-    async (request, reply): Promise<ReportJobListResponse | ErrorResponse> => {
+    async (request, reply) => {
       try {
-        const { scheduleId } = request.params;
+        const { orgId, scheduleId } = request.params;
         const page = Number(request.query.page) || 1;
         const pageSize = Math.min(Number(request.query.pageSize) || 20, 100);
 
-        const result = await jobsService.getJobHistory(scheduleId, {
+        // Use generic jobs service with filter by type=report
+        // Jobs with this scheduleId will have it in metadata.scheduledReportId
+        const result = await jobsService.listJobs(orgId, {
           page,
           pageSize,
-          status: request.query.status,
+          type: "report",
+          status: request.query.status as
+            | "pending"
+            | "processing"
+            | "completed"
+            | "failed"
+            | "cancelled"
+            | undefined,
         });
 
+        // Filter by scheduleId in metadata (in-memory filter since we don't have a direct query)
+        const filteredJobs = result.data.filter(
+          (job) => job.metadata?.scheduledReportId === scheduleId
+        );
+
         return {
-          data: result.jobs.map((job) => ({
-            id: job.id,
-            orgId: job.organizationId,
-            templateId: job.templateId ?? undefined,
-            scheduledReportId: job.scheduledReportId ?? undefined,
+          data: filteredJobs.map((job) => ({
+            jobId: job.id,
+            tenantId: job.orgId,
             type: job.type,
             status: job.status,
-            format: job.format,
             progress: job.progress ?? undefined,
-            totalRows: job.totalRows ?? undefined,
-            processedRows: job.processedRows ?? undefined,
-            parameters: job.parameters ?? undefined,
-            result: job.result ?? undefined,
+            message: job.message ?? undefined,
+            totalItems: job.totalItems ?? undefined,
+            processedItems: job.processedItems ?? undefined,
+            input: job.input ?? undefined,
+            output: job.output ?? undefined,
+            metadata: job.metadata ?? undefined,
             error: job.error ?? undefined,
-            queueJobId: job.queueJobId ?? undefined,
             createdBy: job.createdBy,
             createdAt: job.createdAt.toISOString(),
             startedAt: job.startedAt?.toISOString(),
             completedAt: job.completedAt?.toISOString(),
             estimatedCompletion: job.estimatedCompletion?.toISOString(),
           })),
-          pagination: {
-            page: result.page,
-            pageSize: result.pageSize,
-            totalCount: result.totalCount,
-            totalPages: result.totalPages,
-            hasNext: result.hasNext,
-            hasPrevious: result.hasPrevious,
-          },
+          pagination: result.pagination,
           meta: createMeta(request.id),
         };
       } catch (error) {
