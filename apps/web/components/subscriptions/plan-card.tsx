@@ -53,7 +53,7 @@ export function PlanCard({
   return (
     <Card
       className={cn(
-        "relative flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl",
+        "relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-2xl",
         isPopular
           ? "z-10 scale-105 border-primary ring-2 ring-primary ring-offset-2"
           : "border-border/50",
@@ -75,15 +75,30 @@ export function PlanCard({
         </p>
       </CardHeader>
 
-      <CardContent className="flex flex-grow flex-col items-center px-6">
+      <CardContent className="flex flex-col items-center px-6">
         <div className="mt-2 flex items-baseline gap-1">
           <span className="font-bold text-4xl">${plan.priceCents / 100}</span>
           <span className="text-muted-foreground">
             /{plan.billingPeriod === "monthly" ? "mo" : "yr"}
           </span>
         </div>
+        <Button
+          className={cn(
+            "mt-8 h-12 w-full cursor-pointer font-bold text-md transition-all",
+            isPopular
+              ? "bg-primary shadow-lg shadow-primary/20 hover:bg-primary/90"
+              : ""
+          )}
+          disabled={isLoading || isCurrent}
+          onClick={() => onSelect?.(plan.id)}
+          variant={isCurrent ? "outline" : "default"}
+        >
+          {getActionLabel(isCurrent)}
+        </Button>
+      </CardContent>
 
-        <div className="mt-8 w-full space-y-4">
+      <CardFooter className="flex flex-col items-start px-6 pb-8">
+        <div className="w-full space-y-4">
           {plan.features?.maxUsers && (
             <div className="flex items-start gap-3 text-sm">
               <div className="mt-1 rounded-full bg-primary/10 p-0.5">
@@ -115,27 +130,11 @@ export function PlanCard({
           )}
           {plan.features?.apiAccess && <PlanFeature label="API Access" />}
         </div>
-      </CardContent>
-
-      <CardFooter className="px-6 pt-6 pb-8">
-        <Button
-          className={cn(
-            "h-12 w-full font-bold text-md transition-all",
-            isPopular
-              ? "bg-primary shadow-lg shadow-primary/20 hover:bg-primary/90"
-              : ""
-          )}
-          disabled={isLoading || isCurrent}
-          onClick={() => onSelect?.(plan.id)}
-          variant={isCurrent ? "outline" : "default"}
-        >
-          {getActionLabel(isCurrent)}
-        </Button>
       </CardFooter>
 
       {/* Subtle background gradient for popular card */}
       {isPopular && (
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-primary/5 to-transparent" />
       )}
     </Card>
   );

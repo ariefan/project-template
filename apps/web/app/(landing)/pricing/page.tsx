@@ -17,22 +17,20 @@ export default function PricingPage() {
   if (error) {
     console.error("[DEBUG] PricingPage - Query Error:", error);
   }
-  console.log("[DEBUG] PricingPage - API Response:", response);
   const plans: SubscriptionPlan[] =
     response && !("error" in response) && response.data
       ? (response.data as unknown as SubscriptionPlan[])
       : [];
-  console.log("[DEBUG] PricingPage - Processed Plans:", plans);
 
   return (
     <div className="flex min-h-screen flex-col">
       <Navigation />
 
-      <main className="flex-grow px-4 py-24 sm:px-6 lg:px-8">
+      <main className="grow px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-16 text-center">
-            <h1 className="mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text font-extrabold text-4xl text-transparent tracking-tight md:text-6xl">
+            <h1 className="mb-4 font-extrabold text-4xl tracking-tight md:text-6xl">
               Simple, Transparent Pricing
             </h1>
             <p className="mx-auto max-w-2xl text-muted-foreground text-xl">
@@ -43,7 +41,7 @@ export default function PricingPage() {
             {/* Billing Toggle */}
             <div className="mt-10 flex justify-center">
               <Tabs
-                className="w-[300px]"
+                className="w-75"
                 onValueChange={(v) =>
                   setBillingPeriod(v as "monthly" | "yearly")
                 }
@@ -70,8 +68,8 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* Pricing Grid */}
-          <div className="mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {/* Pricing Grid - centered regardless of card count */}
+          <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-8">
             {isLoading &&
               // Loading Skeletons
               Array.from({ length: 3 }).map((_, i) => (
@@ -92,15 +90,16 @@ export default function PricingPage() {
             {!isLoading &&
               plans.length > 0 &&
               plans.map((plan) => (
-                <PlanCard
-                  isPopular={plan.id === "pro-plan"}
-                  key={plan.id}
-                  onSelect={(id) => {
-                    // Redirect to subscribe/login
-                    window.location.href = `/login?redirect=/subscriptions/checkout?plan=${id}`;
-                  }} // Hardcoded for demo, normally from API
-                  plan={plan}
-                />
+                <div className="min-w-80 max-w-95" key={plan.id}>
+                  <PlanCard
+                    isPopular={plan.id === "pro-plan"}
+                    onSelect={(id) => {
+                      // Redirect to subscribe/login
+                      window.location.href = `/login?redirect=/subscriptions/checkout?plan=${id}`;
+                    }} // Hardcoded for demo, normally from API
+                    plan={plan}
+                  />
+                </div>
               ))}
             {!isLoading && plans.length === 0 && (
               <div className="col-span-full rounded-xl border-2 border-border border-dashed py-20 text-center">
