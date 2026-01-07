@@ -2,6 +2,7 @@ import type { ConnectionManager, EventBroadcaster } from "@workspace/realtime";
 import { EventChannels } from "@workspace/realtime";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fastifyPlugin from "fastify-plugin";
+import { env } from "../env";
 import { requireAuth } from "../modules/auth";
 
 export interface SSEPluginOptions {
@@ -38,13 +39,13 @@ function ssePlugin(fastify: FastifyInstance, options: SSEPluginOptions): void {
 
       // Set SSE headers
       // Note: reply.raw.writeHead bypasses Fastify plugins, so CORS headers must be set manually
-      const origin = request.headers.origin || "http://localhost:3000";
+      // Use configured CORS_ORIGIN for security (don't echo request origin)
       reply.raw.writeHead(200, {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
         "X-Accel-Buffering": "no", // Disable nginx buffering
-        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Origin": env.CORS_ORIGIN,
         "Access-Control-Allow-Credentials": "true",
       });
 

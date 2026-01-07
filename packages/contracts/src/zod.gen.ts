@@ -644,6 +644,14 @@ export const zCreateRoleRequest = z.object({
 });
 
 /**
+ * Request body for previewing an email template
+ */
+export const zPreviewEmailRequest = z.object({
+    templateId: z.string(),
+    templateData: z.optional(z.record(z.string(), z.unknown()))
+});
+
+/**
  * Column configuration for reports
  */
 export const zReportColumnConfig = z.object({
@@ -1039,6 +1047,18 @@ export const zNotificationPreferencesResponse = z.object({
  */
 export const zNotificationResponse = z.object({
     data: zNotification,
+    meta: zResponseMeta
+});
+
+/**
+ * Email preview response
+ */
+export const zPreviewEmailResponse = z.object({
+    data: z.object({
+        html: z.string(),
+        text: z.string(),
+        subject: z.string()
+    }),
     meta: zResponseMeta
 });
 
@@ -1762,7 +1782,8 @@ export const zNotificationsListData = z.object({
         channel: z.optional(zNotificationChannel),
         category: z.optional(zNotificationCategory),
         status: z.optional(zNotificationStatus),
-        readStatus: z.optional(z.enum(['read', 'unread']))
+        readStatus: z.optional(z.enum(['read', 'unread'])),
+        orderBy: z.optional(z.string())
     }))
 });
 
@@ -1785,6 +1806,20 @@ export const zNotificationsMarkAllReadData = z.object({
  */
 export const zNotificationsMarkAllReadResponse = z.union([
     zMarkAllReadResponse,
+    zErrorResponse
+]);
+
+export const zNotificationsPreviewEmailData = z.object({
+    body: zPreviewEmailRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zNotificationsPreviewEmailResponse = z.union([
+    zPreviewEmailResponse,
     zErrorResponse
 ]);
 

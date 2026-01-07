@@ -39,11 +39,11 @@ export function NotificationMenu() {
     (unreadCountData as { data?: { unreadCount: number } })?.data
       ?.unreadCount ?? 0;
 
-  // Fetch recent notifications
+  // Fetch recent notifications (newest first)
   const { data: notificationsData, isLoading } = useQuery({
     ...notificationsListOptions({
       client: apiClient,
-      query: { pageSize: 5 },
+      query: { pageSize: 5, orderBy: "-sentAt" },
     }),
   });
 

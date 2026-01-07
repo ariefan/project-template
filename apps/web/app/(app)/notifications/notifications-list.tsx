@@ -59,7 +59,7 @@ export function NotificationsList() {
   const { data } = useQuery({
     ...notificationsListOptions({
       client: apiClient,
-      query: { page: 1, pageSize: 100 },
+      query: { page: 1, pageSize: 100, orderBy: "-sentAt" },
     }),
   });
 

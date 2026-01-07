@@ -1,11 +1,56 @@
-import type { SendNotificationRequest } from "@workspace/contracts";
-import { zSendNotificationRequest } from "@workspace/contracts/zod";
+import type {
+  PreviewEmailRequest,
+  SendNotificationRequest,
+} from "@workspace/contracts";
+import {
+  zPreviewEmailRequest,
+  zSendNotificationRequest,
+} from "@workspace/contracts/zod";
+import {
+  isValidTemplateId,
+  renderTemplate,
+} from "@workspace/notifications/templates";
 import type { FastifyInstance } from "fastify";
 import { validateBody } from "../../../lib/validation";
 import { CachePresets } from "../../../plugins/caching";
 import { requireAuth } from "../../auth";
 
 // Helper function to convert null values to undefined for API responses
+function sortNotifications<T extends Record<string, unknown>>(
+  notifications: T[],
+  orderBy: string
+): T[] {
+  const isDescending = orderBy.startsWith("-");
+  const sortField = isDescending ? orderBy.slice(1) : orderBy;
+  const validSortFields = ["sentAt", "createdAt"];
+
+  if (!validSortFields.includes(sortField)) {
+    return notifications;
+  }
+
+  return [...notifications].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+
+    // Handle null/undefined values - push them to the end
+    if (aValue == null && bValue == null) {
+      return 0;
+    }
+    if (aValue == null) {
+      return 1;
+    }
+    if (bValue == null) {
+      return -1;
+    }
+
+    // Compare dates
+    const aTime = new Date(aValue as string).getTime();
+    const bTime = new Date(bValue as string).getTime();
+
+    return isDescending ? bTime - aTime : aTime - bTime;
+  });
+}
+
 function transformNotificationForResponse(
   notification: Record<string, unknown>
 ): Record<string, unknown> {
@@ -79,6 +124,7 @@ export function notificationRoutes(app: FastifyInstance): void {
       const pageSize = Math.min(Number(rawQuery.pageSize) || 20, 100);
       const category = rawQuery.category;
       const readStatus = rawQuery.readStatus; // "read" or "unread"
+      const orderBy = rawQuery.orderBy || "-sentAt"; // Default: newest sent first
 
       // Calculate offset for pagination
       const offset = (page - 1) * pageSize;
@@ -105,6 +151,12 @@ export function notificationRoutes(app: FastifyInstance): void {
       } else if (readStatus === "unread") {
         allNotifications = allNotifications.filter((n) => n.readAt === null);
       }
+
+      // Sort notifications based on orderBy parameter
+      allNotifications = sortNotifications(
+        allNotifications as unknown as Record<string, unknown>[],
+        orderBy
+      ) as typeof allNotifications;
 
       // Calculate pagination
       const totalCount = allNotifications.length;
@@ -463,6 +515,40 @@ export function notificationRoutes(app: FastifyInstance): void {
       await notifications.notification.restoreNotification(id, userId);
 
       return reply.status(204).send();
+    }
+  );
+
+  app.post(
+    "/notifications/preview-email",
+    {
+      preHandler: [requireAuth, validateBody(zPreviewEmailRequest)],
+    },
+    async (request, reply) => {
+      const body = request.body as PreviewEmailRequest;
+
+      if (!isValidTemplateId(body.templateId)) {
+        return reply.status(400).send({
+          error: {
+            code: "invalidTemplate",
+            message: `Unknown template: ${body.templateId}`,
+            requestId: request.id,
+          },
+        });
+      }
+
+      const rendered = await renderTemplate(
+        body.templateId,
+        (body.templateData as Record<string, unknown>) ?? {}
+      );
+
+      return {
+        data: {
+          html: rendered.html,
+          text: rendered.text,
+          subject: rendered.subject,
+        },
+        meta: { requestId: request.id, timestamp: new Date().toISOString() },
+      };
     }
   );
 }

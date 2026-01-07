@@ -42,7 +42,10 @@ namespace ProjectAPI {
       @query status?: NotificationStatus,
 
       /** Filter by read status ("read" or "unread") */
-      @query readStatus?: "read" | "unread"
+      @query readStatus?: "read" | "unread",
+
+      /** Sort order. Use "-field" for descending, "field" for ascending. Supports: sentAt, createdAt */
+      @query orderBy?: string
     ): NotificationListResponse | ErrorResponse;
 
     /**
@@ -126,6 +129,17 @@ namespace ProjectAPI {
     restore(@path id: string): {
       @statusCode statusCode: 204;
     } | ErrorResponse;
+
+    /**
+     * Preview an email template
+     * Renders the template with provided data and returns HTML/text content
+     */
+    @post
+    @route("/preview-email")
+    @summary("Preview email template")
+    previewEmail(@body request: PreviewEmailRequest):
+      | PreviewEmailResponse
+      | ErrorResponse;
   }
 
   /**

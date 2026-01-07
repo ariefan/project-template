@@ -1731,6 +1731,43 @@ export type PermissionInput = {
 };
 
 /**
+ * Request body for previewing an email template
+ */
+export type PreviewEmailRequest = {
+    /**
+     * Template ID to preview
+     */
+    templateId: string;
+    /**
+     * Data for template rendering
+     */
+    templateData?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * Email preview response
+ */
+export type PreviewEmailResponse = {
+    data: {
+        /**
+         * Rendered HTML content
+         */
+        html: string;
+        /**
+         * Rendered plain text content
+         */
+        text: string;
+        /**
+         * Email subject
+         */
+        subject: string;
+    };
+    meta: ResponseMeta;
+};
+
+/**
  * Column configuration for reports
  */
 export type ReportColumnConfig = {
@@ -3391,6 +3428,10 @@ export type NotificationsListData = {
          * Filter by read status ("read" or "unread")
          */
         readStatus?: 'read' | 'unread';
+        /**
+         * Sort order. Use "-field" for descending, "field" for ascending. Supports: sentAt, createdAt
+         */
+        orderBy?: string;
     };
     url: '/v1/notifications';
 };
@@ -3419,6 +3460,22 @@ export type NotificationsMarkAllReadResponses = {
 };
 
 export type NotificationsMarkAllReadResponse = NotificationsMarkAllReadResponses[keyof NotificationsMarkAllReadResponses];
+
+export type NotificationsPreviewEmailData = {
+    body: PreviewEmailRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/notifications/preview-email';
+};
+
+export type NotificationsPreviewEmailResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: PreviewEmailResponse | ErrorResponse;
+};
+
+export type NotificationsPreviewEmailResponse = NotificationsPreviewEmailResponses[keyof NotificationsPreviewEmailResponses];
 
 export type NotificationsSendData = {
     body: SendNotificationRequest;

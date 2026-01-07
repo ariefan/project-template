@@ -165,6 +165,13 @@ paths:
               - read
               - unread
           explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: 'Sort order. Use "-field" for descending, "field" for ascending. Supports: sentAt, createdAt'
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -195,6 +202,31 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Notifications
+  /v1/notifications/preview-email:
+    post:
+      operationId: Notifications_previewEmail
+      summary: Preview email template
+      description: |-
+        Preview an email template
+        Renders the template with provided data and returns HTML/text content
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PreviewEmailResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewEmailRequest'
   /v1/notifications/send:
     post:
       operationId: Notifications_send
@@ -6470,6 +6502,45 @@ components:
             - $ref: '#/components/schemas/PermissionCondition'
           description: Optional condition
       description: Permission input for creating/updating roles
+    PreviewEmailRequest:
+      type: object
+      required:
+        - templateId
+      properties:
+        templateId:
+          type: string
+          description: Template ID to preview
+          example: welcome
+        templateData:
+          type: object
+          additionalProperties: {}
+          description: Data for template rendering
+      description: Request body for previewing an email template
+    PreviewEmailResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            html:
+              type: string
+              description: Rendered HTML content
+            text:
+              type: string
+              description: Rendered plain text content
+            subject:
+              type: string
+              description: Email subject
+          required:
+            - html
+            - text
+            - subject
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Email preview response
     ReportColumnConfig:
       type: object
       required:

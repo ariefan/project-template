@@ -372,3 +372,32 @@ model UnreadCountResponse {
   };
   meta: ResponseMeta;
 }
+
+/**
+ * Request body for previewing an email template
+ */
+model PreviewEmailRequest {
+  /** Template ID to preview */
+  @example("welcome")
+  templateId: string;
+
+  /** Data for template rendering */
+  templateData?: Record<unknown>;
+}
+
+/**
+ * Email preview response
+ */
+model PreviewEmailResponse {
+  data: {
+    /** Rendered HTML content */
+    html: string;
+
+    /** Rendered plain text content */
+    text: string;
+
+    /** Email subject */
+    subject: string;
+  };
+  meta: ResponseMeta;
+}
