@@ -2,17 +2,19 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { AppHeader } from "@/components/layouts/header/app-header";
+import { getSession } from "@/lib/auth.server";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   // Check authentication - redirect to login if not authenticated
-  // const session = await getSession();
+  const session = await getSession();
 
-  // if (!session?.data?.user) {
-  //   redirect("/login");
-  // }
+  if (!session?.data?.user) {
+    redirect("/login");
+  }
 
   return (
     <SidebarProvider>
