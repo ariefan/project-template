@@ -1,10 +1,6 @@
 {
   "extends": "../../../../tsconfig.json",
   "compilerOptions": {
-    // We use "react" instead of "react-jsx" here to force the usage of React.createElement.
-    // This ensures that 'import * as React from "react"' is treated as a used import,
-    // preventing "Organize Imports" from stripping it out, which breaks server-side rendering
-    // in the email templates (via @react-email/render).
     "jsx": "react"
   },
   "include": ["**/*"]
