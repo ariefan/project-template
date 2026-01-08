@@ -1,0 +1,1 @@
+export { localFilesRoutes } from "./routes";

@@ -7,4 +7,6 @@ export type {
   ReportJobOutput,
 } from "./report.handler";
 export { registerReportHandler } from "./report.handler";
+export type { TestJobInput } from "./test.handler";
+export { registerTestHandler } from "./test.handler";
 export * from "./types";

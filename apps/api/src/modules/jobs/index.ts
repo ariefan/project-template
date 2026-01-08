@@ -17,6 +17,7 @@ export {
   type JobResult,
   jobHandlerRegistry,
   registerReportHandler,
+  registerTestHandler,
 } from "./handlers";
 
 // Re-export queue for initialization

@@ -7,8 +7,11 @@ import type * as React from "react";
 
 function Checkbox({
   className,
+  onCheckedChange,
   ...props
-}: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
+}: React.ComponentProps<typeof CheckboxPrimitive.Root> & {
+  onCheckedChange?: (checked: boolean) => void;
+}) {
   return (
     <CheckboxPrimitive.Root
       className={cn(
@@ -16,6 +19,7 @@ function Checkbox({
         className
       )}
       data-slot="checkbox"
+      onCheckedChange={onCheckedChange}
       {...props}
     >
       <CheckboxPrimitive.Indicator

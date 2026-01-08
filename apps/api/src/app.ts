@@ -21,6 +21,7 @@ import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
 import { jobsModule } from "./modules/jobs";
+import { localFilesRoutes } from "./modules/local-files";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
 import { reportsModule } from "./modules/reports";
@@ -318,12 +319,16 @@ export async function buildApp(config: AppConfig) {
     });
 
     // Initialize generic job queue with handlers
-    const { createJobQueue, registerReportHandler, jobsService } = await import(
-      "./modules/jobs"
-    );
+    const {
+      createJobQueue,
+      registerReportHandler,
+      registerTestHandler,
+      jobsService,
+    } = await import("./modules/jobs");
 
     // Register job handlers before starting queue
     registerReportHandler();
+    registerTestHandler();
     registerSubscriptionHandlers();
 
     const jobQueue = createJobQueue({
@@ -388,6 +393,7 @@ export async function buildApp(config: AppConfig) {
 
   // Modules
   await app.register(healthRoutes);
+  await app.register(localFilesRoutes);
   await app.register(migrationRoutes);
   await app.register(authRoutes);
   await app.register(applicationsModule, { prefix: "/v1" });

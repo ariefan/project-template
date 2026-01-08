@@ -14,6 +14,8 @@ export interface CreateSubscriptionInput {
   couponCode?: string;
   customerEmail: string;
   customerName?: string;
+  paymentMethodId?: string;
+  returnUrl?: string;
 }
 
 export interface UpdateSubscriptionInput {

@@ -107,6 +107,10 @@ const navDeveloper = [
         title: "Jobs",
         url: "/developer/jobs",
       },
+      {
+        title: "Storage",
+        url: "/developer/storage",
+      },
     ],
   },
 ];

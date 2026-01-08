@@ -1,9 +1,4 @@
 {
-  "env": {
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.7"
-  },
   "permissions": {
     "allow": [
       "Bash(git remote add:*)",
@@ -135,7 +130,11 @@
       "Bash(pnpm --filter api dlx ultracite check:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm tsx:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm:*)",
-      "Bash(pnpm --filter @workspace/contracts build:*)"
+      "Bash(pnpm --filter @workspace/contracts build:*)",
+      "Bash(pnpm --filter web tsc:*)",
+      "Bash(pnpm -r typecheck:*)",
+      "Bash(npx ultracite fix:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }

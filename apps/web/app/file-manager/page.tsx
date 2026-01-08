@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@workspace/ui/components/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,14 +10,21 @@ import {
 } from "@workspace/ui/components/breadcrumb";
 import { Button } from "@workspace/ui/components/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/components/collapsible";
+import {
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from "@workspace/ui/components/context-menu";
 import { Input } from "@workspace/ui/components/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/popover";
+import { Progress } from "@workspace/ui/components/progress";
 import {
   Select,
   SelectContent,
@@ -26,6 +32,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
+import { Separator } from "@workspace/ui/components/separator";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+} from "@workspace/ui/components/sidebar";
 import {
   Tooltip,
   TooltipContent,
@@ -33,563 +57,1539 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
 import {
+  AlertCircle,
+  ChevronRight,
   Copy,
   Download,
-  FileArchiveIcon,
-  FileCodeIcon,
-  FileIcon,
-  FileSpreadsheetIcon,
-  FileTextIcon,
   Filter,
-  FolderIcon,
+  Folder,
+  FolderOpen,
   FolderPlus,
   Grid3x3,
-  ImageIcon,
+  HardDrive,
+  Keyboard,
   List,
-  MoreHorizontal,
+  Loader2,
   Move,
+  Pencil,
+  RefreshCw,
   Search,
   Share2,
   SortAsc,
+  SortDesc,
   Star,
   StarOff,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { env } from "@/lib/env";
+import { DragDropOverlay } from "./drag-drop-overlay";
+import { EmptyState } from "./empty-state";
+import { FileDialogs } from "./file-dialogs";
+import { FileGridView } from "./file-grid-view";
+import { FileListView } from "./file-list-view";
+import type { FileInfo } from "./file-manager-context";
+import { FileManagerProvider, useFileManager } from "./file-manager-context";
+import { FilterPanel } from "./filter-panel";
+import { KeyboardShortcuts } from "./keyboard-shortcuts";
+import { getFileType } from "./lib/file-utils";
+import { NewButtonMenu } from "./new-button-menu";
+import { Pagination } from "./pagination";
 
-// Mock data for files and folders
-const mockFiles = [
-  {
-    id: "1",
-    name: "Project Proposal.pdf",
-    type: "pdf",
-    size: "2.4 MB",
-    modified: "2024-01-15",
-    starred: true,
-  },
-  {
-    id: "2",
-    name: "Budget Spreadsheet.xlsx",
-    type: "spreadsheet",
-    size: "1.8 MB",
-    modified: "2024-01-14",
-    starred: false,
-  },
-  {
-    id: "3",
-    name: "Team Photo.jpg",
-    type: "image",
-    size: "4.2 MB",
-    modified: "2024-01-13",
-    starred: true,
-  },
-  {
-    id: "4",
-    name: "Meeting Notes.docx",
-    type: "document",
-    size: "856 KB",
-    modified: "2024-01-12",
-    starred: false,
-  },
-  {
-    id: "5",
-    name: "Project Archive.zip",
-    type: "archive",
-    size: "15.3 MB",
-    modified: "2024-01-11",
-    starred: false,
-  },
-  {
-    id: "6",
-    name: "index.html",
-    type: "code",
-    size: "12 KB",
-    modified: "2024-01-10",
-    starred: false,
-  },
-  {
-    id: "7",
-    name: "styles.css",
-    type: "code",
-    size: "8 KB",
-    modified: "2024-01-10",
-    starred: false,
-  },
-  {
-    id: "8",
-    name: "app.tsx",
-    type: "code",
-    size: "24 KB",
-    modified: "2024-01-09",
-    starred: true,
-  },
-];
+interface LocalFilesResponse {
+  files: FileInfo[];
+  path?: string;
+}
 
-const mockFolders = [
-  {
-    id: "f1",
-    name: "Documents",
-    itemCount: 12,
-    modified: "2024-01-15",
-    starred: true,
-  },
-  {
-    id: "f2",
-    name: "Images",
-    itemCount: 45,
-    modified: "2024-01-14",
-    starred: false,
-  },
-  {
-    id: "f3",
-    name: "Projects",
-    itemCount: 8,
-    modified: "2024-01-13",
-    starred: true,
-  },
-  {
-    id: "f4",
-    name: "Archives",
-    itemCount: 3,
-    modified: "2024-01-12",
-    starred: false,
-  },
-];
+type SortBy = "name" | "date" | "size" | "type";
 
-function getFileIcon(type: string) {
-  switch (type) {
-    case "image":
-      return <ImageIcon className="h-8 w-8 text-blue-500" />;
-    case "document":
-      return <FileTextIcon className="h-8 w-8 text-red-500" />;
-    case "spreadsheet":
-      return <FileSpreadsheetIcon className="h-8 w-8 text-green-500" />;
-    case "archive":
-      return <FileArchiveIcon className="h-8 w-8 text-yellow-500" />;
-    case "code":
-      return <FileCodeIcon className="h-8 w-8 text-purple-500" />;
-    default:
-      return <FileIcon className="h-8 w-8 text-gray-500" />;
+type FilterType =
+  | "all"
+  | "folder"
+  | "image"
+  | "document"
+  | "spreadsheet"
+  | "archive"
+  | "code"
+  | "other";
+
+async function fetchLocalFiles(path?: string): Promise<LocalFilesResponse> {
+  const url = path
+    ? `${env.NEXT_PUBLIC_API_URL}/local-files/${path}`
+    : `${env.NEXT_PUBLIC_API_URL}/local-files`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch files: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+interface TreeItem {
+  name: string;
+  path: string;
+  children: TreeItem[];
+}
+
+interface FileApiResponse {
+  name: string;
+  path: string;
+  isDirectory: boolean;
+  size: number;
+}
+
+async function fetchAllFiles(): Promise<FileApiResponse[]> {
+  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/all`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch files: ${response.statusText}`);
+  }
+  const data: LocalFilesResponse = await response.json();
+  return data.files;
+}
+
+function buildDirectoryTree(files: FileApiResponse[]): TreeItem[] {
+  const directories = files.filter((f) => f.isDirectory);
+  const dirMap = new Map<string, TreeItem>();
+
+  for (const dir of directories) {
+    dirMap.set(dir.path, { name: dir.name, path: dir.path, children: [] });
+  }
+
+  const roots: TreeItem[] = [];
+
+  for (const dir of directories) {
+    const node = dirMap.get(dir.path);
+    if (!node) {
+      continue;
+    }
+
+    const pathParts = dir.path.split("/");
+    if (pathParts.length === 1) {
+      roots.push(node);
+    } else {
+      const parentPath = pathParts.slice(0, -1).join("/");
+      const parent = dirMap.get(parentPath);
+      if (parent) {
+        parent.children.push(node);
+      }
+    }
+  }
+
+  const sortDirs = (dirs: TreeItem[]) => {
+    dirs.sort((a, b) => a.name.localeCompare(b.name));
+    for (const dir of dirs) {
+      sortDirs(dir.children);
+    }
+  };
+  sortDirs(roots);
+
+  return roots;
+}
+
+interface TreeProps {
+  currentPath: string;
+  item: TreeItem;
+  onNavigate: (path: string) => void;
+}
+
+function Tree({ currentPath, item, onNavigate }: TreeProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasChildren = item.children.length > 0;
+  const isActive = currentPath === item.path;
+
+  useEffect(() => {
+    if (currentPath.startsWith(item.path)) {
+      setIsOpen(true);
+    }
+  }, [currentPath, item.path]);
+
+  const handleClick = useCallback(() => {
+    if (hasChildren) {
+      setIsOpen((prev) => !prev);
+    }
+    onNavigate(item.path);
+  }, [hasChildren, item.path, onNavigate]);
+
+  if (!hasChildren) {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          className="data-[active=true]:bg-transparent"
+          isActive={isActive}
+          onClick={handleClick}
+        >
+          <div className="size-4" />
+          <Folder className="size-4 text-blue-500" />
+          {item.name}
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
+
+  return (
+    <SidebarMenuItem>
+      <Collapsible
+        className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
+        onOpenChange={setIsOpen}
+        open={isOpen}
+      >
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton isActive={isActive} onClick={handleClick}>
+            <ChevronRight className="transition-transform" />
+            {isOpen ? (
+              <FolderOpen className="size-4 text-blue-500" />
+            ) : (
+              <Folder className="size-4 text-blue-500" />
+            )}
+            {item.name}
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {item.children.map((child) => (
+              <Tree
+                currentPath={currentPath}
+                item={child}
+                key={child.path}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </Collapsible>
+    </SidebarMenuItem>
+  );
+}
+
+interface FileSidebarProps {
+  currentPath: string;
+  onNavigate: (path: string) => void;
+  onCreateFolder: () => void;
+  onUploadFiles: () => void;
+}
+
+function FileSidebar({
+  currentPath,
+  onNavigate,
+  onCreateFolder,
+  onUploadFiles,
+}: FileSidebarProps) {
+  const [directories, setDirectories] = useState<TreeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [files, setFiles] = useState<FileApiResponse[]>([]);
+
+  useEffect(() => {
+    async function loadDirectories() {
+      setLoading(true);
+      try {
+        const fetchedFiles = await fetchAllFiles();
+        setFiles(fetchedFiles);
+        const dirTree = buildDirectoryTree(fetchedFiles);
+        setDirectories(dirTree);
+      } catch {
+        // Ignore error
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDirectories();
+  }, []);
+
+  // Calculate storage (only files, not directories)
+  const totalSize = files
+    .filter((f) => !f.isDirectory)
+    .reduce((acc, f) => acc + f.size, 0);
+  const maxStorage = 15 * 1024 * 1024 * 1024;
+  const usagePercent = Math.min((totalSize / maxStorage) * 100, 100);
+  const maxStorageGB = maxStorage / (1024 * 1024 * 1024);
+
+  // Format usage dynamically, always show unit
+  function formatUsage(bytes: number): string {
+    const gb = bytes / (1024 * 1024 * 1024);
+    if (gb >= 0.5) {
+      return `${gb.toFixed(2)} GB`;
+    }
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 0.5) {
+      return `${mb.toFixed(1)} MB`;
+    }
+    const kb = bytes / 1024;
+    if (kb >= 0.5) {
+      return `${kb.toFixed(0)} KB`;
+    }
+    return `${bytes} B`;
+  }
+
+  const usageDisplay = formatUsage(totalSize);
+
+  return (
+    <Sidebar>
+      <SidebarHeader className="border-b px-4 py-3">
+        <div className="flex items-center gap-2">
+          <HardDrive className="size-8 text-muted-foreground" />
+          <div className="flex flex-col">
+            <span className="font-medium text-xl">Storage</span>
+            <span className="text-muted-foreground text-xs">
+              {usageDisplay} / {maxStorageGB} GB
+            </span>
+          </div>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent>
+        {/* New Button Section */}
+        <SidebarGroup className="px-3 pt-4 pb-2">
+          <NewButtonMenu
+            onCreateFolder={onCreateFolder}
+            onUploadFiles={onUploadFiles}
+          />
+        </SidebarGroup>
+
+        {/* Folders Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Folders</SidebarGroupLabel>
+          <SidebarGroupContent>
+            {loading ? (
+              <div className="flex items-center justify-center px-2 py-4">
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : directories.length === 0 ? (
+              <div className="px-2 py-1 text-muted-foreground text-sm">
+                No folders found
+              </div>
+            ) : (
+              <SidebarMenu>
+                {directories.map((item) => (
+                  <Tree
+                    currentPath={currentPath}
+                    item={item}
+                    key={item.path}
+                    onNavigate={onNavigate}
+                  />
+                ))}
+              </SidebarMenu>
+            )}
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="border-t px-4 py-3">
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Usage</span>
+            <span className="font-medium">
+              {usageDisplay} / {maxStorageGB} GB
+            </span>
+          </div>
+          <Progress value={usagePercent} />
+        </div>
+      </SidebarFooter>
+
+      <SidebarRail />
+    </Sidebar>
+  );
+}
+
+interface UploadProgress {
+  file: string;
+  loaded: number;
+  total: number;
+}
+
+async function uploadFile(
+  file: File,
+  path: string,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<FileInfo> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const url = path
+    ? `${env.NEXT_PUBLIC_API_URL}/local-files/upload/${path}`
+    : `${env.NEXT_PUBLIC_API_URL}/local-files/upload/`;
+
+  const xhr = new XMLHttpRequest();
+
+  return new Promise((resolve, reject) => {
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress({ file: file.name, loaded: e.loaded, total: e.total });
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const response = JSON.parse(xhr.responseText);
+        if (response.files?.[0]) {
+          resolve(response.files[0]);
+        } else {
+          reject(new Error("Upload failed: no file returned"));
+        }
+      } else {
+        reject(new Error(`Upload failed: ${xhr.statusText}`));
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject(new Error("Upload failed: network error"));
+    });
+
+    xhr.open("POST", url);
+    xhr.send(formData);
+  });
+}
+
+async function uploadFiles(
+  files: File[],
+  path: string,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<FileInfo[]> {
+  const results: FileInfo[] = [];
+
+  for (const file of files) {
+    try {
+      const uploaded = await uploadFile(file, path, onProgress);
+      results.push(uploaded);
+    } catch {
+      // Ignore error
+    }
+  }
+
+  return results;
+}
+
+async function downloadFile(file: FileInfo): Promise<void> {
+  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/download/${file.path}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download file: ${response.statusText}`);
+  }
+
+  const blob = await response.blob();
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = file.name;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(downloadUrl);
+}
+
+async function deleteFiles(paths: string[]): Promise<void> {
+  const url = `${env.NEXT_PUBLIC_API_URL}/local-files`;
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items: paths }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to delete files: ${response.statusText}`);
   }
 }
 
-function getFileTypeBadge(type: string) {
-  const typeMap: Record<
-    string,
-    { label: string; variant: "default" | "secondary" }
-  > = {
-    image: { label: "IMG", variant: "default" },
-    document: { label: "DOC", variant: "secondary" },
-    spreadsheet: { label: "XLSX", variant: "secondary" },
-    archive: { label: "ZIP", variant: "secondary" },
-    code: { label: "CODE", variant: "secondary" },
-    pdf: { label: "PDF", variant: "secondary" },
-  };
+async function createFolder(name: string, path: string): Promise<FileInfo> {
+  const url = path
+    ? `${env.NEXT_PUBLIC_API_URL}/local-files/folder/${path}`
+    : `${env.NEXT_PUBLIC_API_URL}/local-files/folder`;
 
-  const { label, variant } = typeMap[type] || {
-    label: "FILE",
-    variant: "secondary",
-  };
-  return <Badge variant={variant}>{label}</Badge>;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      error.message || `Failed to create folder: ${response.statusText}`
+    );
+  }
+  const data = await response.json();
+  return data.folder;
 }
 
-export default function FileManagerPage() {
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [sortBy, setSortBy] = useState("name");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+async function copyFile(
+  sourcePath: string,
+  destinationPath: string
+): Promise<FileInfo> {
+  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/copy/${sourcePath}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ destination: destinationPath }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || `Failed to copy: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.file;
+}
 
-  const toggleStar = (id: string) => {
-    // In a real app, this would update the backend
-    console.log("Toggle star:", id);
-  };
+async function moveFile(
+  sourcePath: string,
+  destinationPath: string
+): Promise<FileInfo> {
+  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/move/${sourcePath}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ destination: destinationPath }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || `Failed to move: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.file;
+}
 
-  const toggleSelect = (id: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+async function renameFile(path: string, newName: string): Promise<FileInfo> {
+  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/rename/${path}`;
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: newName }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      error.message || `Failed to rename: ${response.statusText}`
     );
-  };
+  }
+  const data = await response.json();
+  return data.file;
+}
+
+function compareFiles(
+  a: FileInfo,
+  b: FileInfo,
+  sortBy: SortBy,
+  sortDirection: "asc" | "desc"
+): number {
+  if (a.isDirectory && !b.isDirectory) {
+    return -1;
+  }
+  if (!a.isDirectory && b.isDirectory) {
+    return 1;
+  }
+
+  let comparison = 0;
+  switch (sortBy) {
+    case "name":
+      comparison = a.name.localeCompare(b.name);
+      break;
+    case "date":
+      comparison =
+        new Date(a.modified).getTime() - new Date(b.modified).getTime();
+      break;
+    case "size":
+      comparison = a.size - b.size;
+      break;
+    case "type":
+      comparison = getFileType(a.name, a.isDirectory).localeCompare(
+        getFileType(b.name, b.isDirectory)
+      );
+      break;
+    default:
+      comparison = 0;
+  }
+
+  return sortDirection === "desc" ? -comparison : comparison;
+}
+
+function FileManagerPageContent() {
+  const { currentPath, setCurrentPath } = useFileManager();
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [sortBy, setSortBy] = useState<SortBy>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [files, setFiles] = useState<FileInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [starredItems, setStarredItems] = useState<Set<string>>(new Set());
+  const [_lastSelected, setLastSelected] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [filterType, setFilterType] = useState<FilterType>("all");
+  const [showFilter, setShowFilter] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<FileInfo | null>(null);
+
+  // Upload state
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {}
+  );
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Drag and drop state
+  const [isDragging, setIsDragging] = useState(false);
+  const [_dragCounter, setDragCounter] = useState(0);
+
+  // New folder state
+  const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+
+  // Copy/Move state
+  const [showCopyMoveDialog, setShowCopyMoveDialog] = useState(false);
+  const [copyMoveMode, setCopyMoveMode] = useState<"copy" | "move">("copy");
+  const [copyMoveItems, setCopyMoveItems] = useState<string[]>([]);
+
+  // Rename state
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [itemToRename, setItemToRename] = useState<FileInfo | null>(null);
+  const [newName, setNewName] = useState("");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const loadFiles = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchLocalFiles(currentPath || undefined);
+      setFiles(data.files);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load files");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPath]);
+
+  useEffect(() => {
+    loadFiles();
+  }, [loadFiles]);
+
+  // Filter and sort files
+  const filteredFiles = useMemo(() => {
+    return files.filter((file) => {
+      if (
+        searchQuery &&
+        !file.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false;
+      }
+      if (filterType !== "all") {
+        const fileType = getFileType(file.name, file.isDirectory);
+        if (filterType === "folder" && !file.isDirectory) {
+          return false;
+        }
+        if (filterType === "other") {
+          if (
+            [
+              "image",
+              "document",
+              "spreadsheet",
+              "archive",
+              "code",
+              "folder",
+            ].includes(fileType)
+          ) {
+            return false;
+          }
+        } else if (fileType !== filterType && !file.isDirectory) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [files, searchQuery, filterType]);
+
+  const sortedFiles = useMemo(() => {
+    return [...filteredFiles].sort((a, b) =>
+      compareFiles(a, b, sortBy, sortDirection)
+    );
+  }, [filteredFiles, sortBy, sortDirection]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, []);
+
+  // Paginated files
+  const paginatedFiles = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sortedFiles.slice(startIndex, endIndex);
+  }, [sortedFiles, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(sortedFiles.length / itemsPerPage);
+
+  // Toggle sort direction
+  const handleSort = useCallback(
+    (column: SortBy) => {
+      if (sortBy === column) {
+        setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      } else {
+        setSortBy(column);
+        setSortDirection("asc");
+      }
+    },
+    [sortBy]
+  );
+
+  const toggleStar = useCallback((id: string) => {
+    setStarredItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSelect = useCallback((id: string, checked: boolean) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+    setLastSelected(id);
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedItems(new Set(sortedFiles.map((f) => f.path)));
+  }, [sortedFiles]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedItems(new Set());
+    setLastSelected(null);
+    setFocusedIndex(-1);
+  }, []);
+
+  const isAllSelected =
+    sortedFiles.length > 0 && selectedItems.size === sortedFiles.length;
+
+  const _handleSelectAll = useCallback(() => {
+    if (isAllSelected) {
+      clearSelection();
+    } else {
+      selectAll();
+    }
+  }, [isAllSelected, clearSelection, selectAll]);
+
+  const handleDeleteClick = useCallback((file: FileInfo) => {
+    setFileToDelete(file);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (fileToDelete) {
+      try {
+        await deleteFiles([fileToDelete.path]);
+        await loadFiles();
+        setShowDeleteDialog(false);
+        setFileToDelete(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to delete file");
+      }
+    }
+  }, [fileToDelete, loadFiles]);
+
+  const handleBatchDelete = useCallback(async () => {
+    if (selectedItems.size === 0) {
+      return;
+    }
+    const count = selectedItems.size;
+    if (
+      !confirm(
+        `Are you sure you want to delete ${count} selected item${count > 1 ? "s" : ""}?`
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteFiles(Array.from(selectedItems));
+      clearSelection();
+      await loadFiles();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete files");
+    }
+  }, [selectedItems, clearSelection, loadFiles]);
+
+  const handleDownload = useCallback(
+    async (file: FileInfo) => {
+      if (file.isDirectory) {
+        setCurrentPath(file.path);
+      } else {
+        try {
+          await downloadFile(file);
+        } catch (err) {
+          setError(
+            err instanceof Error ? err.message : "Failed to download file"
+          );
+        }
+      }
+    },
+    [setCurrentPath]
+  );
+
+  const handleFileClick = useCallback(
+    (file: FileInfo, e?: React.MouseEvent) => {
+      e?.stopPropagation?.();
+      if (file.isDirectory) {
+        setCurrentPath(file.path);
+      } else {
+        // Open file in new tab
+        const fileUrl = `${env.NEXT_PUBLIC_API_URL}/local-files/preview/${file.path}`;
+        window.open(fileUrl, "_blank", "noopener,noreferrer");
+      }
+    },
+    [setCurrentPath]
+  );
+
+  const handleFileDoubleClick = useCallback(
+    (file: FileInfo) => {
+      if (file.isDirectory) {
+        setCurrentPath(file.path);
+      } else {
+        // Open file in new tab
+        const fileUrl = `${env.NEXT_PUBLIC_API_URL}/local-files/preview/${file.path}`;
+        window.open(fileUrl, "_blank", "noopener,noreferrer");
+      }
+    },
+    [setCurrentPath]
+  );
+
+  // Upload handlers
+  const handleUpload = useCallback(
+    async (fileList: FileList | File[]) => {
+      const filesList = Array.from(fileList);
+      if (filesList.length === 0) {
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadProgress({});
+      setShowUploadDialog(false);
+
+      try {
+        await uploadFiles(filesList, currentPath || "", (progress) => {
+          setUploadProgress((prev) => ({
+            ...prev,
+            [progress.file]: (progress.loaded / progress.total) * 100,
+          }));
+        });
+        await loadFiles();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to upload files");
+      } finally {
+        setIsUploading(false);
+        setUploadProgress({});
+      }
+    },
+    [currentPath, loadFiles]
+  );
+
+  // New folder handlers
+  const handleCreateFolder = useCallback(async () => {
+    const name = newFolderName.trim();
+    if (!name) {
+      return;
+    }
+
+    try {
+      await createFolder(name, currentPath || "");
+      setNewFolderName("");
+      setShowNewFolderDialog(false);
+      await loadFiles();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create folder");
+    }
+  }, [newFolderName, currentPath, loadFiles]);
+
+  // Copy/Move handlers
+  const handleCopy = useCallback((items: string[]) => {
+    setCopyMoveItems(items);
+    setCopyMoveMode("copy");
+    setShowCopyMoveDialog(true);
+  }, []);
+
+  const handleMove = useCallback((items: string[]) => {
+    setCopyMoveItems(items);
+    setCopyMoveMode("move");
+    setShowCopyMoveDialog(true);
+  }, []);
+
+  const handleCopyMoveConfirm = useCallback(async () => {
+    const destinationPath = currentPath || "";
+    const operation = copyMoveMode === "copy" ? copyFile : moveFile;
+
+    try {
+      for (const itemPath of copyMoveItems) {
+        await operation(itemPath, destinationPath);
+      }
+      setShowCopyMoveDialog(false);
+      setCopyMoveItems([]);
+      clearSelection();
+      await loadFiles();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : `Failed to ${copyMoveMode}`
+      );
+    }
+  }, [copyMoveItems, copyMoveMode, currentPath, clearSelection, loadFiles]);
+
+  // Rename handlers
+  const handleRenameClick = useCallback((file: FileInfo) => {
+    setItemToRename(file);
+    setNewName(file.name);
+    setShowRenameDialog(true);
+  }, []);
+
+  const handleRenameConfirm = useCallback(async () => {
+    if (!(itemToRename && newName.trim())) {
+      return;
+    }
+
+    try {
+      await renameFile(itemToRename.path, newName.trim());
+      setShowRenameDialog(false);
+      setItemToRename(null);
+      setNewName("");
+      await loadFiles();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to rename");
+    }
+  }, [itemToRename, newName, loadFiles]);
+
+  // Drag and drop handlers
+  const handleDragEnter = useCallback(() => {
+    setDragCounter((prev) => prev + 1);
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDragCounter((prev) => {
+      if (prev - 1 === 0) {
+        setIsDragging(false);
+      }
+      return prev - 1;
+    });
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      setDragCounter(0);
+
+      if (e.dataTransfer.files?.length > 0) {
+        handleUpload(e.dataTransfer.files);
+      }
+    },
+    [handleUpload]
+  );
+
+  function _renderContextMenuItems(file: FileInfo) {
+    return (
+      <>
+        <ContextMenuItem onClick={() => handleDownload(file)}>
+          {file.isDirectory ? (
+            "Open"
+          ) : (
+            <>
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </>
+          )}
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => toggleStar(file.path)}>
+          {starredItems.has(file.path) ? (
+            <>
+              <StarOff className="mr-2 h-4 w-4" />
+              Unstar
+            </>
+          ) : (
+            <>
+              <Star className="mr-2 h-4 w-4" />
+              Star
+            </>
+          )}
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onClick={() => handleRenameClick(file)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Rename
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => handleCopy([file.path])}>
+          <Copy className="mr-2 h-4 w-4" />
+          Copy
+        </ContextMenuItem>
+        <ContextMenuItem onClick={() => handleMove([file.path])}>
+          <Move className="mr-2 h-4 w-4" />
+          Move
+        </ContextMenuItem>
+        <ContextMenuItem>
+          <Share2 className="mr-2 h-4 w-4" />
+          Share
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          className="text-destructive"
+          onClick={() => handleDeleteClick(file)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
+        </ContextMenuItem>
+      </>
+    );
+  }
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+        e.preventDefault();
+        if (isAllSelected) {
+          clearSelection();
+        } else {
+          selectAll();
+        }
+        return;
+      }
+
+      if (e.key === "Escape") {
+        clearSelection();
+        return;
+      }
+
+      if (e.key === "Delete" || e.key === "Backspace") {
+        if (selectedItems.size > 0) {
+          e.preventDefault();
+          handleBatchDelete();
+        }
+        return;
+      }
+
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const direction = e.key === "ArrowDown" ? 1 : -1;
+        const newIndex = Math.max(
+          -1,
+          Math.min(sortedFiles.length - 1, focusedIndex + direction)
+        );
+        setFocusedIndex(newIndex);
+        return;
+      }
+
+      if (e.key === "Enter" && focusedIndex >= 0 && sortedFiles[focusedIndex]) {
+        e.preventDefault();
+        handleFileClick(sortedFiles[focusedIndex]);
+        return;
+      }
+
+      if (e.key === " " && focusedIndex >= 0 && sortedFiles[focusedIndex]) {
+        e.preventDefault();
+        toggleSelect(sortedFiles[focusedIndex].path, true);
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    sortedFiles,
+    focusedIndex,
+    selectedItems,
+    isAllSelected,
+    clearSelection,
+    selectAll,
+    handleBatchDelete,
+    toggleSelect,
+    handleFileClick,
+  ]);
+
+  const displayCount = sortedFiles.length;
+  const hasFiles = files.length > 0;
+  const hasResults = sortedFiles.length > 0;
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="#">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="#">Documents</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Projects</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      {/* Toolbar */}
-      <div className="flex flex-col gap-4 rounded-lg border bg-card p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Search */}
-          <div className="relative min-w-[200px] flex-1">
-            <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              className="pl-8"
-              placeholder="Search files and folders..."
-              type="search"
-            />
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex rounded-md border">
-            <Button
-              className="rounded-r-none"
-              onClick={() => setViewMode("grid")}
-              size="icon"
-              variant={viewMode === "grid" ? "secondary" : "ghost"}
-            >
-              <Grid3x3 className="h-4 w-4" />
-            </Button>
-            <Button
-              className="rounded-l-none"
-              onClick={() => setViewMode("list")}
-              size="icon"
-              variant={viewMode === "list" ? "secondary" : "ghost"}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Sort */}
-          <Select onValueChange={setSortBy} value={sortBy}>
-            <SelectTrigger className="w-[140px]">
-              <SortAsc className="mr-2 h-4 w-4" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="size">Size</SelectItem>
-              <SelectItem value="type">Type</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Filter */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="outline">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Filter files</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          {/* Actions */}
-          <div className="ml-auto flex gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="outline">
-                    <FolderPlus className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>New folder</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button size="icon" variant="outline">
-                    <Upload className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Upload files</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="outline">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download selected
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copy
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Move className="mr-2 h-4 w-4" />
-                  Move
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Selection Info */}
-        {selectedItems.length > 0 && (
-          <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm">
-            <span className="font-medium">
-              {selectedItems.length} items selected
-            </span>
-            <Button
-              onClick={() => setSelectedItems([])}
-              size="sm"
-              variant="ghost"
-            >
-              Clear selection
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Folders Section */}
-      <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Folders</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {mockFolders.map((folder) => (
-            <div
-              className="group relative flex flex-col gap-2 rounded-lg border bg-card p-4 transition-colors hover:bg-accent"
-              key={folder.id}
-            >
-              <div className="flex items-start justify-between">
-                <FolderIcon className="h-10 w-10 text-blue-500" />
-                <Button
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100"
+    <>
+      <FileSidebar
+        currentPath={currentPath}
+        onCreateFolder={() => setShowNewFolderDialog(true)}
+        onNavigate={setCurrentPath}
+        onUploadFiles={() => setShowUploadDialog(true)}
+      />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            className="mr-2 data-[orientation=vertical]:h-4"
+            orientation="vertical"
+          />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink
+                  href="#"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    toggleStar(folder.id);
+                    e.preventDefault();
+                    setCurrentPath("");
                   }}
-                  size="icon"
-                  variant="ghost"
                 >
-                  {folder.starred ? (
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ) : (
-                    <StarOff className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-              <button
-                className="flex flex-1 flex-col items-start gap-1 text-left"
-                onClick={() => console.log("Navigate to folder:", folder.name)}
-                type="button"
-              >
-                <h3 className="truncate font-medium">{folder.name}</h3>
-                <p className="text-muted-foreground text-sm">
-                  {folder.itemCount} items
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  Modified {folder.modified}
-                </p>
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Files Section */}
-      <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Files</h2>
-        {viewMode === "grid" ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {mockFiles.map((file) => (
-              <div
-                className={`group relative flex flex-col gap-2 rounded-lg border bg-card p-4 transition-colors hover:bg-accent ${
-                  selectedItems.includes(file.id) ? "ring-2 ring-primary" : ""
-                }`}
-                key={file.id}
-              >
-                <div className="flex items-start justify-between">
-                  {getFileIcon(file.type)}
-                  <div className="flex gap-1">
-                    <Button
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleStar(file.id);
-                      }}
-                      size="icon"
-                      variant="ghost"
-                    >
-                      {file.starred ? (
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  Files
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              {currentPath?.split("/").map((part, index, parts) => {
+                const subPath = parts.slice(0, index + 1).join("/");
+                const isLast = index === parts.length - 1;
+                return (
+                  <div className="flex items-center" key={subPath}>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      {isLast ? (
+                        <BreadcrumbPage>{part}</BreadcrumbPage>
                       ) : (
-                        <StarOff className="h-4 w-4" />
+                        <BreadcrumbLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPath(subPath);
+                          }}
+                        >
+                          {part}
+                        </BreadcrumbLink>
                       )}
+                    </BreadcrumbItem>
+                  </div>
+                );
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <div
+          className="flex flex-1 flex-col gap-4 overflow-hidden p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              clearSelection();
+            }
+          }}
+          onDragEnter={showUploadDialog ? undefined : handleDragEnter}
+          onDragLeave={showUploadDialog ? undefined : handleDragLeave}
+          onDragOver={showUploadDialog ? undefined : handleDragOver}
+          onDrop={showUploadDialog ? undefined : handleDrop}
+          ref={containerRef}
+        >
+          {/* Toolbar */}
+          {/* Top row: search */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-1 items-center gap-2">
+              <div className="relative w-64 min-w-[200px]">
+                <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="pr-8 pl-8"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search files... (Press /)"
+                  ref={searchInputRef}
+                  type="search"
+                  value={searchQuery}
+                />
+                {searchQuery && (
+                  <button
+                    className="absolute top-2.5 right-2.5 text-muted-foreground hover:text-foreground"
+                    onClick={() => setSearchQuery("")}
+                    type="button"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <span className="text-muted-foreground text-sm">
+                {displayCount} {displayCount === 1 ? "item" : "items"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Keyboard shortcuts help */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => setShowShortcuts(true)}
+                      size="icon"
+                      variant="outline"
+                    >
+                      <Keyboard className="h-4 w-4" />
                     </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                  </TooltipTrigger>
+                  <TooltipContent>Keyboard shortcuts</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      disabled={loading}
+                      onClick={loadFiles}
+                      size="icon"
+                      variant="outline"
+                    >
+                      <RefreshCw
+                        className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Refresh</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {/* View Toggle */}
+                    <div className="flex rounded-md border">
+                      <Button
+                        className="rounded-r-none"
+                        onClick={() => setViewMode("grid")}
+                        size="icon"
+                        variant={viewMode === "grid" ? "secondary" : "ghost"}
+                      >
+                        <Grid3x3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        className="rounded-l-none"
+                        onClick={() => setViewMode("list")}
+                        size="icon"
+                        variant={viewMode === "list" ? "secondary" : "ghost"}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>View Toggle</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+
+          {/* Bottom row: Actions */}
+          {selectedItems.size === 0 && (
+            <div className="flex flex-col gap-4 rounded-md bg-primary/5 px-3 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Sort */}
+                <div className="flex items-center gap-1">
+                  <Select
+                    onValueChange={(value) => setSortBy(value as SortBy)}
+                    value={sortBy}
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      {sortDirection === "asc" ? (
+                        <SortAsc className="mr-2 h-4 w-4" />
+                      ) : (
+                        <SortDesc className="mr-2 h-4 w-4" />
+                      )}
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="size">Size</SelectItem>
+                      <SelectItem value="type">Type</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Filter */}
+                <Popover onOpenChange={setShowFilter} open={showFilter}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant={filterType !== "all" ? "secondary" : "ghost"}
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="p-0">
+                    <FilterPanel
+                      filterType={filterType}
+                      onClear={() => setFilterType("all")}
+                      setFilterType={setFilterType}
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <div className="flex-1" />
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <Button
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={() => setShowNewFolderDialog(true)}
                           size="icon"
                           variant="ghost"
                         >
-                          <MoreHorizontal className="h-4 w-4" />
+                          <FolderPlus className="h-4 w-4" />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Copy className="mr-2 h-4 w-4" />
-                          Copy
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Move className="mr-2 h-4 w-4" />
-                          Move
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Share2 className="mr-2 h-4 w-4" />
-                          Share
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                      </TooltipTrigger>
+                      <TooltipContent>New folder (Ctrl+N)</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => setShowUploadDialog(true)}
+                          size="icon"
+                          variant="ghost"
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Upload files (Ctrl+U)</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-                <button
-                  className="flex flex-1 flex-col items-start gap-1 text-left"
-                  onClick={() => toggleSelect(file.id)}
-                  type="button"
-                >
-                  <h3 className="truncate font-medium">{file.name}</h3>
-                  <div className="flex items-center gap-2">
-                    {getFileTypeBadge(file.type)}
-                    <span className="text-muted-foreground text-sm">
-                      {file.size}
-                    </span>
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    Modified {file.modified}
-                  </p>
-                </button>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border bg-card">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    Name
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    Type
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    Size
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    Modified
-                  </th>
-                  <th className="px-4 py-3 text-right font-medium text-sm">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockFiles.map((file) => (
-                  <tr
-                    className={`border-b transition-colors hover:bg-accent ${
-                      selectedItems.includes(file.id) ? "bg-accent" : ""
-                    }`}
-                    key={file.id}
+
+              {/* Error State */}
+              {error && (
+                <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-4 py-3 text-destructive">
+                  <AlertCircle className="size-4" />
+                  {error}
+                  <button
+                    className="ml-auto text-destructive text-xs underline"
+                    onClick={loadFiles}
+                    type="button"
                   >
-                    <td className="px-4 py-3">
-                      <button
-                        className="flex w-full items-center gap-3 text-left"
-                        onClick={() => toggleSelect(file.id)}
-                        type="button"
+                    Retry
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Batch actions bar */}
+          {selectedItems.size > 0 && (
+            <div className="flex items-center justify-between rounded-md bg-primary/5 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={clearSelection}
+                        size="icon"
+                        variant="ghost"
                       >
-                        {getFileIcon(file.type)}
-                        <div className="flex flex-col">
-                          <span className="font-medium">{file.name}</span>
-                          {file.starred && (
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          )}
-                        </div>
-                      </button>
-                    </td>
-                    <td className="px-4 py-3">{getFileTypeBadge(file.type)}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-sm">
-                      {file.size}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground text-sm">
-                      {file.modified}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            className="h-8 w-8"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Download className="mr-2 h-4 w-4" />
-                            Download
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Copy className="mr-2 h-4 w-4" />
-                            Copy
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Move className="mr-2 h-4 w-4" />
-                            Move
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Share2 className="mr-2 h-4 w-4" />
-                            Share
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Clear selection</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <span className="font-medium text-sm">
+                  {selectedItems.size} item{selectedItems.size > 1 ? "s" : ""}{" "}
+                  selected
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => {
+                          const file = sortedFiles.find((f) =>
+                            selectedItems.has(f.path)
+                          );
+                          if (file && !file.isDirectory) {
+                            handleDownload(file);
+                          }
+                        }}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Download</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => handleCopy(Array.from(selectedItems))}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => handleMove(Array.from(selectedItems))}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <Move className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Move</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="ghost">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Share</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={handleBatchDelete}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Delete</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+          )}
+
+          {/* Files Section */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : hasFiles ? (
+            hasResults ? (
+              viewMode === "grid" ? (
+                <FileGridView
+                  files={paginatedFiles}
+                  focusedIndex={focusedIndex}
+                  onFileDoubleClick={handleFileDoubleClick}
+                  onToggleSelect={toggleSelect}
+                  selectedItems={selectedItems}
+                />
+              ) : (
+                <FileListView
+                  files={paginatedFiles}
+                  onDownload={handleDownload}
+                  onFileClick={handleFileClick}
+                  onFileDoubleClick={handleFileDoubleClick}
+                  onSort={(by) => handleSort(by as SortBy)}
+                  onToggleSelect={toggleSelect}
+                  selectedItems={selectedItems}
+                  sortBy={sortBy === "date" ? "modified" : sortBy}
+                  sortDirection={sortDirection}
+                />
+              )
+            ) : (
+              <EmptyState searchQuery={searchQuery} type="no-results" />
+            )
+          ) : (
+            <EmptyState
+              onCreateFolder={() => setShowNewFolderDialog(true)}
+              onUpload={() => setShowUploadDialog(true)}
+              type="no-files"
+            />
+          )}
+
+          {/* Pagination Controls */}
+          <Pagination
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={(items) => {
+              setItemsPerPage(items);
+              setCurrentPage(1);
+            }}
+            onPageChange={setCurrentPage}
+            sortedFilesLength={sortedFiles.length}
+            totalPages={totalPages}
+          />
+        </div>
+
+        {/* Dialogs */}
+        <FileDialogs
+          copyMoveItems={copyMoveItems}
+          copyMoveMode={copyMoveMode}
+          currentPath={currentPath}
+          currentPathForCopyMove={currentPath}
+          fileToDelete={fileToDelete}
+          isUploading={isUploading}
+          itemToRename={itemToRename}
+          keyboardShortcutsContent={<KeyboardShortcuts />}
+          newFolderName={newFolderName}
+          newName={newName}
+          onCopyMoveConfirm={handleCopyMoveConfirm}
+          onCreateFolder={handleCreateFolder}
+          onDeleteConfirm={handleDeleteConfirm}
+          onRenameConfirm={handleRenameConfirm}
+          onUpload={handleUpload}
+          setNewFolderName={setNewFolderName}
+          setNewName={setNewName}
+          setShowCopyMoveDialog={setShowCopyMoveDialog}
+          setShowDeleteDialog={setShowDeleteDialog}
+          setShowNewFolderDialog={setShowNewFolderDialog}
+          setShowRenameDialog={setShowRenameDialog}
+          setShowShortcuts={setShowShortcuts}
+          setShowUploadDialog={setShowUploadDialog}
+          showCopyMoveDialog={showCopyMoveDialog}
+          showDeleteDialog={showDeleteDialog}
+          showNewFolderDialog={showNewFolderDialog}
+          showRenameDialog={showRenameDialog}
+          showShortcuts={showShortcuts}
+          showUploadDialog={showUploadDialog}
+          uploadProgress={uploadProgress}
+        />
+      </SidebarInset>
+
+      <DragDropOverlay isVisible={isDragging && !showUploadDialog} />
+    </>
+  );
+}
+
+export default function FileManagerPage() {
+  return (
+    <SidebarProvider>
+      <FileManagerProvider>
+        <FileManagerPageContent />
+      </FileManagerProvider>
+    </SidebarProvider>
   );
 }
