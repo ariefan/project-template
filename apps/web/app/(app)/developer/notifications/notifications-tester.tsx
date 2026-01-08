@@ -29,9 +29,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
-import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs";
 import { Textarea } from "@workspace/ui/components/textarea";
-import { cn } from "@workspace/ui/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import {
   Bell,
@@ -383,8 +387,12 @@ function CodePanel({
   );
 }
 
-// Activity panel
-function ActivityPanel({ notifications }: { notifications: Notification[] }) {
+// Notification panel
+function NotificationPanel({
+  notifications,
+}: {
+  notifications: Notification[];
+}) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -554,8 +562,13 @@ export function NotificationsTester() {
     EMAIL_TEMPLATES[0]?.defaultProps ?? {}
   );
   const [previewHtml, setPreviewHtml] = useState<string>("");
-  const [rightTab, setRightTab] = useState<"preview" | "code" | "activity">(
+
+  // Tab states for the internal panels
+  const [customRightTab, setCustomRightTab] = useState<"code" | "notification">(
     "code"
+  );
+  const [templateRightTab, setTemplateRightTab] = useState<"preview" | "code">(
+    "preview"
   );
 
   const currentTemplate = EMAIL_TEMPLATES.find(
@@ -576,7 +589,7 @@ export function NotificationsTester() {
   const { data } = useQuery({
     ...notificationsListOptions({
       client: apiClient,
-      query: { page: 1, pageSize: 10 },
+      query: { page: 1, pageSize: 5 },
     }),
     refetchInterval: 3000,
   });
@@ -610,7 +623,8 @@ export function NotificationsTester() {
       const response = result.data as PreviewEmailResponse;
       if (response?.data?.html) {
         setPreviewHtml(response.data.html);
-        setRightTab("preview");
+        // Automatically switch to preview tab on success if not already there
+        setTemplateRightTab("preview");
       }
     },
   });
@@ -631,170 +645,207 @@ export function NotificationsTester() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Left Column: Custom Form */}
-        <Card
-          className={cn(mode === "custom" ? "border-primary/30" : "")}
-          onClick={() => setMode("custom")}
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Send className="size-5 text-primary" />
-              Send Test Notification
-            </CardTitle>
-            <CardDescription>
-              Send a custom notification to any channel
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <CustomForm
-              body={body}
-              channel={channel}
-              email={email}
-              setBody={setBody}
-              setChannel={setChannel}
-              setEmail={setEmail}
-              setSubject={setSubject}
-              subject={subject}
-            />
-
-            <Button
-              className="w-full"
-              disabled={sendMutation.isPending || !canSubmit}
-              onClick={() => sendMutation.mutate()}
-            >
-              {sendMutation.isPending ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <Send className="mr-2 size-4" />
-              )}
-              Send Notification
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Right Column: Code & Activity */}
-        <Card>
-          <CardHeader className="pb-0">
-            <Tabs
-              onValueChange={(v) => setRightTab(v as typeof rightTab)}
-              value={rightTab}
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger className="gap-2" value="code">
-                  <Code2 className="size-4" />
-                  Code
-                </TabsTrigger>
-                <TabsTrigger className="gap-2" value="activity">
-                  <Bell className="size-4" />
-                  Activity
-                  {unreadCount > 0 && (
-                    <Badge className="ml-1 px-1.5 py-0" variant="default">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </CardHeader>
-          <CardContent className="pt-4">
-            {rightTab === "code" && (
-              <CodePanel
-                codeExample={codeExample}
-                showTemplateInfo={mode === "template"}
-              />
-            )}
-
-            {rightTab === "activity" && (
-              <ActivityPanel notifications={notifications} />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Bottom Row: Template Card */}
-      <Card
-        className={cn("w-full", mode === "template" ? "border-primary/30" : "")}
-        onClick={() => setMode("template")}
+      <Tabs
+        className="w-full"
+        defaultValue="custom"
+        onValueChange={(v) => setMode(v as "custom" | "template")}
+        value={mode}
       >
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="size-5 text-primary" />
-            Email Templates
-          </CardTitle>
-          <CardDescription>Select and preview email templates</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
-            <div className="space-y-6">
-              <TemplateForm
-                currentTemplate={currentTemplate}
-                email={email}
-                handleTemplateChange={handleTemplateChange}
-                handleTemplateDataChange={handleTemplateDataChange}
-                selectedTemplate={selectedTemplate}
-                setEmail={setEmail}
-                templateData={templateData}
-              />
-              <div className="flex gap-2">
-                <Button
-                  className="flex-1"
-                  disabled={sendMutation.isPending}
-                  onClick={() => sendMutation.mutate()}
-                >
-                  {sendMutation.isPending ? (
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                  ) : (
-                    <Send className="mr-2 size-4" />
-                  )}
-                  Send Email
-                </Button>
-                <Button
-                  disabled={previewMutation.isPending}
-                  onClick={() => previewMutation.mutate()}
-                  variant="outline"
-                >
-                  {previewMutation.isPending ? (
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                  ) : (
-                    <Eye className="mr-2 size-4" />
-                  )}
-                  Preview
-                </Button>
-              </div>
-            </div>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="custom">Custom Sender</TabsTrigger>
+          <TabsTrigger value="template">Email Templates</TabsTrigger>
+        </TabsList>
 
-            <div className="h-[600px] overflow-hidden rounded-lg border bg-muted/20">
-              {previewHtml ? (
-                <iframe
-                  className="h-full w-full bg-white"
-                  srcDoc={previewHtml}
-                  title="Email Preview"
-                />
-              ) : (
-                <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-                  <p>Select a template and data to preview</p>
+        {/* CUSTOM SENDER TAB */}
+        <TabsContent className="mt-6" value="custom">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="size-5 text-primary" />
+                Custom Notification Sender
+              </CardTitle>
+              <CardDescription>
+                Test your notification delivery channels with custom content
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Left: Input Form */}
+                <div className="space-y-6">
+                  <CustomForm
+                    body={body}
+                    channel={channel}
+                    email={email}
+                    setBody={setBody}
+                    setChannel={setChannel}
+                    setEmail={setEmail}
+                    setSubject={setSubject}
+                    subject={subject}
+                  />
                   <Button
-                    className="mt-4"
-                    disabled={previewMutation.isPending}
-                    onClick={() => previewMutation.mutate()}
-                    variant="outline"
+                    className="w-full"
+                    disabled={sendMutation.isPending || !canSubmit}
+                    onClick={() => sendMutation.mutate()}
                   >
-                    {previewMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating Preview...
-                      </>
+                    {sendMutation.isPending ? (
+                      <Loader2 className="mr-2 size-4 animate-spin" />
                     ) : (
-                      "Generate Preview"
+                      <Send className="mr-2 size-4" />
                     )}
+                    Send Notification
                   </Button>
                 </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
+                {/* Right: Code & Notification */}
+                <div className="h-full rounded-lg border bg-muted/20 p-4">
+                  <Tabs
+                    onValueChange={(v) =>
+                      setCustomRightTab(v as "code" | "notification")
+                    }
+                    value={customRightTab}
+                  >
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger className="gap-2" value="code">
+                        <Code2 className="size-4" />
+                        Code
+                      </TabsTrigger>
+                      <TabsTrigger className="gap-2" value="notification">
+                        <Bell className="size-4" />
+                        Notification
+                        {unreadCount > 0 && (
+                          <Badge className="ml-1 px-1.5 py-0" variant="default">
+                            {unreadCount}
+                          </Badge>
+                        )}
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <div className="mt-4">
+                      {customRightTab === "code" && (
+                        <CodePanel
+                          codeExample={codeExample}
+                          showTemplateInfo={false}
+                        />
+                      )}
+                      {customRightTab === "notification" && (
+                        <NotificationPanel notifications={notifications} />
+                      )}
+                    </div>
+                  </Tabs>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TEMPLATE STUDIO TAB */}
+        <TabsContent className="mt-6" value="template">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="size-5 text-primary" />
+                Email Template Studio
+              </CardTitle>
+              <CardDescription>
+                Develop, preview, and test your React Email templates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
+                {/* Left: Template Config */}
+                <div className="space-y-6">
+                  <TemplateForm
+                    currentTemplate={currentTemplate}
+                    email={email}
+                    handleTemplateChange={handleTemplateChange}
+                    handleTemplateDataChange={handleTemplateDataChange}
+                    selectedTemplate={selectedTemplate}
+                    setEmail={setEmail}
+                    templateData={templateData}
+                  />
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      className="w-full"
+                      disabled={previewMutation.isPending}
+                      onClick={() => previewMutation.mutate()}
+                      variant="outline"
+                    >
+                      {previewMutation.isPending ? (
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                      ) : (
+                        <Eye className="mr-2 size-4" />
+                      )}
+                      Generate Preview
+                    </Button>
+                    <Button
+                      className="w-full"
+                      disabled={sendMutation.isPending}
+                      onClick={() => sendMutation.mutate()}
+                    >
+                      {sendMutation.isPending ? (
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                      ) : (
+                        <Send className="mr-2 size-4" />
+                      )}
+                      Send Test Email
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Right: Preview & Code */}
+                <div className="h-full rounded-lg border bg-muted/20 p-4">
+                  <Tabs
+                    className="flex h-full flex-col"
+                    onValueChange={(v) =>
+                      setTemplateRightTab(v as "preview" | "code")
+                    }
+                    value={templateRightTab}
+                  >
+                    <TabsList className="mb-4 grid w-full shrink-0 grid-cols-2">
+                      <TabsTrigger className="gap-2" value="preview">
+                        <Eye className="size-4" />
+                        Preview
+                      </TabsTrigger>
+                      <TabsTrigger className="gap-2" value="code">
+                        <Code2 className="size-4" />
+                        Code
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <div className="relative min-h-0 flex-1">
+                      {templateRightTab === "preview" && (
+                        <div className="h-[600px] w-full overflow-hidden rounded-lg border bg-white">
+                          {previewHtml ? (
+                            <iframe
+                              className="h-full w-full border-0"
+                              srcDoc={previewHtml}
+                              title="Email Preview"
+                            />
+                          ) : (
+                            <div className="flex h-full flex-col items-center justify-center p-6 text-center text-muted-foreground">
+                              <FileText className="mb-4 size-10 opacity-20" />
+                              <p>
+                                Click "Generate Preview" to render the template
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {templateRightTab === "code" && (
+                        <CodePanel
+                          codeExample={codeExample}
+                          showTemplateInfo={true}
+                        />
+                      )}
+                    </div>
+                  </Tabs>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
