@@ -62,7 +62,7 @@ export function InvoiceReceiptEmail({
             (item: InvoiceItem) => (
               <Row
                 key={`${item.description}-${item.amount}`}
-                style={{ marginBottom: "10px" }}
+                style={{ marginBottom: "2px" }}
               >
                 <Column>
                   <Text style={itemDescription}>{item.description}</Text>
@@ -116,11 +116,11 @@ const receiptMetaValue = {
 
 const hr = {
   borderColor: "#e5e7eb",
-  margin: "24px 0",
+  margin: "8px 0",
 };
 
 const itemList = {
-  margin: "24px 0",
+  margin: "8px 0",
 };
 
 const itemDescription = {

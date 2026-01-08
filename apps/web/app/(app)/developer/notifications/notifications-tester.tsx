@@ -47,7 +47,7 @@ import {
   Send,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 
 const CATEGORY_COLORS = {
@@ -141,7 +141,7 @@ const EMAIL_TEMPLATES: TemplateConfig[] = [
     defaultProps: {
       invoiceId: "INV-001",
       date: "Jan 01, 2024",
-      totalAmount: "$29.00",
+      totalAmount: "$31.90",
       items: JSON.stringify(
         [
           { description: "Pro Plan (Monthly)", amount: "$29.00" },
@@ -536,6 +536,27 @@ function generateCodeExample(
   templateData: Record<string, string>
 ) {
   if (mode === "template") {
+    // Try to parse JSON strings in templateData so they appear as objects in the code preview
+    const formattedData = Object.entries(templateData).reduce(
+      (acc, [key, value]) => {
+        try {
+          // Only attempt to parse if it looks like an object or array
+          if (
+            (value.startsWith("{") || value.startsWith("[")) &&
+            (value.endsWith("}") || value.endsWith("]"))
+          ) {
+            acc[key] = JSON.parse(value);
+          } else {
+            acc[key] = value;
+          }
+        } catch {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, unknown>
+    );
+
     return `await notificationsSend({
   client: apiClient,
   body: {
@@ -543,7 +564,9 @@ function generateCodeExample(
     category: "system",
     recipient: { email: "${email}" },
     templateId: "${selectedTemplate}",
-    templateData: ${JSON.stringify(templateData, null, 2).split("\n").join("\n    ")},
+    templateData: ${JSON.stringify(formattedData, null, 2)
+      .split("\n")
+      .join("\n    ")},
   },
 });`;
   }
@@ -594,6 +617,12 @@ export function NotificationsTester() {
   const [templateRightTab, setTemplateRightTab] = useState<"preview" | "code">(
     "preview"
   );
+
+  // Auto-generate preview on template change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Trigger effect only on template change
+  useEffect(() => {
+    previewMutation.mutate();
+  }, [selectedTemplate]);
 
   const currentTemplate = EMAIL_TEMPLATES.find(
     (t) => t.id === selectedTemplate
@@ -651,6 +680,11 @@ export function NotificationsTester() {
         setTemplateRightTab("preview");
       }
     },
+    onError: (error) => {
+      console.error("Preview failed:", error);
+      setPreviewHtml(""); // Clear preview on error
+      // TODO: Show toast or error message in UI
+    },
   });
 
   const notifications = (data as { data?: Notification[] })?.data ?? [];
@@ -666,6 +700,37 @@ export function NotificationsTester() {
     selectedTemplate,
     templateData
   );
+
+  const renderPreviewContent = () => {
+    if (previewMutation.isError) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center p-6 text-center text-destructive">
+          <FileText className="mb-4 size-10 opacity-20" />
+          <p className="font-medium">Preview Failed</p>
+          <p className="mt-2 max-w-[300px] text-muted-foreground text-xs">
+            {previewMutation.error?.message || "An unexpected error occurred."}
+          </p>
+        </div>
+      );
+    }
+
+    if (previewHtml) {
+      return (
+        <iframe
+          className="h-full w-full border-0"
+          srcDoc={previewHtml}
+          title="Email Preview"
+        />
+      );
+    }
+
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-6 text-center text-muted-foreground">
+        <FileText className="mb-4 size-10 opacity-20" />
+        <p>Click "Generate Preview" to render the template</p>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -763,7 +828,7 @@ export function NotificationsTester() {
         </TabsContent>
 
         {/* TEMPLATE STUDIO TAB */}
-        <TabsContent className="mt-6" value="template">
+        <TabsContent value="template">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -825,7 +890,7 @@ export function NotificationsTester() {
                     }
                     value={templateRightTab}
                   >
-                    <TabsList className="mb-4 grid w-full shrink-0 grid-cols-2">
+                    <TabsList className="grid w-full shrink-0 grid-cols-2">
                       <TabsTrigger className="gap-2" value="preview">
                         <Eye className="size-4" />
                         Preview
@@ -838,21 +903,8 @@ export function NotificationsTester() {
 
                     <div className="relative min-h-0 flex-1">
                       {templateRightTab === "preview" && (
-                        <div className="h-[600px] w-full overflow-hidden rounded-lg border bg-white">
-                          {previewHtml ? (
-                            <iframe
-                              className="h-full w-full border-0"
-                              srcDoc={previewHtml}
-                              title="Email Preview"
-                            />
-                          ) : (
-                            <div className="flex h-full flex-col items-center justify-center p-6 text-center text-muted-foreground">
-                              <FileText className="mb-4 size-10 opacity-20" />
-                              <p>
-                                Click "Generate Preview" to render the template
-                              </p>
-                            </div>
-                          )}
+                        <div className="h-[720px] w-full overflow-hidden rounded-lg border bg-white">
+                          {renderPreviewContent()}
                         </div>
                       )}
 
