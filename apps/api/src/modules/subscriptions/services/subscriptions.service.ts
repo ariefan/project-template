@@ -14,6 +14,8 @@ export interface CreateSubscriptionInput {
   couponCode?: string;
   customerEmail: string;
   customerName?: string;
+  paymentMethodId?: string; // Optional from contracts
+  returnUrl?: string; // Optional from contracts
 }
 
 export interface UpdateSubscriptionInput {
