@@ -7,6 +7,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import * as React from "react"; // Required for server-side rendering
 import { EmailLayout, globalStyles } from "../components/email-layout";
 
 export interface InvoiceItem {

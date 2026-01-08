@@ -136,6 +136,20 @@
           }
         }
       }
+    },
+    {
+      // React Email templates require 'import * as React' for server-side rendering (via @react-email/render).
+      // However, since we use "jsx": "react-jsx" globally (which doesn't require importing React),
+      // the linter incorrectly flags this import as unused and removes it during "Organize Imports".
+      // We disable this rule specifically for templates to prevent this breakage.
+      "includes": ["packages/notifications/src/templates/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedImports": "off"
+          }
+        }
+      }
     }
   ],
   "css": {
