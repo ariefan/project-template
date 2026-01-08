@@ -8,7 +8,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type * as React from "react"; // Required for server-side rendering
+import * as React from "react"; // Required for server-side rendering
 
 interface EmailLayoutProps {
   preview?: string;

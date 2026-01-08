@@ -107,10 +107,6 @@ const navDeveloper = [
         title: "Jobs",
         url: "/developer/jobs",
       },
-      {
-        title: "Email",
-        url: "/developer/email",
-      },
     ],
   },
 ];

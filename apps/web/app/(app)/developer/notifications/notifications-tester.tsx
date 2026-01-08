@@ -114,7 +114,7 @@ const EMAIL_TEMPLATES: TemplateConfig[] = [
     description: "Security-related notifications",
     defaultProps: {
       userName: "John Doe",
-      alertType: "login",
+      alertType: "new_login",
       alertMessage: "New login detected from Chrome on Windows",
       timestamp: new Date().toLocaleString(),
       location: "San Francisco, CA",
@@ -142,7 +142,14 @@ const EMAIL_TEMPLATES: TemplateConfig[] = [
       invoiceId: "INV-001",
       date: "Jan 01, 2024",
       totalAmount: "$29.00",
-      items: JSON.stringify([{ description: "Pro Plan", amount: "$29.00" }]),
+      items: JSON.stringify(
+        [
+          { description: "Pro Plan (Monthly)", amount: "$29.00" },
+          { description: "Tax (10%)", amount: "$2.90" },
+        ],
+        null,
+        2
+      ),
     },
     requiredFields: ["invoiceId", "totalAmount"],
   },
@@ -322,8 +329,12 @@ function TemplateForm({
       <div className="space-y-3">
         <Label>Template Data</Label>
         {currentTemplate?.defaultProps &&
-          Object.entries(currentTemplate.defaultProps).map(
-            ([key, defaultValue]) => (
+          Object.entries(templateData).map(([key, value]) => {
+            const isLong =
+              value.length > 50 ||
+              value.startsWith("{") ||
+              value.startsWith("[");
+            return (
               <div className="space-y-1" key={key}>
                 <div className="flex items-center gap-2">
                   <Label className="text-sm" htmlFor={key}>
@@ -333,17 +344,30 @@ function TemplateForm({
                     <Badge variant="secondary">Required</Badge>
                   )}
                 </div>
-                <Input
-                  id={key}
-                  onChange={(e) =>
-                    handleTemplateDataChange(key, e.target.value)
-                  }
-                  placeholder={defaultValue}
-                  value={templateData[key] || ""}
-                />
+                {isLong ? (
+                  <Textarea
+                    className="font-mono text-xs"
+                    id={key}
+                    onChange={(e) =>
+                      handleTemplateDataChange(key, e.target.value)
+                    }
+                    rows={
+                      value.startsWith("[") || value.startsWith("{") ? 5 : 3
+                    }
+                    value={value}
+                  />
+                ) : (
+                  <Input
+                    id={key}
+                    onChange={(e) =>
+                      handleTemplateDataChange(key, e.target.value)
+                    }
+                    value={value}
+                  />
+                )}
               </div>
-            )
-          )}
+            );
+          })}
       </div>
 
       <p className="text-muted-foreground text-xs">
@@ -657,7 +681,7 @@ export function NotificationsTester() {
         </TabsList>
 
         {/* CUSTOM SENDER TAB */}
-        <TabsContent className="mt-6" value="custom">
+        <TabsContent value="custom">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

@@ -42,10 +42,11 @@ const TEMPLATES = {
     name: "Security Alert",
     component: SecurityAlertEmail,
     props: {
-      userName: "Sam Wilson",
+      alertType: "new_login" as const,
       device: "Chrome on macOS",
       location: "San Francisco, CA",
-      date: new Date().toLocaleString(),
+      timestamp: new Date().toLocaleString(),
+      userName: "Sam Wilson",
     },
   },
   "team-invite": {

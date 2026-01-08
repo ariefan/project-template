@@ -58,19 +58,21 @@ export function InvoiceReceiptEmail({
         <Hr style={hr} />
 
         <Section style={itemList}>
-          {items.map((item) => (
-            <Row
-              key={`${item.description}-${item.amount}`}
-              style={{ marginBottom: "10px" }}
-            >
-              <Column>
-                <Text style={itemDescription}>{item.description}</Text>
-              </Column>
-              <Column align="right">
-                <Text style={itemAmount}>{item.amount}</Text>
-              </Column>
-            </Row>
-          ))}
+          {(typeof items === "string" ? JSON.parse(items) : items).map(
+            (item: InvoiceItem) => (
+              <Row
+                key={`${item.description}-${item.amount}`}
+                style={{ marginBottom: "10px" }}
+              >
+                <Column>
+                  <Text style={itemDescription}>{item.description}</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={itemAmount}>{item.amount}</Text>
+                </Column>
+              </Row>
+            )
+          )}
         </Section>
 
         <Hr style={hr} />
