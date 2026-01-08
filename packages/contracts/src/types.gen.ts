@@ -979,6 +979,26 @@ export type CreateExamplePostRequest = {
 };
 
 /**
+ * Request to create a new job
+ */
+export type CreateJobRequest = {
+    /**
+     * Job type (e.g., "report", "import", "export", "my-custom-job")
+     */
+    type: string;
+    /**
+     * Job input parameters (job-specific)
+     */
+    input?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Job metadata (references, format, etc.)
+     */
+    metadata?: JobMetadata;
+};
+
+/**
  * Create subscription plan request
  */
 export type CreatePlanRequest = {
@@ -1099,13 +1119,19 @@ export type CreateRoleRequest = {
 };
 
 /**
- * Request body for creating a scheduled report
+ * Request body for creating a scheduled job
  */
-export type CreateScheduledReportRequest = {
+export type CreateScheduledJobRequest = {
     /**
-     * Associated report template ID
+     * Job type to run
      */
-    templateId: string;
+    jobType: string;
+    /**
+     * Job configuration passed to the job handler
+     */
+    jobConfig?: {
+        [key: string]: unknown;
+    };
     /**
      * Schedule name
      */
@@ -1151,19 +1177,13 @@ export type CreateScheduledReportRequest = {
      */
     endDate?: string;
     /**
-     * Delivery method
+     * Delivery method for job results
      */
-    deliveryMethod: DeliveryMethod;
+    deliveryMethod?: JobDeliveryMethod;
     /**
      * Delivery configuration
      */
     deliveryConfig?: DeliveryConfig;
-    /**
-     * Runtime parameters passed to template
-     */
-    parameters?: {
-        [key: string]: unknown;
-    };
     /**
      * Whether the schedule is active (default: true)
      */
@@ -1332,11 +1352,6 @@ export type DeliveryConfigUpdate = {
      */
     storage?: StorageDeliveryConfigUpdate;
 };
-
-/**
- * Report delivery method
- */
-export type DeliveryMethod = 'email' | 'download' | 'webhook' | 'storage';
 
 /**
  * Dismiss announcement response
@@ -1932,6 +1947,11 @@ export type Job = {
      */
     estimatedCompletion?: string;
 };
+
+/**
+ * Generic job delivery method (extends DeliveryMethod with "none" option)
+ */
+export type JobDeliveryMethod = 'email' | 'download' | 'webhook' | 'storage' | 'none';
 
 /**
  * Job error details
@@ -2921,20 +2941,26 @@ export type RoleResponse = {
 };
 
 /**
- * Schedule frequency
+ * ============================================================================
+ * SCHEDULE COMMON TYPES
+ * ============================================================================
+ *
+ * Shared types used by both scheduled reports and scheduled jobs.
+ * These types are generic and can be used for any scheduled operation.
+ * ============================================================================Schedule frequency
  */
 export type ScheduleFrequency = 'once' | 'daily' | 'weekly' | 'monthly' | 'custom';
 
 /**
- * Scheduled Report resource model
+ * Scheduled Job resource model
  *
- * Defines automated report generation with:
+ * Defines automated job execution with:
  * - Flexible scheduling (daily, weekly, monthly, custom cron)
  * - Multiple delivery methods (email, webhook, storage)
- * - Template-based generation
+ * - Generic job type support (report, export, import, custom)
  * - Multi-tenant scoping
  */
-export type ScheduledReport = {
+export type ScheduledJob = {
     /**
      * Unique schedule identifier (format: sched_{randomString})
      */
@@ -2944,9 +2970,15 @@ export type ScheduledReport = {
      */
     orgId: string;
     /**
-     * Associated report template ID
+     * Job type to run (e.g., "report", "export", "import", "custom-job")
      */
-    templateId: string;
+    jobType: string;
+    /**
+     * Job configuration passed to the job handler (e.g., templateId, parameters)
+     */
+    jobConfig?: {
+        [key: string]: unknown;
+    };
     /**
      * Schedule name
      */
@@ -2992,19 +3024,13 @@ export type ScheduledReport = {
      */
     endDate?: string;
     /**
-     * Delivery method
+     * Delivery method for job results
      */
-    deliveryMethod: DeliveryMethod;
+    deliveryMethod: JobDeliveryMethod;
     /**
      * Delivery configuration
      */
     deliveryConfig?: DeliveryConfig;
-    /**
-     * Runtime parameters passed to template
-     */
-    parameters?: {
-        [key: string]: unknown;
-    };
     /**
      * Whether the schedule is active
      */
@@ -3021,6 +3047,10 @@ export type ScheduledReport = {
      * Number of consecutive failures
      */
     failureCount: number;
+    /**
+     * Last job ID created by this schedule
+     */
+    lastJobId?: string;
     /**
      * User ID who created the schedule
      */
@@ -3040,19 +3070,61 @@ export type ScheduledReport = {
 };
 
 /**
- * Scheduled report collection response (page-based)
+ * Scheduled job run history response
  */
-export type ScheduledReportListResponse = {
-    data: Array<ScheduledReport>;
+export type ScheduledJobHistoryResponse = {
+    data: {
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+        /**
+         * Jobs created by this schedule
+         */
+        jobs: Array<{
+            /**
+             * Job ID
+             */
+            jobId: string;
+            /**
+             * Job status
+             */
+            status: string;
+            /**
+             * When the job was created
+             */
+            createdAt: string;
+            /**
+             * When the job completed
+             */
+            completedAt?: string;
+            /**
+             * Whether the job succeeded
+             */
+            success: boolean;
+            /**
+             * Error message if failed
+             */
+            error?: string;
+        }>;
+    };
+    meta: ResponseMeta;
+};
+
+/**
+ * Scheduled job collection response (page-based)
+ */
+export type ScheduledJobListResponse = {
+    data: Array<ScheduledJob>;
     pagination: Pagination;
     meta: ResponseMeta;
 };
 
 /**
- * Single scheduled report response
+ * Single scheduled job response
  */
-export type ScheduledReportResponse = {
-    data: ScheduledReport;
+export type ScheduledJobResponse = {
+    data: ScheduledJob;
     meta: ResponseMeta;
 };
 
@@ -3801,13 +3873,19 @@ export type UpdateRoleRequest = {
 };
 
 /**
- * Request body for updating a scheduled report
+ * Request body for updating a scheduled job
  */
-export type UpdateScheduledReportRequest = {
+export type UpdateScheduledJobRequest = {
     /**
-     * Associated report template ID
+     * Job type to run
      */
-    templateId?: string;
+    jobType?: string;
+    /**
+     * Job configuration passed to the job handler
+     */
+    jobConfig?: {
+        [key: string]: unknown;
+    };
     /**
      * Schedule name
      */
@@ -3855,17 +3933,11 @@ export type UpdateScheduledReportRequest = {
     /**
      * Delivery method
      */
-    deliveryMethod?: DeliveryMethod;
+    deliveryMethod?: JobDeliveryMethod;
     /**
      * Delivery configuration
      */
     deliveryConfig?: DeliveryConfigUpdate;
-    /**
-     * Runtime parameters
-     */
-    parameters?: {
-        [key: string]: unknown;
-    };
     /**
      * Whether the schedule is active
      */
@@ -4282,7 +4354,7 @@ export type WebhookDelivery = {
  */
 export type WebhookDeliveryConfig = {
     /**
-     * Webhook URL to POST the report
+     * Webhook URL to POST the result
      */
     url: string;
     /**
@@ -4292,7 +4364,7 @@ export type WebhookDeliveryConfig = {
         [key: string]: string;
     };
     /**
-     * Include report as attachment or inline base64
+     * Include result as attachment or inline base64
      */
     attachmentMode?: 'attachment' | 'base64';
 };
@@ -4302,7 +4374,7 @@ export type WebhookDeliveryConfig = {
  */
 export type WebhookDeliveryConfigUpdate = {
     /**
-     * Webhook URL to POST the report
+     * Webhook URL to POST the result
      */
     url?: string;
     /**
@@ -4312,7 +4384,7 @@ export type WebhookDeliveryConfigUpdate = {
         [key: string]: string;
     };
     /**
-     * Include report as attachment or inline base64
+     * Include result as attachment or inline base64
      */
     attachmentMode?: 'attachment' | 'base64';
 };
@@ -6689,6 +6761,30 @@ export type JobsListResponses = {
 
 export type JobsListResponse = JobsListResponses[keyof JobsListResponses];
 
+export type JobsCreateData = {
+    /**
+     * Job creation request
+     */
+    body: CreateJobRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/jobs';
+};
+
+export type JobsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: JobResponse | ErrorResponse;
+};
+
+export type JobsCreateResponse = JobsCreateResponses[keyof JobsCreateResponses];
+
 export type JobsGetData = {
     body?: never;
     path: {
@@ -6929,286 +7025,6 @@ export type ReportExportsStreamExportResponses = {
 
 export type ReportExportsStreamExportResponse = ReportExportsStreamExportResponses[keyof ReportExportsStreamExportResponses];
 
-export type ScheduledReportsListData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: {
-        /**
-         * Page number (1-indexed)
-         */
-        page?: number;
-        /**
-         * Number of items per page (max: 100)
-         */
-        pageSize?: number;
-        /**
-         * Sort order
-         */
-        orderBy?: string;
-        /**
-         * Filter by template ID
-         */
-        templateId?: string;
-        /**
-         * Filter by frequency
-         */
-        frequency?: ScheduleFrequency;
-        /**
-         * Filter by delivery method
-         */
-        deliveryMethod?: DeliveryMethod;
-        /**
-         * Filter by active status
-         */
-        isActive?: boolean;
-        /**
-         * Full-text search
-         */
-        search?: string;
-    };
-    url: '/v1/orgs/{orgId}/reports/schedules';
-};
-
-export type ScheduledReportsListResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ScheduledReportListResponse | ErrorResponse;
-};
-
-export type ScheduledReportsListResponse = ScheduledReportsListResponses[keyof ScheduledReportsListResponses];
-
-export type ScheduledReportsCreateData = {
-    /**
-     * Schedule data
-     */
-    body: CreateScheduledReportRequest;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/schedules';
-};
-
-export type ScheduledReportsCreateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ErrorResponse;
-    /**
-     * The request has succeeded and a new resource has been created as a result.
-     */
-    201: ScheduledReportResponse;
-};
-
-export type ScheduledReportsCreateResponse = ScheduledReportsCreateResponses[keyof ScheduledReportsCreateResponses];
-
-export type ScheduledReportsDeleteData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Schedule ID
-         */
-        scheduleId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}';
-};
-
-export type ScheduledReportsDeleteResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: SoftDeleteResponse | ErrorResponse;
-};
-
-export type ScheduledReportsDeleteResponse = ScheduledReportsDeleteResponses[keyof ScheduledReportsDeleteResponses];
-
-export type ScheduledReportsGetData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Schedule ID
-         */
-        scheduleId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}';
-};
-
-export type ScheduledReportsGetResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ScheduledReportResponse | ErrorResponse;
-};
-
-export type ScheduledReportsGetResponse = ScheduledReportsGetResponses[keyof ScheduledReportsGetResponses];
-
-export type ScheduledReportsUpdateData = {
-    /**
-     * Schedule update data
-     */
-    body: UpdateScheduledReportRequest;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Schedule ID
-         */
-        scheduleId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}';
-};
-
-export type ScheduledReportsUpdateResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ScheduledReportResponse | ErrorResponse;
-};
-
-export type ScheduledReportsUpdateResponse = ScheduledReportsUpdateResponses[keyof ScheduledReportsUpdateResponses];
-
-export type ScheduledReportsGetHistoryData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Schedule ID
-         */
-        scheduleId: string;
-    };
-    query?: {
-        /**
-         * Page number
-         */
-        page?: number;
-        /**
-         * Items per page
-         */
-        pageSize?: number;
-        /**
-         * Filter by status
-         */
-        status?: JobStatus;
-    };
-    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/history';
-};
-
-export type ScheduledReportsGetHistoryResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: JobListResponse | ErrorResponse;
-};
-
-export type ScheduledReportsGetHistoryResponse = ScheduledReportsGetHistoryResponses[keyof ScheduledReportsGetHistoryResponses];
-
-export type ScheduledReportsPauseData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Schedule ID
-         */
-        scheduleId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/pause';
-};
-
-export type ScheduledReportsPauseResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ScheduledReportResponse | ErrorResponse;
-};
-
-export type ScheduledReportsPauseResponse = ScheduledReportsPauseResponses[keyof ScheduledReportsPauseResponses];
-
-export type ScheduledReportsResumeData = {
-    body?: never;
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Schedule ID
-         */
-        scheduleId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/resume';
-};
-
-export type ScheduledReportsResumeResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: ScheduledReportResponse | ErrorResponse;
-};
-
-export type ScheduledReportsResumeResponse = ScheduledReportsResumeResponses[keyof ScheduledReportsResumeResponses];
-
-export type ScheduledReportsRunNowData = {
-    /**
-     * Optional parameter overrides
-     */
-    body?: {
-        parameters?: {
-            [key: string]: unknown;
-        };
-    };
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Schedule ID
-         */
-        scheduleId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/schedules/{scheduleId}/run';
-};
-
-export type ScheduledReportsRunNowResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: JobResponse | ErrorResponse;
-};
-
-export type ScheduledReportsRunNowResponse = ScheduledReportsRunNowResponses[keyof ScheduledReportsRunNowResponses];
-
 export type ReportTemplatesListData = {
     body?: never;
     path: {
@@ -7400,49 +7216,6 @@ export type ReportTemplatesCloneResponses = {
 
 export type ReportTemplatesCloneResponse = ReportTemplatesCloneResponses[keyof ReportTemplatesCloneResponses];
 
-export type ReportTemplatesTestData = {
-    /**
-     * Test data and parameters
-     */
-    body: {
-        /**
-         * Sample data to use for testing
-         */
-        sampleData?: Array<unknown>;
-        /**
-         * Number of sample rows to generate if no sampleData provided
-         */
-        sampleRows?: number;
-        /**
-         * Parameters to pass to template
-         */
-        parameters?: {
-            [key: string]: unknown;
-        };
-    };
-    path: {
-        /**
-         * Organization ID
-         */
-        orgId: string;
-        /**
-         * Template ID
-         */
-        templateId: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{orgId}/reports/templates/{templateId}/test';
-};
-
-export type ReportTemplatesTestResponses = {
-    /**
-     * The request has succeeded.
-     */
-    200: AsyncExportResponse | ErrorResponse;
-};
-
-export type ReportTemplatesTestResponse = ReportTemplatesTestResponses[keyof ReportTemplatesTestResponses];
-
 export type TenantRolesListData = {
     body?: never;
     path: {
@@ -7586,6 +7359,271 @@ export type TenantRolesUpdateResponses = {
 };
 
 export type TenantRolesUpdateResponse = TenantRolesUpdateResponses[keyof TenantRolesUpdateResponses];
+
+export type ScheduledJobsListData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: {
+        /**
+         * Page number (1-indexed)
+         */
+        page?: number;
+        /**
+         * Number of items per page
+         */
+        pageSize?: number;
+        /**
+         * Sort order
+         */
+        orderBy?: string;
+        /**
+         * Filter by job type
+         */
+        jobType?: string;
+        /**
+         * Filter by frequency
+         */
+        frequency?: ScheduleFrequency;
+        /**
+         * Filter by delivery method
+         */
+        deliveryMethod?: JobDeliveryMethod;
+        /**
+         * Filter by active status
+         */
+        isActive?: boolean;
+        /**
+         * Full-text search
+         */
+        search?: string;
+    };
+    url: '/v1/orgs/{orgId}/schedules';
+};
+
+export type ScheduledJobsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledJobListResponse | ErrorResponse;
+};
+
+export type ScheduledJobsListResponse = ScheduledJobsListResponses[keyof ScheduledJobsListResponses];
+
+export type ScheduledJobsCreateData = {
+    /**
+     * Schedule data
+     */
+    body: CreateScheduledJobRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/schedules';
+};
+
+export type ScheduledJobsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: ScheduledJobResponse;
+};
+
+export type ScheduledJobsCreateResponse = ScheduledJobsCreateResponses[keyof ScheduledJobsCreateResponses];
+
+export type ScheduledJobsDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/schedules/{scheduleId}';
+};
+
+export type ScheduledJobsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type ScheduledJobsDeleteResponse = ScheduledJobsDeleteResponses[keyof ScheduledJobsDeleteResponses];
+
+export type ScheduledJobsGetData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/schedules/{scheduleId}';
+};
+
+export type ScheduledJobsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledJobResponse | ErrorResponse;
+};
+
+export type ScheduledJobsGetResponse = ScheduledJobsGetResponses[keyof ScheduledJobsGetResponses];
+
+export type ScheduledJobsUpdateData = {
+    /**
+     * Schedule update data
+     */
+    body: UpdateScheduledJobRequest;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/schedules/{scheduleId}';
+};
+
+export type ScheduledJobsUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledJobResponse | ErrorResponse;
+};
+
+export type ScheduledJobsUpdateResponse = ScheduledJobsUpdateResponses[keyof ScheduledJobsUpdateResponses];
+
+export type ScheduledJobsGetHistoryData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: {
+        /**
+         * Number of history items to return
+         */
+        limit?: number;
+    };
+    url: '/v1/orgs/{orgId}/schedules/{scheduleId}/history';
+};
+
+export type ScheduledJobsGetHistoryResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledJobHistoryResponse | ErrorResponse;
+};
+
+export type ScheduledJobsGetHistoryResponse = ScheduledJobsGetHistoryResponses[keyof ScheduledJobsGetHistoryResponses];
+
+export type ScheduledJobsPauseData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/schedules/{scheduleId}/pause';
+};
+
+export type ScheduledJobsPauseResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledJobResponse | ErrorResponse;
+};
+
+export type ScheduledJobsPauseResponse = ScheduledJobsPauseResponses[keyof ScheduledJobsPauseResponses];
+
+export type ScheduledJobsResumeData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/schedules/{scheduleId}/resume';
+};
+
+export type ScheduledJobsResumeResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ScheduledJobResponse | ErrorResponse;
+};
+
+export type ScheduledJobsResumeResponse = ScheduledJobsResumeResponses[keyof ScheduledJobsResumeResponses];
+
+export type ScheduledJobsRunNowData = {
+    body?: never;
+    path: {
+        /**
+         * Organization ID
+         */
+        orgId: string;
+        /**
+         * Schedule ID
+         */
+        scheduleId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/schedules/{scheduleId}/run';
+};
+
+export type ScheduledJobsRunNowResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: JobResponse | ErrorResponse;
+};
+
+export type ScheduledJobsRunNowResponse = ScheduledJobsRunNowResponses[keyof ScheduledJobsRunNowResponses];
 
 export type SubscriptionsCreateData = {
     /**

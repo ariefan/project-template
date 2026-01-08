@@ -11,6 +11,7 @@ import {
   Bell,
   BellRing,
   Briefcase,
+  CalendarClock,
   Code,
   CreditCard,
   FileSpreadsheet,
@@ -60,6 +61,11 @@ const navSystem = [
     icon: Briefcase,
   },
   {
+    title: "Schedules",
+    url: "/schedules",
+    icon: CalendarClock,
+  },
+  {
     title: "Webhooks",
     url: "/webhooks",
     icon: Webhook,
@@ -83,10 +89,6 @@ const navSystem = [
       {
         title: "Templates",
         url: "/reports/templates",
-      },
-      {
-        title: "Schedules",
-        url: "/reports/schedules",
       },
     ],
   },

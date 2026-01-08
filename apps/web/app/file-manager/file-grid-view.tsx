@@ -1,83 +1,104 @@
 "use client";
 
+import { Checkbox } from "@workspace/ui/components/checkbox";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
+} from "@workspace/ui/components/context-menu";
 import { cn } from "@workspace/ui/lib/utils";
-import { PictureInPicture } from "lucide-react";
-import { FileContextMenu } from "./file-context-menu";
 import type { FileInfo } from "./file-manager-context";
 import { getFileIcon, getFileType } from "./lib/file-utils";
 
 interface FileGridViewProps {
   files: FileInfo[];
   selectedItems: Set<string>;
+  onFileSelect: (path: string, e: React.MouseEvent) => void;
   onToggleSelect: (path: string, checked: boolean) => void;
   onFileDoubleClick: (file: FileInfo) => void;
   focusedIndex: number;
+  showCheckboxes: boolean;
+  renderContextMenuItems: (file: FileInfo) => React.ReactNode;
 }
 
 export function FileGridView({
   files,
   selectedItems,
+  onFileSelect,
   onToggleSelect,
   onFileDoubleClick,
   focusedIndex,
+  showCheckboxes,
+  renderContextMenuItems,
 }: FileGridViewProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
       {files.map((file, index) => {
         const fileType = getFileType(file.name, file.isDirectory);
         const id = file.path;
         const selected = selectedItems.has(id);
         const focused = focusedIndex === index;
-        const isImage = fileType === "image";
 
         return (
-          <FileContextMenu file={file} key={id}>
-            {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: File grid item with double-click */}
-            {/* biome-ignore lint/a11y/useKeyWithClickEvents: File grid item with double-click */}
-            {/* biome-ignore lint/a11y/noStaticElementInteractions: File grid item with double-click */}
-            <div
-              className={cn(
-                "group relative flex cursor-pointer flex-col gap-2 rounded-lg border bg-card p-3 transition-colors",
-                !selected && "hover:bg-accent",
-                selected && "bg-blue-500/20 hover:bg-blue-500/10",
-                focused && "ring-2 ring-ring"
-              )}
-              onClick={(e) => {
-                // Toggle selection on single click
-                onToggleSelect(id, !selected);
-                e.stopPropagation();
-              }}
-              onDoubleClick={() => onFileDoubleClick(file)}
-            >
-              <button
-                className="flex shrink-0 items-center justify-center"
+          <ContextMenu key={id}>
+            <ContextMenuTrigger asChild>
+              {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: File grid item with double-click */}
+              {/* biome-ignore lint/a11y/useKeyWithClickEvents: File grid item with double-click */}
+              {/* biome-ignore lint/a11y/noStaticElementInteractions: File grid item with double-click */}
+              <div
+                className={cn(
+                  "group relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border bg-card p-3 transition-colors",
+                  !selected && "hover:bg-accent",
+                  selected && "bg-blue-500/20 hover:bg-blue-500/10",
+                  focused && "ring-2 ring-ring"
+                )}
                 onClick={(e) => {
-                  // Also trigger selection when clicking the icon
-                  onToggleSelect(id, !selected);
+                  // Use new selection handler that checks for Ctrl key
+                  onFileSelect(id, e);
                   e.stopPropagation();
                 }}
-                type="button"
+                onDoubleClick={() => onFileDoubleClick(file)}
               >
-                {isImage ? (
-                  <div className="flex size-16 items-center justify-center rounded-md bg-muted">
-                    <PictureInPicture className="size-8 text-muted-foreground" />
-                  </div>
-                ) : (
-                  <div className="flex size-16 items-center justify-center rounded-md bg-muted">
-                    {getFileIcon(fileType)}
-                  </div>
-                )}
-              </button>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <h3 className="truncate font-medium text-sm" title={file.name}>
-                  {file.name}
-                </h3>
-                <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                  <span>{file.size > 0 ? formatBytes(file.size) : ""}</span>
+                <button
+                  className="relative flex size-28 shrink-0 items-center justify-center"
+                  onClick={(e) => {
+                    // Icon click also uses selection handler
+                    onFileSelect(id, e);
+                    e.stopPropagation();
+                  }}
+                  type="button"
+                >
+                  {getFileIcon(fileType)}
+                  {/* Checkbox overlay - only show when items are selected */}
+                  {showCheckboxes && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Checkbox
+                        checked={selected}
+                        className="border-white bg-white"
+                        onCheckedChange={(checked) => {
+                          onToggleSelect(id, checked === true);
+                        }}
+                      />
+                    </div>
+                  )}
+                </button>
+                <div className="flex w-full flex-col items-center text-center">
+                  <h3
+                    className="w-full truncate px-1 font-medium text-xs"
+                    title={file.name}
+                  >
+                    {file.name}
+                  </h3>
+                  <span className="text-[10px] text-muted-foreground">
+                    {file.size > 0 ? formatBytes(file.size) : ""}
+                  </span>
                 </div>
               </div>
-            </div>
-          </FileContextMenu>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              {renderContextMenuItems(file)}
+            </ContextMenuContent>
+          </ContextMenu>
         );
       })}
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@workspace/ui/components/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -56,17 +57,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import { FilePreviewDialog } from "@workspace/ui/composed/file-preview-dialog";
 import {
   AlertCircle,
   ChevronRight,
   Copy,
   Download,
+  FileText,
   Filter,
   Folder,
   FolderOpen,
   FolderPlus,
   Grid3x3,
   HardDrive,
+  Info,
   Keyboard,
   List,
   Loader2,
@@ -117,11 +121,20 @@ type FilterType =
 
 async function fetchLocalFiles(path?: string): Promise<LocalFilesResponse> {
   const url = path
-    ? `${env.NEXT_PUBLIC_API_URL}/local-files/${path}`
-    : `${env.NEXT_PUBLIC_API_URL}/local-files`;
+    ? `${env.NEXT_PUBLIC_API_URL}/storage/${path}`
+    : `${env.NEXT_PUBLIC_API_URL}/storage`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch files: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+async function searchFiles(query: string): Promise<LocalFilesResponse> {
+  const url = `${env.NEXT_PUBLIC_API_URL}/storage/search?q=${encodeURIComponent(query)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to search files: ${response.statusText}`);
   }
   return response.json();
 }
@@ -140,7 +153,7 @@ interface FileApiResponse {
 }
 
 async function fetchAllFiles(): Promise<FileApiResponse[]> {
-  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/all`;
+  const url = `${env.NEXT_PUBLIC_API_URL}/storage/all`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch files: ${response.statusText}`);
@@ -325,7 +338,7 @@ function FileSidebar({
   const usageDisplay = formatUsage(totalSize);
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset">
       <SidebarHeader className="border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <HardDrive className="size-8 text-muted-foreground" />
@@ -340,7 +353,7 @@ function FileSidebar({
 
       <SidebarContent>
         {/* New Button Section */}
-        <SidebarGroup className="px-3 pt-4 pb-2">
+        <SidebarGroup className="px-3">
           <NewButtonMenu
             onCreateFolder={onCreateFolder}
             onUploadFiles={onUploadFiles}
@@ -392,6 +405,117 @@ function FileSidebar({
   );
 }
 
+interface InfoSidebarProps {
+  file: FileInfo;
+  onClose: () => void;
+  onPreview?: () => void;
+}
+
+function InfoSidebar({ file, onClose, onPreview }: InfoSidebarProps) {
+  const fileType = getFileType(file.name, file.isDirectory);
+  const isImage = fileType === "image";
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
+  };
+
+  return (
+    <Sidebar collapsible="none" side="right" variant="inset">
+      <SidebarHeader className="border-b px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText className="size-8 text-muted-foreground" />
+            <span className="font-medium text-lg">Information</span>
+          </div>
+          <Button onClick={onClose} size="icon" variant="ghost">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent className="space-y-4">
+            {/* File name and icon */}
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
+              <div className="flex size-12 items-center justify-center rounded-md bg-background">
+                {getFileType(file.name, file.isDirectory) === "folder" ? (
+                  <Folder className="size-6 text-blue-500" />
+                ) : (
+                  <FileText className="size-6 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex flex-1 flex-col">
+                <span className="truncate font-medium">{file.name}</span>
+                <Badge className="w-fit" variant="secondary">
+                  {file.isDirectory ? "Folder" : fileType}
+                </Badge>
+              </div>
+            </div>
+
+            {/* File details */}
+            <div className="space-y-3">
+              <div>
+                <span className="text-muted-foreground text-xs">Path</span>
+                <span className="block truncate font-medium text-sm">
+                  {file.path || "/"}
+                </span>
+              </div>
+
+              {!file.isDirectory && (
+                <div>
+                  <span className="text-muted-foreground text-xs">Size</span>
+                  <span className="block font-medium text-sm">
+                    {formatFileSize(file.size)}
+                  </span>
+                </div>
+              )}
+
+              <div>
+                <span className="text-muted-foreground text-xs">Modified</span>
+                <span className="block font-medium text-sm">
+                  {formatDate(file.modified)}
+                </span>
+              </div>
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <SidebarFooter className="border-t px-4 py-3">
+        <div className="flex gap-2">
+          {isImage && onPreview && (
+            <Button
+              className="flex-1"
+              onClick={onPreview}
+              size="sm"
+              variant="outline"
+            >
+              Preview
+            </Button>
+          )}
+          <Button
+            className="flex-1"
+            onClick={onClose}
+            size="sm"
+            variant="outline"
+          >
+            Close
+          </Button>
+        </div>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
+
 interface UploadProgress {
   file: string;
   loaded: number;
@@ -407,8 +531,8 @@ async function uploadFile(
   formData.append("file", file);
 
   const url = path
-    ? `${env.NEXT_PUBLIC_API_URL}/local-files/upload/${path}`
-    : `${env.NEXT_PUBLIC_API_URL}/local-files/upload/`;
+    ? `${env.NEXT_PUBLIC_API_URL}/storage/upload/${path}`
+    : `${env.NEXT_PUBLIC_API_URL}/storage/upload/`;
 
   const xhr = new XMLHttpRequest();
 
@@ -461,7 +585,7 @@ async function uploadFiles(
 }
 
 async function downloadFile(file: FileInfo): Promise<void> {
-  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/download/${file.path}`;
+  const url = `${env.NEXT_PUBLIC_API_URL}/storage/download/${file.path}`;
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to download file: ${response.statusText}`);
@@ -479,7 +603,7 @@ async function downloadFile(file: FileInfo): Promise<void> {
 }
 
 async function deleteFiles(paths: string[]): Promise<void> {
-  const url = `${env.NEXT_PUBLIC_API_URL}/local-files`;
+  const url = `${env.NEXT_PUBLIC_API_URL}/storage`;
   const response = await fetch(url, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
@@ -492,8 +616,8 @@ async function deleteFiles(paths: string[]): Promise<void> {
 
 async function createFolder(name: string, path: string): Promise<FileInfo> {
   const url = path
-    ? `${env.NEXT_PUBLIC_API_URL}/local-files/folder/${path}`
-    : `${env.NEXT_PUBLIC_API_URL}/local-files/folder`;
+    ? `${env.NEXT_PUBLIC_API_URL}/storage/folder/${path}`
+    : `${env.NEXT_PUBLIC_API_URL}/storage/folder`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -514,7 +638,7 @@ async function copyFile(
   sourcePath: string,
   destinationPath: string
 ): Promise<FileInfo> {
-  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/copy/${sourcePath}`;
+  const url = `${env.NEXT_PUBLIC_API_URL}/storage/copy/${sourcePath}`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -532,7 +656,7 @@ async function moveFile(
   sourcePath: string,
   destinationPath: string
 ): Promise<FileInfo> {
-  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/move/${sourcePath}`;
+  const url = `${env.NEXT_PUBLIC_API_URL}/storage/move/${sourcePath}`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -547,7 +671,7 @@ async function moveFile(
 }
 
 async function renameFile(path: string, newName: string): Promise<FileInfo> {
-  const url = `${env.NEXT_PUBLIC_API_URL}/local-files/rename/${path}`;
+  const url = `${env.NEXT_PUBLIC_API_URL}/storage/rename/${path}`;
   const response = await fetch(url, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -644,6 +768,13 @@ function FileManagerPageContent() {
   const [itemToRename, setItemToRename] = useState<FileInfo | null>(null);
   const [newName, setNewName] = useState("");
 
+  // Right sidebar state
+  const [infoFile, setInfoFile] = useState<FileInfo | null>(null);
+
+  // Preview dialog state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState<FileInfo | null>(null);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
@@ -668,15 +799,33 @@ function FileManagerPageContent() {
     loadFiles();
   }, [loadFiles]);
 
+  // Search files with debounce
+  useEffect(() => {
+    if (!searchQuery) {
+      // When search is cleared, reload current directory
+      loadFiles();
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await searchFiles(searchQuery);
+        setFiles(data.files);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to search files");
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   // Filter and sort files
   const filteredFiles = useMemo(() => {
     return files.filter((file) => {
-      if (
-        searchQuery &&
-        !file.name.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
-      }
       if (filterType !== "all") {
         const fileType = getFileType(file.name, file.isDirectory);
         if (filterType === "folder" && !file.isDirectory) {
@@ -761,6 +910,28 @@ function FileManagerPageContent() {
     setLastSelected(id);
   }, []);
 
+  // Handle file click with Ctrl key for multi-selection
+  const handleFileSelect = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      const isCtrlPressed = e.ctrlKey || e.metaKey;
+      const isSelected = selectedItems.has(id);
+
+      if (isCtrlPressed) {
+        // Ctrl+click: toggle selection (multi-select mode)
+        toggleSelect(id, !isSelected);
+      } else if (isSelected) {
+        // Click on selected item: unselect it
+        toggleSelect(id, false);
+      } else {
+        // Normal click on unselected item: select only this item (clear others)
+        setSelectedItems(new Set([id]));
+        setLastSelected(id);
+      }
+    },
+    [selectedItems, toggleSelect]
+  );
+
   const selectAll = useCallback(() => {
     setSelectedItems(new Set(sortedFiles.map((f) => f.path)));
   }, [sortedFiles]);
@@ -773,6 +944,9 @@ function FileManagerPageContent() {
 
   const isAllSelected =
     sortedFiles.length > 0 && selectedItems.size === sortedFiles.length;
+
+  // Show checkboxes when at least one item is selected
+  const showCheckboxes = selectedItems.size > 0;
 
   const _handleSelectAll = useCallback(() => {
     if (isAllSelected) {
@@ -845,7 +1019,7 @@ function FileManagerPageContent() {
         setCurrentPath(file.path);
       } else {
         // Open file in new tab
-        const fileUrl = `${env.NEXT_PUBLIC_API_URL}/local-files/preview/${file.path}`;
+        const fileUrl = `${env.NEXT_PUBLIC_API_URL}/storage/preview/${file.path}`;
         window.open(fileUrl, "_blank", "noopener,noreferrer");
       }
     },
@@ -857,9 +1031,16 @@ function FileManagerPageContent() {
       if (file.isDirectory) {
         setCurrentPath(file.path);
       } else {
-        // Open file in new tab
-        const fileUrl = `${env.NEXT_PUBLIC_API_URL}/local-files/preview/${file.path}`;
-        window.open(fileUrl, "_blank", "noopener,noreferrer");
+        const fileType = getFileType(file.name, false);
+        // For images, open preview dialog
+        if (fileType === "image") {
+          setPreviewFile(file);
+          setPreviewOpen(true);
+        } else {
+          // For other files, open in new tab
+          const fileUrl = `${env.NEXT_PUBLIC_API_URL}/storage/preview/${file.path}`;
+          window.open(fileUrl, "_blank", "noopener,noreferrer");
+        }
       }
     },
     [setCurrentPath]
@@ -1001,17 +1182,30 @@ function FileManagerPageContent() {
   );
 
   function _renderContextMenuItems(file: FileInfo) {
+    const isMultiSelected = selectedItems.size > 1;
+    const isThisSelected = selectedItems.has(file.path);
+
     return (
       <>
         <ContextMenuItem onClick={() => handleDownload(file)}>
           {file.isDirectory ? (
-            "Open"
+            <>
+              <FolderOpen className="mr-2 h-4 w-4" />
+              Open
+            </>
           ) : (
             <>
               <Download className="mr-2 h-4 w-4" />
               Download
             </>
           )}
+        </ContextMenuItem>
+        <ContextMenuItem
+          disabled={isMultiSelected}
+          onClick={() => setInfoFile(file)}
+        >
+          <Info className="mr-2 h-4 w-4" />
+          Information
         </ContextMenuItem>
         <ContextMenuItem onClick={() => toggleStar(file.path)}>
           {starredItems.has(file.path) ? (
@@ -1145,54 +1339,80 @@ function FileManagerPageContent() {
         onUploadFiles={() => setShowUploadDialog(true)}
       />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            className="mr-2 data-[orientation=vertical]:h-4"
-            orientation="vertical"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentPath("");
-                  }}
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
+          <div className="flex flex-1 items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              className="mr-2 data-[orientation=vertical]:h-4"
+              orientation="vertical"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPath("");
+                    }}
+                  >
+                    Files
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {currentPath?.split("/").map((part, index, parts) => {
+                  const subPath = parts.slice(0, index + 1).join("/");
+                  const isLast = index === parts.length - 1;
+                  return (
+                    <div className="flex items-center" key={subPath}>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        {isLast ? (
+                          <BreadcrumbPage>{part}</BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPath(subPath);
+                            }}
+                          >
+                            {part}
+                          </BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+                    </div>
+                  );
+                })}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+
+          {/* Search bar in header */}
+          <div className="flex items-center gap-2">
+            <div className="relative w-64 min-w-[200px]">
+              <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                className="pr-8 pl-8"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search files... (Press /)"
+                ref={searchInputRef}
+                type="search"
+                value={searchQuery}
+              />
+              {searchQuery && (
+                <button
+                  className="absolute top-2.5 right-2.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => setSearchQuery("")}
+                  type="button"
                 >
-                  Files
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              {currentPath?.split("/").map((part, index, parts) => {
-                const subPath = parts.slice(0, index + 1).join("/");
-                const isLast = index === parts.length - 1;
-                return (
-                  <div className="flex items-center" key={subPath}>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      {isLast ? (
-                        <BreadcrumbPage>{part}</BreadcrumbPage>
-                      ) : (
-                        <BreadcrumbLink
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setCurrentPath(subPath);
-                          }}
-                        >
-                          {part}
-                        </BreadcrumbLink>
-                      )}
-                    </BreadcrumbItem>
-                  </div>
-                );
-              })}
-            </BreadcrumbList>
-          </Breadcrumb>
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
         </header>
         <div
-          className="flex flex-1 flex-col gap-4 overflow-hidden p-4"
+          className="flex flex-1 flex-col gap-2 overflow-hidden p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               clearSelection();
@@ -1204,97 +1424,13 @@ function FileManagerPageContent() {
           onDrop={showUploadDialog ? undefined : handleDrop}
           ref={containerRef}
         >
-          {/* Toolbar */}
-          {/* Top row: search */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-1 items-center gap-2">
-              <div className="relative w-64 min-w-[200px]">
-                <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  className="pr-8 pl-8"
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search files... (Press /)"
-                  ref={searchInputRef}
-                  type="search"
-                  value={searchQuery}
-                />
-                {searchQuery && (
-                  <button
-                    className="absolute top-2.5 right-2.5 text-muted-foreground hover:text-foreground"
-                    onClick={() => setSearchQuery("")}
-                    type="button"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-              <span className="text-muted-foreground text-sm">
-                {displayCount} {displayCount === 1 ? "item" : "items"}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Keyboard shortcuts help */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={() => setShowShortcuts(true)}
-                      size="icon"
-                      variant="outline"
-                    >
-                      <Keyboard className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Keyboard shortcuts</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      disabled={loading}
-                      onClick={loadFiles}
-                      size="icon"
-                      variant="outline"
-                    >
-                      <RefreshCw
-                        className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-                      />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Refresh</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    {/* View Toggle */}
-                    <div className="flex rounded-md border">
-                      <Button
-                        className="rounded-r-none"
-                        onClick={() => setViewMode("grid")}
-                        size="icon"
-                        variant={viewMode === "grid" ? "secondary" : "ghost"}
-                      >
-                        <Grid3x3 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        className="rounded-l-none"
-                        onClick={() => setViewMode("list")}
-                        size="icon"
-                        variant={viewMode === "list" ? "secondary" : "ghost"}
-                      >
-                        <List className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>View Toggle</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-
-          {/* Bottom row: Actions */}
+          {/* Actions row */}
           {selectedItems.size === 0 && (
-            <div className="flex flex-col gap-4 rounded-md bg-primary/5 px-3 py-2">
+            <div className="flex flex-col gap-4 rounded-md bg-primary/5 px-3 py-1.5">
               <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-4 text-muted-foreground text-sm">
+                  {displayCount} {displayCount === 1 ? "item" : "items"}
+                </span>
                 {/* Sort */}
                 <div className="flex items-center gap-1">
                   <Select
@@ -1337,37 +1473,104 @@ function FileManagerPageContent() {
                   </PopoverContent>
                 </Popover>
 
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setShowNewFolderDialog(true)}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <FolderPlus className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>New folder (Ctrl+N)</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setShowUploadDialog(true)}
+                        size="icon"
+                        variant="ghost"
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload files (Ctrl+U)</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
                 <div className="flex-1" />
 
                 {/* Actions */}
                 <div className="flex gap-2">
                   <TooltipProvider>
+                    {/* Keyboard shortcuts help */}
+                    {/* Intentionally hidden for future usage */}
+                    <div className="hidden">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => setShowShortcuts(true)}
+                            size="icon"
+                            variant="outline"
+                          >
+                            <Keyboard className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Keyboard shortcuts</TooltipContent>
+                      </Tooltip>
+                    </div>
+                    {/* View Toggle - List left, Grid right */}
+                    <div className="flex rounded-md border">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            className="rounded-r-none"
+                            onClick={() => setViewMode("list")}
+                            size="icon"
+                            variant={
+                              viewMode === "list" ? "secondary" : "ghost"
+                            }
+                          >
+                            <List className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>List View</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            className="rounded-l-none"
+                            onClick={() => setViewMode("grid")}
+                            size="icon"
+                            variant={
+                              viewMode === "grid" ? "secondary" : "ghost"
+                            }
+                          >
+                            <Grid3x3 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Grid View</TooltipContent>
+                      </Tooltip>
+                    </div>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          onClick={() => setShowNewFolderDialog(true)}
+                          disabled={loading}
+                          onClick={loadFiles}
                           size="icon"
-                          variant="ghost"
+                          variant="outline"
                         >
-                          <FolderPlus className="h-4 w-4" />
+                          <RefreshCw
+                            className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                          />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>New folder (Ctrl+N)</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => setShowUploadDialog(true)}
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <Upload className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Upload files (Ctrl+U)</TooltipContent>
+                      <TooltipContent>Refresh</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>
@@ -1503,8 +1706,11 @@ function FileManagerPageContent() {
                   files={paginatedFiles}
                   focusedIndex={focusedIndex}
                   onFileDoubleClick={handleFileDoubleClick}
+                  onFileSelect={handleFileSelect}
                   onToggleSelect={toggleSelect}
+                  renderContextMenuItems={_renderContextMenuItems}
                   selectedItems={selectedItems}
+                  showCheckboxes={showCheckboxes}
                 />
               ) : (
                 <FileListView
@@ -1512,9 +1718,12 @@ function FileManagerPageContent() {
                   onDownload={handleDownload}
                   onFileClick={handleFileClick}
                   onFileDoubleClick={handleFileDoubleClick}
+                  onFileSelect={handleFileSelect}
                   onSort={(by) => handleSort(by as SortBy)}
                   onToggleSelect={toggleSelect}
+                  renderContextMenuItems={_renderContextMenuItems}
                   selectedItems={selectedItems}
+                  showCheckboxes={showCheckboxes}
                   sortBy={sortBy === "date" ? "modified" : sortBy}
                   sortDirection={sortDirection}
                 />
@@ -1579,7 +1788,33 @@ function FileManagerPageContent() {
         />
       </SidebarInset>
 
+      {infoFile && (
+        <InfoSidebar
+          file={infoFile}
+          onClose={() => setInfoFile(null)}
+          onPreview={() => {
+            setPreviewFile(infoFile);
+            setPreviewOpen(true);
+          }}
+        />
+      )}
+
       <DragDropOverlay isVisible={isDragging && !showUploadDialog} />
+
+      {/* Preview dialog */}
+      {previewFile && (
+        <FilePreviewDialog
+          fileName={previewFile.name}
+          fileType={
+            getFileType(previewFile.name, false) === "image"
+              ? "image"
+              : undefined
+          }
+          fileUrl={`${env.NEXT_PUBLIC_API_URL}/storage/preview/${previewFile.path}`}
+          onOpenChange={setPreviewOpen}
+          open={previewOpen}
+        />
+      )}
     </>
   );
 }

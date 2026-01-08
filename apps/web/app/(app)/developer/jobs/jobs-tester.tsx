@@ -4,10 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Job, JobStatus, ReportTemplate } from "@workspace/contracts";
 import {
   jobsCancel,
+  jobsCreate,
   jobsList,
   jobsRetry,
   reportTemplatesList,
-  reportTemplatesTest,
 } from "@workspace/contracts";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
@@ -135,51 +135,74 @@ export function JobsTester() {
     refetchInterval: 3000,
   });
 
-  // Report job mutation
-  const reportMutation = useMutation({
+  // Report job mutation (using generic jobsCreate SDK)
+  const reportMutation = useMutation<Job, Error>({
     mutationFn: async () => {
       if (!selectedTemplateId) {
         throw new Error("No template selected");
       }
-      return await reportTemplatesTest({
+      const response = await jobsCreate({
         client: apiClient,
-        path: { orgId, templateId: selectedTemplateId },
+        path: { orgId },
         body: {
-          parameters: {
-            demo: true,
-            timestamp: new Date().toISOString(),
+          type: "report",
+          input: {
+            templateId: selectedTemplateId,
+            parameters: {
+              demo: true,
+              timestamp: new Date().toISOString(),
+            },
           },
         },
       });
+      // Check for error response
+      if ("error" in response) {
+        throw new Error(
+          (response.error as { message?: string })?.message ??
+            "Job creation failed"
+        );
+      }
+      // Narrow to JobResponse and return data
+      const jobResponse = response as { data: Job; meta: unknown };
+      if (!jobResponse.data) {
+        throw new Error("No data returned");
+      }
+      return jobResponse.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobsList", orgId] });
     },
   });
 
-  // Test job mutation (using raw request since SDK doesn't have this endpoint yet)
+  // Test job mutation (using generic jobsCreate SDK)
   const testMutation = useMutation<Job, Error>({
     mutationFn: async () => {
-      const response = await apiClient.request({
-        method: "POST",
-        url: `/v1/orgs/${orgId}/jobs/test`,
+      const response = await jobsCreate({
+        client: apiClient,
+        path: { orgId },
         body: {
-          pages: testPages,
-          pageSize: testPageSize,
-          source: testSource,
-          failAtPage,
+          type: "test",
+          input: {
+            pages: testPages,
+            pageSize: testPageSize,
+            source: testSource,
+            failAtPage,
+          },
         },
       });
-      // The response is { data: Job, meta: {...} } or { error, ... }
-      const responseData = response as unknown;
-      if (
-        responseData &&
-        typeof responseData === "object" &&
-        "data" in responseData
-      ) {
-        return (responseData as { data: Job }).data;
+      // Check for error response
+      if ("error" in response) {
+        throw new Error(
+          (response.error as { message?: string })?.message ??
+            "Job creation failed"
+        );
       }
-      throw new Error("Unexpected response format");
+      // Narrow to JobResponse and return data
+      const jobResponse = response as { data: Job; meta: unknown };
+      if (!jobResponse.data) {
+        throw new Error("No data returned");
+      }
+      return jobResponse.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobsList", orgId] });
@@ -214,36 +237,43 @@ export function JobsTester() {
 
   const jobs = jobsData?.data ?? [];
 
-  const reportCodeExample = `import { reportTemplatesTest } from "@workspace/contracts";
+  const reportCodeExample = `import { jobsCreate } from "@workspace/contracts";
 import { apiClient } from "@/lib/api-client";
 
-// Trigger a test report generation
-await reportTemplatesTest({
+// Create a report job using the generic jobsCreate endpoint
+const { data } = await jobsCreate({
   client: apiClient,
-  path: {
-    orgId: "${orgId}",
-    templateId: "${selectedTemplateId}"
-  },
+  path: { orgId: "${orgId}" },
   body: {
-    parameters: { demo: true },
-  },
-});`;
-
-  const testCodeExample = `import { apiClient } from "@/lib/api-client";
-
-// Create a test job that fetches real data from PokéAPI
-const response = await apiClient.request({
-  method: "POST",
-  url: "/v1/orgs/${orgId}/jobs/test",
-  body: {
-    source: "${testSource}",     // pokemon | ability | move | berry | type
-    pages: ${testPages},         // Number of pages to fetch
-    pageSize: ${testPageSize},   // Items per page (max 100)
-    failAtPage: ${failAtPage ?? "undefined"},  // Optional: fail at this page
+    type: "report",
+    input: {
+      templateId: "${selectedTemplateId}",
+      parameters: { demo: true },
+    },
   },
 });
 
-const job = response.data;`;
+const { jobId, status } = data;`;
+
+  const testCodeExample = `import { jobsCreate } from "@workspace/contracts";
+import { apiClient } from "@/lib/api-client";
+
+// Create a test job using the generic jobsCreate endpoint
+const { data } = await jobsCreate({
+  client: apiClient,
+  path: { orgId: "${orgId}" },
+  body: {
+    type: "test",
+    input: {
+      source: "${testSource}",     // pokemon | ability | move | berry | type
+      pages: ${testPages},         // Number of pages to fetch
+      pageSize: ${testPageSize},   // Items per page (max 100)
+      failAtPage: ${failAtPage ?? "undefined"},  // Optional: fail at this page
+    },
+  },
+});
+
+const { jobId, status } = data;`;
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">

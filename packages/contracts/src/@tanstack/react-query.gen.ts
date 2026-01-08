@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { allUserRolesList, announcementsAcknowledge, announcementsCreate, announcementsDelete, announcementsDismiss, announcementsGet, announcementsGetStats, announcementsGetUnreadCount, announcementsList, announcementsMarkRead, announcementsMarkViewed, announcementsUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, couponsAdminCreate, couponsAdminDelete, couponsAdminGet, couponsAdminList, couponsAdminUpdate, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsDownload, jobsGet, jobsList, jobsRetry, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, paymentWebhooksHandleMidtrans, paymentWebhooksHandleXendit, publicPricingListPublicPlans, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesTest, reportTemplatesUpdate, scheduledReportsCreate, scheduledReportsDelete, scheduledReportsGet, scheduledReportsGetHistory, scheduledReportsList, scheduledReportsPause, scheduledReportsResume, scheduledReportsRunNow, scheduledReportsUpdate, subscriptionPlansAdminCreate, subscriptionPlansAdminDelete, subscriptionPlansAdminGet, subscriptionPlansAdminList, subscriptionPlansAdminUpdate, subscriptionsApplyCoupon, subscriptionsCancel, subscriptionsCreate, subscriptionsGetCurrent, subscriptionsResume, subscriptionsUpdate, subscriptionsValidateCoupon, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
-import type { AllUserRolesListData, AllUserRolesListResponse, AnnouncementsAcknowledgeData, AnnouncementsAcknowledgeResponse, AnnouncementsCreateData, AnnouncementsCreateResponse, AnnouncementsDeleteData, AnnouncementsDeleteResponse, AnnouncementsDismissData, AnnouncementsDismissResponse, AnnouncementsGetData, AnnouncementsGetResponse, AnnouncementsGetStatsData, AnnouncementsGetStatsResponse, AnnouncementsGetUnreadCountData, AnnouncementsGetUnreadCountResponse, AnnouncementsListData, AnnouncementsListResponse, AnnouncementsMarkReadData, AnnouncementsMarkReadResponse, AnnouncementsMarkViewedData, AnnouncementsMarkViewedResponse, AnnouncementsUpdateData, AnnouncementsUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CouponsAdminCreateData, CouponsAdminCreateResponse, CouponsAdminDeleteData, CouponsAdminDeleteResponse, CouponsAdminGetData, CouponsAdminGetResponse, CouponsAdminListData, CouponsAdminListResponse, CouponsAdminUpdateData, CouponsAdminUpdateResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsDownloadData, JobsDownloadResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, JobsRetryData, JobsRetryResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, PaymentWebhooksHandleMidtransData, PaymentWebhooksHandleMidtransResponse, PaymentWebhooksHandleXenditData, PaymentWebhooksHandleXenditResponse, PublicPricingListPublicPlansData, PublicPricingListPublicPlansResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesTestData, ReportTemplatesTestResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledReportsCreateData, ScheduledReportsCreateResponse, ScheduledReportsDeleteData, ScheduledReportsDeleteResponse, ScheduledReportsGetData, ScheduledReportsGetHistoryData, ScheduledReportsGetHistoryResponse, ScheduledReportsGetResponse, ScheduledReportsListData, ScheduledReportsListResponse, ScheduledReportsPauseData, ScheduledReportsPauseResponse, ScheduledReportsResumeData, ScheduledReportsResumeResponse, ScheduledReportsRunNowData, ScheduledReportsRunNowResponse, ScheduledReportsUpdateData, ScheduledReportsUpdateResponse, SubscriptionPlansAdminCreateData, SubscriptionPlansAdminCreateResponse, SubscriptionPlansAdminDeleteData, SubscriptionPlansAdminDeleteResponse, SubscriptionPlansAdminGetData, SubscriptionPlansAdminGetResponse, SubscriptionPlansAdminListData, SubscriptionPlansAdminListResponse, SubscriptionPlansAdminUpdateData, SubscriptionPlansAdminUpdateResponse, SubscriptionsApplyCouponData, SubscriptionsApplyCouponResponse, SubscriptionsCancelData, SubscriptionsCancelResponse, SubscriptionsCreateData, SubscriptionsCreateResponse, SubscriptionsGetCurrentData, SubscriptionsGetCurrentResponse, SubscriptionsResumeData, SubscriptionsResumeResponse, SubscriptionsUpdateData, SubscriptionsUpdateResponse, SubscriptionsValidateCouponData, SubscriptionsValidateCouponResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
+import { allUserRolesList, announcementsAcknowledge, announcementsCreate, announcementsDelete, announcementsDismiss, announcementsGet, announcementsGetStats, announcementsGetUnreadCount, announcementsList, announcementsMarkRead, announcementsMarkViewed, announcementsUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, couponsAdminCreate, couponsAdminDelete, couponsAdminGet, couponsAdminList, couponsAdminUpdate, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsCreate, jobsDownload, jobsGet, jobsList, jobsRetry, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, paymentWebhooksHandleMidtrans, paymentWebhooksHandleXendit, publicPricingListPublicPlans, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesUpdate, scheduledJobsCreate, scheduledJobsDelete, scheduledJobsGet, scheduledJobsGetHistory, scheduledJobsList, scheduledJobsPause, scheduledJobsResume, scheduledJobsRunNow, scheduledJobsUpdate, subscriptionPlansAdminCreate, subscriptionPlansAdminDelete, subscriptionPlansAdminGet, subscriptionPlansAdminList, subscriptionPlansAdminUpdate, subscriptionsApplyCoupon, subscriptionsCancel, subscriptionsCreate, subscriptionsGetCurrent, subscriptionsResume, subscriptionsUpdate, subscriptionsValidateCoupon, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { AllUserRolesListData, AllUserRolesListResponse, AnnouncementsAcknowledgeData, AnnouncementsAcknowledgeResponse, AnnouncementsCreateData, AnnouncementsCreateResponse, AnnouncementsDeleteData, AnnouncementsDeleteResponse, AnnouncementsDismissData, AnnouncementsDismissResponse, AnnouncementsGetData, AnnouncementsGetResponse, AnnouncementsGetStatsData, AnnouncementsGetStatsResponse, AnnouncementsGetUnreadCountData, AnnouncementsGetUnreadCountResponse, AnnouncementsListData, AnnouncementsListResponse, AnnouncementsMarkReadData, AnnouncementsMarkReadResponse, AnnouncementsMarkViewedData, AnnouncementsMarkViewedResponse, AnnouncementsUpdateData, AnnouncementsUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CouponsAdminCreateData, CouponsAdminCreateResponse, CouponsAdminDeleteData, CouponsAdminDeleteResponse, CouponsAdminGetData, CouponsAdminGetResponse, CouponsAdminListData, CouponsAdminListResponse, CouponsAdminUpdateData, CouponsAdminUpdateResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsCreateData, JobsCreateResponse, JobsDownloadData, JobsDownloadResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, JobsRetryData, JobsRetryResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, PaymentWebhooksHandleMidtransData, PaymentWebhooksHandleMidtransResponse, PaymentWebhooksHandleXenditData, PaymentWebhooksHandleXenditResponse, PublicPricingListPublicPlansData, PublicPricingListPublicPlansResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledJobsCreateData, ScheduledJobsCreateResponse, ScheduledJobsDeleteData, ScheduledJobsDeleteResponse, ScheduledJobsGetData, ScheduledJobsGetHistoryData, ScheduledJobsGetHistoryResponse, ScheduledJobsGetResponse, ScheduledJobsListData, ScheduledJobsListResponse, ScheduledJobsPauseData, ScheduledJobsPauseResponse, ScheduledJobsResumeData, ScheduledJobsResumeResponse, ScheduledJobsRunNowData, ScheduledJobsRunNowResponse, ScheduledJobsUpdateData, ScheduledJobsUpdateResponse, SubscriptionPlansAdminCreateData, SubscriptionPlansAdminCreateResponse, SubscriptionPlansAdminDeleteData, SubscriptionPlansAdminDeleteResponse, SubscriptionPlansAdminGetData, SubscriptionPlansAdminGetResponse, SubscriptionPlansAdminListData, SubscriptionPlansAdminListResponse, SubscriptionPlansAdminUpdateData, SubscriptionPlansAdminUpdateResponse, SubscriptionsApplyCouponData, SubscriptionsApplyCouponResponse, SubscriptionsCancelData, SubscriptionsCancelResponse, SubscriptionsCreateData, SubscriptionsCreateResponse, SubscriptionsGetCurrentData, SubscriptionsGetCurrentResponse, SubscriptionsResumeData, SubscriptionsResumeResponse, SubscriptionsUpdateData, SubscriptionsUpdateResponse, SubscriptionsValidateCouponData, SubscriptionsValidateCouponResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1826,6 +1826,28 @@ export const jobsListInfiniteOptions = (options: Options<JobsListData>) => infin
     queryKey: jobsListInfiniteQueryKey(options)
 });
 
+/**
+ * Create job
+ *
+ * Create a new job
+ *
+ * Creates and enqueues a job for async processing.
+ * The job type must have a registered handler.
+ */
+export const jobsCreateMutation = (options?: Partial<Options<JobsCreateData>>): UseMutationOptions<JobsCreateResponse, DefaultError, Options<JobsCreateData>> => {
+    const mutationOptions: UseMutationOptions<JobsCreateResponse, DefaultError, Options<JobsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await jobsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const jobsGetQueryKey = (options: Options<JobsGetData>) => createQueryKey('jobsGet', options);
 
 /**
@@ -1968,238 +1990,6 @@ export const reportExportsStreamExportMutation = (options?: Partial<Options<Repo
     const mutationOptions: UseMutationOptions<ReportExportsStreamExportResponse, DefaultError, Options<ReportExportsStreamExportData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await reportExportsStreamExport({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const scheduledReportsListQueryKey = (options: Options<ScheduledReportsListData>) => createQueryKey('scheduledReportsList', options);
-
-/**
- * List scheduled reports
- *
- * List scheduled reports in an organization
- */
-export const scheduledReportsListOptions = (options: Options<ScheduledReportsListData>) => queryOptions<ScheduledReportsListResponse, DefaultError, ScheduledReportsListResponse, ReturnType<typeof scheduledReportsListQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await scheduledReportsList({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: scheduledReportsListQueryKey(options)
-});
-
-export const scheduledReportsListInfiniteQueryKey = (options: Options<ScheduledReportsListData>): QueryKey<Options<ScheduledReportsListData>> => createQueryKey('scheduledReportsList', options, true);
-
-/**
- * List scheduled reports
- *
- * List scheduled reports in an organization
- */
-export const scheduledReportsListInfiniteOptions = (options: Options<ScheduledReportsListData>) => infiniteQueryOptions<ScheduledReportsListResponse, DefaultError, InfiniteData<ScheduledReportsListResponse>, QueryKey<Options<ScheduledReportsListData>>, number | Pick<QueryKey<Options<ScheduledReportsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ScheduledReportsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await scheduledReportsList({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: scheduledReportsListInfiniteQueryKey(options)
-});
-
-/**
- * Create scheduled report
- *
- * Create a new scheduled report
- */
-export const scheduledReportsCreateMutation = (options?: Partial<Options<ScheduledReportsCreateData>>): UseMutationOptions<ScheduledReportsCreateResponse, DefaultError, Options<ScheduledReportsCreateData>> => {
-    const mutationOptions: UseMutationOptions<ScheduledReportsCreateResponse, DefaultError, Options<ScheduledReportsCreateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await scheduledReportsCreate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Delete scheduled report
- *
- * Delete a scheduled report
- */
-export const scheduledReportsDeleteMutation = (options?: Partial<Options<ScheduledReportsDeleteData>>): UseMutationOptions<ScheduledReportsDeleteResponse, DefaultError, Options<ScheduledReportsDeleteData>> => {
-    const mutationOptions: UseMutationOptions<ScheduledReportsDeleteResponse, DefaultError, Options<ScheduledReportsDeleteData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await scheduledReportsDelete({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const scheduledReportsGetQueryKey = (options: Options<ScheduledReportsGetData>) => createQueryKey('scheduledReportsGet', options);
-
-/**
- * Get scheduled report
- *
- * Get a scheduled report by ID
- */
-export const scheduledReportsGetOptions = (options: Options<ScheduledReportsGetData>) => queryOptions<ScheduledReportsGetResponse, DefaultError, ScheduledReportsGetResponse, ReturnType<typeof scheduledReportsGetQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await scheduledReportsGet({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: scheduledReportsGetQueryKey(options)
-});
-
-/**
- * Update scheduled report
- *
- * Update a scheduled report
- */
-export const scheduledReportsUpdateMutation = (options?: Partial<Options<ScheduledReportsUpdateData>>): UseMutationOptions<ScheduledReportsUpdateResponse, DefaultError, Options<ScheduledReportsUpdateData>> => {
-    const mutationOptions: UseMutationOptions<ScheduledReportsUpdateResponse, DefaultError, Options<ScheduledReportsUpdateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await scheduledReportsUpdate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const scheduledReportsGetHistoryQueryKey = (options: Options<ScheduledReportsGetHistoryData>) => createQueryKey('scheduledReportsGetHistory', options);
-
-/**
- * Get schedule run history
- *
- * Get run history for a scheduled report
- */
-export const scheduledReportsGetHistoryOptions = (options: Options<ScheduledReportsGetHistoryData>) => queryOptions<ScheduledReportsGetHistoryResponse, DefaultError, ScheduledReportsGetHistoryResponse, ReturnType<typeof scheduledReportsGetHistoryQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await scheduledReportsGetHistory({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: scheduledReportsGetHistoryQueryKey(options)
-});
-
-export const scheduledReportsGetHistoryInfiniteQueryKey = (options: Options<ScheduledReportsGetHistoryData>): QueryKey<Options<ScheduledReportsGetHistoryData>> => createQueryKey('scheduledReportsGetHistory', options, true);
-
-/**
- * Get schedule run history
- *
- * Get run history for a scheduled report
- */
-export const scheduledReportsGetHistoryInfiniteOptions = (options: Options<ScheduledReportsGetHistoryData>) => infiniteQueryOptions<ScheduledReportsGetHistoryResponse, DefaultError, InfiniteData<ScheduledReportsGetHistoryResponse>, QueryKey<Options<ScheduledReportsGetHistoryData>>, number | Pick<QueryKey<Options<ScheduledReportsGetHistoryData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ScheduledReportsGetHistoryData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                page: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await scheduledReportsGetHistory({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: scheduledReportsGetHistoryInfiniteQueryKey(options)
-});
-
-/**
- * Pause scheduled report
- *
- * Pause a scheduled report
- */
-export const scheduledReportsPauseMutation = (options?: Partial<Options<ScheduledReportsPauseData>>): UseMutationOptions<ScheduledReportsPauseResponse, DefaultError, Options<ScheduledReportsPauseData>> => {
-    const mutationOptions: UseMutationOptions<ScheduledReportsPauseResponse, DefaultError, Options<ScheduledReportsPauseData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await scheduledReportsPause({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Resume scheduled report
- *
- * Resume a paused scheduled report
- */
-export const scheduledReportsResumeMutation = (options?: Partial<Options<ScheduledReportsResumeData>>): UseMutationOptions<ScheduledReportsResumeResponse, DefaultError, Options<ScheduledReportsResumeData>> => {
-    const mutationOptions: UseMutationOptions<ScheduledReportsResumeResponse, DefaultError, Options<ScheduledReportsResumeData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await scheduledReportsResume({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Run scheduled report now
- *
- * Trigger a scheduled report to run immediately
- */
-export const scheduledReportsRunNowMutation = (options?: Partial<Options<ScheduledReportsRunNowData>>): UseMutationOptions<ScheduledReportsRunNowResponse, DefaultError, Options<ScheduledReportsRunNowData>> => {
-    const mutationOptions: UseMutationOptions<ScheduledReportsRunNowResponse, DefaultError, Options<ScheduledReportsRunNowData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await scheduledReportsRunNow({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -2355,25 +2145,6 @@ export const reportTemplatesCloneMutation = (options?: Partial<Options<ReportTem
     return mutationOptions;
 };
 
-/**
- * Test report template
- *
- * Test a report template with sample data
- */
-export const reportTemplatesTestMutation = (options?: Partial<Options<ReportTemplatesTestData>>): UseMutationOptions<ReportTemplatesTestResponse, DefaultError, Options<ReportTemplatesTestData>> => {
-    const mutationOptions: UseMutationOptions<ReportTemplatesTestResponse, DefaultError, Options<ReportTemplatesTestData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await reportTemplatesTest({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const tenantRolesListQueryKey = (options: Options<TenantRolesListData>) => createQueryKey('tenantRolesList', options);
 
 /**
@@ -2501,6 +2272,213 @@ export const tenantRolesUpdateMutation = (options?: Partial<Options<TenantRolesU
     const mutationOptions: UseMutationOptions<TenantRolesUpdateResponse, DefaultError, Options<TenantRolesUpdateData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await tenantRolesUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const scheduledJobsListQueryKey = (options: Options<ScheduledJobsListData>) => createQueryKey('scheduledJobsList', options);
+
+/**
+ * List scheduled jobs
+ *
+ * List scheduled jobs
+ *
+ * Returns scheduled jobs for the current tenant with optional filtering.
+ */
+export const scheduledJobsListOptions = (options: Options<ScheduledJobsListData>) => queryOptions<ScheduledJobsListResponse, DefaultError, ScheduledJobsListResponse, ReturnType<typeof scheduledJobsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await scheduledJobsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: scheduledJobsListQueryKey(options)
+});
+
+export const scheduledJobsListInfiniteQueryKey = (options: Options<ScheduledJobsListData>): QueryKey<Options<ScheduledJobsListData>> => createQueryKey('scheduledJobsList', options, true);
+
+/**
+ * List scheduled jobs
+ *
+ * List scheduled jobs
+ *
+ * Returns scheduled jobs for the current tenant with optional filtering.
+ */
+export const scheduledJobsListInfiniteOptions = (options: Options<ScheduledJobsListData>) => infiniteQueryOptions<ScheduledJobsListResponse, DefaultError, InfiniteData<ScheduledJobsListResponse>, QueryKey<Options<ScheduledJobsListData>>, number | Pick<QueryKey<Options<ScheduledJobsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ScheduledJobsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await scheduledJobsList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: scheduledJobsListInfiniteQueryKey(options)
+});
+
+/**
+ * Create scheduled job
+ *
+ * Create a new scheduled job
+ */
+export const scheduledJobsCreateMutation = (options?: Partial<Options<ScheduledJobsCreateData>>): UseMutationOptions<ScheduledJobsCreateResponse, DefaultError, Options<ScheduledJobsCreateData>> => {
+    const mutationOptions: UseMutationOptions<ScheduledJobsCreateResponse, DefaultError, Options<ScheduledJobsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await scheduledJobsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete scheduled job
+ *
+ * Delete a scheduled job
+ */
+export const scheduledJobsDeleteMutation = (options?: Partial<Options<ScheduledJobsDeleteData>>): UseMutationOptions<ScheduledJobsDeleteResponse, DefaultError, Options<ScheduledJobsDeleteData>> => {
+    const mutationOptions: UseMutationOptions<ScheduledJobsDeleteResponse, DefaultError, Options<ScheduledJobsDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await scheduledJobsDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const scheduledJobsGetQueryKey = (options: Options<ScheduledJobsGetData>) => createQueryKey('scheduledJobsGet', options);
+
+/**
+ * Get scheduled job
+ *
+ * Get a scheduled job by ID
+ */
+export const scheduledJobsGetOptions = (options: Options<ScheduledJobsGetData>) => queryOptions<ScheduledJobsGetResponse, DefaultError, ScheduledJobsGetResponse, ReturnType<typeof scheduledJobsGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await scheduledJobsGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: scheduledJobsGetQueryKey(options)
+});
+
+/**
+ * Update scheduled job
+ *
+ * Update a scheduled job
+ */
+export const scheduledJobsUpdateMutation = (options?: Partial<Options<ScheduledJobsUpdateData>>): UseMutationOptions<ScheduledJobsUpdateResponse, DefaultError, Options<ScheduledJobsUpdateData>> => {
+    const mutationOptions: UseMutationOptions<ScheduledJobsUpdateResponse, DefaultError, Options<ScheduledJobsUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await scheduledJobsUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const scheduledJobsGetHistoryQueryKey = (options: Options<ScheduledJobsGetHistoryData>) => createQueryKey('scheduledJobsGetHistory', options);
+
+/**
+ * Get scheduled job history
+ *
+ * Get run history for a scheduled job
+ */
+export const scheduledJobsGetHistoryOptions = (options: Options<ScheduledJobsGetHistoryData>) => queryOptions<ScheduledJobsGetHistoryResponse, DefaultError, ScheduledJobsGetHistoryResponse, ReturnType<typeof scheduledJobsGetHistoryQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await scheduledJobsGetHistory({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: scheduledJobsGetHistoryQueryKey(options)
+});
+
+/**
+ * Pause scheduled job
+ *
+ * Pause a scheduled job
+ */
+export const scheduledJobsPauseMutation = (options?: Partial<Options<ScheduledJobsPauseData>>): UseMutationOptions<ScheduledJobsPauseResponse, DefaultError, Options<ScheduledJobsPauseData>> => {
+    const mutationOptions: UseMutationOptions<ScheduledJobsPauseResponse, DefaultError, Options<ScheduledJobsPauseData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await scheduledJobsPause({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Resume scheduled job
+ *
+ * Resume a paused scheduled job
+ */
+export const scheduledJobsResumeMutation = (options?: Partial<Options<ScheduledJobsResumeData>>): UseMutationOptions<ScheduledJobsResumeResponse, DefaultError, Options<ScheduledJobsResumeData>> => {
+    const mutationOptions: UseMutationOptions<ScheduledJobsResumeResponse, DefaultError, Options<ScheduledJobsResumeData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await scheduledJobsResume({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Run scheduled job now
+ *
+ * Trigger a scheduled job to run immediately
+ */
+export const scheduledJobsRunNowMutation = (options?: Partial<Options<ScheduledJobsRunNowData>>): UseMutationOptions<ScheduledJobsRunNowResponse, DefaultError, Options<ScheduledJobsRunNowData>> => {
+    const mutationOptions: UseMutationOptions<ScheduledJobsRunNowResponse, DefaultError, Options<ScheduledJobsRunNowData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await scheduledJobsRunNow({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

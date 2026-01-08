@@ -85,7 +85,9 @@ import "./models/example-post.tsp";
 import "./models/example-comment.tsp";
 import "./models/notification.tsp";
 import "./models/report-template.tsp";
-import "./models/scheduled-report.tsp";
+// import "./models/scheduled-report.tsp";  // Deprecated: Use scheduled-job.tsp instead
+import "./models/scheduled-job.tsp";
+import "./models/schedule-common.tsp";
 import "./models/announcement.tsp";
 import "./models/subscription-plan.tsp";
 import "./models/subscription.tsp";
@@ -107,6 +109,7 @@ import "./routes/example-posts.tsp";
 import "./routes/example-comments.tsp";
 import "./routes/notifications.tsp";
 import "./routes/reports.tsp";
+import "./routes/schedules.tsp";
 import "./routes/announcements.tsp";
 import "./routes/subscription-plans.tsp";
 import "./routes/subscriptions.tsp";

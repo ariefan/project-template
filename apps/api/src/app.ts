@@ -21,10 +21,12 @@ import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
 import { jobsModule } from "./modules/jobs";
-import { localFilesRoutes } from "./modules/local-files";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
 import { reportsModule } from "./modules/reports";
+import { schedulesModule } from "./modules/schedules";
+import { createScheduler } from "./modules/schedules/services/scheduler";
+import { storageRoutes } from "./modules/storage";
 import subscriptionsModule, {
   registerSubscriptionHandlers,
 } from "./modules/subscriptions";
@@ -342,8 +344,22 @@ export async function buildApp(config: AppConfig) {
     // Schedule recurring maintenance jobs
     await jobQueue.schedule("subscription:monitor", "0 * * * *");
 
+    // Initialize and start the scheduled job worker
+    // This polls for due schedules and automatically creates jobs
+    const scheduledJobWorker = createScheduler(
+      {
+        createAndEnqueueJob: jobsService.createAndEnqueueJob.bind(jobsService),
+      },
+      {
+        intervalMs: 60_000, // Check every minute
+        batchSize: 50,
+      }
+    );
+    await scheduledJobWorker.start();
+
     app.addHook("onClose", async () => {
       await jobQueue.stop();
+      await scheduledJobWorker.stop();
     });
   }
 
@@ -393,7 +409,7 @@ export async function buildApp(config: AppConfig) {
 
   // Modules
   await app.register(healthRoutes);
-  await app.register(localFilesRoutes);
+  await app.register(storageRoutes);
   await app.register(migrationRoutes);
   await app.register(authRoutes);
   await app.register(applicationsModule, { prefix: "/v1" });
@@ -406,6 +422,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(webhooksModule, { prefix: "/v1/orgs" });
   await app.register(notificationsModule, { prefix: "/v1" });
   await app.register(reportsModule, { prefix: "/v1/orgs" });
+  await app.register(schedulesModule, { prefix: "/v1/orgs" });
   await app.register(subscriptionsModule, { prefix: "/v1" });
 
   return app;

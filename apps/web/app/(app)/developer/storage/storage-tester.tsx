@@ -31,7 +31,7 @@ import {
   type CompressedFileWithPreview,
   ImageCompressor,
 } from "@workspace/ui/composed/image-compressor";
-import { Code, Download, RefreshCw, Trash2 } from "lucide-react";
+import { Code, Crop, Download, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useActiveOrganization } from "@/lib/auth";
@@ -213,8 +213,8 @@ export function StorageTester() {
               Storage Playground
             </h1>
             <p className="text-muted-foreground">
-              Developer demo: file uploads with progress, compression, and API
-              integration.
+              Developer demo: file uploads with progress, image compression,
+              WhatsApp-style cropping, and API integration.
             </p>
           </div>
           <Button
@@ -327,9 +327,14 @@ await uploadFile(selectedFile, (progress) => {
         <TabsContent value="compression">
           <Card>
             <CardHeader>
-              <CardTitle>Image Compression</CardTitle>
+              <div className="flex items-center gap-2">
+                <Crop className="h-5 w-5 text-primary" />
+                <CardTitle>Image Compression & Cropping</CardTitle>
+              </div>
               <CardDescription>
-                Compress images client-side before uploading
+                Compress images client-side before uploading. Enable cropping to
+                rotate, flip, and crop images with preset aspect ratios (square,
+                4:3, 16:9) before compression.
               </CardDescription>
             </CardHeader>
             <CardContent>

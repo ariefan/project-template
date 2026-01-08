@@ -64,6 +64,22 @@ interface Jobs {
   ): JobListResponse | ErrorResponse;
 
   /**
+   * Create a new job
+   *
+   * Creates and enqueues a job for async processing.
+   * The job type must have a registered handler.
+   */
+  @post
+  @summary("Create job")
+  create(
+    /** Organization ID */
+    @path orgId: string,
+
+    /** Job creation request */
+    @body body: CreateJobRequest
+  ): JobResponse | ErrorResponse;
+
+  /**
    * Get job status
    *
    * Poll this endpoint to check progress of async operations.

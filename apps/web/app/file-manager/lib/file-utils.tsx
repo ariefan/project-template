@@ -25,12 +25,17 @@ type FileType =
 
 const FILE_ICON_SIZE = "size-4";
 
+// Top-level regex for performance
+const TRAILING_SEPARATOR_REGEX = /[\\/]+$/;
+
 export function getFileType(fileName: string, isDirectory: boolean): FileType {
   if (isDirectory) {
     return "folder";
   }
 
-  const ext = fileName.split(".").pop()?.toLowerCase() || "";
+  // Strip trailing path separators that might cause issues
+  const cleanName = fileName.replace(TRAILING_SEPARATOR_REGEX, "");
+  const ext = cleanName.split(".").pop()?.toLowerCase() || "";
 
   const imageExts = ["jpg", "jpeg", "png", "gif", "svg", "webp", "ico", "bmp"];
   const videoExts = ["mp4", "webm", "mov", "avi", "mkv", "flv"];

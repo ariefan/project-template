@@ -2,17 +2,18 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  CreateScheduledReportRequest,
-  ScheduledReport,
-  UpdateScheduledReportRequest,
+  CreateScheduledJobRequest,
+  ScheduledJob,
+  UpdateScheduledJobRequest,
 } from "@workspace/contracts";
 import {
-  scheduledReportsCreate,
-  scheduledReportsDelete,
-  scheduledReportsList,
-  scheduledReportsPause,
-  scheduledReportsResume,
-  scheduledReportsUpdate,
+  scheduledJobsCreate,
+  scheduledJobsDelete,
+  scheduledJobsList,
+  scheduledJobsPause,
+  scheduledJobsResume,
+  scheduledJobsRunNow,
+  scheduledJobsUpdate,
 } from "@workspace/contracts";
 import type {
   ServerSideRequest,
@@ -27,6 +28,9 @@ function buildQueryParams(request: ServerSideRequest) {
     page: request.page,
     pageSize: request.pageSize,
     search: request.search || undefined,
+    jobType: request.filters.find((f) => f.field === "jobType")?.value as
+      | string
+      | undefined,
     frequency: request.filters.find((f) => f.field === "frequency")?.value as
       | "once"
       | "daily"
@@ -35,7 +39,7 @@ function buildQueryParams(request: ServerSideRequest) {
       | "custom"
       | undefined,
     deliveryMethod: request.filters.find((f) => f.field === "deliveryMethod")
-      ?.value as "email" | "download" | "webhook" | "storage" | undefined,
+      ?.value as "email" | "webhook" | "storage" | "none" | undefined,
     isActive: request.filters.find((f) => f.field === "isActive")?.value as
       | boolean
       | undefined,
@@ -52,7 +56,7 @@ export function useSchedulesData() {
   const fetchSchedules = useCallback(
     async (
       request: ServerSideRequest
-    ): Promise<ServerSideResponse<ScheduledReport>> => {
+    ): Promise<ServerSideResponse<ScheduledJob>> => {
       if (!orgId) {
         return { data: [], total: 0 };
       }
@@ -60,7 +64,7 @@ export function useSchedulesData() {
       try {
         const queryParams = buildQueryParams(request);
 
-        const response = await scheduledReportsList({
+        const response = await scheduledJobsList({
           client: apiClient,
           path: { orgId },
           query: queryParams,
@@ -77,7 +81,7 @@ export function useSchedulesData() {
           return { data: [], total: 0 };
         }
 
-        const schedules = (data as { data?: ScheduledReport[] })?.data ?? [];
+        const schedules = (data as { data?: ScheduledJob[] })?.data ?? [];
         const pagination = (data as { pagination?: { totalCount: number } })
           ?.pagination;
 
@@ -104,14 +108,14 @@ export function useScheduleMutations() {
     queryClient.invalidateQueries({
       predicate: (query) => {
         const key = query.queryKey[0] as { _id?: string } | undefined;
-        return key?._id === "scheduledReportsList";
+        return key?._id === "scheduledJobsList";
       },
     });
   };
 
   const createMutation = useMutation({
-    mutationFn: async (data: CreateScheduledReportRequest) => {
-      return await scheduledReportsCreate({
+    mutationFn: async (data: CreateScheduledJobRequest) => {
+      return await scheduledJobsCreate({
         client: apiClient,
         path: { orgId },
         body: data,
@@ -126,9 +130,9 @@ export function useScheduleMutations() {
       data,
     }: {
       id: string;
-      data: UpdateScheduledReportRequest;
+      data: UpdateScheduledJobRequest;
     }) => {
-      return await scheduledReportsUpdate({
+      return await scheduledJobsUpdate({
         client: apiClient,
         path: { orgId, scheduleId: id },
         body: data,
@@ -139,7 +143,7 @@ export function useScheduleMutations() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await scheduledReportsDelete({
+      return await scheduledJobsDelete({
         client: apiClient,
         path: { orgId, scheduleId: id },
       });
@@ -149,7 +153,7 @@ export function useScheduleMutations() {
 
   const pauseMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await scheduledReportsPause({
+      return await scheduledJobsPause({
         client: apiClient,
         path: { orgId, scheduleId: id },
       });
@@ -159,7 +163,17 @@ export function useScheduleMutations() {
 
   const resumeMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await scheduledReportsResume({
+      return await scheduledJobsResume({
+        client: apiClient,
+        path: { orgId, scheduleId: id },
+      });
+    },
+    onSuccess: invalidateSchedules,
+  });
+
+  const runMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await scheduledJobsRunNow({
         client: apiClient,
         path: { orgId, scheduleId: id },
       });
@@ -174,15 +188,17 @@ export function useScheduleMutations() {
       data,
     }: {
       id: string;
-      data: UpdateScheduledReportRequest;
+      data: UpdateScheduledJobRequest;
     }) => updateMutation.mutateAsync({ id, data }),
     deleteSchedule: deleteMutation.mutateAsync,
     pauseSchedule: pauseMutation.mutateAsync,
     resumeSchedule: resumeMutation.mutateAsync,
+    runSchedule: runMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
     isPausing: pauseMutation.isPending,
     isResuming: resumeMutation.isPending,
+    isRunning: runMutation.isPending,
   };
 }

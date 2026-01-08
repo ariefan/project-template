@@ -1,6 +1,16 @@
-import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type {
+  FileInfo,
   FileMetadata,
   PresignedUploadUrl,
   StorageProvider,
@@ -109,6 +119,69 @@ export class LocalStorageProvider implements StorageProvider {
     } catch {
       return null;
     }
+  }
+
+  async listFiles(path: string, recursive = false): Promise<FileInfo[]> {
+    const fullPath = join(this.basePath, path);
+    const entries = await readdir(fullPath, { withFileTypes: true });
+    const files: FileInfo[] = [];
+
+    for (const entry of entries) {
+      const entryPath = join(fullPath, entry.name);
+      const stats = await stat(entryPath);
+      const relativePath = path ? `${path}/${entry.name}` : entry.name;
+
+      files.push({
+        name: entry.name,
+        path: relativePath,
+        size: stats.size,
+        modified: stats.mtime,
+        isDirectory: entry.isDirectory(),
+      });
+
+      if (entry.isDirectory() && recursive) {
+        const subFiles = await this.listFiles(relativePath, true);
+        files.push(...subFiles);
+      }
+    }
+
+    return files;
+  }
+
+  async createFolder(path: string): Promise<void> {
+    const fullPath = join(this.basePath, path);
+    await mkdir(fullPath, { recursive: true });
+  }
+
+  async moveFile(from: string, to: string): Promise<void> {
+    const fromPath = join(this.basePath, from);
+    const toPath = join(this.basePath, to);
+    const toDir = dirname(toPath);
+
+    // Ensure destination directory exists
+    await mkdir(toDir, { recursive: true });
+
+    // Use rename to move (Node.js will move across filesystems if needed)
+    await writeFile(toPath, await readFile(fromPath));
+    await unlink(fromPath);
+  }
+
+  async copyFile(from: string, to: string): Promise<void> {
+    const fromPath = join(this.basePath, from);
+    const toPath = join(this.basePath, to);
+    const toDir = dirname(toPath);
+
+    // Ensure destination directory exists
+    await mkdir(toDir, { recursive: true });
+
+    // Use cp with recursive for directories
+    await cp(fromPath, toPath, { recursive: true });
+  }
+
+  async deleteFolder(path: string): Promise<void> {
+    const fullPath = join(this.basePath, path);
+    // Use rm with recursive for directories
+    await rm(fullPath, { recursive: true, force: true });
   }
 }
 

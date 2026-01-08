@@ -423,16 +423,6 @@ export const zDayOfWeek = z.enum([
 ]);
 
 /**
- * Report delivery method
- */
-export const zDeliveryMethod = z.enum([
-    'email',
-    'download',
-    'webhook',
-    'storage'
-]);
-
-/**
  * Email delivery configuration
  */
 export const zEmailDeliveryConfig = z.object({
@@ -561,6 +551,17 @@ export const zInitiateUploadRequest = z.object({
 });
 
 /**
+ * Generic job delivery method (extends DeliveryMethod with "none" option)
+ */
+export const zJobDeliveryMethod = z.enum([
+    'email',
+    'download',
+    'webhook',
+    'storage',
+    'none'
+]);
+
+/**
  * Job error details
  */
 export const zJobError = z.object({
@@ -578,6 +579,15 @@ export const zJobMetadata = z.object({
     format: z.optional(z.string()),
     parentJobId: z.optional(z.string()),
     retryCount: z.optional(z.int())
+});
+
+/**
+ * Request to create a new job
+ */
+export const zCreateJobRequest = z.object({
+    type: z.string(),
+    input: z.optional(z.record(z.string(), z.unknown())),
+    metadata: z.optional(zJobMetadata)
 });
 
 /**
@@ -1416,7 +1426,13 @@ export const zRoleResponse = z.object({
 });
 
 /**
- * Schedule frequency
+ * ============================================================================
+ * SCHEDULE COMMON TYPES
+ * ============================================================================
+ *
+ * Shared types used by both scheduled reports and scheduled jobs.
+ * These types are generic and can be used for any scheduled operation.
+ * ============================================================================Schedule frequency
  */
 export const zScheduleFrequency = z.enum([
     'once',
@@ -1425,6 +1441,24 @@ export const zScheduleFrequency = z.enum([
     'monthly',
     'custom'
 ]);
+
+/**
+ * Scheduled job run history response
+ */
+export const zScheduledJobHistoryResponse = z.object({
+    data: z.object({
+        scheduleId: z.string(),
+        jobs: z.array(z.object({
+            jobId: z.string(),
+            status: z.string(),
+            createdAt: z.string(),
+            completedAt: z.optional(z.string()),
+            success: z.boolean(),
+            error: z.optional(z.string())
+        }))
+    }),
+    meta: zResponseMeta
+});
 
 /**
  * Request body for sending a notification
@@ -1994,10 +2028,11 @@ export const zDeliveryConfig = z.object({
 });
 
 /**
- * Request body for creating a scheduled report
+ * Request body for creating a scheduled job
  */
-export const zCreateScheduledReportRequest = z.object({
-    templateId: z.string(),
+export const zCreateScheduledJobRequest = z.object({
+    jobType: z.string(),
+    jobConfig: z.optional(z.record(z.string(), z.unknown())),
     name: z.string(),
     description: z.optional(z.string()),
     frequency: zScheduleFrequency,
@@ -2009,25 +2044,25 @@ export const zCreateScheduledReportRequest = z.object({
     timezone: z.optional(z.string()),
     startDate: z.optional(z.iso.datetime()),
     endDate: z.optional(z.iso.datetime()),
-    deliveryMethod: zDeliveryMethod,
+    deliveryMethod: z.optional(zJobDeliveryMethod),
     deliveryConfig: z.optional(zDeliveryConfig),
-    parameters: z.optional(z.record(z.string(), z.unknown())),
     isActive: z.optional(z.boolean())
 });
 
 /**
- * Scheduled Report resource model
+ * Scheduled Job resource model
  *
- * Defines automated report generation with:
+ * Defines automated job execution with:
  * - Flexible scheduling (daily, weekly, monthly, custom cron)
  * - Multiple delivery methods (email, webhook, storage)
- * - Template-based generation
+ * - Generic job type support (report, export, import, custom)
  * - Multi-tenant scoping
  */
-export const zScheduledReport = z.object({
+export const zScheduledJob = z.object({
     id: z.string(),
     orgId: z.string(),
-    templateId: z.string(),
+    jobType: z.string(),
+    jobConfig: z.optional(z.record(z.string(), z.unknown())),
     name: z.string(),
     description: z.optional(z.string()),
     frequency: zScheduleFrequency,
@@ -2039,13 +2074,13 @@ export const zScheduledReport = z.object({
     timezone: z.string(),
     startDate: z.iso.datetime(),
     endDate: z.optional(z.iso.datetime()),
-    deliveryMethod: zDeliveryMethod,
+    deliveryMethod: zJobDeliveryMethod,
     deliveryConfig: z.optional(zDeliveryConfig),
-    parameters: z.optional(z.record(z.string(), z.unknown())),
     isActive: z.boolean(),
     lastRunAt: z.optional(z.iso.datetime()),
     nextRunAt: z.optional(z.iso.datetime()),
     failureCount: z.int(),
+    lastJobId: z.optional(z.string()),
     createdBy: z.string(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
@@ -2053,19 +2088,19 @@ export const zScheduledReport = z.object({
 });
 
 /**
- * Scheduled report collection response (page-based)
+ * Scheduled job collection response (page-based)
  */
-export const zScheduledReportListResponse = z.object({
-    data: z.array(zScheduledReport),
+export const zScheduledJobListResponse = z.object({
+    data: z.array(zScheduledJob),
     pagination: zPagination,
     meta: zResponseMeta
 });
 
 /**
- * Single scheduled report response
+ * Single scheduled job response
  */
-export const zScheduledReportResponse = z.object({
-    data: zScheduledReport,
+export const zScheduledJobResponse = z.object({
+    data: zScheduledJob,
     meta: zResponseMeta
 });
 
@@ -2088,10 +2123,11 @@ export const zDeliveryConfigUpdate = z.object({
 });
 
 /**
- * Request body for updating a scheduled report
+ * Request body for updating a scheduled job
  */
-export const zUpdateScheduledReportRequest = z.object({
-    templateId: z.optional(z.string()),
+export const zUpdateScheduledJobRequest = z.object({
+    jobType: z.optional(z.string()),
+    jobConfig: z.optional(z.record(z.string(), z.unknown())),
     name: z.optional(z.string()),
     description: z.optional(z.string()),
     frequency: z.optional(zScheduleFrequency),
@@ -2103,9 +2139,8 @@ export const zUpdateScheduledReportRequest = z.object({
     timezone: z.optional(z.string()),
     startDate: z.optional(z.iso.datetime()),
     endDate: z.optional(z.iso.datetime()),
-    deliveryMethod: z.optional(zDeliveryMethod),
+    deliveryMethod: z.optional(zJobDeliveryMethod),
     deliveryConfig: z.optional(zDeliveryConfigUpdate),
-    parameters: z.optional(z.record(z.string(), z.unknown())),
     isActive: z.optional(z.boolean())
 });
 
@@ -3486,6 +3521,22 @@ export const zJobsListResponse = z.union([
     zErrorResponse
 ]);
 
+export const zJobsCreateData = z.object({
+    body: zCreateJobRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zJobsCreateResponse = z.union([
+    zJobResponse,
+    zErrorResponse
+]);
+
 export const zJobsGetData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -3618,169 +3669,6 @@ export const zReportExportsStreamExportData = z.object({
  */
 export const zReportExportsStreamExportResponse = zErrorResponse;
 
-export const zScheduledReportsListData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.optional(z.object({
-        page: z.optional(z.int()).default(1),
-        pageSize: z.optional(z.int()).default(50),
-        orderBy: z.optional(z.string()),
-        templateId: z.optional(z.string()),
-        frequency: z.optional(zScheduleFrequency),
-        deliveryMethod: z.optional(zDeliveryMethod),
-        isActive: z.optional(z.boolean()),
-        search: z.optional(z.string())
-    }))
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsListResponse = z.union([
-    zScheduledReportListResponse,
-    zErrorResponse
-]);
-
-export const zScheduledReportsCreateData = z.object({
-    body: zCreateScheduledReportRequest,
-    path: z.object({
-        orgId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-export const zScheduledReportsCreateResponse = z.union([
-    zErrorResponse,
-    zScheduledReportResponse
-]);
-
-export const zScheduledReportsDeleteData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        scheduleId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsDeleteResponse = z.union([
-    zSoftDeleteResponse,
-    zErrorResponse
-]);
-
-export const zScheduledReportsGetData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        scheduleId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsGetResponse = z.union([
-    zScheduledReportResponse,
-    zErrorResponse
-]);
-
-export const zScheduledReportsUpdateData = z.object({
-    body: zUpdateScheduledReportRequest,
-    path: z.object({
-        orgId: z.string(),
-        scheduleId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsUpdateResponse = z.union([
-    zScheduledReportResponse,
-    zErrorResponse
-]);
-
-export const zScheduledReportsGetHistoryData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        scheduleId: z.string()
-    }),
-    query: z.optional(z.object({
-        page: z.optional(z.int()).default(1),
-        pageSize: z.optional(z.int()).default(20),
-        status: z.optional(zJobStatus)
-    }))
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsGetHistoryResponse = z.union([
-    zJobListResponse,
-    zErrorResponse
-]);
-
-export const zScheduledReportsPauseData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        scheduleId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsPauseResponse = z.union([
-    zScheduledReportResponse,
-    zErrorResponse
-]);
-
-export const zScheduledReportsResumeData = z.object({
-    body: z.optional(z.never()),
-    path: z.object({
-        orgId: z.string(),
-        scheduleId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsResumeResponse = z.union([
-    zScheduledReportResponse,
-    zErrorResponse
-]);
-
-export const zScheduledReportsRunNowData = z.object({
-    body: z.optional(z.object({
-        parameters: z.optional(z.record(z.string(), z.unknown()))
-    })),
-    path: z.object({
-        orgId: z.string(),
-        scheduleId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zScheduledReportsRunNowResponse = z.union([
-    zJobResponse,
-    zErrorResponse
-]);
-
 export const zReportTemplatesListData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -3886,27 +3774,6 @@ export const zReportTemplatesCloneResponse = z.union([
     zReportTemplateResponse
 ]);
 
-export const zReportTemplatesTestData = z.object({
-    body: z.object({
-        sampleData: z.optional(z.array(z.unknown())),
-        sampleRows: z.optional(z.int()),
-        parameters: z.optional(z.record(z.string(), z.unknown()))
-    }),
-    path: z.object({
-        orgId: z.string(),
-        templateId: z.string()
-    }),
-    query: z.optional(z.never())
-});
-
-/**
- * The request has succeeded.
- */
-export const zReportTemplatesTestResponse = z.union([
-    zAsyncExportResponse,
-    zErrorResponse
-]);
-
 export const zTenantRolesListData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -3985,6 +3852,165 @@ export const zTenantRolesUpdateData = z.object({
  */
 export const zTenantRolesUpdateResponse = z.union([
     zRoleResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50),
+        orderBy: z.optional(z.string()),
+        jobType: z.optional(z.string()),
+        frequency: z.optional(zScheduleFrequency),
+        deliveryMethod: z.optional(zJobDeliveryMethod),
+        isActive: z.optional(z.boolean()),
+        search: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsListResponse = z.union([
+    zScheduledJobListResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsCreateData = z.object({
+    body: zCreateScheduledJobRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zScheduledJobsCreateResponse = z.union([
+    zErrorResponse,
+    zScheduledJobResponse
+]);
+
+export const zScheduledJobsDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsGetResponse = z.union([
+    zScheduledJobResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsUpdateData = z.object({
+    body: zUpdateScheduledJobRequest,
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsUpdateResponse = z.union([
+    zScheduledJobResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsGetHistoryData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.object({
+        limit: z.optional(z.int()).default(10)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsGetHistoryResponse = z.union([
+    zScheduledJobHistoryResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsPauseData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsPauseResponse = z.union([
+    zScheduledJobResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsResumeData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsResumeResponse = z.union([
+    zScheduledJobResponse,
+    zErrorResponse
+]);
+
+export const zScheduledJobsRunNowData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        scheduleId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zScheduledJobsRunNowResponse = z.union([
+    zJobResponse,
     zErrorResponse
 ]);
 

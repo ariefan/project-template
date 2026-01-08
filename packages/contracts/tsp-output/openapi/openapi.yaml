@@ -28,6 +28,7 @@ tags:
   - name: Notifications
   - name: Notification Preferences
   - name: Reports
+  - name: Scheduled Jobs
   - name: Announcements
   - name: Subscriptions
 paths:
@@ -3197,6 +3198,39 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Jobs
+    post:
+      operationId: Jobs_create
+      summary: Create job
+      description: |-
+        Create a new job
+
+        Creates and enqueues a job for async processing.
+        The job type must have a registered handler.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/JobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Jobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobRequest'
+        description: Job creation request
   /v1/orgs/{orgId}/jobs/{jobId}:
     get:
       operationId: Jobs_get
@@ -3533,371 +3567,6 @@ paths:
             schema:
               $ref: '#/components/schemas/StreamExportRequest'
         description: Stream export request
-  /v1/orgs/{orgId}/reports/schedules:
-    get:
-      operationId: ScheduledReports_list
-      summary: List scheduled reports
-      description: List scheduled reports in an organization
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: page
-          in: query
-          required: false
-          description: Page number (1-indexed)
-          schema:
-            type: integer
-            format: int32
-            default: 1
-          explode: false
-        - name: pageSize
-          in: query
-          required: false
-          description: 'Number of items per page (max: 100)'
-          schema:
-            type: integer
-            format: int32
-            default: 50
-          explode: false
-        - name: orderBy
-          in: query
-          required: false
-          description: Sort order
-          schema:
-            type: string
-          explode: false
-        - name: templateId
-          in: query
-          required: false
-          description: Filter by template ID
-          schema:
-            type: string
-          explode: false
-        - name: frequency
-          in: query
-          required: false
-          description: Filter by frequency
-          schema:
-            $ref: '#/components/schemas/ScheduleFrequency'
-          explode: false
-        - name: deliveryMethod
-          in: query
-          required: false
-          description: Filter by delivery method
-          schema:
-            $ref: '#/components/schemas/DeliveryMethod'
-          explode: false
-        - name: isActive
-          in: query
-          required: false
-          description: Filter by active status
-          schema:
-            type: boolean
-          explode: false
-        - name: search
-          in: query
-          required: false
-          description: Full-text search
-          schema:
-            type: string
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ScheduledReportListResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-    post:
-      operationId: ScheduledReports_create
-      summary: Create scheduled report
-      description: Create a new scheduled report
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '201':
-          description: The request has succeeded and a new resource has been created as a result.
-          headers:
-            location:
-              required: true
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScheduledReportResponse'
-      tags:
-        - Reports
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateScheduledReportRequest'
-        description: Schedule data
-  /v1/orgs/{orgId}/reports/schedules/{scheduleId}:
-    get:
-      operationId: ScheduledReports_get
-      summary: Get scheduled report
-      description: Get a scheduled report by ID
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: scheduleId
-          in: path
-          required: true
-          description: Schedule ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ScheduledReportResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-    patch:
-      operationId: ScheduledReports_update
-      summary: Update scheduled report
-      description: Update a scheduled report
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: scheduleId
-          in: path
-          required: true
-          description: Schedule ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ScheduledReportResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateScheduledReportRequest'
-        description: Schedule update data
-    delete:
-      operationId: ScheduledReports_delete
-      summary: Delete scheduled report
-      description: Delete a scheduled report
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: scheduleId
-          in: path
-          required: true
-          description: Schedule ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/SoftDeleteResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/history:
-    get:
-      operationId: ScheduledReports_getHistory
-      summary: Get schedule run history
-      description: Get run history for a scheduled report
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: scheduleId
-          in: path
-          required: true
-          description: Schedule ID
-          schema:
-            type: string
-        - name: page
-          in: query
-          required: false
-          description: Page number
-          schema:
-            type: integer
-            format: int32
-            default: 1
-          explode: false
-        - name: pageSize
-          in: query
-          required: false
-          description: Items per page
-          schema:
-            type: integer
-            format: int32
-            default: 20
-          explode: false
-        - name: status
-          in: query
-          required: false
-          description: Filter by status
-          schema:
-            $ref: '#/components/schemas/JobStatus'
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/JobListResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/pause:
-    post:
-      operationId: ScheduledReports_pause
-      summary: Pause scheduled report
-      description: Pause a scheduled report
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: scheduleId
-          in: path
-          required: true
-          description: Schedule ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ScheduledReportResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/resume:
-    post:
-      operationId: ScheduledReports_resume
-      summary: Resume scheduled report
-      description: Resume a paused scheduled report
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: scheduleId
-          in: path
-          required: true
-          description: Schedule ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/ScheduledReportResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-  /v1/orgs/{orgId}/reports/schedules/{scheduleId}/run:
-    post:
-      operationId: ScheduledReports_runNow
-      summary: Run scheduled report now
-      description: Trigger a scheduled report to run immediately
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: scheduleId
-          in: path
-          required: true
-          description: Schedule ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/JobResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                parameters:
-                  type: object
-                  additionalProperties: {}
-        description: Optional parameter overrides
   /v1/orgs/{orgId}/reports/templates:
     get:
       operationId: ReportTemplates_list
@@ -4156,55 +3825,6 @@ paths:
               required:
                 - name
         description: New template name
-  /v1/orgs/{orgId}/reports/templates/{templateId}/test:
-    post:
-      operationId: ReportTemplates_test
-      summary: Test report template
-      description: Test a report template with sample data
-      parameters:
-        - name: orgId
-          in: path
-          required: true
-          description: Organization ID
-          schema:
-            type: string
-        - name: templateId
-          in: path
-          required: true
-          description: Template ID
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - $ref: '#/components/schemas/AsyncExportResponse'
-                  - $ref: '#/components/schemas/ErrorResponse'
-      tags:
-        - Reports
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                sampleData:
-                  type: array
-                  items: {}
-                  description: Sample data to use for testing
-                sampleRows:
-                  type: integer
-                  format: int32
-                  description: Number of sample rows to generate if no sampleData provided
-                parameters:
-                  type: object
-                  additionalProperties: {}
-                  description: Parameters to pass to template
-        description: Test data and parameters
   /v1/orgs/{orgId}/roles:
     get:
       operationId: TenantRoles_list
@@ -4391,6 +4011,347 @@ paths:
           description: 'There is no content to send for this request, but the headers may be useful. '
       tags:
         - Roles
+  /v1/orgs/{orgId}/schedules:
+    get:
+      operationId: ScheduledJobs_list
+      summary: List scheduled jobs
+      description: |-
+        List scheduled jobs
+
+        Returns scheduled jobs for the current tenant with optional filtering.
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+        - name: orderBy
+          in: query
+          required: false
+          description: Sort order
+          schema:
+            type: string
+          explode: false
+        - name: jobType
+          in: query
+          required: false
+          description: Filter by job type
+          schema:
+            type: string
+          explode: false
+        - name: frequency
+          in: query
+          required: false
+          description: Filter by frequency
+          schema:
+            $ref: '#/components/schemas/ScheduleFrequency'
+          explode: false
+        - name: deliveryMethod
+          in: query
+          required: false
+          description: Filter by delivery method
+          schema:
+            $ref: '#/components/schemas/JobDeliveryMethod'
+          explode: false
+        - name: isActive
+          in: query
+          required: false
+          description: Filter by active status
+          schema:
+            type: boolean
+          explode: false
+        - name: search
+          in: query
+          required: false
+          description: Full-text search
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledJobListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
+    post:
+      operationId: ScheduledJobs_create
+      summary: Create scheduled job
+      description: Create a new scheduled job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          headers:
+            location:
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledJobResponse'
+      tags:
+        - Scheduled Jobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduledJobRequest'
+        description: Schedule data
+  /v1/orgs/{orgId}/schedules/{scheduleId}:
+    get:
+      operationId: ScheduledJobs_get
+      summary: Get scheduled job
+      description: Get a scheduled job by ID
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
+    patch:
+      operationId: ScheduledJobs_update
+      summary: Update scheduled job
+      description: Update a scheduled job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateScheduledJobRequest'
+        description: Schedule update data
+    delete:
+      operationId: ScheduledJobs_delete
+      summary: Delete scheduled job
+      description: Delete a scheduled job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
+  /v1/orgs/{orgId}/schedules/{scheduleId}/history:
+    get:
+      operationId: ScheduledJobs_getHistory
+      summary: Get scheduled job history
+      description: Get run history for a scheduled job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Number of history items to return
+          schema:
+            type: integer
+            format: int32
+            default: 10
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledJobHistoryResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
+  /v1/orgs/{orgId}/schedules/{scheduleId}/pause:
+    post:
+      operationId: ScheduledJobs_pause
+      summary: Pause scheduled job
+      description: Pause a scheduled job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
+  /v1/orgs/{orgId}/schedules/{scheduleId}/resume:
+    post:
+      operationId: ScheduledJobs_resume
+      summary: Resume scheduled job
+      description: Resume a paused scheduled job
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ScheduledJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
+  /v1/orgs/{orgId}/schedules/{scheduleId}/run:
+    post:
+      operationId: ScheduledJobs_runNow
+      summary: Run scheduled job now
+      description: Trigger a scheduled job to run immediately
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          description: Organization ID
+          schema:
+            type: string
+        - name: scheduleId
+          in: path
+          required: true
+          description: Schedule ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/JobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Scheduled Jobs
   /v1/orgs/{orgId}/subscriptions:
     post:
       operationId: Subscriptions_create
@@ -6725,6 +6686,23 @@ components:
             - $ref: '#/components/schemas/ExamplePostStatus'
           description: 'Post status (default: draft)'
       description: Request body for creating a new post
+    CreateJobRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Job type (e.g., "report", "import", "export", "my-custom-job")
+        input:
+          type: object
+          additionalProperties: {}
+          description: Job input parameters (job-specific)
+        metadata:
+          allOf:
+            - $ref: '#/components/schemas/JobMetadata'
+          description: Job metadata (references, format, etc.)
+      description: Request to create a new job
     CreatePlanRequest:
       type: object
       required:
@@ -6855,18 +6833,21 @@ components:
           minItems: 1
           description: Permissions to grant
       description: Request to create a custom role
-    CreateScheduledReportRequest:
+    CreateScheduledJobRequest:
       type: object
       required:
-        - templateId
+        - jobType
         - name
         - frequency
-        - deliveryMethod
       properties:
-        templateId:
+        jobType:
           type: string
-          description: Associated report template ID
-          example: tpl_template123
+          description: Job type to run
+          example: report
+        jobConfig:
+          type: object
+          additionalProperties: {}
+          description: Job configuration passed to the job handler
         name:
           type: string
           description: Schedule name
@@ -6911,20 +6892,16 @@ components:
           description: End date for the schedule
         deliveryMethod:
           allOf:
-            - $ref: '#/components/schemas/DeliveryMethod'
-          description: Delivery method
+            - $ref: '#/components/schemas/JobDeliveryMethod'
+          description: Delivery method for job results
         deliveryConfig:
           allOf:
             - $ref: '#/components/schemas/DeliveryConfig'
           description: Delivery configuration
-        parameters:
-          type: object
-          additionalProperties: {}
-          description: Runtime parameters passed to template
         isActive:
           type: boolean
           description: 'Whether the schedule is active (default: true)'
-      description: Request body for creating a scheduled report
+      description: Request body for creating a scheduled job
     CreateSubscriptionRequest:
       type: object
       required:
@@ -7093,14 +7070,6 @@ components:
             - $ref: '#/components/schemas/StorageDeliveryConfigUpdate'
           description: Storage delivery settings (when deliveryMethod is storage)
       description: Combined delivery configuration
-    DeliveryMethod:
-      type: string
-      enum:
-        - email
-        - download
-        - webhook
-        - storage
-      description: Report delivery method
     DismissAnnouncementResponse:
       type: object
       required:
@@ -7136,7 +7105,7 @@ components:
         subject:
           type: string
           description: Email subject (supports template variables)
-          example: Your Weekly Sales Report - {{date}}
+          example: Your Weekly Report - {{date}}
         body:
           type: string
           description: Email body text (supports template variables)
@@ -7162,7 +7131,7 @@ components:
         subject:
           type: string
           description: Email subject (supports template variables)
-          example: Your Weekly Sales Report - {{date}}
+          example: Your Weekly Report - {{date}}
         body:
           type: string
           description: Email body text (supports template variables)
@@ -7786,6 +7755,15 @@ components:
 
         Represents a long-running operation that can be polled for status.
         Unified job system with pg-boss queue integration.
+    JobDeliveryMethod:
+      type: string
+      enum:
+        - email
+        - download
+        - webhook
+        - storage
+        - none
+      description: Generic job delivery method (extends DeliveryMethod with "none" option)
     JobError:
       type: object
       required:
@@ -8875,13 +8853,20 @@ components:
         - weekly
         - monthly
         - custom
-      description: Schedule frequency
-    ScheduledReport:
+      description: |-
+        ============================================================================
+        SCHEDULE COMMON TYPES
+        ============================================================================
+
+        Shared types used by both scheduled reports and scheduled jobs.
+        These types are generic and can be used for any scheduled operation.
+        ============================================================================Schedule frequency
+    ScheduledJob:
       type: object
       required:
         - id
         - orgId
-        - templateId
+        - jobType
         - name
         - frequency
         - timezone
@@ -8901,10 +8886,14 @@ components:
           type: string
           description: Organization ID (tenant scope)
           example: org_xyz789
-        templateId:
+        jobType:
           type: string
-          description: Associated report template ID
-          example: tpl_template123
+          description: Job type to run (e.g., "report", "export", "import", "custom-job")
+          example: report
+        jobConfig:
+          type: object
+          additionalProperties: {}
+          description: Job configuration passed to the job handler (e.g., templateId, parameters)
         name:
           type: string
           description: Schedule name
@@ -8912,7 +8901,7 @@ components:
         description:
           type: string
           description: Schedule description
-          example: Sends sales summary every Monday morning
+          example: Runs weekly sales report every Monday morning
         frequency:
           allOf:
             - $ref: '#/components/schemas/ScheduleFrequency'
@@ -8953,16 +8942,12 @@ components:
           description: End date for the schedule (null = runs indefinitely)
         deliveryMethod:
           allOf:
-            - $ref: '#/components/schemas/DeliveryMethod'
-          description: Delivery method
+            - $ref: '#/components/schemas/JobDeliveryMethod'
+          description: Delivery method for job results
         deliveryConfig:
           allOf:
             - $ref: '#/components/schemas/DeliveryConfig'
           description: Delivery configuration
-        parameters:
-          type: object
-          additionalProperties: {}
-          description: Runtime parameters passed to template
         isActive:
           type: boolean
           description: Whether the schedule is active
@@ -8978,6 +8963,9 @@ components:
           type: integer
           format: int32
           description: Number of consecutive failures
+        lastJobId:
+          type: string
+          description: Last job ID created by this schedule
         createdBy:
           type: string
           description: User ID who created the schedule
@@ -8995,14 +8983,61 @@ components:
           format: date-time
           description: Timestamp when the schedule was soft deleted
       description: |-
-        Scheduled Report resource model
+        Scheduled Job resource model
 
-        Defines automated report generation with:
+        Defines automated job execution with:
         - Flexible scheduling (daily, weekly, monthly, custom cron)
         - Multiple delivery methods (email, webhook, storage)
-        - Template-based generation
+        - Generic job type support (report, export, import, custom)
         - Multi-tenant scoping
-    ScheduledReportListResponse:
+    ScheduledJobHistoryResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            scheduleId:
+              type: string
+              description: Schedule ID
+            jobs:
+              type: array
+              items:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    description: Job ID
+                  status:
+                    type: string
+                    description: Job status
+                  createdAt:
+                    type: string
+                    description: When the job was created
+                  completedAt:
+                    type: string
+                    description: When the job completed
+                  success:
+                    type: boolean
+                    description: Whether the job succeeded
+                  error:
+                    type: string
+                    description: Error message if failed
+                required:
+                  - jobId
+                  - status
+                  - createdAt
+                  - success
+              description: Jobs created by this schedule
+          required:
+            - scheduleId
+            - jobs
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Scheduled job run history response
+    ScheduledJobListResponse:
       type: object
       required:
         - data
@@ -9012,23 +9047,23 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/ScheduledReport'
+            $ref: '#/components/schemas/ScheduledJob'
         pagination:
           $ref: '#/components/schemas/Pagination'
         meta:
           $ref: '#/components/schemas/ResponseMeta'
-      description: Scheduled report collection response (page-based)
-    ScheduledReportResponse:
+      description: Scheduled job collection response (page-based)
+    ScheduledJobResponse:
       type: object
       required:
         - data
         - meta
       properties:
         data:
-          $ref: '#/components/schemas/ScheduledReport'
+          $ref: '#/components/schemas/ScheduledJob'
         meta:
           $ref: '#/components/schemas/ResponseMeta'
-      description: Single scheduled report response
+      description: Single scheduled job response
     SendNotificationRequest:
       type: object
       required:
@@ -9793,12 +9828,16 @@ components:
             $ref: '#/components/schemas/PermissionInput'
           description: Permissions to grant (replaces existing permissions)
       description: Request to update a role
-    UpdateScheduledReportRequest:
+    UpdateScheduledJobRequest:
       type: object
       properties:
-        templateId:
+        jobType:
           type: string
-          description: Associated report template ID
+          description: Job type to run
+        jobConfig:
+          type: object
+          additionalProperties: {}
+          description: Job configuration passed to the job handler
         name:
           type: string
           description: Schedule name
@@ -9841,20 +9880,16 @@ components:
           description: End date
         deliveryMethod:
           allOf:
-            - $ref: '#/components/schemas/DeliveryMethod'
+            - $ref: '#/components/schemas/JobDeliveryMethod'
           description: Delivery method
         deliveryConfig:
           allOf:
             - $ref: '#/components/schemas/DeliveryConfigUpdate'
           description: Delivery configuration
-        parameters:
-          type: object
-          additionalProperties: {}
-          description: Runtime parameters
         isActive:
           type: boolean
           description: Whether the schedule is active
-      description: Request body for updating a scheduled report
+      description: Request body for updating a scheduled job
     UpdateSubscriptionRequest:
       type: object
       properties:
@@ -10337,8 +10372,8 @@ components:
       properties:
         url:
           type: string
-          description: Webhook URL to POST the report
-          example: https://api.example.com/reports/incoming
+          description: Webhook URL to POST the result
+          example: https://api.example.com/incoming
         headers:
           type: object
           additionalProperties:
@@ -10349,15 +10384,15 @@ components:
           enum:
             - attachment
             - base64
-          description: Include report as attachment or inline base64
+          description: Include result as attachment or inline base64
       description: Webhook delivery configuration
     WebhookDeliveryConfigUpdate:
       type: object
       properties:
         url:
           type: string
-          description: Webhook URL to POST the report
-          example: https://api.example.com/reports/incoming
+          description: Webhook URL to POST the result
+          example: https://api.example.com/incoming
         headers:
           type: object
           additionalProperties:
@@ -10368,7 +10403,7 @@ components:
           enum:
             - attachment
             - base64
-          description: Include report as attachment or inline base64
+          description: Include result as attachment or inline base64
       description: Webhook delivery configuration
     WebhookDeliveryListResponse:
       type: object

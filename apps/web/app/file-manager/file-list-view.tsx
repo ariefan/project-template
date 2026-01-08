@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -16,12 +17,12 @@ import {
 import { cn } from "@workspace/ui/lib/utils";
 import { MoreHorizontal } from "lucide-react";
 import type { FileInfo } from "./file-manager-context";
-import { renderContextMenuItems } from "./lib/context-menu-items";
 import { getFileIcon, getFileType } from "./lib/file-utils";
 
 interface FileListViewProps {
   files: FileInfo[];
   selectedItems: Set<string>;
+  onFileSelect: (path: string, e: React.MouseEvent) => void;
   onToggleSelect: (path: string, checked: boolean) => void;
   onFileClick: (file: FileInfo, event: React.MouseEvent) => void;
   onFileDoubleClick: (file: FileInfo) => void;
@@ -29,11 +30,14 @@ interface FileListViewProps {
   sortBy: string;
   sortDirection: "asc" | "desc";
   onDownload: (file: FileInfo) => void;
+  showCheckboxes: boolean;
+  renderContextMenuItems: (file: FileInfo) => React.ReactNode;
 }
 
 export function FileListView({
   files,
   selectedItems,
+  onFileSelect,
   onToggleSelect,
   onFileClick,
   onFileDoubleClick,
@@ -41,12 +45,15 @@ export function FileListView({
   sortBy,
   sortDirection,
   onDownload,
+  showCheckboxes,
+  renderContextMenuItems,
 }: FileListViewProps) {
   return (
     <div className="rounded-lg border bg-card">
       <table className="w-full">
         <thead>
           <tr className="border-b bg-muted/50">
+            {showCheckboxes && <th className="w-12 px-4 py-3" />}
             <th
               className="cursor-pointer px-4 py-3 text-left font-medium text-sm hover:bg-muted/50"
               onClick={() => onSort("name")}
@@ -108,12 +115,22 @@ export function FileListView({
                       if ((e.target as HTMLElement).closest("button")) {
                         return;
                       }
-                      // Toggle selection on single click
-                      onToggleSelect(id, !selected);
+                      // Use new selection handler that checks for Ctrl key
+                      onFileSelect(id, e);
                       e.stopPropagation();
                     }}
                     onDoubleClick={() => onFileDoubleClick(file)}
                   >
+                    {showCheckboxes && (
+                      <td className="px-4 py-3">
+                        <Checkbox
+                          checked={selected}
+                          onCheckedChange={(checked) => {
+                            onToggleSelect(id, checked === true);
+                          }}
+                        />
+                      </td>
+                    )}
                     <td className="max-w-[200px] px-4 py-3">
                       <div className="flex items-center gap-3">
                         {getFileIcon(fileType)}

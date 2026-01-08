@@ -3,11 +3,13 @@
 import {
   ChevronDown,
   ChevronRight,
+  Crop,
   Download,
   Eye,
   FileImage,
   Loader2,
   Plus,
+  Sparkles,
   Upload,
   X,
 } from "lucide-react";
@@ -20,6 +22,7 @@ import { Checkbox } from "../components/checkbox";
 import { Label } from "../components/label";
 import { Slider } from "../components/slider";
 import { cn } from "../lib/utils";
+import { type CropResult, ImageCropDialog } from "./image-crop-dialog";
 
 export interface CompressionOptions {
   maxSizeMB: number;
@@ -98,6 +101,13 @@ export function ImageCompressor({
       alwaysKeepResolution: defaultOptions?.alwaysKeepResolution ?? false,
     });
 
+  // Cropping state
+  const [enableCropping, setEnableCropping] = React.useState(false);
+  const [cropDialogOpen, setCropDialogOpen] = React.useState(false);
+  const [fileToCrop, setFileToCrop] = React.useState<File | null>(null);
+  const [cropQueue, setCropQueue] = React.useState<File[]>([]);
+  const [processedCrops, setProcessedCrops] = React.useState<CropResult[]>([]);
+
   // Dynamically import browser-image-compression to avoid SSR issues
   const [browserImageCompression, setBrowserImageCompression] = React.useState<
     typeof import("browser-image-compression").default | null
@@ -153,61 +163,164 @@ export function ImageCompressor({
     [browserImageCompression, compressionOptions]
   );
 
-  // Handle file selection - auto compress
+  // Handle file selection
   const handleFileSelect = React.useCallback(
-    async (files: FileList | null) => {
+    (files: FileList | null) => {
       if (!files) {
         return;
       }
 
-      const newFiles = Array.from(files);
-      setSourceFiles((prev) => {
-        const existing = prev.map((f) => f.name);
-        const filtered = newFiles.filter((f) => !existing.includes(f.name));
-        return [...prev, ...filtered];
-      });
+      const newFiles = Array.from(files).filter((f) =>
+        f.type.startsWith("image/")
+      );
 
-      // Auto-compress new files
-      if (browserImageCompression && newFiles.length > 0) {
-        setIsCompressing(true);
-        try {
-          const compressed = await Promise.all(
-            newFiles.map((file) => compressSingleFile(file))
-          );
+      if (newFiles.length === 0) {
+        toast.error("Please select image files only");
+        return;
+      }
 
-          setCompressedFiles((prev) => {
-            const existingNames = prev.map((f) => f.name);
-            const newCompressed = compressed.filter(
-              (f) => !existingNames.includes(f.name)
-            );
-            return [...prev, ...newCompressed];
-          });
+      if (enableCropping) {
+        // Add to queue for cropping
+        setCropQueue((prev) => {
+          const existing = prev.map((f) => f.name);
+          const filtered = newFiles.filter((f) => !existing.includes(f.name));
+          return [...prev, ...filtered];
+        });
 
-          const totalOriginal = compressed.reduce(
-            (acc, f) => acc + f.originalSize,
-            0
-          );
-          const totalCompressed = compressed.reduce(
-            (acc, f) => acc + f.compressedSize,
-            0
-          );
-          const saving =
-            ((totalOriginal - totalCompressed) / totalOriginal) * 100;
+        // Start cropping if dialog is closed
+        if (!cropDialogOpen && newFiles.length > 0) {
+          setFileToCrop(newFiles[0] ?? null);
+          setCropDialogOpen(true);
+        }
+      } else {
+        // Auto-compress immediately
+        setSourceFiles((prev) => {
+          const existing = prev.map((f) => f.name);
+          const filtered = newFiles.filter((f) => !existing.includes(f.name));
+          return [...prev, ...filtered];
+        });
 
-          toast.success(
-            `Compressed ${compressed.length} image${compressed.length > 1 ? "s" : ""} - Saved ${saving.toFixed(1)}%`
-          );
+        if (browserImageCompression && newFiles.length > 0) {
+          setIsCompressing(true);
+          Promise.all(newFiles.map((file) => compressSingleFile(file)))
+            .then((compressed) => {
+              setCompressedFiles((prev) => {
+                const existingNames = prev.map((f) => f.name);
+                const newCompressed = compressed.filter(
+                  (f) => !existingNames.includes(f.name)
+                );
+                return [...prev, ...newCompressed];
+              });
 
-          onCompressed?.(compressed);
-        } catch (_error) {
-          toast.error("Compression failed");
-        } finally {
-          setIsCompressing(false);
+              const totalOriginal = compressed.reduce(
+                (acc, f) => acc + f.originalSize,
+                0
+              );
+              const totalCompressed = compressed.reduce(
+                (acc, f) => acc + f.compressedSize,
+                0
+              );
+              const saving =
+                ((totalOriginal - totalCompressed) / totalOriginal) * 100;
+
+              toast.success(
+                `Compressed ${compressed.length} image${compressed.length > 1 ? "s" : ""} - Saved ${saving.toFixed(1)}%`
+              );
+
+              onCompressed?.(compressed);
+            })
+            .catch(() => {
+              toast.error("Compression failed");
+            })
+            .finally(() => {
+              setIsCompressing(false);
+            });
         }
       }
     },
-    [browserImageCompression, compressSingleFile, onCompressed]
+    [
+      browserImageCompression,
+      compressSingleFile,
+      cropDialogOpen,
+      enableCropping,
+      onCompressed,
+    ]
   );
+
+  // Handle crop complete
+  const handleCropComplete = React.useCallback(
+    (result: CropResult) => {
+      setProcessedCrops((prev) => [...prev, result]);
+      setCropQueue((prev) => prev.filter((f) => f.name !== result.file.name));
+
+      // Process next in queue
+      const remaining = cropQueue.filter((f) => f.name !== result.file.name);
+      if (remaining.length > 0) {
+        setFileToCrop(remaining[0] ?? null);
+      } else {
+        setFileToCrop(null);
+        setCropDialogOpen(false);
+
+        // All images cropped, now compress
+        const allCrops = [...processedCrops, result];
+        setIsCompressing(true);
+
+        Promise.all(
+          allCrops.map(async (cropResult) => {
+            // Convert crop blob to File for compression
+            const cropFile = new File([cropResult.blob], cropResult.file.name, {
+              type: cropResult.file.type,
+            });
+            return compressSingleFile(cropFile);
+          })
+        )
+          .then((compressed) => {
+            setCompressedFiles(compressed);
+            setProcessedCrops([]);
+
+            const totalOriginal = compressed.reduce(
+              (acc, f) => acc + f.originalSize,
+              0
+            );
+            const totalCompressed = compressed.reduce(
+              (acc, f) => acc + f.compressedSize,
+              0
+            );
+            const saving =
+              ((totalOriginal - totalCompressed) / totalOriginal) * 100;
+
+            toast.success(
+              `Processed ${compressed.length} image${compressed.length > 1 ? "s" : ""} - Saved ${saving.toFixed(1)}%`
+            );
+
+            onCompressed?.(compressed);
+          })
+          .catch(() => {
+            toast.error("Compression failed");
+          })
+          .finally(() => {
+            setIsCompressing(false);
+          });
+      }
+    },
+    [cropQueue, processedCrops, compressSingleFile, onCompressed]
+  );
+
+  // Handle skip crop
+  const handleSkipCrop = React.useCallback(() => {
+    if (!fileToCrop) return;
+
+    // Skip this file and move to next
+    setCropQueue((prev) => prev.filter((f) => f.name !== fileToCrop.name));
+
+    const remaining = cropQueue.filter((f) => f.name !== fileToCrop.name);
+    if (remaining.length > 0) {
+      setFileToCrop(remaining[0] ?? null);
+    } else {
+      setFileToCrop(null);
+      setCropDialogOpen(false);
+    }
+  }, [cropQueue, fileToCrop]);
 
   // Handle upload
   const handleUpload = React.useCallback(() => {
@@ -217,19 +330,7 @@ export function ImageCompressor({
     onUpload?.(compressedFiles);
   }, [compressedFiles, onUpload]);
 
-  // Remove source file and its compressed version
-  const _removeSourceFile = React.useCallback((fileName: string) => {
-    setSourceFiles((prev) => prev.filter((f) => f.name !== fileName));
-    setCompressedFiles((prev) => {
-      const toRemove = prev.find((f) => f.name === fileName);
-      if (toRemove?.preview) {
-        URL.revokeObjectURL(toRemove.preview);
-      }
-      return prev.filter((f) => f.name !== fileName);
-    });
-  }, []);
-
-  // Remove compressed file only
+  // Remove compressed file
   const removeCompressedFile = React.useCallback((index: number) => {
     setCompressedFiles((prev) => {
       const file = prev[index];
@@ -257,9 +358,14 @@ export function ImageCompressor({
         URL.revokeObjectURL(f.preview);
       }
     });
+    processedCrops.forEach((f) => {
+      URL.revokeObjectURL(f.url);
+    });
     setSourceFiles([]);
     setCompressedFiles([]);
-  }, [compressedFiles]);
+    setCropQueue([]);
+    setProcessedCrops([]);
+  }, [compressedFiles, processedCrops]);
 
   // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -285,8 +391,14 @@ export function ImageCompressor({
           URL.revokeObjectURL(f.preview);
         }
       });
+      processedCrops.forEach((f) => {
+        URL.revokeObjectURL(f.url);
+      });
     };
-  }, [compressedFiles]);
+  }, [compressedFiles, processedCrops]);
+
+  const hasFilesInQueue = cropQueue.length > 0 || processedCrops.length > 0;
+  const totalInQueue = cropQueue.length + processedCrops.length;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -307,6 +419,26 @@ export function ImageCompressor({
 
         {showCompressionOptions && (
           <div className="mt-4 space-y-4">
+            {/* Enable cropping toggle */}
+            <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <div className="flex flex-1 flex-col gap-1">
+                <Label className="cursor-pointer" htmlFor="enable-cropping">
+                  Enable image cropping
+                </Label>
+                <p className="text-muted-foreground text-xs">
+                  Crop, rotate, and flip images before compression
+                </p>
+              </div>
+              <Checkbox
+                checked={enableCropping}
+                id="enable-cropping"
+                onCheckedChange={(checked) =>
+                  setEnableCropping(checked as boolean)
+                }
+              />
+            </div>
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="maxSizeMB">Max file size (MB)</Label>
@@ -386,8 +518,8 @@ export function ImageCompressor({
         )}
       </div>
 
-      {/* Upload Area - compact when files exist */}
-      {compressedFiles.length === 0 && sourceFiles.length === 0 ? (
+      {/* Upload Area */}
+      {compressedFiles.length === 0 && !hasFilesInQueue ? (
         <div
           className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
             isDragging
@@ -400,9 +532,14 @@ export function ImageCompressor({
           onDrop={handleDrop}
         >
           <FileImage className="mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="font-medium">Drop images here</p>
+          <p className="font-medium">
+            {enableCropping ? "Crop & Compress Images" : "Drop images here"}
+          </p>
           <p className="text-muted-foreground text-sm">
-            or click to browse • Images will be auto-compressed
+            or click to browse •{" "}
+            {enableCropping
+              ? "Crop, then compress"
+              : "Images will be auto-compressed"}
           </p>
           <input
             accept="image/*"
@@ -415,7 +552,23 @@ export function ImageCompressor({
         </div>
       ) : (
         <div className="space-y-3">
-          {/* Compact add more files button */}
+          {/* Crop queue indicator */}
+          {hasFilesInQueue && (
+            <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <Crop className="h-5 w-5 animate-pulse text-primary" />
+              <div className="flex flex-1 flex-col">
+                <p className="font-medium text-sm">
+                  Processing {totalInQueue} image{totalInQueue > 1 ? "s" : ""}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  {processedCrops.length} of {totalInQueue} cropped
+                </p>
+              </div>
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            </div>
+          )}
+
+          {/* Add more files button */}
           <div
             className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed py-2 text-sm transition-colors ${
               isDragging
@@ -465,7 +618,6 @@ export function ImageCompressor({
                       file.originalSize) *
                     100
                   ).toFixed(1);
-                  const isImage = file.type.startsWith("image/");
 
                   return (
                     <div
@@ -473,7 +625,7 @@ export function ImageCompressor({
                       key={file.name || index}
                     >
                       {/* Thumbnail */}
-                      {isImage && file.preview ? (
+                      {file.preview ? (
                         <img
                           alt={file.name}
                           className="size-full object-cover"
@@ -489,7 +641,7 @@ export function ImageCompressor({
                       <div className="absolute inset-0 flex flex-col justify-between bg-black/60 p-2 opacity-0 transition-opacity group-hover:opacity-100">
                         {/* Actions at top */}
                         <div className="flex justify-end gap-1">
-                          {isImage && file.preview && (
+                          {file.preview && (
                             <>
                               <Button
                                 className="h-7 w-7 p-0"
@@ -569,7 +721,7 @@ export function ImageCompressor({
           {isCompressing && (
             <div className="flex items-center justify-center gap-2 rounded-lg border bg-muted/30 py-4 text-muted-foreground text-sm">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Compressing images...
+              Processing images...
             </div>
           )}
 
@@ -595,6 +747,20 @@ export function ImageCompressor({
           )}
         </div>
       )}
+
+      {/* Crop Dialog */}
+      <ImageCropDialog
+        imageFile={fileToCrop}
+        onCropComplete={handleCropComplete}
+        onOpenChange={(open) => {
+          if (open) {
+            setCropDialogOpen(open);
+          } else {
+            handleSkipCrop();
+          }
+        }}
+        open={cropDialogOpen}
+      />
     </div>
   );
 }

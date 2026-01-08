@@ -1,6 +1,7 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import type {
+  CreateJobRequest,
   ErrorResponse,
   JobError,
   JobListResponse,
@@ -100,6 +101,63 @@ export function jobsRoutes(app: FastifyInstance) {
         return {
           data: result.data.map(formatJobResponse),
           pagination: result.pagination,
+          meta: createMeta(request.id),
+        };
+      } catch (error) {
+        const { statusCode, response } = handleError(error, request.id);
+        reply.status(statusCode);
+        return response;
+      }
+    }
+  );
+
+  /**
+   * POST /:orgId/jobs - Create a new job
+   */
+  app.post<{
+    Params: { orgId: string };
+    Body: CreateJobRequest;
+  }>(
+    "/:orgId/jobs",
+    { preHandler: [requireAuth] },
+    async (request, reply): Promise<JobResponse | ErrorResponse> => {
+      try {
+        const { orgId } = request.params;
+        const userId = request.user?.id;
+        const { type, input, metadata } = request.body ?? {};
+
+        if (!type) {
+          reply.status(400);
+          return {
+            error: {
+              code: "badRequest",
+              message: "Job type is required",
+              requestId: request.id,
+            },
+          };
+        }
+
+        if (!userId) {
+          reply.status(401);
+          return {
+            error: {
+              code: "unauthorized",
+              message: "User not authenticated",
+              requestId: request.id,
+            },
+          };
+        }
+
+        const job = await jobsService.createAndEnqueueJob({
+          orgId,
+          type,
+          createdBy: userId,
+          input,
+          metadata: metadata as import("@workspace/db/schema").JobMetadata,
+        });
+
+        return {
+          data: formatJobResponse(job),
           meta: createMeta(request.id),
         };
       } catch (error) {
@@ -302,50 +360,6 @@ export function jobsRoutes(app: FastifyInstance) {
             },
           };
         }
-      } catch (error) {
-        const { statusCode, response } = handleError(error, request.id);
-        reply.status(statusCode);
-        return response;
-      }
-    }
-  );
-
-  /**
-   * POST /:orgId/jobs/test - Create a test job for demonstration
-   */
-  app.post<{
-    Params: { orgId: string };
-    Body: {
-      pages?: number;
-      pageSize?: number;
-      source?: "pokemon" | "ability" | "move" | "type" | "berry";
-      failAtPage?: number;
-    };
-  }>(
-    "/:orgId/jobs/test",
-    { preHandler: [requireAuth] },
-    async (request, reply): Promise<JobResponse | ErrorResponse> => {
-      try {
-        const { orgId } = request.params;
-        const userId = request.user?.id;
-        const {
-          pages = 20,
-          pageSize = 40,
-          source = "pokemon",
-          failAtPage,
-        } = request.body ?? {};
-
-        const job = await jobsService.createAndEnqueueJob({
-          orgId,
-          type: "test",
-          createdBy: userId ?? "unknown",
-          input: { pages, pageSize, source, failAtPage },
-        });
-
-        return {
-          data: formatJobResponse(job),
-          meta: createMeta(request.id),
-        };
       } catch (error) {
         const { statusCode, response } = handleError(error, request.id);
         reply.status(statusCode);

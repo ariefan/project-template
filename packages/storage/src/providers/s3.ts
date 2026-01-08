@@ -1,12 +1,16 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type {
+  FileInfo,
   FileMetadata,
   PresignedUploadUrl,
   StorageProvider,
@@ -152,6 +156,138 @@ export class S3StorageProvider implements StorageProvider {
         return null;
       }
       throw error;
+    }
+  }
+
+  async listFiles(path: string, recursive = false): Promise<FileInfo[]> {
+    // Normalize path: ensure it ends with / for proper prefix matching
+    const prefix = path ? `${path}/` : "";
+    const files: FileInfo[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: prefix,
+        Delimiter: recursive ? undefined : "/",
+        ContinuationToken: continuationToken,
+      });
+
+      const response = await this.client.send(command);
+
+      // Process files (objects in the current "folder")
+      for (const object of response.Contents ?? []) {
+        const key = object.Key;
+        if (!key) continue;
+
+        // Skip the folder marker itself (ends with /)
+        if (key.endsWith("/") && key === prefix) continue;
+
+        // Get the name (last part of the key)
+        const name = key.split("/").filter(Boolean).pop() ?? key;
+
+        files.push({
+          name,
+          path: key,
+          size: object.Size ?? 0,
+          modified: object.LastModified ?? new Date(),
+          isDirectory: key.endsWith("/"),
+          contentType: undefined, // Would need HEAD request for each object
+        });
+      }
+
+      // Process subdirectories (only when not recursive)
+      if (!recursive) {
+        for (const prefixInfo of response.CommonPrefixes ?? []) {
+          const prefixValue = prefixInfo.Prefix;
+          if (!prefixValue) continue;
+
+          // Remove trailing slash for display
+          const folderName =
+            prefixValue.slice(0, -1).split("/").filter(Boolean).pop() ??
+            prefixValue;
+
+          files.push({
+            name: folderName,
+            path: prefixValue.slice(0, -1), // Remove trailing slash
+            size: 0,
+            modified: new Date(),
+            isDirectory: true,
+          });
+        }
+      }
+
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+
+    return files;
+  }
+
+  async createFolder(path: string): Promise<void> {
+    // S3 doesn't have real folders - we create an empty object with trailing slash
+    const folderKey = path.endsWith("/") ? path : `${path}/`;
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: folderKey,
+      Body: Buffer.from(""),
+    });
+
+    await this.client.send(command);
+  }
+
+  async moveFile(from: string, to: string): Promise<void> {
+    // S3 doesn't have native move - we copy then delete
+    await this.copyFile(from, to);
+    await this.delete(from);
+  }
+
+  async copyFile(from: string, to: string): Promise<void> {
+    const command = new CopyObjectCommand({
+      Bucket: this.bucket,
+      CopySource: `${this.bucket}/${from}`,
+      Key: to,
+    });
+
+    await this.client.send(command);
+  }
+
+  async deleteFolder(path: string): Promise<void> {
+    // S3 doesn't have folders - we delete all objects with the prefix
+    const prefix = path.endsWith("/") ? path : `${path}/`;
+    const keysToDelete: string[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      });
+
+      const response = await this.client.send(command);
+
+      // Collect all object keys
+      for (const object of response.Contents ?? []) {
+        if (object.Key) {
+          keysToDelete.push(object.Key);
+        }
+      }
+
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+
+    // Delete all objects (batch delete supports up to 1000 at a time)
+    for (let i = 0; i < keysToDelete.length; i += 1000) {
+      const batch = keysToDelete.slice(i, i + 1000);
+      const deleteCommand = new DeleteObjectsCommand({
+        Bucket: this.bucket,
+        Delete: {
+          Objects: batch.map((key) => ({ Key: key })),
+          Quiet: true,
+        },
+      });
+
+      await this.client.send(deleteCommand);
     }
   }
 }

@@ -369,6 +369,7 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     "users",
     "reports",
     "announcements",
+    "schedules",
   ];
   const actions = ["read", "create", "update", "delete", "manage"];
 
@@ -1129,12 +1130,13 @@ Payment Terms: Net 30`,
   }
   console.log(`   ✓ Created ${templates.length} report templates`);
 
-  console.log("\n📅 Creating scheduled reports...");
+  console.log("\n📅 Creating scheduled jobs...");
   const schedules = [
     {
       id: "sched_weekly_sales",
       organizationId: "org_acme",
-      templateId: "tpl_sales_summary",
+      jobType: "report" as const,
+      jobConfig: { templateId: "tpl_sales_summary" },
       name: "Weekly Sales Email",
       description: "Send sales summary every Monday morning",
       frequency: "weekly" as const,
@@ -1158,7 +1160,8 @@ Payment Terms: Net 30`,
     {
       id: "sched_daily_activity",
       organizationId: "org_acme",
-      templateId: "tpl_user_activity",
+      jobType: "report" as const,
+      jobConfig: { templateId: "tpl_user_activity" },
       name: "Daily Activity Backup",
       description: "Daily backup of user activity to S3",
       frequency: "daily" as const,
@@ -1181,7 +1184,8 @@ Payment Terms: Net 30`,
     {
       id: "sched_monthly_invoice",
       organizationId: "org_acme",
-      templateId: "tpl_invoice",
+      jobType: "report" as const,
+      jobConfig: { templateId: "tpl_invoice" },
       name: "Monthly Invoice Generation",
       description: "Generate invoices on the 1st of each month",
       frequency: "monthly" as const,
@@ -1205,11 +1209,11 @@ Payment Terms: Net 30`,
 
   for (const schedule of schedules) {
     await db
-      .insert(schema.scheduledReports)
+      .insert(schema.scheduledJobs)
       .values({ ...schedule, createdAt: now, updatedAt: now })
       .onConflictDoNothing();
   }
-  console.log(`   ✓ Created ${schedules.length} scheduled reports`);
+  console.log(`   ✓ Created ${schedules.length} scheduled jobs`);
 
   console.log("\n📋 Creating jobs...");
   const jobs = [

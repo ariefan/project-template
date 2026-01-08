@@ -14,7 +14,9 @@ export * from "./report-templates";
 export * from "./roles";
 export * from "./saas-plans";
 export * from "./saas-subscriptions";
-export * from "./scheduled-reports";
+export * from "./scheduled-jobs";
+// scheduled-reports has been replaced by scheduled-jobs
+// export * from "./scheduled-reports";
 export * from "./user-active-context";
 export * from "./user-role-assignments";
 export * from "./webhooks";

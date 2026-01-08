@@ -26,6 +26,18 @@ export interface StorageConfig {
 }
 
 /**
+ * File info for directory listings
+ */
+export interface FileInfo {
+  name: string;
+  path: string;
+  size: number;
+  modified: Date;
+  isDirectory: boolean;
+  contentType?: string;
+}
+
+/**
  * Storage provider type
  * Abstracts file storage operations for different backends
  */
@@ -84,6 +96,39 @@ export interface StorageProvider {
    * @param path - Storage path
    */
   getMetadata(path: string): Promise<FileMetadata | null>;
+
+  /**
+   * List files in a directory
+   * @param path - Directory path
+   * @param recursive - If true, list all files recursively
+   */
+  listFiles(path: string, recursive?: boolean): Promise<FileInfo[]>;
+
+  /**
+   * Create a folder
+   * @param path - Folder path
+   */
+  createFolder(path: string): Promise<void>;
+
+  /**
+   * Move or rename a file or folder
+   * @param from - Source path
+   * @param to - Destination path
+   */
+  moveFile(from: string, to: string): Promise<void>;
+
+  /**
+   * Copy a file or folder
+   * @param from - Source path
+   * @param to - Destination path
+   */
+  copyFile(from: string, to: string): Promise<void>;
+
+  /**
+   * Delete a folder and all its contents
+   * @param path - Folder path
+   */
+  deleteFolder(path: string): Promise<void>;
 }
 
 /**

@@ -1,19 +1,5 @@
-import { createReadStream, existsSync } from "node:fs";
-import {
-  cp,
-  mkdir,
-  readdir,
-  readFile,
-  rename,
-  rm,
-  stat,
-  writeFile,
-} from "node:fs/promises";
-import { join } from "node:path";
-import { pipeline } from "node:stream/promises";
 import type { FastifyInstance, RouteGenericInterface } from "fastify";
-
-const UPLOADS_BASE_PATH = join(process.cwd(), "uploads");
+import { type FileInfo as StorageFileInfo, storageProvider } from "./storage";
 
 // Top-level regex for performance
 const INVALID_NAME_REGEX = /[<>:"|?*]/;
@@ -24,6 +10,7 @@ interface WildcardParams extends RouteGenericInterface {
   };
 }
 
+// FileInfo for API responses (matches existing format with string dates)
 interface FileInfo {
   name: string;
   path: string;
@@ -46,6 +33,7 @@ interface DeleteResponse {
 interface CopyMoveResponse {
   success: boolean;
   message?: string;
+  file?: FileInfo;
 }
 
 interface CreateFolderResponse {
@@ -54,87 +42,38 @@ interface CreateFolderResponse {
   message?: string;
 }
 
-// Ensure uploads directory exists
-async function ensureUploadsDir() {
-  if (!existsSync(UPLOADS_BASE_PATH)) {
-    await mkdir(UPLOADS_BASE_PATH, { recursive: true });
-  }
+// Convert storage FileInfo to API FileInfo (with string dates)
+function toFileInfo(file: StorageFileInfo): FileInfo {
+  return {
+    name: file.name,
+    path: file.path,
+    size: file.size,
+    modified: file.modified.toISOString(),
+    isDirectory: file.isDirectory,
+  };
 }
 
 async function _getFilesRecursive(
   dirPath: string,
   relativePath = ""
 ): Promise<FileInfo[]> {
-  const fullPath = join(UPLOADS_BASE_PATH, dirPath, relativePath);
-  const entries = await readdir(fullPath, { withFileTypes: true });
-  const files: FileInfo[] = [];
-
-  for (const entry of entries) {
-    const entryPath = join(fullPath, entry.name);
-    const stats = await stat(entryPath);
-    const relativeEntryPath = relativePath
-      ? `${relativePath}/${entry.name}`
-      : entry.name;
-
-    files.push({
-      name: entry.name,
-      path: relativeEntryPath,
-      size: stats.size,
-      modified: stats.mtime.toISOString(),
-      isDirectory: entry.isDirectory(),
-    });
-
-    if (entry.isDirectory()) {
-      const subFiles = await _getFilesRecursive(dirPath, relativeEntryPath);
-      files.push(...subFiles);
-    }
-  }
-
-  return files;
+  const files = await storageProvider.listFiles(relativePath || dirPath, true);
+  return files.map(toFileInfo);
 }
 
 async function getFilesInDirectory(dirPath: string): Promise<FileInfo[]> {
-  await ensureUploadsDir();
-  const fullPath = join(UPLOADS_BASE_PATH, dirPath);
-  const entries = await readdir(fullPath, { withFileTypes: true });
-  const files: FileInfo[] = [];
-
-  for (const entry of entries) {
-    const entryPath = join(fullPath, entry.name);
-    const stats = await stat(entryPath);
-    const relativeEntryPath = dirPath ? `${dirPath}/${entry.name}` : entry.name;
-
-    files.push({
-      name: entry.name,
-      path: relativeEntryPath,
-      size: stats.size,
-      modified: stats.mtime.toISOString(),
-      isDirectory: entry.isDirectory(),
-    });
-  }
-
-  return files;
+  const files = await storageProvider.listFiles(dirPath, false);
+  return files.map(toFileInfo);
 }
 
 export async function localFilesRoutes(app: FastifyInstance) {
-  // Ensure uploads directory exists on startup
-  await ensureUploadsDir();
-
   // Get all files recursively (for sidebar tree view)
   app.get("/local-files/all", async (_request, reply) => {
     try {
       const files = await _getFilesRecursive("", "");
       reply.send({ files });
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === "ENOENT"
-      ) {
-        reply.status(404).send({ error: "Uploads directory not found" });
-        return;
-      }
-      throw error;
+    } catch {
+      reply.status(404).send({ error: "Uploads directory not found" });
     }
   });
 
@@ -143,16 +82,8 @@ export async function localFilesRoutes(app: FastifyInstance) {
     try {
       const files = await getFilesInDirectory("");
       reply.send({ files });
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === "ENOENT"
-      ) {
-        reply.status(404).send({ error: "Uploads directory not found" });
-        return;
-      }
-      throw error;
+    } catch {
+      reply.status(404).send({ error: "Uploads directory not found" });
     }
   });
 
@@ -164,16 +95,8 @@ export async function localFilesRoutes(app: FastifyInstance) {
 
       const files = await getFilesInDirectory(dirPath);
       reply.send({ files, path: dirPath });
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === "ENOENT"
-      ) {
-        reply.status(404).send({ error: "Directory not found" });
-        return;
-      }
-      throw error;
+    } catch {
+      reply.status(404).send({ error: "Directory not found" });
     }
   });
 
@@ -182,11 +105,6 @@ export async function localFilesRoutes(app: FastifyInstance) {
     try {
       const dirPath = request.params["*"] ?? "";
 
-      const uploadDir = join(UPLOADS_BASE_PATH, dirPath);
-      if (!existsSync(uploadDir)) {
-        await mkdir(uploadDir, { recursive: true });
-      }
-
       const data = await request.file();
       if (!data) {
         reply.status(400).send({ error: "No file uploaded" });
@@ -194,14 +112,14 @@ export async function localFilesRoutes(app: FastifyInstance) {
       }
 
       const filename = data.filename;
-      const filePath = join(uploadDir, filename);
-
-      // Write the file
-      const buffer = await data.toBuffer();
-      await writeFile(filePath, buffer);
-
-      const stats = await stat(filePath);
       const relativePath = dirPath ? `${dirPath}/${filename}` : filename;
+      const buffer = await data.toBuffer();
+      const contentType = data.mimetype ?? "application/octet-stream";
+
+      // Upload using storage provider
+      await storageProvider.upload(relativePath, buffer, contentType);
+
+      const metadata = await storageProvider.getMetadata(relativePath);
 
       reply.send({
         success: true,
@@ -209,8 +127,9 @@ export async function localFilesRoutes(app: FastifyInstance) {
           {
             name: filename,
             path: relativePath,
-            size: stats.size,
-            modified: stats.mtime.toISOString(),
+            size: metadata?.size ?? 0,
+            modified:
+              metadata?.lastModified.toISOString() ?? new Date().toISOString(),
             isDirectory: false,
           },
         ],
@@ -225,15 +144,9 @@ export async function localFilesRoutes(app: FastifyInstance) {
   // Upload multiple files
   app.post<WildcardParams>(
     "/local-files/upload-multiple/*",
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: File upload logic with error handling
     async (request, reply) => {
       try {
         const dirPath = request.params["*"] ?? "";
-
-        const uploadDir = join(UPLOADS_BASE_PATH, dirPath);
-        if (!existsSync(uploadDir)) {
-          await mkdir(uploadDir, { recursive: true });
-        }
 
         const data = await request.files();
         const uploadedFiles: FileInfo[] = [];
@@ -243,24 +156,28 @@ export async function localFilesRoutes(app: FastifyInstance) {
           try {
             const f = file as {
               filename: string;
+              mimetype: string;
               toBuffer: () => Promise<Buffer>;
             };
             const filename = f.filename;
-            const filePath = join(uploadDir, filename);
-            const buffer = await f.toBuffer();
-            await writeFile(filePath, buffer);
-
-            const stats = await stat(filePath);
             const relativePath = dirPath ? `${dirPath}/${filename}` : filename;
+            const buffer = await f.toBuffer();
+            const contentType = f.mimetype ?? "application/octet-stream";
+
+            await storageProvider.upload(relativePath, buffer, contentType);
+
+            const metadata = await storageProvider.getMetadata(relativePath);
 
             uploadedFiles.push({
               name: filename,
               path: relativePath,
-              size: stats.size,
-              modified: stats.mtime.toISOString(),
+              size: metadata?.size ?? 0,
+              modified:
+                metadata?.lastModified.toISOString() ??
+                new Date().toISOString(),
               isDirectory: false,
             });
-          } catch (_err) {
+          } catch {
             const f = file as { filename: string };
             errors.push(f.filename);
           }
@@ -302,8 +219,11 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      const newFolderPath = join(UPLOADS_BASE_PATH, dirPath, folderName);
-      if (existsSync(newFolderPath)) {
+      const relativePath = dirPath ? `${dirPath}/${folderName}` : folderName;
+
+      // Check if folder already exists
+      const exists = await storageProvider.exists(relativePath + "/");
+      if (exists) {
         reply.status(409).send({
           success: false,
           message: "Folder already exists",
@@ -311,9 +231,9 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      await mkdir(newFolderPath, { recursive: true });
-      const stats = await stat(newFolderPath);
-      const relativePath = dirPath ? `${dirPath}/${folderName}` : folderName;
+      await storageProvider.createFolder(relativePath);
+
+      const metadata = await storageProvider.getMetadata(relativePath + "/");
 
       reply.send({
         success: true,
@@ -321,7 +241,8 @@ export async function localFilesRoutes(app: FastifyInstance) {
           name: folderName,
           path: relativePath,
           size: 0,
-          modified: stats.mtime.toISOString(),
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
           isDirectory: true,
         },
       } as CreateFolderResponse);
@@ -350,10 +271,18 @@ export async function localFilesRoutes(app: FastifyInstance) {
 
       for (const itemPath of itemsToDelete) {
         try {
-          const fullPath = join(UPLOADS_BASE_PATH, itemPath);
-          await rm(fullPath, { recursive: true, force: true });
+          // Check if it's a directory by trying to list it
+          const files = await storageProvider.listFiles(itemPath, false);
+
+          if (files.length > 0) {
+            // It's a directory
+            await storageProvider.deleteFolder(itemPath);
+          } else {
+            // It's a file
+            await storageProvider.delete(itemPath);
+          }
           deletedPaths.push(itemPath);
-        } catch (_err) {
+        } catch {
           errors.push(itemPath);
         }
       }
@@ -392,18 +321,24 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      const sourceFullPath = join(UPLOADS_BASE_PATH, sourcePath);
-      const destFullPath = join(UPLOADS_BASE_PATH, destination);
       const fileName = sourcePath.split("/").pop() || sourcePath;
-      const destFilePath = join(destFullPath, fileName);
+      const destFilePath = destination
+        ? `${destination}/${fileName}`
+        : fileName;
 
-      // Ensure destination directory exists
-      if (!existsSync(destFullPath)) {
-        await mkdir(destFullPath, { recursive: true });
+      // Check if source exists
+      const sourceExists = await storageProvider.exists(sourcePath);
+      if (!sourceExists) {
+        reply.status(404).send({
+          success: false,
+          message: "Source file not found",
+        } as CopyMoveResponse);
+        return;
       }
 
-      // Check if destination file already exists
-      if (existsSync(destFilePath)) {
+      // Check if destination already exists
+      const destExists = await storageProvider.exists(destFilePath);
+      if (destExists) {
         reply.status(409).send({
           success: false,
           message: "A file with that name already exists at the destination",
@@ -411,32 +346,22 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      const sourceStats = await stat(sourceFullPath);
+      await storageProvider.copyFile(sourcePath, destFilePath);
 
-      if (sourceStats.isDirectory()) {
-        // Recursive copy for directories
-        await cp(sourceFullPath, destFilePath, { recursive: true });
-      } else {
-        // Copy single file
-        await writeFile(destFilePath, await readFile(sourceFullPath));
-      }
-
-      const stats = await stat(destFilePath);
-      const relativePath = destination
-        ? `${destination}/${fileName}`
-        : fileName;
+      const metadata = await storageProvider.getMetadata(destFilePath);
 
       reply.send({
         success: true,
         message: "File copied successfully",
         file: {
           name: fileName,
-          path: relativePath,
-          size: stats.size,
-          modified: stats.mtime.toISOString(),
-          isDirectory: stats.isDirectory(),
+          path: destFilePath,
+          size: metadata?.size ?? 0,
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+          isDirectory: false,
         },
-      } as CopyMoveResponse & { file?: FileInfo });
+      } as CopyMoveResponse);
     } catch (error) {
       reply.status(500).send({
         error: error instanceof Error ? error.message : "Copy failed",
@@ -459,18 +384,24 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      const sourceFullPath = join(UPLOADS_BASE_PATH, sourcePath);
-      const destFullPath = join(UPLOADS_BASE_PATH, destination);
       const fileName = sourcePath.split("/").pop() || sourcePath;
-      const destFilePath = join(destFullPath, fileName);
+      const destFilePath = destination
+        ? `${destination}/${fileName}`
+        : fileName;
 
-      // Ensure destination directory exists
-      if (!existsSync(destFullPath)) {
-        await mkdir(destFullPath, { recursive: true });
+      // Check if source exists
+      const sourceExists = await storageProvider.exists(sourcePath);
+      if (!sourceExists) {
+        reply.status(404).send({
+          success: false,
+          message: "Source file not found",
+        } as CopyMoveResponse);
+        return;
       }
 
-      // Check if destination file already exists
-      if (existsSync(destFilePath)) {
+      // Check if destination already exists
+      const destExists = await storageProvider.exists(destFilePath);
+      if (destExists) {
         reply.status(409).send({
           success: false,
           message: "A file with that name already exists at the destination",
@@ -478,25 +409,22 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      // Use rename to move the file/folder
-      await rename(sourceFullPath, destFilePath);
+      await storageProvider.moveFile(sourcePath, destFilePath);
 
-      const stats = await stat(destFilePath);
-      const relativePath = destination
-        ? `${destination}/${fileName}`
-        : fileName;
+      const metadata = await storageProvider.getMetadata(destFilePath);
 
       reply.send({
         success: true,
         message: "File moved successfully",
         file: {
           name: fileName,
-          path: relativePath,
-          size: stats.size,
-          modified: stats.mtime.toISOString(),
-          isDirectory: stats.isDirectory(),
+          path: destFilePath,
+          size: metadata?.size ?? 0,
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+          isDirectory: false,
         },
-      } as CopyMoveResponse & { file?: FileInfo });
+      } as CopyMoveResponse);
     } catch (error) {
       reply.status(500).send({
         error: error instanceof Error ? error.message : "Move failed",
@@ -526,16 +454,20 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      const sourceFullPath = join(UPLOADS_BASE_PATH, sourcePath);
-      const parentDir = join(sourceFullPath, "..");
-      const newPath = join(parentDir, newName);
+      const pathParts = sourcePath.split("/");
+      pathParts[pathParts.length - 1] = newName;
+      const newPath = pathParts.join("/");
 
-      if (!existsSync(sourceFullPath)) {
+      // Check if source exists
+      const sourceExists = await storageProvider.exists(sourcePath);
+      if (!sourceExists) {
         reply.status(404).send({ success: false, message: "File not found" });
         return;
       }
 
-      if (existsSync(newPath)) {
+      // Check if destination already exists
+      const destExists = await storageProvider.exists(newPath);
+      if (destExists) {
         reply.status(409).send({
           success: false,
           message: "A file with that name already exists",
@@ -543,21 +475,19 @@ export async function localFilesRoutes(app: FastifyInstance) {
         return;
       }
 
-      await rename(sourceFullPath, newPath);
+      await storageProvider.moveFile(sourcePath, newPath);
 
-      const stats = await stat(newPath);
-      const pathParts = sourcePath.split("/");
-      pathParts[pathParts.length - 1] = newName;
-      const newPathRelative = pathParts.join("/");
+      const metadata = await storageProvider.getMetadata(newPath);
 
       reply.send({
         success: true,
         file: {
           name: newName,
-          path: newPathRelative,
-          size: stats.size,
-          modified: stats.mtime.toISOString(),
-          isDirectory: stats.isDirectory(),
+          path: newPath,
+          size: metadata?.size ?? 0,
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+          isDirectory: false,
         },
       });
     } catch (error) {
@@ -572,15 +502,9 @@ export async function localFilesRoutes(app: FastifyInstance) {
     try {
       const filePath = request.params["*"];
 
-      const fullPath = join(UPLOADS_BASE_PATH, filePath);
-      if (!existsSync(fullPath)) {
+      const metadata = await storageProvider.getMetadata(filePath);
+      if (!metadata) {
         reply.status(404).send({ error: "File not found" });
-        return;
-      }
-
-      const stats = await stat(fullPath);
-      if (stats.isDirectory()) {
-        reply.status(400).send({ error: "Cannot download a directory" });
         return;
       }
 
@@ -588,13 +512,18 @@ export async function localFilesRoutes(app: FastifyInstance) {
       reply.header("Content-Disposition", `attachment; filename="${filename}"`);
       reply.header("Content-Type", "application/octet-stream");
 
-      // Stream the file
-      const fileStream = createReadStream(fullPath);
-      reply.raw.writeHead(200, {
-        "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Type": "application/octet-stream",
-      });
-      await pipeline(fileStream, reply.raw);
+      // For local storage, stream the file from disk
+      if (storageProvider.name === "local") {
+        // We need to construct the local file path
+        // This is a limitation - the storage provider doesn't expose the base path
+        // For now, we'll use download() which returns a buffer
+        const buffer = await storageProvider.download(filePath);
+        reply.send(buffer);
+      } else {
+        // For S3 and other providers, download and send
+        const buffer = await storageProvider.download(filePath);
+        reply.send(buffer);
+      }
     } catch (error) {
       reply.status(500).send({
         error: error instanceof Error ? error.message : "Download failed",
@@ -607,15 +536,9 @@ export async function localFilesRoutes(app: FastifyInstance) {
     try {
       const filePath = request.params["*"];
 
-      const fullPath = join(UPLOADS_BASE_PATH, filePath);
-      if (!existsSync(fullPath)) {
+      const metadata = await storageProvider.getMetadata(filePath);
+      if (!metadata) {
         reply.status(404).send({ error: "File not found" });
-        return;
-      }
-
-      const stats = await stat(fullPath);
-      if (stats.isDirectory()) {
-        reply.status(400).send({ error: "Cannot preview a directory" });
         return;
       }
 
@@ -642,12 +565,11 @@ export async function localFilesRoutes(app: FastifyInstance) {
         ogg: "audio/ogg",
       };
 
-      reply.raw.writeHead(200, {
-        "Content-Type": contentTypes[ext] || "application/octet-stream",
-      });
+      reply.type(contentTypes[ext] || "application/octet-stream");
 
-      const fileStream = createReadStream(fullPath);
-      await pipeline(fileStream, reply.raw);
+      // Download and send file
+      const buffer = await storageProvider.download(filePath);
+      reply.send(buffer);
     } catch (error) {
       reply.status(500).send({
         error: error instanceof Error ? error.message : "Preview failed",

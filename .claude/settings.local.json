@@ -134,7 +134,17 @@
       "Bash(pnpm --filter web tsc:*)",
       "Bash(pnpm -r typecheck:*)",
       "Bash(npx ultracite fix:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(pnpm --filter @workspace/storage typecheck:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" timeout:*)",
+      "Bash(for:*)",
+      "Bash(do mv:*)",
+      "Bash(mv:*)",
+      "Bash(git checkout:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" npx drizzle-kit push:*)",
+      "Bash(PGPASSWORD=postgres DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" npx drizzle-kit push:*)",
+      "Bash(pnpm --filter api build:*)",
+      "Bash(echo:*)"
     ]
   }
 }

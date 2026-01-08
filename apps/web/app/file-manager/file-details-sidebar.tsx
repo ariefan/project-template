@@ -9,7 +9,9 @@ import {
   SidebarGroupContent,
   SidebarHeader,
 } from "@workspace/ui/components/sidebar";
-import { Download, Share2, X } from "lucide-react";
+import { FilePreviewDialog } from "@workspace/ui/composed/file-preview-dialog";
+import { Download, Eye, Share2, X } from "lucide-react";
+import { useState } from "react";
 import { env } from "@/lib/env";
 import type { FileInfo } from "./file-manager-context";
 import {
@@ -32,6 +34,8 @@ export function FileDetailsSidebar({
   onClose,
   onDownload,
 }: FileDetailsSidebarProps) {
+  const [previewOpen, setPreviewOpen] = useState(false);
+
   if (!(file && isOpen)) {
     return null;
   }
@@ -40,104 +44,124 @@ export function FileDetailsSidebar({
   const isImage = fileType === "image";
 
   return (
-    <Sidebar side="right" variant="floating">
-      <SidebarHeader className="border-b px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            {getFileIcon(fileType, "size-5")}
-            <span className="truncate font-medium text-sm">{file.name}</span>
-          </div>
-          <Button
-            className="h-7 w-7"
-            onClick={onClose}
-            size="icon"
-            variant="ghost"
-          >
-            <X className="size-4" />
-          </Button>
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            {isImage && !file.isDirectory ? (
-              <div className="mb-4 flex items-center justify-center rounded-lg bg-muted p-4">
-                {/* biome-ignore lint/performance/noImgElement: Dynamic preview URL from backend */}
-                <img
-                  alt={file.name}
-                  className="max-h-48 max-w-full rounded object-contain"
-                  height={192}
-                  src={`${env.NEXT_PUBLIC_API_URL}/local-files/preview/${file.path}`}
-                  width={192}
-                />
-              </div>
-            ) : (
-              <div className="mb-4 flex items-center justify-center rounded-lg bg-muted p-8">
-                {getFileIcon(fileType, "size-16")}
-              </div>
-            )}
-
-            {/* File Details */}
-            <div className="space-y-3 px-2">
-              <h3 className="font-medium text-sm">File Details</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground text-sm">Type</span>
-                  <span className="font-medium text-sm">
-                    {getFileTypeBadge(fileType)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground text-sm">Size</span>
-                  <span className="font-medium text-sm">
-                    {file.isDirectory ? "—" : formatBytes(file.size)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground text-sm">
-                    Modified
-                  </span>
-                  <span className="font-medium text-sm">
-                    {new Date(file.modified).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground text-sm">Path</span>
-                  <span className="font-medium font-mono text-xs">
-                    /{file.path}
-                  </span>
-                </div>
-              </div>
+    <>
+      <Sidebar side="right" variant="floating">
+        <SidebarHeader className="border-b px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              {getFileIcon(fileType, "size-5")}
+              <span className="truncate font-medium text-sm">{file.name}</span>
             </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+            <Button
+              className="h-7 w-7"
+              onClick={onClose}
+              size="icon"
+              variant="ghost"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        </SidebarHeader>
 
-      <SidebarFooter className="border-t p-4">
-        <div className="flex gap-2">
-          <Button
-            className="flex-1"
-            onClick={() => onDownload?.(file)}
-            size="sm"
-            variant="outline"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download
-          </Button>
-          <Button
-            className="flex-1"
-            onClick={() => {
-              // TODO: implement share
-            }}
-            size="sm"
-            variant="outline"
-          >
-            <Share2 className="mr-2 h-4 w-4" />
-            Share
-          </Button>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              {isImage && !file.isDirectory ? (
+                <div className="mb-4 flex items-center justify-center rounded-lg bg-muted p-4">
+                  {/* biome-ignore lint/performance/noImgElement: Dynamic preview URL from backend */}
+                  <img
+                    alt={file.name}
+                    className="max-h-48 max-w-full rounded object-contain"
+                    height={192}
+                    src={`${env.NEXT_PUBLIC_API_URL}/storage/preview/${file.path}`}
+                    width={192}
+                  />
+                </div>
+              ) : (
+                <div className="mb-4 flex items-center justify-center rounded-lg bg-muted p-8">
+                  {getFileIcon(fileType, "size-16")}
+                </div>
+              )}
+
+              {/* File Details */}
+              <div className="space-y-3 px-2">
+                <h3 className="font-medium text-sm">File Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground text-sm">Type</span>
+                    <span className="font-medium text-sm">
+                      {getFileTypeBadge(fileType)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground text-sm">Size</span>
+                    <span className="font-medium text-sm">
+                      {file.isDirectory ? "—" : formatBytes(file.size)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground text-sm">
+                      Modified
+                    </span>
+                    <span className="font-medium text-sm">
+                      {new Date(file.modified).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground text-sm">Path</span>
+                    <span className="font-medium font-mono text-xs">
+                      /{file.path}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter className="border-t p-4">
+          <div className="flex gap-2">
+            <Button
+              className="flex-1"
+              onClick={() => setPreviewOpen(true)}
+              size="sm"
+              variant="outline"
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Preview
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={() => onDownload?.(file)}
+              size="sm"
+              variant="outline"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={() => {
+                // TODO: implement share
+              }}
+              size="sm"
+              variant="outline"
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </Button>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+
+      {/* Fullscreen preview dialog */}
+      <FilePreviewDialog
+        fileName={file.name}
+        fileType={isImage ? "image" : undefined}
+        fileUrl={`${env.NEXT_PUBLIC_API_URL}/storage/preview/${file.path}`}
+        onOpenChange={setPreviewOpen}
+        open={previewOpen}
+      />
+    </>
   );
 }

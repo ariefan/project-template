@@ -2,11 +2,14 @@ import { createLocalProvider } from "./providers/local";
 import { createS3Provider } from "./providers/s3";
 import type { StorageConfig, StorageProvider } from "./types";
 
+// Re-export config helper
+export { buildStorageConfig } from "./config";
 // Re-export providers
 export { createLocalProvider } from "./providers/local";
 export { createS3Provider } from "./providers/s3";
 // Re-export types
 export type {
+  FileInfo,
   FileMetadata,
   PresignedUploadUrl,
   StorageConfig,

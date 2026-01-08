@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { ScheduledReport } from "@workspace/contracts";
-import { scheduledReportsListOptions } from "@workspace/contracts/query";
+import type { ScheduledJob } from "@workspace/contracts";
+import { scheduledJobsListOptions } from "@workspace/contracts/query";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -16,7 +16,7 @@ import {
   SortButton,
   ViewToggle,
 } from "@workspace/ui/composed/data-view";
-import { Edit, Pause, Play, Plus, Trash2 } from "lucide-react";
+import { Edit, Pause, Play, Plus, Trash2, Zap } from "lucide-react";
 import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
@@ -38,20 +38,30 @@ const frequencyLabels: Record<string, string> = {
 
 const deliveryLabels: Record<string, string> = {
   email: "Email",
-  download: "Download",
+  none: "None",
   webhook: "Webhook",
   storage: "Storage",
 };
 
+const jobTypeLabels: Record<string, string> = {
+  report: "Report",
+  export: "Export",
+  import: "Import",
+};
+
+function getJobTypeLabel(jobType: string): string {
+  return jobTypeLabels[jobType] ?? jobType;
+}
+
 export default function SchedulesPage() {
   const { data: orgData, isPending: orgLoading } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
-  const { deleteSchedule, pauseSchedule, resumeSchedule } =
+  const { deleteSchedule, pauseSchedule, resumeSchedule, runSchedule } =
     useScheduleMutations();
   const { fetchSchedules } = useSchedulesData();
 
   const { data: countData } = useQuery({
-    ...scheduledReportsListOptions({
+    ...scheduledJobsListOptions({
       client: apiClient,
       path: { orgId },
       query: { page: 1, pageSize: 1 },
@@ -66,7 +76,7 @@ export default function SchedulesPage() {
   const useServerMode = totalCount > MODE_THRESHOLD;
 
   const { data: clientData, isLoading: clientLoading } = useQuery({
-    ...scheduledReportsListOptions({
+    ...scheduledJobsListOptions({
       client: apiClient,
       path: { orgId },
       query: { page: 1, pageSize: Math.max(totalCount, 100) },
@@ -74,14 +84,14 @@ export default function SchedulesPage() {
     enabled: Boolean(orgId) && !useServerMode,
   });
 
-  const schedules = (clientData as { data?: ScheduledReport[] })?.data ?? [];
+  const schedules = (clientData as { data?: ScheduledJob[] })?.data ?? [];
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<
-    ScheduledReport | undefined
+    ScheduledJob | undefined
   >();
 
-  const columns: ColumnDef<ScheduledReport>[] = [
+  const columns: ColumnDef<ScheduledJob>[] = [
     {
       id: "id",
       header: "ID",
@@ -100,6 +110,22 @@ export default function SchedulesPage() {
       filterable: true,
       filterType: "text",
       minWidth: 200,
+    },
+    {
+      id: "jobType",
+      header: "Job Type",
+      accessorKey: "jobType",
+      filterable: true,
+      filterType: "select",
+      filterOptions: [
+        { value: "report", label: "Report" },
+        { value: "export", label: "Export" },
+        { value: "import", label: "Import" },
+      ],
+      width: 120,
+      cell: ({ value }) => (
+        <Badge variant="secondary">{getJobTypeLabel(String(value))}</Badge>
+      ),
     },
     {
       id: "frequency",
@@ -130,7 +156,7 @@ export default function SchedulesPage() {
       filterType: "select",
       filterOptions: [
         { value: "email", label: "Email" },
-        { value: "download", label: "Download" },
+        { value: "none", label: "None" },
         { value: "webhook", label: "Webhook" },
         { value: "storage", label: "Storage" },
       ],
@@ -188,7 +214,15 @@ export default function SchedulesPage() {
     },
   ];
 
-  const rowActions: RowAction<ScheduledReport>[] = [
+  const rowActions: RowAction<ScheduledJob>[] = [
+    {
+      id: "run",
+      label: "Run Now",
+      icon: Zap,
+      onAction: async (row) => {
+        await runSchedule(row.id);
+      },
+    },
     {
       id: "edit",
       label: "Edit",
@@ -227,7 +261,7 @@ export default function SchedulesPage() {
     },
   ];
 
-  const bulkActions: BulkAction<ScheduledReport>[] = [
+  const bulkActions: BulkAction<ScheduledJob>[] = [
     {
       id: "pause",
       label: "Pause Selected",
@@ -300,7 +334,7 @@ export default function SchedulesPage() {
       defaultView: "table" as "table" | "list",
       emptyMessage: "No schedules found",
       filterable: true,
-      getRowId: (row: ScheduledReport) => row.id,
+      getRowId: (row: ScheduledJob) => row.id,
       hoverable: true,
       loadingMessage: "Loading schedules...",
       multiSelect: true,
@@ -332,17 +366,14 @@ export default function SchedulesPage() {
       <>
         {modeIndicator}
         {useServerMode ? (
-          <DataViewComponent<ScheduledReport>
+          <DataViewComponent<ScheduledJob>
             {...commonProps}
             data={[]}
             mode="server"
             onFetchData={fetchSchedules}
           />
         ) : (
-          <DataViewComponent<ScheduledReport>
-            {...commonProps}
-            data={schedules}
-          />
+          <DataViewComponent<ScheduledJob> {...commonProps} data={schedules} />
         )}
       </>
     );
@@ -351,10 +382,10 @@ export default function SchedulesPage() {
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8">
       <div className="mb-6">
-        <h1 className="font-bold text-2xl">Scheduled Reports</h1>
+        <h1 className="font-bold text-2xl">Scheduled Jobs</h1>
         <p className="mt-1 text-muted-foreground">
-          Automate report generation with schedules. Set up daily, weekly, or
-          monthly reports delivered to your inbox.
+          Automate any job type with flexible scheduling. Set up recurring tasks
+          for reports, exports, imports, and custom jobs.
         </p>
       </div>
 

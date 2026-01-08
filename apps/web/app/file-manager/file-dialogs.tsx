@@ -10,7 +10,9 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
-import { Upload } from "lucide-react";
+import { cn } from "@workspace/ui/lib/utils";
+import { Upload, UploadCloud } from "lucide-react";
+import { useState } from "react";
 import type { FileInfo } from "./file-manager-context";
 
 interface FileDialogsProps {
@@ -89,6 +91,42 @@ export function FileDialogs({
   setNewName,
   onRenameConfirm,
 }: FileDialogsProps) {
+  // Drag state for upload dialog
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter((prev) => prev + 1);
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter((prev) => prev - 1);
+    if (dragCounter - 1 === 0) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(0);
+    setIsDragOver(false);
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length > 0) {
+      onUpload(droppedFiles);
+    }
+  };
+
   return (
     <>
       {/* Delete Dialog */}
@@ -142,54 +180,66 @@ export function FileDialogs({
           {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: Drag and drop zone */}
           {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag and drop zone */}
           <section
-            className="rounded-lg border-2 border-dashed p-8 text-center"
-            onDragOver={(e) => {
-              e.preventDefault();
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              const droppedFiles = Array.from(e.dataTransfer.files);
-              if (droppedFiles.length > 0) {
-                onUpload(droppedFiles);
-              }
-            }}
+            className={cn(
+              "relative rounded-lg border-2 border-dashed p-8 text-center transition-all duration-200",
+              isDragOver
+                ? "scale-[1.02] border-primary bg-primary/5"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50"
+            )}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
           >
-            <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="mb-2 font-medium">Drag and drop files here</p>
-            <p className="mb-4 text-muted-foreground text-sm">or</p>
-            <label className="cursor-pointer" htmlFor="file-upload">
-              <input
-                className="hidden"
-                id="file-upload"
-                multiple
-                onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                    onUpload(e.target.files);
-                  }
-                }}
-                type="file"
-              />
-              <Button type="button">Browse files</Button>
-            </label>
-            {isUploading && (
-              <div className="mt-4 space-y-2">
-                <p className="font-medium text-sm">Uploading...</p>
-                {Object.entries(uploadProgress).map(([file, percent]) => (
-                  <div className="space-y-1" key={file}>
-                    <div className="flex justify-between text-xs">
-                      <span>{file}</span>
-                      <span>{Math.round(percent)}%</span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full bg-primary transition-all"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+            {isDragOver && (
+              <div className="fade-in zoom-in absolute inset-0 flex animate-in duration-200">
+                <div className="m-auto flex flex-col items-center gap-3">
+                  <UploadCloud className="h-16 w-16 animate-bounce text-primary" />
+                  <p className="font-semibold text-lg text-primary">
+                    Drop files to upload
+                  </p>
+                </div>
               </div>
             )}
+
+            <div className={cn(isDragOver && "opacity-0")}>
+              <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <p className="mb-2 font-medium">Drag and drop files here</p>
+              <p className="mb-4 text-muted-foreground text-sm">or</p>
+              <label className="cursor-pointer" htmlFor="file-upload">
+                <input
+                  className="hidden"
+                  id="file-upload"
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      onUpload(e.target.files);
+                    }
+                  }}
+                  type="file"
+                />
+                <Button type="button">Browse files</Button>
+              </label>
+              {isUploading && (
+                <div className="mt-4 space-y-2">
+                  <p className="font-medium text-sm">Uploading...</p>
+                  {Object.entries(uploadProgress).map(([file, percent]) => (
+                    <div className="space-y-1" key={file}>
+                      <div className="flex justify-between text-xs">
+                        <span>{file}</span>
+                        <span>{Math.round(percent)}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         </DialogContent>
       </Dialog>

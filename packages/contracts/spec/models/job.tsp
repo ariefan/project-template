@@ -79,6 +79,20 @@ model JobError {
 }
 
 /**
+ * Request to create a new job
+ */
+model CreateJobRequest {
+  /** Job type (e.g., "report", "import", "export", "my-custom-job") */
+  type: string;
+
+  /** Job input parameters (job-specific) */
+  input?: Record<unknown>;
+
+  /** Job metadata (references, format, etc.) */
+  metadata?: JobMetadata;
+}
+
+/**
  * Async job resource
  *
  * Represents a long-running operation that can be polled for status.

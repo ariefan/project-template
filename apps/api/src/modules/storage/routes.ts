@@ -1,0 +1,588 @@
+import type { FastifyInstance, RouteGenericInterface } from "fastify";
+import { type FileInfo as StorageFileInfo, storageProvider } from "./storage";
+
+// Top-level regex for performance
+const INVALID_NAME_REGEX = /[<>:"|?*]/;
+
+interface WildcardParams extends RouteGenericInterface {
+  Params: {
+    "*": string;
+  };
+}
+
+// FileInfo for API responses (matches existing format with string dates)
+interface FileInfo {
+  name: string;
+  path: string;
+  size: number;
+  modified: string;
+  isDirectory: boolean;
+}
+
+interface SearchResponse {
+  files: FileInfo[];
+}
+
+interface UploadResponse {
+  success: boolean;
+  files: FileInfo[];
+  errors?: string[];
+}
+
+interface DeleteResponse {
+  success: boolean;
+  message?: string;
+}
+
+interface CopyMoveResponse {
+  success: boolean;
+  message?: string;
+  file?: FileInfo;
+}
+
+interface CreateFolderResponse {
+  success: boolean;
+  folder?: FileInfo;
+  message?: string;
+}
+
+// Convert storage FileInfo to API FileInfo (with string dates)
+function toFileInfo(file: StorageFileInfo): FileInfo {
+  return {
+    name: file.name,
+    path: file.path,
+    size: file.size,
+    modified: file.modified.toISOString(),
+    isDirectory: file.isDirectory,
+  };
+}
+
+export async function storageRoutes(app: FastifyInstance) {
+  // Search files recursively
+  app.get("/storage/search", async (request, reply) => {
+    try {
+      const query = (request.query as { q?: string }).q?.toLowerCase() || "";
+
+      if (!query) {
+        return reply.send({ files: [] });
+      }
+
+      // Get ALL files recursively - works for both local AND S3!
+      const allFiles = await storageProvider.listFiles("", true);
+
+      // Filter by filename (case-insensitive)
+      const matchingFiles = allFiles.filter((file) =>
+        file.name.toLowerCase().includes(query)
+      );
+
+      reply.send({
+        files: matchingFiles.map(toFileInfo),
+      } satisfies SearchResponse);
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Search failed",
+      });
+    }
+  });
+
+  // Get all files recursively (for sidebar tree view)
+  app.get("/storage/all", async (_request, reply) => {
+    try {
+      const files = await storageProvider.listFiles("", true);
+      reply.send({ files: files.map(toFileInfo) });
+    } catch {
+      reply.status(404).send({ error: "Storage not found" });
+    }
+  });
+
+  // List all files in root directory
+  app.get("/storage", async (_request, reply) => {
+    try {
+      const files = await storageProvider.listFiles("", false);
+      reply.send({ files: files.map(toFileInfo) });
+    } catch {
+      reply.status(404).send({ error: "Storage not found" });
+    }
+  });
+
+  // List files in a specific subdirectory
+  app.get<WildcardParams>("/storage/*", async (request, reply) => {
+    try {
+      const wildcard = request.params["*"] ?? "";
+      const dirPath = wildcard;
+
+      const files = await storageProvider.listFiles(dirPath, false);
+      reply.send({ files: files.map(toFileInfo), path: dirPath });
+    } catch {
+      reply.status(404).send({ error: "Directory not found" });
+    }
+  });
+
+  // Upload single file
+  app.post<WildcardParams>("/storage/upload/*", async (request, reply) => {
+    try {
+      const dirPath = request.params["*"] ?? "";
+
+      const data = await request.file();
+      if (!data) {
+        reply.status(400).send({ error: "No file uploaded" });
+        return;
+      }
+
+      const filename = data.filename;
+      const relativePath = dirPath ? `${dirPath}/${filename}` : filename;
+      const buffer = await data.toBuffer();
+      const contentType = data.mimetype ?? "application/octet-stream";
+
+      // Upload using storage provider
+      await storageProvider.upload(relativePath, buffer, contentType);
+
+      const metadata = await storageProvider.getMetadata(relativePath);
+
+      reply.send({
+        success: true,
+        files: [
+          {
+            name: filename,
+            path: relativePath,
+            size: metadata?.size ?? 0,
+            modified:
+              metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+            isDirectory: false,
+          },
+        ],
+      } satisfies UploadResponse);
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Upload failed",
+      });
+    }
+  });
+
+  // Upload multiple files
+  app.post<WildcardParams>(
+    "/storage/upload-multiple/*",
+    async (request, reply) => {
+      try {
+        const dirPath = request.params["*"] ?? "";
+
+        const data = await request.files();
+        const uploadedFiles: FileInfo[] = [];
+        const errors: string[] = [];
+
+        for (const file of Object.values(data)) {
+          try {
+            const f = file as {
+              filename: string;
+              mimetype: string;
+              toBuffer: () => Promise<Buffer>;
+            };
+            const filename = f.filename;
+            const relativePath = dirPath ? `${dirPath}/${filename}` : filename;
+            const buffer = await f.toBuffer();
+            const contentType = f.mimetype ?? "application/octet-stream";
+
+            await storageProvider.upload(relativePath, buffer, contentType);
+
+            const metadata = await storageProvider.getMetadata(relativePath);
+
+            uploadedFiles.push({
+              name: filename,
+              path: relativePath,
+              size: metadata?.size ?? 0,
+              modified:
+                metadata?.lastModified.toISOString() ??
+                new Date().toISOString(),
+              isDirectory: false,
+            });
+          } catch {
+            const f = file as { filename: string };
+            errors.push(f.filename);
+          }
+        }
+
+        reply.send({
+          success: uploadedFiles.length > 0,
+          files: uploadedFiles,
+          errors: errors.length > 0 ? errors : undefined,
+        } satisfies UploadResponse);
+      } catch (error) {
+        reply.status(500).send({
+          error: error instanceof Error ? error.message : "Upload failed",
+        });
+      }
+    }
+  );
+
+  // Create folder
+  app.post<WildcardParams>("/storage/folder/*", async (request, reply) => {
+    try {
+      const dirPath = request.params["*"] ?? "";
+      const body = request.body as { name?: string };
+
+      const folderName = body?.name?.trim();
+      if (!folderName) {
+        reply.status(400).send({
+          success: false,
+          message: "Folder name is required",
+        } satisfies CreateFolderResponse);
+        return;
+      }
+
+      if (INVALID_NAME_REGEX.test(folderName)) {
+        reply.status(400).send({
+          success: false,
+          message: "Invalid folder name",
+        } satisfies CreateFolderResponse);
+        return;
+      }
+
+      const relativePath = dirPath ? `${dirPath}/${folderName}` : folderName;
+
+      // Check if folder already exists
+      const exists = await storageProvider.exists(relativePath + "/");
+      if (exists) {
+        reply.status(409).send({
+          success: false,
+          message: "Folder already exists",
+        } satisfies CreateFolderResponse);
+        return;
+      }
+
+      await storageProvider.createFolder(relativePath);
+
+      const metadata = await storageProvider.getMetadata(relativePath + "/");
+
+      reply.send({
+        success: true,
+        folder: {
+          name: folderName,
+          path: relativePath,
+          size: 0,
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+          isDirectory: true,
+        },
+      } satisfies CreateFolderResponse);
+    } catch (error) {
+      reply.status(500).send({
+        error:
+          error instanceof Error ? error.message : "Failed to create folder",
+      });
+    }
+  });
+
+  // Delete file or folder
+  app.delete<WildcardParams>("/storage/*", async (request, reply) => {
+    try {
+      const body = request.body as { items?: string[] };
+      let itemsToDelete: string[];
+
+      if (body.items && body.items.length > 0) {
+        itemsToDelete = body.items;
+      } else {
+        itemsToDelete = [request.params["*"]];
+      }
+
+      const deletedPaths: string[] = [];
+      const errors: string[] = [];
+
+      for (const itemPath of itemsToDelete) {
+        try {
+          // Check if it's a directory by trying to list it
+          const files = await storageProvider.listFiles(itemPath, false);
+
+          if (files.length > 0 || itemPath.endsWith("/")) {
+            // It's a directory
+            await storageProvider.deleteFolder(itemPath);
+          } else {
+            // It's a file
+            await storageProvider.delete(itemPath);
+          }
+          deletedPaths.push(itemPath);
+        } catch {
+          errors.push(itemPath);
+        }
+      }
+
+      if (deletedPaths.length === 0) {
+        reply.status(404).send({
+          success: false,
+          message: "No items were deleted",
+        } satisfies DeleteResponse);
+        return;
+      }
+
+      reply.send({
+        success: true,
+        message: `Deleted ${deletedPaths.length} item${deletedPaths.length > 1 ? "s" : ""}`,
+      } satisfies DeleteResponse);
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Delete failed",
+      });
+    }
+  });
+
+  // Copy file/folder
+  app.post<WildcardParams>("/storage/copy/*", async (request, reply) => {
+    try {
+      const sourcePath = request.params["*"];
+      const body = request.body as { destination?: string };
+      const destination = body.destination;
+
+      if (!destination) {
+        reply.status(400).send({
+          success: false,
+          message: "Destination path is required",
+        } satisfies CopyMoveResponse);
+        return;
+      }
+
+      const fileName = sourcePath.split("/").pop() || sourcePath;
+      const destFilePath = destination
+        ? `${destination}/${fileName}`
+        : fileName;
+
+      // Check if source exists
+      const sourceExists = await storageProvider.exists(sourcePath);
+      if (!sourceExists) {
+        reply.status(404).send({
+          success: false,
+          message: "Source file not found",
+        } satisfies CopyMoveResponse);
+        return;
+      }
+
+      // Check if destination already exists
+      const destExists = await storageProvider.exists(destFilePath);
+      if (destExists) {
+        reply.status(409).send({
+          success: false,
+          message: "A file with that name already exists at the destination",
+        } satisfies CopyMoveResponse);
+        return;
+      }
+
+      await storageProvider.copyFile(sourcePath, destFilePath);
+
+      const metadata = await storageProvider.getMetadata(destFilePath);
+
+      reply.send({
+        success: true,
+        message: "File copied successfully",
+        file: {
+          name: fileName,
+          path: destFilePath,
+          size: metadata?.size ?? 0,
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+          isDirectory: false,
+        },
+      } satisfies CopyMoveResponse & { file?: FileInfo });
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Copy failed",
+      });
+    }
+  });
+
+  // Move file/folder
+  app.post<WildcardParams>("/storage/move/*", async (request, reply) => {
+    try {
+      const sourcePath = request.params["*"];
+      const body = request.body as { destination?: string };
+      const destination = body.destination;
+
+      if (!destination) {
+        reply.status(400).send({
+          success: false,
+          message: "Destination path is required",
+        } satisfies CopyMoveResponse);
+        return;
+      }
+
+      const fileName = sourcePath.split("/").pop() || sourcePath;
+      const destFilePath = destination
+        ? `${destination}/${fileName}`
+        : fileName;
+
+      // Check if source exists
+      const sourceExists = await storageProvider.exists(sourcePath);
+      if (!sourceExists) {
+        reply.status(404).send({
+          success: false,
+          message: "Source file not found",
+        } satisfies CopyMoveResponse);
+        return;
+      }
+
+      // Check if destination already exists
+      const destExists = await storageProvider.exists(destFilePath);
+      if (destExists) {
+        reply.status(409).send({
+          success: false,
+          message: "A file with that name already exists at the destination",
+        } satisfies CopyMoveResponse);
+        return;
+      }
+
+      await storageProvider.moveFile(sourcePath, destFilePath);
+
+      const metadata = await storageProvider.getMetadata(destFilePath);
+
+      reply.send({
+        success: true,
+        message: "File moved successfully",
+        file: {
+          name: fileName,
+          path: destFilePath,
+          size: metadata?.size ?? 0,
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+          isDirectory: false,
+        },
+      } satisfies CopyMoveResponse & { file?: FileInfo });
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Move failed",
+      });
+    }
+  });
+
+  // Rename file/folder
+  app.patch<WildcardParams>("/storage/rename/*", async (request, reply) => {
+    try {
+      const sourcePath = request.params["*"];
+      const body = request.body as { name?: string };
+      const newName = body.name?.trim();
+
+      if (!newName) {
+        reply.status(400).send({
+          success: false,
+          message: "New name is required",
+        });
+        return;
+      }
+
+      if (INVALID_NAME_REGEX.test(newName)) {
+        reply
+          .status(400)
+          .send({ success: false, message: "Invalid file name" });
+        return;
+      }
+
+      const pathParts = sourcePath.split("/");
+      pathParts[pathParts.length - 1] = newName;
+      const newPath = pathParts.join("/");
+
+      // Check if source exists
+      const sourceExists = await storageProvider.exists(sourcePath);
+      if (!sourceExists) {
+        reply.status(404).send({ success: false, message: "File not found" });
+        return;
+      }
+
+      // Check if destination already exists
+      const destExists = await storageProvider.exists(newPath);
+      if (destExists) {
+        reply.status(409).send({
+          success: false,
+          message: "A file with that name already exists",
+        });
+        return;
+      }
+
+      await storageProvider.moveFile(sourcePath, newPath);
+
+      const metadata = await storageProvider.getMetadata(newPath);
+
+      reply.send({
+        success: true,
+        file: {
+          name: newName,
+          path: newPath,
+          size: metadata?.size ?? 0,
+          modified:
+            metadata?.lastModified.toISOString() ?? new Date().toISOString(),
+          isDirectory: false,
+        },
+      });
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Rename failed",
+      });
+    }
+  });
+
+  // Download file
+  app.get<WildcardParams>("/storage/download/*", async (request, reply) => {
+    try {
+      const filePath = request.params["*"];
+
+      const metadata = await storageProvider.getMetadata(filePath);
+      if (!metadata) {
+        reply.status(404).send({ error: "File not found" });
+        return;
+      }
+
+      const filename = filePath.split("/").pop() || filePath;
+      reply.header("Content-Disposition", `attachment; filename="${filename}"`);
+      reply.header("Content-Type", "application/octet-stream");
+
+      // Download and send file
+      const buffer = await storageProvider.download(filePath);
+      reply.send(buffer);
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Download failed",
+      });
+    }
+  });
+
+  // Preview file
+  app.get<WildcardParams>("/storage/preview/*", async (request, reply) => {
+    try {
+      const filePath = request.params["*"];
+
+      const metadata = await storageProvider.getMetadata(filePath);
+      if (!metadata) {
+        reply.status(404).send({ error: "File not found" });
+        return;
+      }
+
+      const ext = filePath.split(".").pop()?.toLowerCase() || "";
+      const contentTypes: Record<string, string> = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        gif: "image/gif",
+        svg: "image/svg+xml",
+        webp: "image/webp",
+        ico: "image/x-icon",
+        bmp: "image/bmp",
+        pdf: "application/pdf",
+        txt: "text/plain",
+        html: "text/html",
+        css: "text/css",
+        js: "application/javascript",
+        json: "application/json",
+        mp4: "video/mp4",
+        webm: "video/webm",
+        mp3: "audio/mpeg",
+        wav: "audio/wav",
+        ogg: "audio/ogg",
+      };
+
+      reply.type(contentTypes[ext] || "application/octet-stream");
+
+      // Download and send file
+      const buffer = await storageProvider.download(filePath);
+      reply.send(buffer);
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Preview failed",
+      });
+    }
+  });
+}

@@ -48,6 +48,11 @@ const mockStorageProvider: StorageProvider = {
   getMetadata: vi.fn(),
   getPresignedUploadUrl: vi.fn(),
   getPresignedDownloadUrl: vi.fn(),
+  listFiles: vi.fn(),
+  createFolder: vi.fn(),
+  moveFile: vi.fn(),
+  copyFile: vi.fn(),
+  deleteFolder: vi.fn(),
 };
 
 // Mock repository
