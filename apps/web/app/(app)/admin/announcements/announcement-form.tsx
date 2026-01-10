@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
-import { Textarea } from "@workspace/ui/components/textarea";
 import {
   Form,
   FormControl,
@@ -31,6 +30,7 @@ import {
   FormMessage,
   useForm,
 } from "@workspace/ui/composed/form";
+import { MarkdownEditor } from "@workspace/ui/composed/markdown-editor";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -41,14 +41,8 @@ import { useActiveOrganization } from "@/lib/auth";
 const announcementFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   content: z.string().min(10, "Content must be at least 10 characters"),
-  linkUrl: z
-    .string()
-    .refine((val) => val === "" || z.string().url().safeParse(val).success, {
-      message: "Invalid URL",
-    })
-    .optional(),
-  linkText: z.string().optional(),
-  priority: z.enum(["info", "warning", "critical"]),
+
+  priority: z.enum(["info", "warning", "critical", "success"]),
   scope: z.enum(["system", "organization"]),
   targetRoles: z.enum(["all", "admin", "member"]),
   isDismissible: z.boolean(),
@@ -77,8 +71,7 @@ export function AnnouncementForm({
     defaultValues: {
       title: announcement?.title ?? "",
       content: announcement?.content ?? "",
-      linkUrl: announcement?.linkUrl ?? "",
-      linkText: announcement?.linkText ?? "",
+
       priority:
         (announcement?.priority as "info" | "warning" | "critical") ?? "info",
       scope: announcement?.scope ?? "organization",
@@ -141,8 +134,7 @@ export function AnnouncementForm({
     const payload: CreateAnnouncementRequest = {
       title: values.title,
       content: values.content,
-      linkUrl: values.linkUrl || undefined,
-      linkText: values.linkText || undefined,
+
       priority: values.priority,
       scope: values.scope,
       // Set orgId to null for global announcements, or the actual org ID for organization-scoped
@@ -150,12 +142,14 @@ export function AnnouncementForm({
       // API expects array, wrap the single value
       targetRoles: [values.targetRoles],
       isDismissible: values.isDismissible,
-      publishAt: values.publishAt
-        ? new Date(values.publishAt).toISOString()
-        : undefined,
-      expiresAt: values.expiresAt
-        ? new Date(values.expiresAt).toISOString()
-        : undefined,
+      publishAt:
+        values.publishAt && !Number.isNaN(new Date(values.publishAt).getTime())
+          ? new Date(values.publishAt).toISOString()
+          : undefined,
+      expiresAt:
+        values.expiresAt && !Number.isNaN(new Date(values.expiresAt).getTime())
+          ? new Date(values.expiresAt).toISOString()
+          : undefined,
       isActive: values.isActive,
     };
 
@@ -218,50 +212,17 @@ export function AnnouncementForm({
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Textarea
+                    <MarkdownEditor
+                      className="min-h-[200px]"
+                      markdown={field.value}
+                      onChange={field.onChange}
                       placeholder="We're performing scheduled maintenance..."
-                      rows={4}
-                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="linkUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link URL (optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com/more-info"
-                        type="url"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="linkText"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link text (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Learn more" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
@@ -283,6 +244,7 @@ export function AnnouncementForm({
                         <SelectItem value="info">Info</SelectItem>
                         <SelectItem value="warning">Warning</SelectItem>
                         <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="success">Success</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

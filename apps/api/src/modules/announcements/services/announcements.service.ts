@@ -154,7 +154,7 @@ export async function listAnnouncementsWithInteractions(
     results = {
       ...results,
       data: results.data.filter((ann) => {
-        const isRead = ann.interaction?.readAt !== null;
+        const isRead = !!ann.interaction?.readAt;
         return isRead === isReadFilter;
       }),
     };
@@ -173,7 +173,7 @@ export async function listAnnouncementsWithInteractions(
     results = {
       ...results,
       data: results.data.filter((ann) => {
-        const isDismissed = ann.interaction?.dismissedAt !== null;
+        const isDismissed = !!ann.interaction?.dismissedAt;
         return isDismissed === isDismissedFilter;
       }),
     };

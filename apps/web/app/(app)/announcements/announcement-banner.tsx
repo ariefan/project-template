@@ -3,10 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AnnouncementWithInteraction } from "@workspace/contracts";
 import {
-  announcementsAcknowledgeMutation,
   announcementsDismissMutation,
   announcementsListOptions,
-  announcementsMarkReadMutation,
 } from "@workspace/contracts/query";
 import {
   Alert,
@@ -14,16 +12,9 @@ import {
   AlertTitle,
 } from "@workspace/ui/components/alert";
 import { Button } from "@workspace/ui/components/button";
+import { MarkdownRenderer } from "@workspace/ui/composed/markdown-renderer";
 import { cn } from "@workspace/ui/lib/utils";
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle,
-  ExternalLink,
-  Info,
-  X,
-} from "lucide-react";
-import Link from "next/link";
+import { AlertCircle, AlertTriangle, Info, Lightbulb, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
@@ -42,7 +33,7 @@ const PRIORITY_CONFIG = {
     alertVariant: "destructive" as const,
   },
   success: {
-    icon: CheckCircle,
+    icon: Lightbulb,
     alertVariant: "default" as const,
   },
 };
@@ -76,14 +67,11 @@ export function AnnouncementBanner() {
         pageSize: 10,
         orderBy: "-priority,publishAt",
         dismissedStatus: "not-dismissed",
+        includeExpired: true,
+        includeInactive: true,
       },
     }),
     enabled: !!activeOrganization?.id,
-  });
-
-  const markReadMutation = useMutation({
-    ...announcementsMarkReadMutation({ client: apiClient }),
-    onSuccess: invalidateAnnouncements,
   });
 
   const dismissMutation = useMutation({
@@ -96,25 +84,23 @@ export function AnnouncementBanner() {
     },
   });
 
-  const acknowledgeMutation = useMutation({
-    ...announcementsAcknowledgeMutation({ client: apiClient }),
-    onSuccess: invalidateAnnouncements,
-  });
-
   const announcements =
     (data as { data?: AnnouncementWithInteraction[] })?.data?.filter(
       (a) => !dismissedIds.has(a.id)
     ) ?? [];
 
-  // Show only critical unacknowledged, or the first 3 unread
-  const displayAnnouncements = announcements
-    .filter((a) => {
-      if (a.priority === "critical" && !a.hasAcknowledged) {
-        return true;
-      }
-      return !a.hasRead;
-    })
-    .slice(0, 3);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const filteredAnnouncements = announcements.filter((a) => {
+    if (a.priority === "critical" && !a.hasAcknowledged) {
+      return true;
+    }
+    return !a.hasRead;
+  });
+
+  const displayAnnouncements = isExpanded
+    ? filteredAnnouncements
+    : filteredAnnouncements.slice(0, 3);
 
   if (displayAnnouncements.length === 0) {
     return null;
@@ -125,82 +111,44 @@ export function AnnouncementBanner() {
       {displayAnnouncements.map((announcement) => {
         const config = PRIORITY_CONFIG[announcement.priority];
         const Icon = config.icon;
-        const isUnacknowledged =
-          announcement.priority === "critical" && !announcement.hasAcknowledged;
 
         return (
           <Alert
             className={cn(
-              "relative",
+              "relative border transition-all has-[>svg]:grid-cols-[calc(var(--spacing)*5)_1fr] [&>svg]:size-5",
               announcement.priority === "warning" &&
-                "border-amber-200 bg-amber-50"
+                "border-amber-500/50 bg-amber-500/5 text-amber-600 dark:border-amber-500/50 dark:bg-amber-500/10 dark:text-amber-400",
+              announcement.priority === "success" &&
+                "border-emerald-500/50 bg-emerald-500/5 text-emerald-600 dark:border-emerald-500/50 dark:bg-emerald-500/10 dark:text-emerald-400",
+              announcement.priority === "info" &&
+                "border-blue-500/50 bg-blue-500/5 text-blue-600 dark:border-blue-500/50 dark:bg-blue-500/10 dark:text-blue-400",
+              // Critical uses destructive variant usually, but we can style it manually for consistency
+              announcement.priority === "critical" &&
+                "border-red-500/50 bg-red-500/5 text-red-600 dark:border-red-500/50 dark:bg-red-500/10 dark:text-red-400"
             )}
             key={announcement.id}
-            variant={config.alertVariant}
+            variant={
+              announcement.priority === "critical" ? "destructive" : "default"
+            } // Keep semantics but override styles
           >
-            <Icon className="size-4" />
-            <AlertTitle className="pr-8">{announcement.title}</AlertTitle>
-            <AlertDescription className="mt-2">
-              <p className="text-sm">{announcement.content}</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {announcement.linkUrl && (
-                  <Button asChild size="sm" variant="outline">
-                    <Link
-                      href={announcement.linkUrl}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      {announcement.linkText || "Learn more"}
-                      <ExternalLink className="ml-2 size-4" />
-                    </Link>
-                  </Button>
+            <Icon className="size-5" />
+            <AlertTitle className="font-semibold tracking-tight">
+              {announcement.title}
+            </AlertTitle>
+            <AlertDescription>
+              <MarkdownRenderer
+                className={cn(
+                  "text-foreground/90 text-sm/relaxed dark:text-foreground/90",
+                  // Override prose colors to match alert theme if needed, but generic foreground usually looks best in alerts
+                  "[&_p]:mb-1 [&_p]:last:mb-0"
                 )}
-
-                {isUnacknowledged && (
-                  <Button
-                    className="gap-2"
-                    disabled={acknowledgeMutation.isPending}
-                    onClick={() => {
-                      acknowledgeMutation.mutate({
-                        path: {
-                          orgId: activeOrganization?.id ?? "",
-                          announcementId: announcement.id,
-                        },
-                      });
-                    }}
-                    size="sm"
-                    variant="default"
-                  >
-                    <CheckCircle className="size-4" />
-                    Acknowledge
-                  </Button>
-                )}
-
-                {!(announcement.hasRead || isUnacknowledged) && (
-                  <Button
-                    className="gap-2"
-                    disabled={markReadMutation.isPending}
-                    onClick={() => {
-                      markReadMutation.mutate({
-                        path: {
-                          orgId: activeOrganization?.id ?? "",
-                          announcementId: announcement.id,
-                        },
-                      });
-                    }}
-                    size="sm"
-                    variant="ghost"
-                  >
-                    <CheckCircle className="size-4" />
-                    Mark as read
-                  </Button>
-                )}
-              </div>
+                content={announcement.content}
+              />
             </AlertDescription>
 
             {announcement.isDismissible && (
               <Button
-                className="absolute top-2 right-2 size-6"
+                className="absolute top-2 right-2 size-6 text-foreground/50 hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
                 disabled={dismissMutation.isPending}
                 onClick={() => {
                   dismissMutation.mutate({
@@ -219,6 +167,20 @@ export function AnnouncementBanner() {
           </Alert>
         );
       })}
+      {filteredAnnouncements.length > 3 && (
+        <div className="mb-2 flex w-full justify-center">
+          <Button
+            className="w-full"
+            onClick={() => setIsExpanded(!isExpanded)}
+            size="sm"
+            variant="outline"
+          >
+            {isExpanded
+              ? "Show less"
+              : `Show ${filteredAnnouncements.length - 3} more`}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

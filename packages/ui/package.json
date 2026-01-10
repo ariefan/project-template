@@ -51,6 +51,7 @@
     "jspdf-autotable": "^5.0.7",
     "katex": "^0.16.27",
     "lucide-react": "^0.475.0",
+    "next": "^16.1.1",
     "next-themes": "^0.4.6",
     "nuqs": "^2.8.6",
     "react-colorful": "^5.6.1",
@@ -103,6 +104,7 @@
     "./components/*": "./src/components/*.tsx",
     "./composed/theme-customizer": "./src/composed/theme-customizer/index.tsx",
     "./composed/data-view": "./src/composed/data-view/index.ts",
+    "./composed/markdown-editor": "./src/composed/markdown-editor/index.ts",
     "./composed/markdown-renderer": "./src/composed/markdown-renderer/index.ts",
     "./composed/*": "./src/composed/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"

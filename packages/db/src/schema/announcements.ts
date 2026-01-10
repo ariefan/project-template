@@ -69,8 +69,10 @@ export const announcements = pgTable(
     isActive: boolean("is_active").notNull().default(true),
 
     // Scheduling
-    publishAt: timestamp("publish_at").notNull().defaultNow(),
-    expiresAt: timestamp("expires_at"),
+    publishAt: timestamp("publish_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
 
     // Analytics (cached counts)
     viewCount: integer("view_count").notNull().default(0),
@@ -82,9 +84,13 @@ export const announcements = pgTable(
     createdBy: text("created_by")
       .notNull()
       .references(() => users.id, { onDelete: "set null" }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-    deletedAt: timestamp("deleted_at"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
     index("announcements_org_id_idx").on(table.orgId),
@@ -117,14 +123,18 @@ export const announcementInteractions = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
 
     // Interaction timestamps
-    viewedAt: timestamp("viewed_at"), // When announcement was first displayed
-    readAt: timestamp("read_at"), // When user opened/expanded it
-    dismissedAt: timestamp("dismissed_at"), // When user dismissed it
-    acknowledgedAt: timestamp("acknowledged_at"), // When user acknowledged (critical only)
+    viewedAt: timestamp("viewed_at", { withTimezone: true }), // When announcement was first displayed
+    readAt: timestamp("read_at", { withTimezone: true }), // When user opened/expanded it
+    dismissedAt: timestamp("dismissed_at", { withTimezone: true }), // When user dismissed it
+    acknowledgedAt: timestamp("acknowledged_at", { withTimezone: true }), // When user acknowledged (critical only)
 
     // Timestamps
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     index("announcement_interactions_announcement_id_idx").on(

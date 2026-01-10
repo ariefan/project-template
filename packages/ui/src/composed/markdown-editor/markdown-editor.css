@@ -1,0 +1,131 @@
+/* 
+ * MDXEditor Theme
+ * Maps MDXEditor variables to Shadcn/Tailwind CSS variables
+ */
+
+.markdown-editor-content {
+  /* Fonts */
+  font-family: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* BASE Colors (Surface, Text, Borders) */
+  --baseBase: hsl(var(--background));
+  --baseBgSubtle: hsl(var(--muted));
+  --baseBg: hsl(var(--background));
+  --baseBgHover: hsl(var(--accent));
+  --baseBgActive: hsl(var(--accent));
+  --baseLine: hsl(var(--border));
+  --baseBorder: hsl(var(--border));
+  --baseBorderHover: hsl(var(--ring));
+  --baseSolid: hsl(var(--foreground));
+  --baseSolidHover: hsl(var(--foreground)); /* Hover state for icons */
+  --baseText: hsl(var(--foreground));
+  --baseTextContrast: hsl(var(--background));
+
+  --basePageBg: hsl(var(--background));
+
+  /* ACCENT Colors (Primary Actions, Focus) */
+  --accentBase: hsl(var(--primary));
+  --accentBgSubtle: hsl(var(--primary) / 0.1);
+  --accentBg: hsl(var(--primary) / 0.2);
+  --accentBgHover: hsl(var(--primary) / 0.3);
+  --accentBgActive: hsl(var(--primary) / 0.4);
+  --accentLine: hsl(var(--primary));
+  --accentBorder: hsl(var(--primary));
+  --accentBorderHover: hsl(var(--primary));
+  --accentSolid: hsl(var(--primary));
+  --accentSolidHover: hsl(var(--primary) / 0.9);
+  --accentText: hsl(var(--primary));
+  --accentTextContrast: hsl(var(--primary-foreground));
+
+  /* ADMONITIONS (Alerts) */
+  --admonitionTipBg: hsl(var(--background));
+  --admonitionTipBorder: #3b82f6; /* Blue */
+  --admonitionInfoBg: hsl(var(--background));
+  --admonitionInfoBorder: #3b82f6; /* Blue */
+  --admonitionCautionBg: hsl(var(--background));
+  --admonitionCautionBorder: #f59e0b; /* Amber */
+  --admonitionDangerBg: hsl(var(--background));
+  --admonitionDangerBorder: #ef4444; /* Red */
+  --admonitionNoteBg: hsl(var(--background));
+  --admonitionNoteBorder: #a855f7; /* Purple */
+  --admonitionSuccessBg: hsl(var(--background));
+  --admonitionSuccessBorder: #22c55e; /* Green */
+
+  /* CODEMIRROR (Source Mode) - Light Defaults */
+  --cm-background: hsl(var(--background));
+  --cm-foreground: hsl(var(--foreground));
+  --cm-line: hsl(var(--muted-foreground));
+  --cm-selection: hsl(var(--accent));
+  --cm-selectionMatch: hsl(var(--accent) / 0.5);
+  --cm-cursor: hsl(var(--primary));
+  --cm-gutters: hsl(var(--muted));
+  --cm-gutterForeground: hsl(var(--muted-foreground));
+  --cm-gutterBorder: hsl(var(--border));
+  --cm-activeLine: hsl(var(--accent) / 0.5);
+  --cm-activeLineGutter: hsl(var(--accent));
+
+  /* Syntax Highlighting Defaults (Basic) */
+  --cm-comment: hsl(var(--muted-foreground));
+  --cm-keyword: #d946ef; /* Fuchsia */
+  --cm-string: #22c55e; /* Green */
+  --cm-variable: hsl(var(--foreground));
+  --cm-number: #f97316; /* Orange */
+  --cm-def: #3b82f6; /* Blue */
+}
+
+/* Dark Mode Overrides for Syntax Highlighting */
+.dark .markdown-editor-content {
+  /* MDXEditor vars update automatically via Shadcn vars, 
+     but specific colors like syntax highlighting need overrides 
+     if using hardcoded colors above. */
+
+  --cm-keyword: #f0abfc; /* Light Fuchsia */
+  --cm-string: #86efac; /* Light Green */
+  --cm-number: #fdba74; /* Light Orange */
+  --cm-def: #93c5fd; /* Light Blue */
+
+  /* Ensure background is strictly the dark background */
+  --baseBase: hsl(var(--background));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Fix for Toolbar Button Icons in Light Mode */
+.markdown-editor-content button {
+  color: hsl(var(--foreground));
+}
+
+.markdown-editor-content button:hover {
+  background-color: hsl(var(--accent));
+}
+
+.markdown-editor-content button[data-state="on"] {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+/* Ensure content editable area fills height */
+.markdown-editor-content [contenteditable] {
+  min-height: 300px;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  outline: none;
+}
+
+/* List styling */
+.markdown-editor-content ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+}
+.markdown-editor-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+}
+
+/* Blockquote styling */
+.markdown-editor-content blockquote {
+  border-left: 4px solid hsl(var(--border));
+  padding-left: 1em;
+  color: hsl(var(--muted-foreground));
+}
