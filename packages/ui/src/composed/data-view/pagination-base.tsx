@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "../components/button";
+import { Button } from "@workspace/ui/components/button";
 
 export type PageItem =
   | { type: "page"; value: number }

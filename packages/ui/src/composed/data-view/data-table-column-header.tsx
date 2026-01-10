@@ -5,15 +5,15 @@ import {
   ArrowUpNarrowWide,
   EyeOff,
 } from "lucide-react";
-import { Button } from "../components/button";
+import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../components/dropdown-menu";
-import { cn } from "../lib/utils";
+} from "@workspace/ui/components/dropdown-menu";
+import { cn } from "@workspace/ui/lib/utils";
 
 interface DataTableColumnHeaderProps<TData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {

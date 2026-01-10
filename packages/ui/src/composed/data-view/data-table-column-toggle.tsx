@@ -2,7 +2,7 @@
 
 import type { Table } from "@tanstack/react-table";
 import { Settings2 } from "lucide-react";
-import { Button } from "../components/button";
+import { Button } from "@workspace/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../components/dropdown-menu";
+} from "@workspace/ui/components/dropdown-menu";
 
 export function DataTableViewOptions<TData>({
   table,
@@ -44,7 +44,7 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 className="capitalize"
                 key={column.id}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                onCheckedChange={(value: boolean) => column.toggleVisibility(!!value)}
               >
                 {column.id}
               </DropdownMenuCheckboxItem>
