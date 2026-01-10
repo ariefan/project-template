@@ -9,7 +9,7 @@ import {
   SidebarGroupContent,
   SidebarHeader,
 } from "@workspace/ui/components/sidebar";
-import { FilePreviewDialog } from "@workspace/ui/composed/file-preview-dialog";
+import { FilePreviewDialog } from "@workspace/ui/composed/file-preview/file-preview-dialog";
 import { Download, Eye, Share2, X } from "lucide-react";
 import { useState } from "react";
 import { env } from "@/lib/env";
