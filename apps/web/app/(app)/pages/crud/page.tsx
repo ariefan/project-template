@@ -255,12 +255,6 @@ export default function CrudPage() {
       multiSelect: true,
       pageSizeOptions: [10, 25, 50, 100],
       paginated: true,
-      primaryAction: (
-        <Button onClick={handleCreateNew} size="sm">
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">New Post</span>
-        </Button>
-      ),
       responsiveBreakpoints: {
         list: 1024,
         grid: 640,
@@ -301,6 +295,14 @@ export default function CrudPage() {
   return (
     <div className="container mx-auto max-w-7xl px-4 py-8">
       <PageHeader
+        actions={
+          orgId ? (
+            <Button onClick={handleCreateNew} size="sm">
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">New Post</span>
+            </Button>
+          ) : null
+        }
         description="Manage your blog posts with real API integration. Create, edit, delete, and restore posts."
         stats={<StatsCards />}
         title="Posts Management"

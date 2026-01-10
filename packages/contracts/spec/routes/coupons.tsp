@@ -93,7 +93,7 @@ interface CouponsAdmin {
    * Updates an existing coupon.
    */
   @route("/{couponId}")
-  @patch
+  @patch(#{implicitOptionality: true})
   @summary("Update coupon")
   update(
     /** Coupon ID */

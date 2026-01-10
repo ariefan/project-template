@@ -5673,16 +5673,16 @@ components:
           example: Scheduled Maintenance
         content:
           type: string
-          description: Announcement content (supports markdown)
+          description: Announcement content (supports Markdown for links, formatting, and equations)
           example: We will be performing scheduled maintenance on...
         linkUrl:
           type: string
-          description: Optional link for more information
-          example: https://status.example.com
+          description: Optional link URL
+          example: https://example.com/details
         linkText:
           type: string
-          description: Link text
-          example: View Status Page
+          description: 'Optional link text (default: "Learn more")'
+          example: Read full guide
         priority:
           allOf:
             - $ref: '#/components/schemas/AnnouncementPriority'
@@ -5808,6 +5808,7 @@ components:
         - info
         - warning
         - critical
+        - success
       description: Announcement priority level
     AnnouncementResponse:
       type: object
@@ -5911,16 +5912,16 @@ components:
           example: Scheduled Maintenance
         content:
           type: string
-          description: Announcement content (supports markdown)
+          description: Announcement content (supports Markdown for links, formatting, and equations)
           example: We will be performing scheduled maintenance on...
         linkUrl:
           type: string
-          description: Optional link for more information
-          example: https://status.example.com
+          description: Optional link URL
+          example: https://example.com/details
         linkText:
           type: string
-          description: Link text
-          example: View Status Page
+          description: 'Optional link text (default: "Learn more")'
+          example: Read full guide
         priority:
           allOf:
             - $ref: '#/components/schemas/AnnouncementPriority'
@@ -6551,16 +6552,18 @@ components:
           type: string
           minLength: 1
           maxLength: 5000
-          description: Announcement content (supports markdown)
+          description: Announcement content (supports Markdown for links, formatting, and equations)
           example: We will be upgrading our systems this weekend...
         linkUrl:
           type: string
-          description: Optional link for more information
-          example: https://docs.example.com/upgrade
+          maxLength: 2000
+          description: Optional link URL
+          example: https://example.com/details
         linkText:
           type: string
-          description: Link text
-          example: Learn More
+          maxLength: 50
+          description: Optional link text
+          example: Read full guide
         priority:
           allOf:
             - $ref: '#/components/schemas/AnnouncementPriority'
@@ -8147,24 +8150,30 @@ components:
           description: System notifications enabled
         preferredEmail:
           type: string
+          nullable: true
           description: Preferred email address
         preferredPhone:
           type: string
+          nullable: true
           description: Preferred phone number
         preferredTelegramId:
           type: string
+          nullable: true
           description: Preferred Telegram ID
         quietHoursEnabled:
           type: boolean
           description: Quiet hours enabled
         quietHoursStart:
           type: string
+          nullable: true
           description: Quiet hours start time (HH:mm format)
         quietHoursEnd:
           type: string
+          nullable: true
           description: Quiet hours end time (HH:mm format)
         quietHoursTimezone:
           type: string
+          nullable: true
           description: Quiet hours timezone (IANA format)
         createdAt:
           type: string
@@ -8179,7 +8188,6 @@ components:
       type: object
       required:
         - data
-        - meta
       properties:
         data:
           $ref: '#/components/schemas/NotificationPreferences'
@@ -9562,13 +9570,15 @@ components:
           type: string
           minLength: 1
           maxLength: 5000
-          description: Announcement content
+          description: Announcement content (supports Markdown for links, formatting, and equations)
         linkUrl:
           type: string
-          description: Optional link for more information
+          maxLength: 2000
+          description: Optional link URL
         linkText:
           type: string
-          description: Link text
+          maxLength: 50
+          description: Optional link text
         priority:
           allOf:
             - $ref: '#/components/schemas/AnnouncementPriority'

@@ -15,6 +15,7 @@ import { Database, SearchX } from "lucide-react";
 import * as React from "react";
 import { DataViewProvider, useDataView } from "./context";
 import { InlineBulkActions } from "./data-view-bulk-actions";
+import { DataViewColumnToggle } from "./data-view-column-toggle";
 import { DataViewGrid } from "./data-view-grid";
 import { DataViewList } from "./data-view-list";
 import { DataViewPagination, SimplePagination } from "./data-view-pagination";
@@ -205,7 +206,12 @@ export function DataView<T>({
           className={toolbarClassName}
           leftContent={toolbarLeft}
           primaryAction={primaryAction}
-          rightContent={toolbarRight}
+          rightContent={
+            <div className="flex items-center gap-2">
+              {toolbarRight}
+              <DataViewColumnToggle />
+            </div>
+          }
         >
           {selectable && <InlineBulkActions />}
         </DataViewToolbar>
@@ -250,21 +256,67 @@ export function DataView<T>({
 // ============================================================================
 
 function DefaultLoadingState({ view }: { view: ViewMode }) {
+  const { config, columnVisibility } = useDataView();
   const skeletonRows = 5;
+
+  // Derive visible columns for Table Skeleton
+  const visibleColumns = React.useMemo(() => {
+    return (config.columns || []).filter((col) => {
+      if (columnVisibility[col.id] !== undefined) {
+        return columnVisibility[col.id];
+      }
+      return !col.hidden;
+    });
+  }, [config.columns, columnVisibility]);
 
   // Table view loading state
   if (view === "table") {
     return (
-      <div className="w-full space-y-3 p-4">
-        {Array.from({ length: skeletonRows }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton loading state, index is stable
-          <div className="flex gap-3" key={i}>
-            <Skeleton className="h-10 w-12" />
-            <Skeleton className="h-10 flex-1" />
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-24" />
+      <div className="w-full overflow-auto">
+        <div className="w-full caption-bottom text-sm">
+          <div className="border-b">
+            <div className="flex h-10 items-center px-4 text-left font-medium text-muted-foreground">
+              {visibleColumns.map((col, i) => (
+                <div
+                  className="px-2 first:pl-0"
+                  key={col.id || i}
+                  style={{
+                    width: col.width,
+                    minWidth: col.minWidth,
+                    maxWidth: col.maxWidth,
+                    flex: col.width ? "none" : 1,
+                  }}
+                >
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
+          <div className="space-y-0">
+            {Array.from({ length: skeletonRows }).map((_, i) => (
+              <div
+                className="flex items-center border-b px-4 py-3 last:border-0"
+                // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton rows are static
+                key={i}
+              >
+                {visibleColumns.map((col, j) => (
+                  <div
+                    className="px-2 first:pl-0"
+                    key={col.id || j}
+                    style={{
+                      width: col.width,
+                      minWidth: col.minWidth,
+                      maxWidth: col.maxWidth,
+                      flex: col.width ? "none" : 1,
+                    }}
+                  >
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -272,15 +324,22 @@ function DefaultLoadingState({ view }: { view: ViewMode }) {
   // List view loading state
   if (view === "list") {
     return (
-      <div className="w-full space-y-3 p-4">
+      <div className="w-full">
         {Array.from({ length: skeletonRows }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton loading state, index is stable
-          <div className="flex gap-3 rounded-lg border p-4" key={i}>
-            <Skeleton className="size-12 rounded-full" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-5 w-1/3" />
-              <Skeleton className="h-4 w-2/3" />
+          <div
+            className={cn(
+              "flex items-center gap-4 border-b p-4 last:border-0",
+              config.dense && "py-2"
+            )}
+            // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton rows are static
+            key={i}
+          >
+            {config.selectable && <Skeleton className="size-4 rounded" />}
+            <div className="flex-1 space-y-1">
+              <Skeleton className="h-5 w-1/4" />
+              <Skeleton className="h-4 w-1/2" />
             </div>
+            <Skeleton className="size-8 rounded-md" />
           </div>
         ))}
       </div>
@@ -288,14 +347,24 @@ function DefaultLoadingState({ view }: { view: ViewMode }) {
   }
 
   // Grid view loading state
+  // Match grid-cols from DataViewGrid: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
   return (
     <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton loading state, index is stable
-        <div className="space-y-3 rounded-lg border p-4" key={i}>
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-5 w-2/3" />
-          <Skeleton className="h-4 w-full" />
+        // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton rows are static
+        <div className="flex flex-col space-y-3 rounded-lg border p-4" key={i}>
+          <div className="flex items-start justify-between">
+            <div className="w-full space-y-2">
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+            <Skeleton className="size-8 rounded-md" />
+          </div>
+          <div className="space-y-1 py-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
         </div>
       ))}
     </div>

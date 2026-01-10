@@ -11,12 +11,12 @@ export {
   DataViewBulkActions,
   InlineBulkActions,
 } from "./data-view-bulk-actions";
+export { DataViewColumnToggle } from "./data-view-column-toggle";
 export type { DataViewExportProps } from "./data-view-export";
 // Export components
 export { DataViewExport } from "./data-view-export";
 export { DataViewGrid } from "./data-view-grid";
 export { DataViewList } from "./data-view-list";
-
 // Pagination components
 export { DataViewPagination, SimplePagination } from "./data-view-pagination";
 // View components
@@ -69,6 +69,7 @@ export type {
   ExportOptions,
 } from "./use-data-export";
 export { useDataExport } from "./use-data-export";
+export { useDataViewSync } from "./use-data-view-sync";
 export type { FilterPreset } from "./use-filter-presets";
 // Hooks
 export { useFilterPresets } from "./use-filter-presets";

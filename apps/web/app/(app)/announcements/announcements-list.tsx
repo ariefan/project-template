@@ -18,7 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 
 import { BellOff, Filter } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
@@ -83,6 +83,26 @@ export function AnnouncementsList() {
   const announcements =
     (data as { data?: AnnouncementWithInteraction[] })?.data ?? [];
   const unreadCount = announcements.filter((a) => !a.hasRead).length;
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          description="Stay updated with system and organization announcements"
+          title="Announcements"
+        />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-muted-foreground">Loading announcements...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

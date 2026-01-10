@@ -32,9 +32,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   ArrowUpDown,
+  Check,
   ChevronDown,
   Filter,
   LayoutGrid,
@@ -83,16 +90,22 @@ export function ViewToggle({ className, availableViews }: ViewToggleProps) {
       {/* Desktop: ButtonGroup */}
       <ButtonGroup className={cn(className, "hidden sm:flex")}>
         {views.map((v) => (
-          <Button
-            aria-label={`Switch to ${viewLabels[v]} view`}
-            aria-pressed={view === v}
-            key={v}
-            onClick={() => setView(v)}
-            size="sm"
-            variant={view === v ? "secondary" : "outline"}
-          >
-            {viewIcons[v]}
-          </Button>
+          <TooltipProvider key={v}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  aria-label={`Switch to ${viewLabels[v]} view`}
+                  aria-pressed={view === v}
+                  onClick={() => setView(v)}
+                  size="sm"
+                  variant={view === v ? "secondary" : "outline"}
+                >
+                  {viewIcons[v]}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{viewLabels[v]} view</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ))}
       </ButtonGroup>
 
@@ -249,14 +262,21 @@ export function SearchInput({
         value={localSearch}
       />
       {localSearch && (
-        <button
-          className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          onClick={handleClear}
-          type="button"
-        >
-          <X className="size-4" />
-          <span className="sr-only">Clear search</span>
-        </button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                onClick={handleClear}
+                type="button"
+              >
+                <X className="size-4" />
+                <span className="sr-only">Clear search</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Clear search</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </div>
   );
@@ -320,21 +340,31 @@ export function FilterButton({ className }: FilterButtonProps) {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          className={cn("gap-1.5", className)}
-          size="sm"
-          variant={activeFilterCount > 0 ? "secondary" : "outline"}
-        >
-          <Filter className="size-4" />
-          <span className="hidden md:inline">Filters</span>
-          {activeFilterCount > 0 && (
-            <Badge className="ml-1 px-1.5 py-0 text-xs" variant="secondary">
-              {activeFilterCount}
-            </Badge>
-          )}
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                className={cn("gap-1.5", className)}
+                size="sm"
+                variant={activeFilterCount > 0 ? "secondary" : "outline"}
+              >
+                <Filter className="size-4" />
+                <span className="hidden md:inline">Filters</span>
+                {activeFilterCount > 0 && (
+                  <Badge
+                    className="ml-1 px-1.5 py-0 text-xs"
+                    variant="secondary"
+                  >
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Filter data</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-80">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -621,25 +651,32 @@ export function SortButton({ className }: SortButtonProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          className={cn("gap-1.5", className)}
-          size="sm"
-          variant="outline"
-        >
-          <ArrowUpDown className="size-4" />
-          <span className="hidden md:inline">Sort</span>
-          {currentSortLabel && (
-            <Badge
-              className="ml-1 max-w-32 truncate px-1.5 py-0 text-xs"
-              variant="secondary"
-            >
-              {currentSortLabel}
-            </Badge>
-          )}
-          <ChevronDown className="ml-auto size-4 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className={cn("gap-1.5", className)}
+                size="sm"
+                variant="outline"
+              >
+                <ArrowUpDown className="size-4" />
+                <span className="hidden md:inline">Sort</span>
+                {currentSortLabel && (
+                  <Badge
+                    className="ml-1 max-w-32 truncate px-1.5 py-0 text-xs"
+                    variant="secondary"
+                  >
+                    {currentSortLabel}
+                  </Badge>
+                )}
+                <ChevronDown className="ml-auto size-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Sort data</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-56">
         <DropdownMenuLabel>Sort by</DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -653,6 +690,76 @@ export function SortButton({ className }: SortButtonProps) {
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// ============================================================================
+// Data View View Options (Column Toggle)
+// ============================================================================
+
+interface DataViewViewOptionsProps {
+  className?: string;
+}
+
+export function DataViewViewOptions({ className }: DataViewViewOptionsProps) {
+  const { config, columnVisibility, setColumnVisibility } = useDataView();
+
+  const toggleableColumns = config.columns.filter(
+    (column) =>
+      typeof column.accessorKey !== "undefined" && column.hidden !== true
+  );
+
+  if (toggleableColumns.length === 0) {
+    return null;
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          aria-label="Toggle columns"
+          className={cn("hidden lg:flex", className)}
+          size="sm"
+          variant="outline"
+        >
+          <LayoutGrid className="mr-2 size-4" />
+          View
+          <ChevronDown className="ml-auto size-4 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[150px]">
+        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {toggleableColumns.map((column) => {
+          const isVisible = columnVisibility[column.id] !== false;
+          return (
+            <DropdownMenuItem
+              className="capitalize"
+              key={column.id}
+              onSelect={(e) => {
+                e.preventDefault();
+                setColumnVisibility({
+                  ...columnVisibility,
+                  [column.id]: !isVisible,
+                });
+              }}
+            >
+              <div
+                className={cn(
+                  "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                  isVisible
+                    ? "bg-primary text-primary-foreground"
+                    : "opacity-50 [&_svg]:invisible"
+                )}
+              >
+                <Check className="h-4 w-4" />
+              </div>
+              <span>{column.header}</span>
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

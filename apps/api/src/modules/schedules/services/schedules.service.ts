@@ -150,7 +150,7 @@ export async function getSchedule(
 /**
  * Create a new scheduled job
  */
-export async function createSchedule(
+export function createSchedule(
   orgId: string,
   userId: string,
   input: CreateScheduleInput
@@ -166,6 +166,7 @@ export async function createSchedule(
     description: input.description,
     frequency: input.frequency,
     cronExpression: input.cronExpression,
+    // biome-ignore lint/suspicious/noExplicitAny: Drizzle enum type mismatch
     dayOfWeek: input.dayOfWeek as any,
     dayOfMonth: input.dayOfMonth,
     hour: input.hour,
@@ -174,7 +175,7 @@ export async function createSchedule(
     startDate: input.startDate ?? new Date(),
     endDate: input.endDate,
     deliveryMethod: input.deliveryMethod ?? "none",
-    deliveryConfig: input.deliveryConfig as any,
+    deliveryConfig: input.deliveryConfig,
     isActive: input.isActive ?? true,
     nextRunAt,
     createdBy: userId,

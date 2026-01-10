@@ -165,7 +165,7 @@ namespace ProjectAPI {
      * Update notification preferences for the current user
      * Supports partial updates - only provided fields will be updated
      */
-    @patch
+    @patch(#{implicitOptionality: true})
     @summary("Update notification preferences")
     updatePreferences(
       @body request: UpdatePreferencesRequest

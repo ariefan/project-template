@@ -144,7 +144,11 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" npx drizzle-kit push:*)",
       "Bash(PGPASSWORD=postgres DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" npx drizzle-kit push:*)",
       "Bash(pnpm --filter api build:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "WebSearch",
+      "Bash(pnpm --filter web list:*)",
+      "Bash(pnpm:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/postgres\" pnpm --filter @workspace/db drizzle-kit generate:*)"
     ]
   }
 }

@@ -86,14 +86,21 @@ export async function listSchedules(
   const totalCount = Number(count);
 
   // Build order by clause
-  const orderByColumn =
-    orderBy === "name"
-      ? scheduledJobs.name
-      : orderBy === "nextRunAt"
-        ? scheduledJobs.nextRunAt
-        : orderBy === "frequency"
-          ? scheduledJobs.frequency
-          : scheduledJobs.createdAt;
+  // biome-ignore lint/suspicious/noExplicitAny: Dynamic order by column type is complex
+  let orderByColumn: any = scheduledJobs.createdAt;
+  switch (orderBy) {
+    case "name":
+      orderByColumn = scheduledJobs.name;
+      break;
+    case "nextRunAt":
+      orderByColumn = scheduledJobs.nextRunAt;
+      break;
+    case "frequency":
+      orderByColumn = scheduledJobs.frequency;
+      break;
+    default:
+      break;
+  }
 
   // Get paginated data
   const data = await db

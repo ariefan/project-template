@@ -18,6 +18,7 @@ export const announcementPriorityEnum = pgEnum("announcement_priority", [
   "info",
   "warning",
   "critical",
+  "success",
 ]);
 
 /**
@@ -53,9 +54,7 @@ export const announcements = pgTable(
 
     // Content
     title: text("title").notNull(),
-    content: text("content").notNull(), // Supports markdown
-    linkUrl: text("link_url"),
-    linkText: text("link_text"),
+    content: text("content").notNull(), // Supports Markdown for links, formatting, and equations
 
     // Configuration
     priority: announcementPriorityEnum("priority").notNull().default("info"),

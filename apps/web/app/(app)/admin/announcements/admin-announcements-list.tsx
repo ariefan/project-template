@@ -10,7 +10,6 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -23,7 +22,15 @@ import {
   type RowAction,
 } from "@workspace/ui/composed/data-view";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, AlertTriangle, Info, Plus, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  Megaphone,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
@@ -45,6 +52,11 @@ const PRIORITY_CONFIG = {
     icon: AlertCircle,
     variant: "destructive" as const,
     color: "text-red-500",
+  },
+  success: {
+    icon: CheckCircle,
+    variant: "outline" as const,
+    color: "text-green-500",
   },
 };
 
@@ -130,6 +142,7 @@ export function AdminAnnouncementsList() {
         { value: "info", label: "Info" },
         { value: "warning", label: "Warning" },
         { value: "critical", label: "Critical" },
+        { value: "success", label: "Success" },
       ],
       width: 120,
       cell: ({ value }) => {
@@ -296,19 +309,13 @@ export function AdminAnnouncementsList() {
           <Empty>
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <Plus />
+                <Megaphone />
               </EmptyMedia>
               <EmptyTitle>No announcements</EmptyTitle>
               <EmptyDescription>
                 Get started by creating your first announcement.
               </EmptyDescription>
             </EmptyHeader>
-            <EmptyContent>
-              <Button onClick={() => router.push("/admin/announcements/new")}>
-                <Plus className="mr-2 size-4" />
-                Create announcement
-              </Button>
-            </EmptyContent>
           </Empty>
         }
         getRowId={(row) => row.id}

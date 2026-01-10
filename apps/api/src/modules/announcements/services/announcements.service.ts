@@ -8,9 +8,7 @@ export interface CreateAnnouncementInput {
   orgId?: string;
   title: string;
   content: string;
-  linkUrl?: string;
-  linkText?: string;
-  priority?: "info" | "warning" | "critical";
+  priority?: "info" | "warning" | "critical" | "success";
   scope?: "system" | "organization";
   targetRoles?: string[];
   isDismissible?: boolean;
@@ -23,9 +21,7 @@ export interface CreateAnnouncementInput {
 export interface UpdateAnnouncementInput {
   title?: string;
   content?: string;
-  linkUrl?: string;
-  linkText?: string;
-  priority?: "info" | "warning" | "critical";
+  priority?: "info" | "warning" | "critical" | "success";
   targetRoles?: string[];
   isDismissible?: boolean;
   publishAt?: Date;
@@ -36,7 +32,7 @@ export interface UpdateAnnouncementInput {
 export interface ListAnnouncementsInput {
   page?: number;
   pageSize?: number;
-  priority?: "info" | "warning" | "critical";
+  priority?: "info" | "warning" | "critical" | "success";
   scope?: "system" | "organization";
   readStatus?: "read" | "unread";
   dismissedStatus?: "dismissed" | "not-dismissed";
@@ -58,8 +54,6 @@ export async function createAnnouncement(input: CreateAnnouncementInput) {
     orgId: input.orgId ?? null,
     title: input.title,
     content: input.content,
-    linkUrl: input.linkUrl ?? null,
-    linkText: input.linkText ?? null,
     priority: input.priority ?? "info",
     scope: input.scope ?? "organization",
     targetRoles: input.targetRoles ?? [],
@@ -213,12 +207,6 @@ export async function updateAnnouncement(
   }
   if (input.content !== undefined) {
     updates.content = input.content;
-  }
-  if (input.linkUrl !== undefined) {
-    updates.linkUrl = input.linkUrl;
-  }
-  if (input.linkText !== undefined) {
-    updates.linkText = input.linkText;
   }
   if (input.priority !== undefined) {
     updates.priority = input.priority;

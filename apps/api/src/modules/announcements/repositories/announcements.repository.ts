@@ -266,6 +266,7 @@ export async function listAnnouncementsWithInteractions(
     baseConditions.push(eq(announcements.scope, scope));
   }
 
+  // Only show non-expired announcements (unless includeExpired is true)
   if (!includeExpired) {
     baseConditions.push(
       or(
@@ -275,11 +276,12 @@ export async function listAnnouncementsWithInteractions(
     );
   }
 
+  // Only show active announcements (unless includeInactive is true)
   if (!includeInactive) {
     baseConditions.push(eq(announcements.isActive, true));
   }
 
-  // Only show published announcements
+  // Only show published announcements (always applied)
   baseConditions.push(lte(announcements.publishAt, new Date()));
 
   const conditions: SQL[] = baseConditions.filter(

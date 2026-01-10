@@ -30,6 +30,11 @@ export const users = pgTable("users", {
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
+  // User preferences (Better Auth additionalFields)
+  theme: text("theme").default("system"),
+  locale: text("locale").default("en"),
+  timezone: text("timezone").default("UTC"),
+  appearance: text("appearance").default("{}"),
 });
 
 export const sessions = pgTable(

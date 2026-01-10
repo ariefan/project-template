@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
@@ -9,10 +8,11 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Separator } from "@workspace/ui/components/separator";
-import { ChangePasswordDialog } from "./change-password-dialog";
-import { DeleteAccountDialog } from "./delete-account-dialog";
-import { SessionsCard } from "./sessions-card";
-import { TwoFactorDialog } from "./two-factor-dialog";
+import { DeleteAccountDialog } from "./profile-delete-dialog";
+import { TwoFactorDialog } from "./security-2fa-dialog";
+import { PasskeyDialog } from "./security-passkey-dialog";
+import { ChangePasswordDialog } from "./security-password-dialog";
+import { SessionsCard } from "./security-sessions";
 
 export function SecurityTab() {
   return (
@@ -42,7 +42,7 @@ export function SecurityTab() {
                 Use biometric authentication for passwordless login
               </p>
             </div>
-            <Button variant="outline">Manage</Button>
+            <PasskeyDialog />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border p-4">

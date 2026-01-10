@@ -102,6 +102,7 @@ function getFileIcon(type: string, className = "h-5 w-5") {
   return <FileImage className={className} />;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: File upload requires complex state management
 export function FileUploadWithProgress({
   onUpload,
   onDelete,
@@ -177,6 +178,7 @@ export function FileUploadWithProgress({
 
   // Handle file selection
   const handleFileSelect = React.useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex file validation logic
     (files: FileList | null) => {
       if (!files) {
         return;
@@ -252,11 +254,11 @@ export function FileUploadWithProgress({
 
   // Clear all
   const clearAll = React.useCallback(() => {
-    uploadFiles.forEach((f) => {
+    for (const f of uploadFiles) {
       if (f.file.preview) {
         URL.revokeObjectURL(f.file.preview);
       }
-    });
+    }
     setUploadFiles([]);
   }, [uploadFiles]);
 
@@ -292,11 +294,11 @@ export function FileUploadWithProgress({
   // Cleanup previews on unmount
   React.useEffect(() => {
     return () => {
-      uploadFiles.forEach((f) => {
+      for (const f of uploadFiles) {
         if (f.file.preview) {
           URL.revokeObjectURL(f.file.preview);
         }
-      });
+      }
     };
   }, [uploadFiles]);
 
@@ -345,6 +347,7 @@ export function FileUploadWithProgress({
 
       {/* Upload Area - replaces when files are present */}
       {uploadFiles.length === 0 ? (
+        // biome-ignore lint/a11y/useSemanticElements: Drop zone requires div for drag events
         <div
           className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
             isDragging
@@ -355,7 +358,15 @@ export function FileUploadWithProgress({
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
           ref={dropZoneRef}
+          role="button"
+          tabIndex={0}
         >
           <Upload className="mb-4 h-12 w-12 text-muted-foreground" />
           <p className="font-medium">
@@ -378,6 +389,7 @@ export function FileUploadWithProgress({
       ) : (
         <div className="space-y-3">
           {/* Drop zone for adding more files */}
+          {/* biome-ignore lint/a11y/useSemanticElements: Drop zone requires div for drag events */}
           <div
             className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed py-2 text-sm transition-colors ${
               isDragging
@@ -388,6 +400,14 @@ export function FileUploadWithProgress({
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add more files
@@ -411,6 +431,8 @@ export function FileUploadWithProgress({
                 <div className="flex items-center gap-3 p-3">
                   {/* Thumbnail or icon */}
                   {fileState.file.preview ? (
+                    // biome-ignore lint/correctness/useImageSize: Dynamic thumbnails
+                    // biome-ignore lint/performance/noImgElement: Framework-agnostic library
                     <img
                       alt={fileState.file.name}
                       className="h-10 w-10 shrink-0 rounded object-cover"

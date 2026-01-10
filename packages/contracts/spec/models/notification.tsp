@@ -232,25 +232,25 @@ model NotificationPreferences {
   systemEnabled: boolean;
 
   /** Preferred email address */
-  preferredEmail?: string;
+  preferredEmail?: string | null;
 
   /** Preferred phone number */
-  preferredPhone?: string;
+  preferredPhone?: string | null;
 
   /** Preferred Telegram ID */
-  preferredTelegramId?: string;
+  preferredTelegramId?: string | null;
 
   /** Quiet hours enabled */
   quietHoursEnabled: boolean;
 
   /** Quiet hours start time (HH:mm format) */
-  quietHoursStart?: string;
+  quietHoursStart?: string | null;
 
   /** Quiet hours end time (HH:mm format) */
-  quietHoursEnd?: string;
+  quietHoursEnd?: string | null;
 
   /** Quiet hours timezone (IANA format) */
-  quietHoursTimezone?: string;
+  quietHoursTimezone?: string | null;
 
   /** Timestamp when created */
   createdAt: utcDateTime;
@@ -348,7 +348,7 @@ model SendNotificationResponse {
  */
 model NotificationPreferencesResponse {
   data: NotificationPreferences;
-  meta: ResponseMeta;
+  meta?: ResponseMeta;
 }
 
 /**

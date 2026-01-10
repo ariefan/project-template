@@ -33,7 +33,8 @@ export const zAnnouncementInteraction = z.object({
 export const zAnnouncementPriority = z.enum([
     'info',
     'warning',
-    'critical'
+    'critical',
+    'success'
 ]);
 
 /**
@@ -309,8 +310,8 @@ export const zCreateAnnouncementRequest = z.object({
     ])),
     title: z.string().min(1).max(200),
     content: z.string().min(1).max(5000),
-    linkUrl: z.optional(z.string()),
-    linkText: z.optional(z.string()),
+    linkUrl: z.optional(z.string().max(2000)),
+    linkText: z.optional(z.string().max(50)),
     priority: z.optional(zAnnouncementPriority),
     scope: z.optional(zAnnouncementScope),
     targetRoles: z.optional(z.array(zAnnouncementTargetRole)),
@@ -686,13 +687,31 @@ export const zNotificationPreferences = z.object({
     transactionalEnabled: z.boolean(),
     securityEnabled: z.boolean(),
     systemEnabled: z.boolean(),
-    preferredEmail: z.optional(z.string()),
-    preferredPhone: z.optional(z.string()),
-    preferredTelegramId: z.optional(z.string()),
+    preferredEmail: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    preferredPhone: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    preferredTelegramId: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
     quietHoursEnabled: z.boolean(),
-    quietHoursStart: z.optional(z.string()),
-    quietHoursEnd: z.optional(z.string()),
-    quietHoursTimezone: z.optional(z.string()),
+    quietHoursStart: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    quietHoursEnd: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    quietHoursTimezone: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime()
 });
@@ -1344,7 +1363,7 @@ export const zNotificationListResponse = z.object({
  */
 export const zNotificationPreferencesResponse = z.object({
     data: zNotificationPreferences,
-    meta: zResponseMeta
+    meta: z.optional(zResponseMeta)
 });
 
 /**
@@ -1691,8 +1710,8 @@ export const zUpdateAnnouncementRequest = z.object({
     scope: z.optional(zAnnouncementScope),
     title: z.optional(z.string().min(1).max(200)),
     content: z.optional(z.string().min(1).max(5000)),
-    linkUrl: z.optional(z.string()),
-    linkText: z.optional(z.string()),
+    linkUrl: z.optional(z.string().max(2000)),
+    linkText: z.optional(z.string().max(50)),
     priority: z.optional(zAnnouncementPriority),
     targetRoles: z.optional(z.array(zAnnouncementTargetRole)),
     isDismissible: z.optional(z.boolean()),

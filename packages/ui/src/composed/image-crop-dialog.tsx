@@ -36,6 +36,73 @@ const ASPECT_RATIOS: Record<AspectRatio, number | undefined> = {
   "1:1": 1,
 };
 
+/**
+ * Creates a cropped image from the source with transformations applied.
+ */
+async function createCroppedImage(
+  imageSrc: string,
+  croppedAreaPixels: { x: number; y: number; width: number; height: number },
+  rotation: number,
+  flipH: boolean,
+  flipV: boolean,
+  mimeType: string
+): Promise<Blob> {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Could not get canvas context");
+  }
+
+  const image = new Image();
+  image.src = imageSrc;
+  await new Promise((resolve) => {
+    image.onload = resolve;
+  });
+
+  // Calculate dimensions considering rotation
+  const isRotated = rotation === 90 || rotation === 270;
+  const srcWidth = isRotated ? image.height : image.width;
+  const srcHeight = isRotated ? image.width : image.height;
+
+  canvas.width = croppedAreaPixels.width;
+  canvas.height = croppedAreaPixels.height;
+
+  // Apply transformations
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+
+  // Draw the cropped image
+  const scaleX = image.width / srcWidth;
+  const scaleY = image.height / srcHeight;
+  const offsetX = isRotated ? (image.width - image.height) / 2 : 0;
+  const offsetY = isRotated ? (image.height - image.width) / 2 : 0;
+
+  ctx.drawImage(
+    image,
+    (croppedAreaPixels.x - canvas.width / 2) * scaleX + offsetX,
+    (croppedAreaPixels.y - canvas.height / 2) * scaleY + offsetY,
+    croppedAreaPixels.width * scaleX,
+    croppedAreaPixels.height * scaleY
+  );
+  ctx.restore();
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Could not crop image"));
+          return;
+        }
+        resolve(blob);
+      },
+      mimeType,
+      0.95
+    );
+  });
+}
+
 const ASPECT_RATIO_LABELS: Record<AspectRatio, string> = {
   free: "Free",
   square: "Square",
@@ -119,73 +186,31 @@ export function ImageCropDialog({
 
   // Crop and get the result
   const handleApply = useCallback(async () => {
-    if (!(cropperRef.current && imageFile)) return;
+    if (!(cropperRef.current && imageFile)) {
+      return;
+    }
 
     setCropping(true);
 
     try {
       const cropper = cropperRef.current;
-      // @ts-expect-error - getCroppedImg is available on the ref
+      // @ts-expect-error - getCroppedAreaPixels is available on the ref
       const croppedAreaPixels = await cropper.getCroppedAreaPixels();
 
-      // Create canvas to apply all transformations
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Could not get canvas context");
-
-      const image = new Image();
-      image.src = imageSrc;
-
-      await new Promise((resolve) => {
-        image.onload = resolve;
-      });
-
-      // Calculate dimensions considering rotation
-      const isRotated = rotation === 90 || rotation === 270;
-      const srcWidth = isRotated ? image.height : image.width;
-      const srcHeight = isRotated ? image.width : image.height;
-
-      canvas.width = croppedAreaPixels.width;
-      canvas.height = croppedAreaPixels.height;
-
-      // Apply transformations
-      ctx.save();
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
-
-      // Draw the cropped image
-      const scaleX = image.width / srcWidth;
-      const scaleY = image.height / srcHeight;
-
-      ctx.drawImage(
-        image,
-        (croppedAreaPixels.x - canvas.width / 2) * scaleX +
-          (isRotated ? (image.width - image.height) / 2 : 0),
-        (croppedAreaPixels.y - canvas.height / 2) * scaleY +
-          (isRotated ? (image.height - image.width) / 2 : 0),
-        croppedAreaPixels.width * scaleX,
-        croppedAreaPixels.height * scaleY
+      const blob = await createCroppedImage(
+        imageSrc,
+        croppedAreaPixels,
+        rotation,
+        flipH,
+        flipV,
+        imageFile.type
       );
 
-      ctx.restore();
+      const url = URL.createObjectURL(blob);
+      const file = new File([blob], imageFile.name, { type: imageFile.type });
 
-      // Convert to blob
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) throw new Error("Could not crop image");
-
-          const url = URL.createObjectURL(blob);
-          const file = new File([blob], imageFile.name, {
-            type: imageFile.type,
-          });
-
-          onCropComplete({ blob, file, url });
-          handleOpenChange(false);
-        },
-        imageFile.type,
-        0.95
-      );
+      onCropComplete({ blob, file, url });
+      handleOpenChange(false);
     } catch (error) {
       console.error("Crop failed:", error);
     } finally {

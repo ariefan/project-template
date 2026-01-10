@@ -16,6 +16,7 @@ import type { FastifyInstance } from "fastify";
 import { handleError, ValidationError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
 import { requirePermission } from "../../auth/authorization-middleware";
+import { dispatchWebhook } from "../../webhooks";
 import * as postsService from "../services/posts.service";
 
 export function postsRoutes(app: FastifyInstance) {
@@ -147,15 +148,25 @@ export function postsRoutes(app: FastifyInstance) {
       }
 
       try {
+        const { orgId } = request.params;
         const post = await postsService.createExamplePost(
-          request.params.orgId,
+          orgId,
           parseResult.data
         );
+
+        // Send webhook notification
+        await dispatchWebhook(orgId, "posts.created", {
+          postId: post.id,
+          title: post.title,
+          content: post.content,
+          status: post.status,
+          authorId: post.authorId,
+          orgId,
+          createdAt: post.createdAt,
+        });
+
         reply.status(201);
-        reply.header(
-          "Location",
-          `/v1/orgs/${request.params.orgId}/example-posts/${post.id}`
-        );
+        reply.header("Location", `/v1/orgs/${orgId}/example-posts/${post.id}`);
         return { data: post, meta: createMeta(request.id) };
       } catch (error) {
         const { statusCode, response } = handleError(error, request.id);
@@ -211,11 +222,20 @@ export function postsRoutes(app: FastifyInstance) {
       }
 
       try {
+        const { orgId, id: postId } = request.params;
         const post = await postsService.updateExamplePost(
-          request.params.id,
-          request.params.orgId,
+          postId,
+          orgId,
           parseResult.data
         );
+
+        // Send webhook notification
+        await dispatchWebhook(orgId, "posts.updated", {
+          postId: post.id,
+          changes: parseResult.data,
+          updatedAt: post.updatedAt,
+        });
+
         return { data: post, meta: createMeta(request.id) };
       } catch (error) {
         const { statusCode, response } = handleError(error, request.id);
@@ -233,11 +253,21 @@ export function postsRoutes(app: FastifyInstance) {
     { preHandler: [requirePermission("posts", "delete")] },
     async (request, reply): Promise<SoftDeleteResponse | ErrorResponse> => {
       try {
+        const { orgId, id: postId } = request.params;
+        const deletedBy = request.user?.id ?? "system";
         const result = await postsService.softDeleteExamplePost(
-          request.params.id,
-          request.params.orgId,
-          "system" // TODO: Get from authenticated user
+          postId,
+          orgId,
+          deletedBy
         );
+
+        // Send webhook notification
+        await dispatchWebhook(orgId, "posts.deleted", {
+          postId,
+          deletedBy,
+          deletedAt: result.deletedAt,
+        });
+
         return { data: result, meta: createMeta(request.id) };
       } catch (error) {
         const { statusCode, response } = handleError(error, request.id);

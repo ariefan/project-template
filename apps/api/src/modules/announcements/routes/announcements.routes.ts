@@ -36,8 +36,6 @@ function mapAnnouncementToResponse(
     orgId: announcement.orgId ?? undefined,
     title: announcement.title,
     content: announcement.content,
-    linkUrl: announcement.linkUrl ?? undefined,
-    linkText: announcement.linkText ?? undefined,
     priority: announcement.priority,
     scope: announcement.scope,
     targetRoles: announcement.targetRoles as Array<"all" | "admin" | "member">,
@@ -78,10 +76,10 @@ function mapAnnouncementWithInteractionToResponse(
           updatedAt: announcement.interaction.updatedAt.toISOString(),
         }
       : undefined,
-    hasViewed: announcement.interaction?.viewedAt !== null,
-    hasRead: announcement.interaction?.readAt !== null,
-    hasDismissed: announcement.interaction?.dismissedAt !== null,
-    hasAcknowledged: announcement.interaction?.acknowledgedAt !== null,
+    hasViewed: announcement.interaction?.viewedAt != null,
+    hasRead: announcement.interaction?.readAt != null,
+    hasDismissed: announcement.interaction?.dismissedAt != null,
+    hasAcknowledged: announcement.interaction?.acknowledgedAt != null,
   };
 }
 
@@ -101,8 +99,8 @@ export function announcementsRoutes(app: FastifyInstance) {
       scope?: AnnouncementScope;
       readStatus?: "read" | "unread";
       dismissedStatus?: "dismissed" | "not-dismissed";
-      includeExpired?: boolean;
-      includeInactive?: boolean;
+      includeExpired?: boolean | string;
+      includeInactive?: boolean | string;
       orderBy?: string;
     };
   }>(
@@ -131,8 +129,12 @@ export function announcementsRoutes(app: FastifyInstance) {
               scope: request.query.scope,
               readStatus: request.query.readStatus,
               dismissedStatus: request.query.dismissedStatus,
-              includeExpired: request.query.includeExpired,
-              includeInactive: request.query.includeInactive,
+              includeExpired:
+                request.query.includeExpired === true ||
+                request.query.includeExpired === "true",
+              includeInactive:
+                request.query.includeInactive === true ||
+                request.query.includeInactive === "true",
               orderBy: request.query.orderBy,
             }
           );
@@ -213,8 +215,6 @@ export function announcementsRoutes(app: FastifyInstance) {
           orgId: validatedBody.orgId ?? orgId,
           title: validatedBody.title,
           content: validatedBody.content,
-          linkUrl: validatedBody.linkUrl,
-          linkText: validatedBody.linkText,
           priority: validatedBody.priority,
           scope: validatedBody.scope,
           targetRoles: validatedBody.targetRoles,
@@ -280,8 +280,6 @@ export function announcementsRoutes(app: FastifyInstance) {
           {
             title: validatedBody.title,
             content: validatedBody.content,
-            linkUrl: validatedBody.linkUrl,
-            linkText: validatedBody.linkText,
             priority: validatedBody.priority,
             targetRoles: validatedBody.targetRoles,
             isDismissible: validatedBody.isDismissible,

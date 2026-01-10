@@ -97,7 +97,7 @@ export default function SchedulesPage() {
       header: "ID",
       accessorKey: "id",
       width: 100,
-      cell: ({ value }) => {
+      cell: ({ value }: { value: unknown }) => {
         const id = String(value);
         return id.length > 8 ? `${id.substring(0, 8)}...` : id;
       },
@@ -123,7 +123,7 @@ export default function SchedulesPage() {
         { value: "import", label: "Import" },
       ],
       width: 120,
-      cell: ({ value }) => (
+      cell: ({ value }: { value: unknown }) => (
         <Badge variant="secondary">{getJobTypeLabel(String(value))}</Badge>
       ),
     },
@@ -142,7 +142,7 @@ export default function SchedulesPage() {
         { value: "custom", label: "Custom" },
       ],
       width: 120,
-      cell: ({ value }) => (
+      cell: ({ value }: { value: unknown }) => (
         <Badge variant="secondary">
           {frequencyLabels[String(value)] ?? String(value)}
         </Badge>
@@ -161,7 +161,7 @@ export default function SchedulesPage() {
         { value: "storage", label: "Storage" },
       ],
       width: 100,
-      cell: ({ value }) => (
+      cell: ({ value }: { value: unknown }) => (
         <Badge variant="outline">
           {deliveryLabels[String(value)] ?? String(value)}
         </Badge>
@@ -174,7 +174,7 @@ export default function SchedulesPage() {
       filterable: true,
       filterType: "boolean",
       width: 100,
-      cell: ({ value }) => (
+      cell: ({ value }: { value: unknown }) => (
         <Badge variant={value ? "default" : "secondary"}>
           {value ? "Active" : "Paused"}
         </Badge>
@@ -186,7 +186,7 @@ export default function SchedulesPage() {
       accessorKey: "nextRunAt",
       sortable: true,
       width: 150,
-      cell: ({ value }) =>
+      cell: ({ value }: { value: unknown }) =>
         value ? new Date(String(value)).toLocaleString() : "-",
     },
     {
@@ -195,7 +195,7 @@ export default function SchedulesPage() {
       accessorKey: "lastRunAt",
       sortable: true,
       width: 150,
-      cell: ({ value }) =>
+      cell: ({ value }: { value: unknown }) =>
         value ? new Date(String(value)).toLocaleString() : "Never",
     },
     {
@@ -203,7 +203,7 @@ export default function SchedulesPage() {
       header: "Failures",
       accessorKey: "failureCount",
       width: 80,
-      cell: ({ value }) => {
+      cell: ({ value }: { value: unknown }) => {
         const count = Number(value) || 0;
         return count > 0 ? (
           <Badge variant="destructive">{count}</Badge>
@@ -219,7 +219,7 @@ export default function SchedulesPage() {
       id: "run",
       label: "Run Now",
       icon: Zap,
-      onAction: async (row) => {
+      onAction: async (row: ScheduledJob) => {
         await runSchedule(row.id);
       },
     },
@@ -227,7 +227,7 @@ export default function SchedulesPage() {
       id: "edit",
       label: "Edit",
       icon: Edit,
-      onAction: (row) => {
+      onAction: (row: ScheduledJob) => {
         setEditingSchedule(row);
         setDialogOpen(true);
       },
@@ -236,26 +236,26 @@ export default function SchedulesPage() {
       id: "pause",
       label: "Pause",
       icon: Pause,
-      onAction: async (row) => {
+      onAction: async (row: ScheduledJob) => {
         await pauseSchedule(row.id);
       },
-      hidden: (row) => !row.isActive,
+      hidden: (row: ScheduledJob) => !row.isActive,
     },
     {
       id: "resume",
       label: "Resume",
       icon: Play,
-      onAction: async (row) => {
+      onAction: async (row: ScheduledJob) => {
         await resumeSchedule(row.id);
       },
-      hidden: (row) => row.isActive,
+      hidden: (row: ScheduledJob) => row.isActive,
     },
     {
       id: "delete",
       label: "Delete",
       icon: Trash2,
       variant: "destructive",
-      onAction: async (row) => {
+      onAction: async (row: ScheduledJob) => {
         await deleteSchedule(row.id);
       },
     },
@@ -266,23 +266,29 @@ export default function SchedulesPage() {
       id: "pause",
       label: "Pause Selected",
       icon: Pause,
-      onAction: async (rows) => {
+      onAction: async (rows: ScheduledJob[]) => {
         await Promise.all(
-          rows.filter((r) => r.isActive).map((row) => pauseSchedule(row.id))
+          rows
+            .filter((r: ScheduledJob) => r.isActive)
+            .map((row: ScheduledJob) => pauseSchedule(row.id))
         );
       },
-      disabled: (rows) => rows.every((r) => !r.isActive),
+      disabled: (rows: ScheduledJob[]) =>
+        rows.every((r: ScheduledJob) => !r.isActive),
     },
     {
       id: "resume",
       label: "Resume Selected",
       icon: Play,
-      onAction: async (rows) => {
+      onAction: async (rows: ScheduledJob[]) => {
         await Promise.all(
-          rows.filter((r) => !r.isActive).map((row) => resumeSchedule(row.id))
+          rows
+            .filter((r: ScheduledJob) => !r.isActive)
+            .map((row: ScheduledJob) => resumeSchedule(row.id))
         );
       },
-      disabled: (rows) => rows.every((r) => r.isActive),
+      disabled: (rows: ScheduledJob[]) =>
+        rows.every((r: ScheduledJob) => r.isActive),
     },
     {
       id: "delete",
@@ -290,8 +296,10 @@ export default function SchedulesPage() {
       icon: Trash2,
       variant: "destructive",
       confirmMessage: "Are you sure you want to delete the selected schedules?",
-      onAction: async (rows) => {
-        await Promise.all(rows.map((row) => deleteSchedule(row.id)));
+      onAction: async (rows: ScheduledJob[]) => {
+        await Promise.all(
+          rows.map((row: ScheduledJob) => deleteSchedule(row.id))
+        );
       },
     },
   ];

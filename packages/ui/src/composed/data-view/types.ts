@@ -292,6 +292,8 @@ export interface DataViewState {
   pagination: PaginationConfig;
   /** Expanded row IDs (for nested data) */
   expandedIds: Set<string | number>;
+  /** Column visibility state */
+  columnVisibility: Record<string, boolean>;
 }
 
 // ============================================================================
@@ -339,6 +341,10 @@ export interface DataViewProps<T = unknown> extends DataViewConfig<T> {
   toolbarClassName?: string;
   /** Content class name */
   contentClassName?: string;
+  /** Controlled column visibility */
+  columnVisibility?: Record<string, boolean>;
+  /** Column visibility change handler */
+  onColumnVisibilityChange?: (visibility: Record<string, boolean>) => void;
   /** Custom content above the toolbar (full width) */
   toolbarTop?: React.ReactNode;
   /** Custom toolbar content (left side) - compose with SearchInput, FilterButton, etc. */

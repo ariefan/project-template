@@ -41,6 +41,10 @@ const PRIORITY_CONFIG = {
     icon: AlertCircle,
     alertVariant: "destructive" as const,
   },
+  success: {
+    icon: CheckCircle,
+    alertVariant: "default" as const,
+  },
 };
 
 export function AnnouncementBanner() {

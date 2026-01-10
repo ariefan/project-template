@@ -4,7 +4,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import { cn } from "@workspace/ui/lib/utils";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import type * as React from "react";
+import * as React from "react";
 import { DataViewActionMenu } from "./action-menu";
 import { ContentPlaceholder } from "./content-placeholder";
 import { useDataView } from "./context";
@@ -112,12 +112,21 @@ export function DataViewTable<T>({
     toggleSelectAll,
     isAllSelected,
     isSomeSelected,
+    columnVisibility,
   } = useDataView<T>();
 
   const columns = overrideColumns ?? (config.columns as ColumnDef<T>[]);
   const rowActions =
     overrideRowActions ?? (config.rowActions as RowAction<T>[] | undefined);
-  const visibleColumns = columns.filter((col) => !col.hidden);
+
+  const visibleColumns = React.useMemo(() => {
+    return columns.filter((col) => {
+      if (columnVisibility[col.id] !== undefined) {
+        return columnVisibility[col.id];
+      }
+      return !col.hidden;
+    });
+  }, [columns, columnVisibility]);
 
   const renderCellContent = (row: T, column: ColumnDef<T>) => {
     const value = getFieldValue(row, column);

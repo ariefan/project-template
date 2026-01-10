@@ -13,6 +13,8 @@ enum AnnouncementPriority {
   warning: "warning",
   /** Critical announcement requiring acknowledgment (red) */
   critical: "critical",
+  /** Success announcement (green) */
+  success: "success",
 }
 
 /**
@@ -53,16 +55,16 @@ model Announcement {
   @example("Scheduled Maintenance")
   title: string;
 
-  /** Announcement content (supports markdown) */
+  /** Announcement content (supports Markdown for links, formatting, and equations) */
   @example("We will be performing scheduled maintenance on...")
   content: string;
 
-  /** Optional link for more information */
-  @example("https://status.example.com")
+  /** Optional link URL */
+  @example("https://example.com/details")
   linkUrl?: string;
 
-  /** Link text */
-  @example("View Status Page")
+  /** Optional link text (default: "Learn more") */
+  @example("Read full guide")
   linkText?: string;
 
   /** Priority level */
@@ -157,18 +159,20 @@ model CreateAnnouncementRequest {
   @example("System Upgrade Scheduled")
   title: string;
 
-  /** Announcement content (supports markdown) */
+  /** Announcement content (supports Markdown for links, formatting, and equations) */
   @minLength(1)
   @maxLength(5000)
   @example("We will be upgrading our systems this weekend...")
   content: string;
 
-  /** Optional link for more information */
-  @example("https://docs.example.com/upgrade")
+  /** Optional link URL */
+  @maxLength(2000)
+  @example("https://example.com/details")
   linkUrl?: string;
 
-  /** Link text */
-  @example("Learn More")
+  /** Optional link text */
+  @maxLength(50)
+  @example("Read full guide")
   linkText?: string;
 
   /** Priority level (default: info) */
@@ -208,15 +212,17 @@ model UpdateAnnouncementRequest {
   @maxLength(200)
   title?: string;
 
-  /** Announcement content */
+  /** Announcement content (supports Markdown for links, formatting, and equations) */
   @minLength(1)
   @maxLength(5000)
   content?: string;
 
-  /** Optional link for more information */
+  /** Optional link URL */
+  @maxLength(2000)
   linkUrl?: string;
 
-  /** Link text */
+  /** Optional link text */
+  @maxLength(50)
   linkText?: string;
 
   /** Priority level */

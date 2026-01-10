@@ -13,7 +13,6 @@ import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   AlertTriangle,
-  CheckCircle,
   Info,
   Loader2,
   type LucideIcon,
@@ -161,9 +160,15 @@ export function ConfirmDialog({
   const getConfirmVariant = (): React.ComponentProps<
     typeof Button
   >["variant"] => {
-    if (confirmVariant) return confirmVariant;
-    if (variant === "destructive") return "destructive";
-    if (variant === "warning") return "default";
+    if (confirmVariant) {
+      return confirmVariant;
+    }
+    if (variant === "destructive") {
+      return "destructive";
+    }
+    if (variant === "warning") {
+      return "default";
+    }
     return "default";
   };
 
@@ -245,8 +250,8 @@ export interface ConfirmDialogOptions {
  *   // User confirmed
  * }
  */
-export function confirm(options: ConfirmDialogOptions): Promise<boolean> {
-  return new Promise((resolve) => {
+export function confirm(_options: ConfirmDialogOptions): Promise<boolean> {
+  return new Promise((_resolve) => {
     // This is a simplified version - for full implementation,
     // you'd need to manage dialog state via context or store
     // For now, callers should use the controlled component
@@ -257,4 +262,4 @@ export function confirm(options: ConfirmDialogOptions): Promise<boolean> {
 }
 
 // Export success and info variants for convenience
-export { CheckCircle, Info, AlertTriangle, XCircle };
+export { AlertTriangle, CheckCircle, Info, XCircle } from "lucide-react";

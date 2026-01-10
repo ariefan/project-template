@@ -159,6 +159,7 @@ export class S3StorageProvider implements StorageProvider {
     }
   }
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: S3 list logic
   async listFiles(path: string, recursive = false): Promise<FileInfo[]> {
     // Normalize path: ensure it ends with / for proper prefix matching
     const prefix = path ? `${path}/` : "";
@@ -178,10 +179,14 @@ export class S3StorageProvider implements StorageProvider {
       // Process files (objects in the current "folder")
       for (const object of response.Contents ?? []) {
         const key = object.Key;
-        if (!key) continue;
+        if (!key) {
+          continue;
+        }
 
         // Skip the folder marker itself (ends with /)
-        if (key.endsWith("/") && key === prefix) continue;
+        if (key.endsWith("/") && key === prefix) {
+          continue;
+        }
 
         // Get the name (last part of the key)
         const name = key.split("/").filter(Boolean).pop() ?? key;
@@ -200,7 +205,9 @@ export class S3StorageProvider implements StorageProvider {
       if (!recursive) {
         for (const prefixInfo of response.CommonPrefixes ?? []) {
           const prefixValue = prefixInfo.Prefix;
-          if (!prefixValue) continue;
+          if (!prefixValue) {
+            continue;
+          }
 
           // Remove trailing slash for display
           const folderName =

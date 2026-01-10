@@ -90,7 +90,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 
@@ -112,6 +112,11 @@ export function WebhooksList() {
   const queryClient = useQueryClient();
   const { data: orgData } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [page, setPage] = useState(1);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -304,7 +309,7 @@ export function WebhooksList() {
   )?.data?.eventTypes;
 
   function renderContent() {
-    if (isLoading) {
+    if (mounted && isLoading) {
       return (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

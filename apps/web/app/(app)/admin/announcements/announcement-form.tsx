@@ -13,14 +13,6 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
 import { Checkbox } from "@workspace/ui/components/checkbox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import {
   Select,
@@ -30,10 +22,18 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { Textarea } from "@workspace/ui/components/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  useForm,
+} from "@workspace/ui/composed/form";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
@@ -79,7 +79,8 @@ export function AnnouncementForm({
       content: announcement?.content ?? "",
       linkUrl: announcement?.linkUrl ?? "",
       linkText: announcement?.linkText ?? "",
-      priority: announcement?.priority ?? "info",
+      priority:
+        (announcement?.priority as "info" | "warning" | "critical") ?? "info",
       scope: announcement?.scope ?? "organization",
       // Use first role as default, or "all" if available
       targetRoles: announcement?.targetRoles?.[0] ?? "all",

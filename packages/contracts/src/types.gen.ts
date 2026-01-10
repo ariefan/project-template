@@ -68,15 +68,15 @@ export type Announcement = {
      */
     title: string;
     /**
-     * Announcement content (supports markdown)
+     * Announcement content (supports Markdown for links, formatting, and equations)
      */
     content: string;
     /**
-     * Optional link for more information
+     * Optional link URL
      */
     linkUrl?: string;
     /**
-     * Link text
+     * Optional link text (default: "Learn more")
      */
     linkText?: string;
     /**
@@ -195,7 +195,7 @@ export type AnnouncementListResponse = {
 /**
  * Announcement priority level
  */
-export type AnnouncementPriority = 'info' | 'warning' | 'critical';
+export type AnnouncementPriority = 'info' | 'warning' | 'critical' | 'success';
 
 /**
  * Single announcement response
@@ -269,15 +269,15 @@ export type AnnouncementWithInteraction = {
      */
     title: string;
     /**
-     * Announcement content (supports markdown)
+     * Announcement content (supports Markdown for links, formatting, and equations)
      */
     content: string;
     /**
-     * Optional link for more information
+     * Optional link URL
      */
     linkUrl?: string;
     /**
-     * Link text
+     * Optional link text (default: "Learn more")
      */
     linkText?: string;
     /**
@@ -847,15 +847,15 @@ export type CreateAnnouncementRequest = {
      */
     title: string;
     /**
-     * Announcement content (supports markdown)
+     * Announcement content (supports Markdown for links, formatting, and equations)
      */
     content: string;
     /**
-     * Optional link for more information
+     * Optional link URL
      */
     linkUrl?: string;
     /**
-     * Link text
+     * Optional link text
      */
     linkText?: string;
     /**
@@ -2301,15 +2301,15 @@ export type NotificationPreferences = {
     /**
      * Preferred email address
      */
-    preferredEmail?: string;
+    preferredEmail?: string | null;
     /**
      * Preferred phone number
      */
-    preferredPhone?: string;
+    preferredPhone?: string | null;
     /**
      * Preferred Telegram ID
      */
-    preferredTelegramId?: string;
+    preferredTelegramId?: string | null;
     /**
      * Quiet hours enabled
      */
@@ -2317,15 +2317,15 @@ export type NotificationPreferences = {
     /**
      * Quiet hours start time (HH:mm format)
      */
-    quietHoursStart?: string;
+    quietHoursStart?: string | null;
     /**
      * Quiet hours end time (HH:mm format)
      */
-    quietHoursEnd?: string;
+    quietHoursEnd?: string | null;
     /**
      * Quiet hours timezone (IANA format)
      */
-    quietHoursTimezone?: string;
+    quietHoursTimezone?: string | null;
     /**
      * Timestamp when created
      */
@@ -2341,7 +2341,7 @@ export type NotificationPreferences = {
  */
 export type NotificationPreferencesResponse = {
     data: NotificationPreferences;
-    meta: ResponseMeta;
+    meta?: ResponseMeta;
 };
 
 /**
@@ -3565,15 +3565,15 @@ export type UpdateAnnouncementRequest = {
      */
     title?: string;
     /**
-     * Announcement content
+     * Announcement content (supports Markdown for links, formatting, and equations)
      */
     content?: string;
     /**
-     * Optional link for more information
+     * Optional link URL
      */
     linkUrl?: string;
     /**
-     * Link text
+     * Optional link text
      */
     linkText?: string;
     /**

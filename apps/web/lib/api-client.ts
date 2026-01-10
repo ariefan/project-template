@@ -15,6 +15,9 @@ export const apiClient = createClient(
     credentials: "include", // Include cookies for session auth
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   })
 );

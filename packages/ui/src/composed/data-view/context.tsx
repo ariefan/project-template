@@ -46,7 +46,7 @@ interface DataViewContextValue<T = unknown> extends DataViewState {
   setSelectedIds: (ids: Set<string | number>) => void;
   selectRow: (id: string | number) => void;
   deselectRow: (id: string | number) => void;
-  toggleRowSelection: (id: string | number) => void;
+  toggleRowSelection: (id: string | number, shiftKey?: boolean) => void;
   selectAll: () => void;
   deselectAll: () => void;
   toggleSelectAll: () => void;
@@ -66,6 +66,10 @@ interface DataViewContextValue<T = unknown> extends DataViewState {
   searchableFields: SearchableField[];
   /** Currently selected search field (null = all fields) */
   searchField: string | null;
+  /** Column visibility state */
+  columnVisibility: Record<string, boolean>;
+  /** Set column visibility */
+  setColumnVisibility: (visibility: Record<string, boolean>) => void;
 }
 
 // ============================================================================
@@ -132,6 +136,8 @@ interface DataViewProviderProps<T> {
   onSelectionChange?: (selectedIds: Set<string | number>) => void;
   pagination?: PaginationConfig;
   onPaginationChange?: (pagination: PaginationConfig) => void;
+  columnVisibility?: Record<string, boolean>;
+  onColumnVisibilityChange?: (visibility: Record<string, boolean>) => void;
   /** Server-side data fetch handler */
   onFetchData?: (
     request: ServerSideRequest
@@ -160,6 +166,8 @@ export function DataViewProvider<T>({
   onSelectionChange,
   pagination: controlledPagination,
   onPaginationChange,
+  onColumnVisibilityChange,
+  columnVisibility: controlledColumnVisibility,
   onFetchData,
 }: DataViewProviderProps<T>) {
   // Determine data mode (client or server)
@@ -440,19 +448,6 @@ export function DataViewProvider<T>({
     [selectedIds, setSelectedIds]
   );
 
-  const toggleRowSelection = React.useCallback(
-    (id: string | number) => {
-      if (selectedIds.has(id)) {
-        deselectRow(id);
-      } else if (config.multiSelect !== false) {
-        selectRow(id);
-      } else {
-        setSelectedIds(new Set([id]));
-      }
-    },
-    [selectedIds, selectRow, deselectRow, setSelectedIds, config.multiSelect]
-  );
-
   // Use the appropriate data source based on mode
   const displayData = isServerSide ? serverData : data;
 
@@ -661,6 +656,86 @@ export function DataViewProvider<T>({
     config.searchable,
   ]);
 
+  const [internalColumnVisibility, setInternalColumnVisibility] =
+    React.useState<Record<string, boolean>>({});
+
+  // Controlled vs Uncontrolled
+  const columnVisibility =
+    controlledColumnVisibility ?? internalColumnVisibility;
+
+  const setColumnVisibility = React.useCallback(
+    (visibility: Record<string, boolean>) => {
+      if (onColumnVisibilityChange) {
+        onColumnVisibilityChange(visibility);
+      } else {
+        setInternalColumnVisibility(visibility);
+      }
+    },
+    [onColumnVisibilityChange]
+  );
+
+  // Track last selected ID for shift-click range selection
+  const lastSelectedIdRef = React.useRef<string | number | null>(null);
+
+  const toggleRowSelection = React.useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Selection logic with Shift support
+    (id: string | number, shiftKey?: boolean) => {
+      // Handle Shift+Click range selection
+      if (
+        shiftKey &&
+        lastSelectedIdRef.current !== null &&
+        config.multiSelect !== false
+      ) {
+        const lastId = lastSelectedIdRef.current;
+        const currentData = displayData;
+
+        const lastIndex = currentData.findIndex(
+          (row) => getRowId(row) === lastId
+        );
+        const currentIndex = currentData.findIndex(
+          (row) => getRowId(row) === id
+        );
+
+        if (lastIndex !== -1 && currentIndex !== -1) {
+          const start = Math.min(lastIndex, currentIndex);
+          const end = Math.max(lastIndex, currentIndex);
+
+          const newIds = new Set(selectedIds);
+          const rangeRows = currentData.slice(start, end + 1);
+
+          for (const row of rangeRows) {
+            newIds.add(getRowId(row));
+          }
+
+          setSelectedIds(newIds);
+          lastSelectedIdRef.current = id;
+          return;
+        }
+      }
+
+      // Normal toggle
+      if (selectedIds.has(id)) {
+        deselectRow(id);
+        lastSelectedIdRef.current = null;
+      } else if (config.multiSelect !== false) {
+        selectRow(id);
+        lastSelectedIdRef.current = id;
+      } else {
+        setSelectedIds(new Set([id]));
+        lastSelectedIdRef.current = id;
+      }
+    },
+    [
+      selectedIds,
+      selectRow,
+      deselectRow,
+      setSelectedIds,
+      config.multiSelect,
+      displayData,
+      getRowId,
+    ]
+  );
+
   // Paginated data
   const paginatedData = React.useMemo(() => {
     // In server mode, data is already paginated
@@ -740,6 +815,8 @@ export function DataViewProvider<T>({
     setPage,
     setPageSize,
     toggleExpanded,
+    columnVisibility,
+    setColumnVisibility,
 
     // Computed
     selectedRows,

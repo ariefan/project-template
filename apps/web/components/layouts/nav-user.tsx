@@ -29,6 +29,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import * as React from "react";
 import { signOut, useSession } from "@/lib/auth";
 
 function getInitials(name: string | null | undefined): string {
@@ -48,10 +49,18 @@ export function NavUser() {
   const router = useRouter();
   const { data: session } = useSession();
 
+  // Hydration fix: Only render user data on client
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const user = session?.user;
-  const displayName = user?.name ?? user?.email ?? "User";
-  const email = user?.email ?? "";
-  const avatar = user?.image ?? undefined;
+  // Default to "User" during SSR/loading to match server
+  const displayName =
+    mounted && user ? (user.name ?? user.email ?? "User") : "User";
+  const email = mounted && user ? (user.email ?? "") : "";
+  const avatar = mounted && user ? (user.image ?? undefined) : undefined;
 
   async function handleLogout() {
     await signOut();

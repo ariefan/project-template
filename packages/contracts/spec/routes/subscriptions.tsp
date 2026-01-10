@@ -72,7 +72,7 @@ interface Subscriptions {
    * Plan changes may be immediate or scheduled for period end.
    */
   @route("/{subscriptionId}")
-  @patch
+  @patch(#{implicitOptionality: true})
   @summary("Update subscription")
   update(
     /** Organization ID */

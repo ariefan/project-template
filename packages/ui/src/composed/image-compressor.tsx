@@ -77,6 +77,7 @@ function formatBytes(bytes: number): string {
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Image compression requires complex state management
 export function ImageCompressor({
   onCompressed,
   onUpload,
@@ -85,7 +86,7 @@ export function ImageCompressor({
   isUploading = false,
   className,
 }: ImageCompressorProps) {
-  const [sourceFiles, setSourceFiles] = React.useState<File[]>([]);
+  const [_sourceFiles, setSourceFiles] = React.useState<File[]>([]);
   const [compressedFiles, setCompressedFiles] = React.useState<
     CompressedFileWithPreview[]
   >([]);
@@ -165,6 +166,7 @@ export function ImageCompressor({
 
   // Handle file selection
   const handleFileSelect = React.useCallback(
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: File selection validation logic is inherently complex
     (files: FileList | null) => {
       if (!files) {
         return;
@@ -266,7 +268,7 @@ export function ImageCompressor({
         setIsCompressing(true);
 
         Promise.all(
-          allCrops.map(async (cropResult) => {
+          allCrops.map((cropResult) => {
             // Convert crop blob to File for compression
             const cropFile = new File([cropResult.blob], cropResult.file.name, {
               type: cropResult.file.type,
@@ -308,7 +310,9 @@ export function ImageCompressor({
 
   // Handle skip crop
   const handleSkipCrop = React.useCallback(() => {
-    if (!fileToCrop) return;
+    if (!fileToCrop) {
+      return;
+    }
 
     // Skip this file and move to next
     setCropQueue((prev) => prev.filter((f) => f.name !== fileToCrop.name));
@@ -353,14 +357,14 @@ export function ImageCompressor({
 
   // Clear all
   const clearAll = React.useCallback(() => {
-    compressedFiles.forEach((f) => {
+    for (const f of compressedFiles) {
       if (f.preview) {
         URL.revokeObjectURL(f.preview);
       }
-    });
-    processedCrops.forEach((f) => {
+    }
+    for (const f of processedCrops) {
       URL.revokeObjectURL(f.url);
-    });
+    }
     setSourceFiles([]);
     setCompressedFiles([]);
     setCropQueue([]);
@@ -386,14 +390,14 @@ export function ImageCompressor({
   // Cleanup previews on unmount
   React.useEffect(() => {
     return () => {
-      compressedFiles.forEach((f) => {
+      for (const f of compressedFiles) {
         if (f.preview) {
           URL.revokeObjectURL(f.preview);
         }
-      });
-      processedCrops.forEach((f) => {
+      }
+      for (const f of processedCrops) {
         URL.revokeObjectURL(f.url);
-      });
+      }
     };
   }, [compressedFiles, processedCrops]);
 
@@ -520,6 +524,7 @@ export function ImageCompressor({
 
       {/* Upload Area */}
       {compressedFiles.length === 0 && !hasFilesInQueue ? (
+        // biome-ignore lint/a11y/useSemanticElements: Drop zone requires div for drag events
         <div
           className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
             isDragging
@@ -530,6 +535,14 @@ export function ImageCompressor({
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              document.getElementById("compression-input")?.click();
+            }
+          }}
+          role="button"
+          tabIndex={0}
         >
           <FileImage className="mb-4 h-12 w-12 text-muted-foreground" />
           <p className="font-medium">
@@ -569,6 +582,7 @@ export function ImageCompressor({
           )}
 
           {/* Add more files button */}
+          {/* biome-ignore lint/a11y/useSemanticElements: Drop zone requires div for drag events */}
           <div
             className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed py-2 text-sm transition-colors ${
               isDragging
@@ -581,6 +595,14 @@ export function ImageCompressor({
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                document.getElementById("compression-input")?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add more images
@@ -626,6 +648,8 @@ export function ImageCompressor({
                     >
                       {/* Thumbnail */}
                       {file.preview ? (
+                        // biome-ignore lint/correctness/useImageSize: Dynamic content
+                        // biome-ignore lint/performance/noImgElement: Framework-agnostic
                         <img
                           alt={file.name}
                           className="size-full object-cover"

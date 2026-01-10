@@ -92,7 +92,7 @@ namespace ProjectAPI {
      * Update an announcement
      * Requires admin permission or ownership
      */
-    @patch
+    @patch(#{implicitOptionality: true})
     @summary("Update announcement")
     update(
       /** Organization ID */

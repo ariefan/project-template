@@ -39,6 +39,7 @@ export function FileListView({
   selectedItems,
   onFileSelect,
   onToggleSelect,
+  // biome-ignore lint/correctness/noUnusedFunctionParameters: Future use
   onFileClick,
   onFileDoubleClick,
   onSort,

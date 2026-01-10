@@ -77,8 +77,9 @@ function Example() {
 
 ### Forms with Validation
 
+> **Important:** Always import `useForm` from `@workspace/ui/composed/form`, NOT directly from `react-hook-form`. This ensures type identity consistency across the monorepo.
+
 ```tsx
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@workspace/ui/components/button";
@@ -90,7 +91,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@workspace/ui/components/form";
+  useForm, // Import from here, not from react-hook-form
+} from "@workspace/ui/composed/form";
 
 const schema = z.object({
   email: z.string().email(),
@@ -162,6 +164,7 @@ import { Button } from "@workspace/ui/components/button";
 - `InputGroup` - Input with addons
 - `InputOTP` - One-time password input
 - `Label` - Form labels
+- `NativeSelect` - Browser-native select dropdown
 - `RadioGroup` - Radio button group
 - `Select` - Dropdown select
 - `Slider` - Range slider
@@ -214,6 +217,43 @@ import { Button } from "@workspace/ui/components/button";
 - `Sidebar` - App sidebar
 - `Toggle` - Toggle button
 - `ToggleGroup` - Toggle button group
+
+## Composed Components
+
+Higher-level components built from primitives, located in `src/composed/`:
+
+```typescript
+import { ConfirmDialog } from "@workspace/ui/composed/confirm-dialog";
+import { FileUploadWithProgress } from "@workspace/ui/composed/file-upload-with-progress";
+import { ImageCompressor } from "@workspace/ui/composed/image-compressor";
+import { MarkdownEditor } from "@workspace/ui/composed/markdown-editor";
+import { MarkdownRenderer } from "@workspace/ui/composed/markdown-renderer";
+import { ThemeCustomizer } from "@workspace/ui/composed/theme-customizer";
+import { DataView } from "@workspace/ui/composed/data-view";
+```
+
+### Dialogs & Overlays
+- `ConfirmDialog` - Confirmation dialog with customizable actions
+- `FilePreviewDialog` - Preview files before upload
+- `ImageCropDialog` - Crop images before upload
+
+### Data Display
+- `DataView` - Flexible data list/table with pagination
+- `DataTableColumnHeader` - Sortable column headers
+- `DataTableColumnToggle` - Column visibility controls
+- `DataTablePagination` / `DataListPagination` - Pagination controls
+- `PaginationBase` - Base pagination component
+
+### Media & Files
+- `FileUploadWithProgress` - Upload files with progress indicator
+- `ImageCompressor` - Client-side image compression before upload
+
+### Content
+- `MarkdownEditor` - MDX-based markdown editor
+- `MarkdownRenderer` - Render markdown with syntax highlighting, math, and GFM
+
+### Theming
+- `ThemeCustomizer` - Interactive theme color picker
 
 ## Adding New Components
 

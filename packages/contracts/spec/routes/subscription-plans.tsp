@@ -98,7 +98,7 @@ interface SubscriptionPlansAdmin {
    * Warning: Changing pricing affects future billing only.
    */
   @route("/{planId}")
-  @patch
+  @patch(#{implicitOptionality: true})
   @summary("Update subscription plan")
   update(
     /** Plan ID */

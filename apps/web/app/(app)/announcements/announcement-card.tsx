@@ -11,17 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import { MarkdownRenderer } from "@workspace/ui/composed/markdown-renderer";
 import { cn } from "@workspace/ui/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import {
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle,
-  ExternalLink,
-  Info,
-  X,
-} from "lucide-react";
-import Link from "next/link";
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 
 interface AnnouncementCardProps {
   announcement: AnnouncementWithInteraction;
@@ -53,6 +46,13 @@ const PRIORITY_CONFIG = {
     badgeVariant: "destructive" as const,
     borderColor: "border-red-200",
     bgColor: "bg-red-50",
+  },
+  success: {
+    icon: CheckCircle,
+    iconColor: "text-green-500",
+    badgeVariant: "outline" as const,
+    borderColor: "border-green-200",
+    bgColor: "bg-green-50",
   },
 };
 
@@ -154,29 +154,15 @@ export function AnnouncementCard({
 
       <CardContent className={cn("pb-3", compact && "pb-2")}>
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          {/* Support markdown rendering if needed */}
-          <p className="whitespace-pre-wrap text-sm">{announcement.content}</p>
+          {/* Content rendered as Markdown */}
+          <MarkdownRenderer content={announcement.content} />
         </div>
       </CardContent>
 
-      {(announcement.linkUrl ||
-        isUnread ||
+      {(isUnread ||
         isUnacknowledged ||
         (onMarkRead && announcement.hasRead)) && (
         <CardFooter className="flex flex-wrap items-center gap-2">
-          {announcement.linkUrl && (
-            <Button asChild size="sm" variant="outline">
-              <Link
-                href={announcement.linkUrl}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                {announcement.linkText || "Learn more"}
-                <ExternalLink className="ml-2 size-4" />
-              </Link>
-            </Button>
-          )}
-
           {isUnread && onMarkRead && (
             <Button
               className="gap-2"

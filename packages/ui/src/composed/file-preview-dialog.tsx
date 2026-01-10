@@ -54,11 +54,13 @@ export function FilePreviewDialog({
     setIsLoading(true);
     setHasError(false);
     setZoom(1);
-  }, [fileUrl]);
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if user is typing in an input
@@ -83,6 +85,9 @@ export function FilePreviewDialog({
           break;
         case "0":
           setZoom(1);
+          break;
+        default:
+          // No action for other keys
           break;
       }
     };
@@ -185,6 +190,9 @@ export function FilePreviewDialog({
                   </Button>
                 </div>
               ) : (
+                // biome-ignore lint/correctness/useImageSize: Dynamic content
+                // biome-ignore lint/performance/noImgElement: Framework-agnostic
+                // biome-ignore lint/a11y/noNoninteractiveElementInteractions: Image click handled for zoom
                 <img
                   alt={fileName ?? "Preview"}
                   className={cn(

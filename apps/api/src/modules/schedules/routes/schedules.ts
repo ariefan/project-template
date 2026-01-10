@@ -34,7 +34,8 @@ function formatScheduledJobResponse(
     jobConfig: (schedule.jobConfig as Record<string, unknown>) ?? undefined,
     name: schedule.name,
     description: schedule.description ?? undefined,
-    frequency: schedule.frequency as any,
+    frequency:
+      schedule.frequency as unknown as ScheduledJobResponse["data"]["frequency"],
     cronExpression: schedule.cronExpression ?? undefined,
     dayOfWeek: schedule.dayOfWeek ?? undefined,
     dayOfMonth: schedule.dayOfMonth ?? undefined,
@@ -43,7 +44,8 @@ function formatScheduledJobResponse(
     timezone: schedule.timezone,
     startDate: schedule.startDate.toISOString(),
     endDate: schedule.endDate?.toISOString(),
-    deliveryMethod: schedule.deliveryMethod as any,
+    deliveryMethod:
+      schedule.deliveryMethod as unknown as ScheduledJobResponse["data"]["deliveryMethod"],
     deliveryConfig:
       (schedule.deliveryConfig as Record<string, unknown>) ?? undefined,
     isActive: schedule.isActive,
@@ -103,7 +105,9 @@ export function schedulesRoutes(app: FastifyInstance) {
           pageSize: pageSize ? Number(pageSize) : undefined,
           orderBy,
           jobType,
+          // biome-ignore lint/suspicious/noExplicitAny: Drizzle enum type mismatch
           frequency: frequency as any,
+          // biome-ignore lint/suspicious/noExplicitAny: Drizzle enum type mismatch
           deliveryMethod: deliveryMethod as any,
           isActive,
           search,
@@ -284,7 +288,7 @@ export function schedulesRoutes(app: FastifyInstance) {
             canRestore: true,
           },
           meta: createMeta(request.id),
-        } as any;
+        } as unknown as ScheduledJobResponse;
       } catch (error) {
         const { statusCode, response } = handleError(error, request.id);
         reply.status(statusCode);
@@ -340,7 +344,9 @@ export function schedulesRoutes(app: FastifyInstance) {
             input: (job.input as Record<string, unknown>) ?? undefined,
             output: (job.output as Record<string, unknown>) ?? undefined,
             metadata: (job.metadata as Record<string, unknown>) ?? undefined,
-            error: (job.error as any) ?? undefined,
+            error:
+              (job.error as unknown as import("@workspace/contracts").JobError) ??
+              undefined,
             createdBy: job.createdBy,
             createdAt: job.createdAt.toISOString(),
             startedAt: job.startedAt?.toISOString(),
@@ -439,20 +445,20 @@ export function schedulesRoutes(app: FastifyInstance) {
         });
 
         // For now, return the filtered jobs
-        const filteredJobs = (jobs.data as any[]).filter(
-          (job: any) =>
-            job.metadata?.scheduleId === scheduleId ||
-            job.id === schedule.lastJobId
+        const filteredJobs = jobs.data.filter(
+          (job) =>
+            (job.metadata as Record<string, unknown> | null)?.scheduleId ===
+              scheduleId || job.id === schedule.lastJobId
         );
 
         return {
           data: {
             scheduleId,
-            jobs: filteredJobs.map((job: any) => ({
+            jobs: filteredJobs.map((job) => ({
               jobId: job.id,
               status: job.status,
-              createdAt: job.createdAt,
-              completedAt: job.completedAt,
+              createdAt: job.createdAt.toISOString(),
+              completedAt: job.completedAt?.toISOString() ?? null,
               success: job.status === "completed",
               error: job.error?.message,
             })),

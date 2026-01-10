@@ -2,15 +2,23 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { cn } from "@workspace/ui/lib/utils";
-import { Bell, Loader2, Settings, Shield, User } from "lucide-react";
+import { Bell, Loader2, Palette, Settings, Shield, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth";
-import { NotificationsTab } from "./notifications-tab";
-import { ProfileTab } from "./profile-tab";
-import { SecurityTab } from "./security-tab";
+import { AppearanceTab } from "./appearance";
+import { GeneralTab } from "./general";
+import { NotificationsTab } from "./notifications";
+import { ProfileTab } from "./profile";
+import { SecurityTab } from "./security";
 
-type SettingsTab = "profile" | "notifications" | "security";
+type SettingsTab =
+  | "general"
+  | "profile"
+  | "appearance"
+  | "notifications"
+  | "security";
 
 export function SettingsPanel() {
   const { isPending: sessionLoading } = useSession();
@@ -36,11 +44,31 @@ export function SettingsPanel() {
   // During SSR or before mount, show a skeleton/placeholder
   if (!mounted) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 px-4 md:px-0">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-8 md:flex-row">
+          <aside className="w-full flex-shrink-0 md:w-64">
+            <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+              {Array.from({ length: 5 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton list
+                <Skeleton className="h-10 w-full" key={i} />
+              ))}
+            </div>
+          </aside>
+          <div className="min-w-0 flex-1 space-y-4">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -49,6 +77,16 @@ export function SettingsPanel() {
       id: "profile",
       label: "Profile",
       icon: User,
+    },
+    {
+      id: "general",
+      label: "General",
+      icon: Settings,
+    },
+    {
+      id: "appearance",
+      label: "Appearance",
+      icon: Palette,
     },
     {
       id: "notifications",
@@ -98,6 +136,8 @@ export function SettingsPanel() {
         {/* Main Content Area */}
         <div className="min-w-0 flex-1">
           {activeTab === "profile" && <ProfileTab />}
+          {activeTab === "general" && <GeneralTab />}
+          {activeTab === "appearance" && <AppearanceTab />}
           {activeTab === "notifications" && <NotificationsTab />}
           {activeTab === "security" && <SecurityTab />}
         </div>

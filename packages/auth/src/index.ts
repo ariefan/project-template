@@ -88,6 +88,36 @@ export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
       usePlural: true,
     }),
 
+    // User preferences - additional fields
+    user: {
+      additionalFields: {
+        // Theme preference for UI
+        theme: {
+          type: ["light", "dark", "system"],
+          required: false,
+          defaultValue: "system",
+        },
+        // Language/locale preference
+        locale: {
+          type: "string",
+          required: false,
+          defaultValue: "en",
+        },
+        // Timezone preference (mirrors notification_preferences.timezone)
+        timezone: {
+          type: "string",
+          required: false,
+          defaultValue: "UTC",
+        },
+        // Theme appearance settings (JSON string)
+        appearance: {
+          type: "string",
+          required: false,
+          defaultValue: "{}",
+        },
+      },
+    },
+
     // Auto-select first organization on login
     databaseHooks: {
       session: {

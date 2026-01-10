@@ -36,6 +36,63 @@ const DEFAULT_BATCH_SIZE = 50;
 
 type ScheduleFrequencyV2 = (typeof scheduledJobs.$inferInsert)["frequency"];
 
+function calculateNextDailyRun(now: Date, h: number, m: number): Date {
+  const next = new Date(now);
+  next.setHours(h, m, 0, 0);
+  if (next <= now) {
+    next.setDate(next.getDate() + 1);
+  }
+  return next;
+}
+
+function calculateNextWeeklyRun(
+  now: Date,
+  dayOfWeek: string | null,
+  h: number,
+  m: number
+): Date {
+  const dayMap: Record<string, number> = {
+    sunday: 0,
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
+  };
+  const targetDay = dayOfWeek
+    ? (dayMap[dayOfWeek] ?? now.getDay())
+    : now.getDay();
+  const next = new Date(now);
+  const currentDay = now.getDay();
+  let daysUntilTarget = (((targetDay - currentDay) % 7) + 7) % 7;
+  if (daysUntilTarget === 0) {
+    // Same day, check if time has passed
+    const targetTime = new Date(now);
+    targetTime.setHours(h, m, 0, 0);
+    if (targetTime <= now) {
+      daysUntilTarget = 7;
+    }
+  }
+  next.setDate(now.getDate() + daysUntilTarget);
+  next.setHours(h, m, 0, 0);
+  return next;
+}
+
+function calculateNextMonthlyRun(
+  now: Date,
+  dayOfMonth: number | null,
+  h: number,
+  m: number
+): Date {
+  const day = Math.min(dayOfMonth ?? 1, 28);
+  const next = new Date(now.getFullYear(), now.getMonth(), day, h, m, 0, 0);
+  if (next <= now) {
+    next.setMonth(next.getMonth() + 1);
+  }
+  return next;
+}
+
 /**
  * Calculate the next run time for a schedule
  */
@@ -57,48 +114,13 @@ function calculateNextRunAt(
       return null;
     }
     case "daily": {
-      const next = new Date(now);
-      next.setHours(h, m, 0, 0);
-      if (next <= now) {
-        next.setDate(next.getDate() + 1);
-      }
-      return next;
+      return calculateNextDailyRun(now, h, m);
     }
     case "weekly": {
-      const dayMap: Record<string, number> = {
-        sunday: 0,
-        monday: 1,
-        tuesday: 2,
-        wednesday: 3,
-        thursday: 4,
-        friday: 5,
-        saturday: 6,
-      };
-      const targetDay = dayOfWeek
-        ? (dayMap[dayOfWeek] ?? now.getDay())
-        : now.getDay();
-      const next = new Date(now);
-      const currentDay = now.getDay();
-      let daysUntilTarget = (((targetDay - currentDay) % 7) + 7) % 7;
-      if (daysUntilTarget === 0) {
-        // Same day, check if time has passed
-        const targetTime = new Date(now);
-        targetTime.setHours(h, m, 0, 0);
-        if (targetTime <= now) {
-          daysUntilTarget = 7;
-        }
-      }
-      next.setDate(now.getDate() + daysUntilTarget);
-      next.setHours(h, m, 0, 0);
-      return next;
+      return calculateNextWeeklyRun(now, dayOfWeek, h, m);
     }
     case "monthly": {
-      const day = Math.min(dayOfMonth ?? 1, 28);
-      const next = new Date(now.getFullYear(), now.getMonth(), day, h, m, 0, 0);
-      if (next <= now) {
-        next.setMonth(next.getMonth() + 1);
-      }
-      return next;
+      return calculateNextMonthlyRun(now, dayOfMonth, h, m);
     }
     case "custom": {
       // For custom/cron, we'd need a cron parser
@@ -274,7 +296,7 @@ export function createScheduler(
     /**
      * Start the scheduler
      */
-    async start(): Promise<void> {
+    start(): void {
       if (isRunning) {
         console.log("[Scheduler] Already running");
         return;
@@ -287,13 +309,15 @@ export function createScheduler(
       );
 
       // Start the tick loop
-      tick();
+      tick().catch((error) => {
+        console.error("[Scheduler] Error in main loop:", error);
+      });
     },
 
     /**
      * Stop the scheduler gracefully
      */
-    async stop(): Promise<void> {
+    stop(): void {
       isStopped = true;
       isRunning = false;
 
@@ -315,7 +339,7 @@ export function createScheduler(
     /**
      * Process schedules immediately (for testing)
      */
-    async processNow(): Promise<{
+    processNow(): Promise<{
       processed: number;
       succeeded: number;
       failed: number;
