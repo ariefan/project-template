@@ -153,7 +153,9 @@ export function UsersList() {
 
   // Filter members by search query
   const filteredMembers = members.filter((member) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
     const query = searchQuery.toLowerCase();
     return (
       member.user.name?.toLowerCase().includes(query) ||
@@ -177,8 +179,9 @@ export function UsersList() {
         role,
         organizationId: orgId,
       });
-      if (result.error)
+      if (result.error) {
         throw new Error(result.error.message || "Failed to send invitation");
+      }
       return result;
     },
     onSuccess: () => {
@@ -203,8 +206,9 @@ export function UsersList() {
         memberIdOrEmail,
         organizationId: orgId,
       });
-      if (result.error)
+      if (result.error) {
         throw new Error(result.error.message || "Failed to remove member");
+      }
       return result;
     },
     onSuccess: () => {
@@ -222,8 +226,9 @@ export function UsersList() {
       const result = await authClient.organization.cancelInvitation({
         invitationId,
       });
-      if (result.error)
+      if (result.error) {
         throw new Error(result.error.message || "Failed to cancel invitation");
+      }
       return result;
     },
     onSuccess: () => {
@@ -268,11 +273,27 @@ export function UsersList() {
 
   function canRemoveMember(member: OrganizationMember): boolean {
     // Can't remove yourself
-    if (member.userId === currentUserId) return false;
+    if (member.userId === currentUserId) {
+      return false;
+    }
     // Can't remove owner unless you're owner
-    if (member.role === "owner" && currentUserRole !== "owner") return false;
+    if (member.role === "owner" && currentUserRole !== "owner") {
+      return false;
+    }
     // Only owners and admins can remove members
     return isOwnerOrAdmin;
+  }
+
+  function getRoleBadgeVariant(
+    role: string
+  ): "default" | "secondary" | "outline" {
+    if (role === "owner") {
+      return "default";
+    }
+    if (role === "admin") {
+      return "secondary";
+    }
+    return "outline";
   }
 
   function renderMembersTable() {
@@ -342,15 +363,7 @@ export function UsersList() {
                 </div>
               </TableCell>
               <TableCell>
-                <Badge
-                  variant={
-                    member.role === "owner"
-                      ? "default"
-                      : member.role === "admin"
-                        ? "secondary"
-                        : "outline"
-                  }
-                >
+                <Badge variant={getRoleBadgeVariant(member.role)}>
                   {member.role}
                 </Badge>
               </TableCell>

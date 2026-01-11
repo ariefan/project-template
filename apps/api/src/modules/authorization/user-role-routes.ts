@@ -14,18 +14,6 @@ import { requirePermission } from "../auth/authorization-middleware";
 import { requireAuth } from "../auth/middleware";
 
 /**
- * Response types for user role endpoints
- */
-interface UserRoleResponse {
-  data: {
-    userId: string;
-    applicationId: string;
-    tenantId: string | null;
-    roles: Array<{
-      id: string;
-      roleId: string;
-      roleName: string;
-      assignedAt: string;
       assignedBy: string | null;
     }>;
   };
