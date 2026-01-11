@@ -1,7 +1,8 @@
 import type {
+  DayOfWeek,
   JobDeliveryMethod,
   ScheduledJobRow,
-  ScheduleFrequencyV2,
+  ScheduleFrequency,
   scheduledJobs,
 } from "@workspace/db/schema";
 import { NotFoundError } from "../../../lib/errors";
@@ -12,9 +13,9 @@ export interface CreateScheduleInput {
   jobConfig?: Record<string, unknown>;
   name: string;
   description?: string;
-  frequency: ScheduleFrequencyV2;
+  frequency: ScheduleFrequency;
   cronExpression?: string;
-  dayOfWeek?: string;
+  dayOfWeek?: DayOfWeek;
   dayOfMonth?: number;
   hour?: number;
   minute?: number;
@@ -31,9 +32,9 @@ export interface UpdateScheduleInput {
   jobConfig?: Record<string, unknown>;
   name?: string;
   description?: string;
-  frequency?: ScheduleFrequencyV2;
+  frequency?: ScheduleFrequency;
   cronExpression?: string;
-  dayOfWeek?: string;
+  dayOfWeek?: DayOfWeek;
   dayOfMonth?: number;
   hour?: number;
   minute?: number;
@@ -166,8 +167,7 @@ export function createSchedule(
     description: input.description,
     frequency: input.frequency,
     cronExpression: input.cronExpression,
-    // biome-ignore lint/suspicious/noExplicitAny: Drizzle enum type mismatch
-    dayOfWeek: input.dayOfWeek as any,
+    dayOfWeek: input.dayOfWeek,
     dayOfMonth: input.dayOfMonth,
     hour: input.hour,
     minute: input.minute,

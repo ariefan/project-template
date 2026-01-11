@@ -2,7 +2,7 @@ import { db } from "@workspace/db";
 import type {
   JobDeliveryMethod,
   ScheduledJobRow,
-  ScheduleFrequencyV2,
+  ScheduleFrequency,
 } from "@workspace/db/schema";
 import { scheduledJobs } from "@workspace/db/schema";
 import { and, eq, sql } from "drizzle-orm";
@@ -11,7 +11,7 @@ export interface ListSchedulesParams {
   page?: number;
   pageSize?: number;
   jobType?: string;
-  frequency?: ScheduleFrequencyV2;
+  frequency?: ScheduleFrequency;
   deliveryMethod?: JobDeliveryMethod;
   isActive?: boolean;
   search?: string;

@@ -42,9 +42,8 @@ export function FileGridView({
         return (
           <ContextMenu key={id}>
             <ContextMenuTrigger asChild>
-              {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: File grid item with double-click */}
-              {/* biome-ignore lint/a11y/useKeyWithClickEvents: File grid item with double-click */}
-              {/* biome-ignore lint/a11y/noStaticElementInteractions: File grid item with double-click */}
+              {/* biome-ignore lint/a11y/useSemanticElements: Cannot use button here because of nested interactive elements */}
+              {/* biome-ignore lint/a11y/useKeyWithClickEvents: Keyboard navigation is handled globally by parent component */}
               <div
                 className={cn(
                   "group relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border bg-card p-3 transition-colors",
@@ -58,16 +57,10 @@ export function FileGridView({
                   e.stopPropagation();
                 }}
                 onDoubleClick={() => onFileDoubleClick(file)}
+                role="button"
+                tabIndex={0}
               >
-                <button
-                  className="relative flex size-28 shrink-0 items-center justify-center"
-                  onClick={(e) => {
-                    // Icon click also uses selection handler
-                    onFileSelect(id, e);
-                    e.stopPropagation();
-                  }}
-                  type="button"
-                >
+                <div className="relative flex size-28 shrink-0 items-center justify-center">
                   {getFileIcon(fileType)}
                   {/* Checkbox overlay - only show when items are selected */}
                   {showCheckboxes && (
@@ -81,7 +74,7 @@ export function FileGridView({
                       />
                     </div>
                   )}
-                </button>
+                </div>
                 <div className="flex w-full flex-col items-center text-center">
                   <h3
                     className="w-full truncate px-1 font-medium text-xs"

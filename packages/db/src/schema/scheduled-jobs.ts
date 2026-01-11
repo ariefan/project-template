@@ -10,25 +10,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { organizations, users } from "./auth";
 
+import { dayOfWeekEnum, scheduleFrequencyEnum } from "./common";
+
 // ============ ENUMS ============
-
-export const scheduleFrequencyEnum = pgEnum("schedule_frequency_v2", [
-  "once",
-  "daily",
-  "weekly",
-  "monthly",
-  "custom",
-]);
-
-export const dayOfWeekEnum = pgEnum("day_of_week_v2", [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-]);
 
 export const jobDeliveryMethodEnum = pgEnum("job_delivery_method", [
   "email",
@@ -141,8 +125,5 @@ export const scheduledJobs = pgTable(
 export type ScheduledJobRow = typeof scheduledJobs.$inferSelect;
 export type NewScheduledJobRow = typeof scheduledJobs.$inferInsert;
 
-export type ScheduleFrequencyV2 =
-  (typeof scheduleFrequencyEnum.enumValues)[number];
-export type DayOfWeekV2 = (typeof dayOfWeekEnum.enumValues)[number];
 export type JobDeliveryMethod =
   (typeof jobDeliveryMethodEnum.enumValues)[number];
