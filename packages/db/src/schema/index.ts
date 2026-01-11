@@ -8,6 +8,7 @@ export * from "./example-comments";
 export * from "./example-posts";
 export * from "./files";
 export * from "./jobs";
+export * from "./legal-documents";
 export * from "./notifications";
 export * from "./payment-events";
 export * from "./report-templates";

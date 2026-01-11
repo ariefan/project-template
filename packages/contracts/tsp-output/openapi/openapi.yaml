@@ -31,6 +31,8 @@ tags:
   - name: Scheduled Jobs
   - name: Announcements
   - name: Subscriptions
+  - name: Legal Documents (Admin)
+  - name: Legal Documents (Public)
 paths:
   /health:
     get:
@@ -277,6 +279,523 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Subscriptions
+  /v1/admin/legal-documents:
+    get:
+      operationId: LegalDocumentsAdmin_list
+      summary: List legal documents
+      description: List all legal documents
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Items per page
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          explode: false
+        - name: type
+          in: query
+          required: false
+          description: Filter by type
+          schema:
+            $ref: '#/components/schemas/LegalDocumentType'
+          explode: false
+        - name: status
+          in: query
+          required: false
+          description: Filter by status
+          schema:
+            $ref: '#/components/schemas/LegalDocumentStatus'
+          explode: false
+        - name: locale
+          in: query
+          required: false
+          description: Filter by locale
+          schema:
+            type: string
+          explode: false
+        - name: includeDeleted
+          in: query
+          required: false
+          description: Include deleted documents
+          schema:
+            type: boolean
+            default: false
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+    post:
+      operationId: LegalDocumentsAdmin_create
+      summary: Create legal document
+      description: Create a new legal document with initial version
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalDocumentWithVersionResponse'
+      tags:
+        - Legal Documents (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLegalDocumentRequest'
+        description: Document data
+  /v1/admin/legal-documents/export-acceptances:
+    post:
+      operationId: LegalDocumentsAdmin_exportAcceptances
+      summary: Export acceptances
+      description: Export acceptances for compliance
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/AsyncJobResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportAcceptancesRequest'
+        description: Export options
+  /v1/admin/legal-documents/{documentId}:
+    get:
+      operationId: LegalDocumentsAdmin_get
+      summary: Get legal document
+      description: Get a specific document by ID
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentWithVersionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+    patch:
+      operationId: LegalDocumentsAdmin_update
+      summary: Update legal document
+      description: Update document metadata
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLegalDocumentRequest'
+        description: Updated data
+    delete:
+      operationId: LegalDocumentsAdmin_delete
+      summary: Archive legal document
+      description: Archive (soft delete) a document
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/SoftDeleteResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+  /v1/admin/legal-documents/{documentId}/acceptances:
+    get:
+      operationId: LegalDocumentsAdmin_listAcceptances
+      summary: List document acceptances
+      description: Get acceptances for a document/version
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: versionId
+          in: query
+          required: false
+          description: Filter by version
+          schema:
+            type: string
+          explode: false
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Items per page
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentAcceptanceListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+  /v1/admin/legal-documents/{documentId}/audit-log:
+    get:
+      operationId: LegalDocumentsAdmin_getAuditLog
+      summary: Get document audit log
+      description: Get audit log for a document
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Items per page
+          schema:
+            type: integer
+            format: int32
+            default: 50
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentAuditLogListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+  /v1/admin/legal-documents/{documentId}/versions:
+    get:
+      operationId: LegalDocumentsAdmin_listVersions
+      summary: List document versions
+      description: List all versions of a document
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Items per page
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          explode: false
+        - name: status
+          in: query
+          required: false
+          description: Filter by status
+          schema:
+            $ref: '#/components/schemas/LegalDocumentStatus'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentVersionListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+    post:
+      operationId: LegalDocumentsAdmin_createVersion
+      summary: Create document version
+      description: Create a new version (as draft)
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalDocumentVersionResponse'
+      tags:
+        - Legal Documents (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLegalDocumentVersionRequest'
+        description: Version data
+  /v1/admin/legal-documents/{documentId}/versions/{versionId}:
+    get:
+      operationId: LegalDocumentsAdmin_getVersion
+      summary: Get document version
+      description: Get a specific version
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: versionId
+          in: path
+          required: true
+          description: Version ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentVersionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+    patch:
+      operationId: LegalDocumentsAdmin_updateVersion
+      summary: Update document version
+      description: Update a draft version
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: versionId
+          in: path
+          required: true
+          description: Version ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentVersionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLegalDocumentVersionRequest'
+        description: Updated data
+  /v1/admin/legal-documents/{documentId}/versions/{versionId}/preview:
+    get:
+      operationId: LegalDocumentsAdmin_previewVersion
+      summary: Preview document version
+      description: Preview a version (render without publishing)
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: versionId
+          in: path
+          required: true
+          description: Version ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentVersionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+  /v1/admin/legal-documents/{documentId}/versions/{versionId}/publish:
+    post:
+      operationId: LegalDocumentsAdmin_publishVersion
+      summary: Publish document version
+      description: Publish a version (makes it active, archives previous)
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: versionId
+          in: path
+          required: true
+          description: Version ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentVersionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishVersionRequest'
+        description: Publish options
+  /v1/admin/legal-documents/{documentId}/versions/{versionId}/unpublish:
+    post:
+      operationId: LegalDocumentsAdmin_unpublishVersion
+      summary: Unpublish document version
+      description: Unpublish a version (revert to previous or no active)
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: Document ID
+          schema:
+            type: string
+        - name: versionId
+          in: path
+          required: true
+          description: Version ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentVersionResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Admin)
   /v1/admin/plans:
     get:
       operationId: SubscriptionPlansAdmin_list
@@ -475,6 +994,125 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Subscriptions
+  /v1/legal:
+    get:
+      operationId: LegalDocumentsPublic_listActive
+      summary: List active legal documents
+      description: List all active legal documents
+      parameters:
+        - name: locale
+          in: query
+          required: false
+          description: Filter by locale (uses user preference if not specified)
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ActiveLegalDocumentsListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Public)
+  /v1/legal/accept:
+    post:
+      operationId: LegalDocumentsPublic_accept
+      summary: Accept legal document
+      description: Accept a legal document
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/LegalDocumentAcceptanceResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Public)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptLegalDocumentRequest'
+        description: Acceptance data
+  /v1/legal/my-acceptances:
+    get:
+      operationId: LegalDocumentsPublic_getMyAcceptances
+      summary: Get my acceptances
+      description: Get current user's acceptance history
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/MyAcceptancesResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Public)
+  /v1/legal/pending:
+    get:
+      operationId: LegalDocumentsPublic_checkPending
+      summary: Check pending acceptances
+      description: Check if user has pending documents to accept
+      parameters:
+        - name: locale
+          in: query
+          required: false
+          description: Locale override
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PendingAcceptancesResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Public)
+  /v1/legal/{documentType}:
+    get:
+      operationId: LegalDocumentsPublic_getActive
+      summary: Get active legal document
+      description: Get the active version of a specific document type
+      parameters:
+        - name: documentType
+          in: path
+          required: true
+          description: Document type
+          schema:
+            $ref: '#/components/schemas/LegalDocumentType'
+        - name: locale
+          in: query
+          required: false
+          description: Locale override
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ActiveLegalDocumentResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Legal Documents (Public)
   /v1/migration/status:
     get:
       operationId: Migration_getStatus
@@ -5586,6 +6224,20 @@ paths:
         description: Webhook payload
 components:
   schemas:
+    AcceptLegalDocumentRequest:
+      type: object
+      required:
+        - documentType
+        - versionId
+      properties:
+        documentType:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentType'
+          description: Document type being accepted
+        versionId:
+          type: string
+          description: Version ID being accepted
+      description: Record user acceptance
     AcknowledgeAnnouncementResponse:
       type: object
       required:
@@ -5643,6 +6295,97 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Active context response
+    ActiveLegalDocumentResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Document ID
+            type:
+              allOf:
+                - $ref: '#/components/schemas/LegalDocumentType'
+              description: Document type
+            versionId:
+              type: string
+              description: Version ID
+            version:
+              type: integer
+              format: int32
+              description: Version number
+            title:
+              type: string
+              description: Title
+            content:
+              type: string
+              description: Content
+            publishedAt:
+              type: string
+              format: date-time
+              description: When published
+            hasAccepted:
+              type: boolean
+              description: Whether user has accepted this version
+            acceptedAt:
+              type: string
+              format: date-time
+              description: When user accepted (if applicable)
+          required:
+            - id
+            - type
+            - versionId
+            - version
+            - title
+            - content
+            - publishedAt
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Active public document response (for users)
+    ActiveLegalDocumentsListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Document ID
+              type:
+                allOf:
+                  - $ref: '#/components/schemas/LegalDocumentType'
+                description: Document type
+              versionId:
+                type: string
+                description: Version ID
+              title:
+                type: string
+                description: Title
+              publishedAt:
+                type: string
+                format: date-time
+                description: When published
+              hasAccepted:
+                type: boolean
+                description: Whether user has accepted
+            required:
+              - id
+              - type
+              - versionId
+              - title
+              - publishedAt
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: List of active documents for public consumption
     Announcement:
       type: object
       required:
@@ -6706,6 +7449,61 @@ components:
             - $ref: '#/components/schemas/JobMetadata'
           description: Job metadata (references, format, etc.)
       description: Request to create a new job
+    CreateLegalDocumentRequest:
+      type: object
+      required:
+        - type
+        - title
+        - content
+      properties:
+        type:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentType'
+          description: Document type
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: URL-friendly slug (auto-generated if not provided)
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+          description: Locale/language code
+          example: en
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Initial version title
+        content:
+          type: string
+          minLength: 1
+          description: Initial version content
+      description: Create a new legal document
+    CreateLegalDocumentVersionRequest:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Version title
+        content:
+          type: string
+          minLength: 1
+          description: Full content
+        changelog:
+          type: string
+          maxLength: 2000
+          description: Summary of changes
+        requiresReAcceptance:
+          type: boolean
+          description: Whether users must re-accept
+      description: Create a new version of a document
     CreatePlanRequest:
       type: object
       required:
@@ -7408,6 +8206,30 @@ components:
         - published
         - archived
       description: Post status enum
+    ExportAcceptancesRequest:
+      type: object
+      properties:
+        documentId:
+          type: string
+          description: Document ID to export acceptances for
+        versionId:
+          type: string
+          description: Version ID to export acceptances for
+        startDate:
+          type: string
+          format: date-time
+          description: Start date filter
+        endDate:
+          type: string
+          format: date-time
+          description: End date filter
+        format:
+          type: string
+          enum:
+            - csv
+            - json
+          description: Export format
+      description: Export acceptances request (for compliance)
     ExportRequest:
       type: object
       properties:
@@ -7841,6 +8663,382 @@ components:
         - failed
         - cancelled
       description: Job status
+    LegalDocument:
+      type: object
+      required:
+        - id
+        - type
+        - slug
+        - locale
+        - status
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique document identifier
+          example: ldoc_abc123
+        type:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentType'
+          description: Document type
+        slug:
+          type: string
+          description: URL-friendly slug
+          example: terms-of-service
+        locale:
+          type: string
+          description: Locale/language code (ISO 639-1)
+          example: en
+        status:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentStatus'
+          description: Current status
+        activeVersionId:
+          type: string
+          description: Currently active version ID (if published)
+        createdBy:
+          type: string
+          description: User who created this document
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        deletedAt:
+          type: string
+          format: date-time
+          description: Soft delete timestamp
+      description: Legal document metadata (container for versions)
+    LegalDocumentAcceptance:
+      type: object
+      required:
+        - id
+        - userId
+        - versionId
+        - documentId
+        - documentType
+        - acceptedAt
+      properties:
+        id:
+          type: string
+          description: Unique acceptance identifier
+          example: ldacc_def456
+        userId:
+          type: string
+          description: User who accepted
+        versionId:
+          type: string
+          description: Version that was accepted
+        documentId:
+          type: string
+          description: Document ID (denormalized for queries)
+        documentType:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentType'
+          description: Document type (denormalized for queries)
+        acceptedAt:
+          type: string
+          format: date-time
+          description: When the user accepted
+        ipAddress:
+          type: string
+          description: IP address at time of acceptance
+          example: 192.168.1.1
+        userAgent:
+          type: string
+          description: User agent string at time of acceptance
+      description: User acceptance record for compliance tracking
+    LegalDocumentAcceptanceListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalDocumentAcceptance'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Acceptance list response
+    LegalDocumentAcceptanceResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/LegalDocumentAcceptance'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Acceptance response
+    LegalDocumentAuditLog:
+      type: object
+      required:
+        - id
+        - documentId
+        - action
+        - actorId
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Unique log identifier
+        documentId:
+          type: string
+          description: Document ID
+        versionId:
+          type: string
+          description: Version ID (if applicable)
+        action:
+          type: string
+          description: Action performed
+          example: version.published
+        actorId:
+          type: string
+          description: User who performed the action
+        actorName:
+          type: string
+          description: Actor name (denormalized)
+        changes:
+          type: string
+          description: JSON of changes made
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp
+      description: Audit log entry for document changes
+    LegalDocumentAuditLogListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalDocumentAuditLog'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Audit log list response
+    LegalDocumentListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalDocumentWithVersion'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Legal document list response
+    LegalDocumentResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/LegalDocument'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single legal document response
+    LegalDocumentStatus:
+      type: string
+      enum:
+        - draft
+        - published
+        - archived
+      description: Status of a legal document or version
+    LegalDocumentType:
+      type: string
+      enum:
+        - terms_of_service
+        - privacy_policy
+        - cookie_policy
+        - eula
+        - community_guidelines
+      description: Type of legal document
+    LegalDocumentVersion:
+      type: object
+      required:
+        - id
+        - documentId
+        - version
+        - title
+        - content
+        - status
+        - requiresReAcceptance
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique version identifier
+          example: ldver_xyz789
+        documentId:
+          type: string
+          description: Parent document ID
+        version:
+          type: integer
+          format: int32
+          description: 'Version number (semantic: 1, 2, 3...)'
+          example: 1
+        title:
+          type: string
+          description: Version title
+          example: Terms of Service v1.0
+        content:
+          type: string
+          description: Full content (Markdown supported)
+        changelog:
+          type: string
+          description: Summary of changes from previous version
+        status:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentStatus'
+          description: Version status
+        publishedAt:
+          type: string
+          format: date-time
+          description: When this version was published
+        scheduledAt:
+          type: string
+          format: date-time
+          description: Scheduled publish time (for future publishing)
+        requiresReAcceptance:
+          type: boolean
+          description: Whether users must re-accept when this version is published
+        createdBy:
+          type: string
+          description: User who created this version
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        archivedAt:
+          type: string
+          format: date-time
+          description: Archive timestamp
+      description: Legal document version with content
+    LegalDocumentVersionListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LegalDocumentVersion'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Version list response
+    LegalDocumentVersionResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/LegalDocumentVersion'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Single version response
+    LegalDocumentWithVersion:
+      type: object
+      required:
+        - id
+        - type
+        - slug
+        - locale
+        - status
+        - createdBy
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Unique document identifier
+          example: ldoc_abc123
+        type:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentType'
+          description: Document type
+        slug:
+          type: string
+          description: URL-friendly slug
+          example: terms-of-service
+        locale:
+          type: string
+          description: Locale/language code (ISO 639-1)
+          example: en
+        status:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentStatus'
+          description: Current status
+        activeVersionId:
+          type: string
+          description: Currently active version ID (if published)
+        createdBy:
+          type: string
+          description: User who created this document
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        deletedAt:
+          type: string
+          format: date-time
+          description: Soft delete timestamp
+        activeVersion:
+          allOf:
+            - $ref: '#/components/schemas/LegalDocumentVersion'
+          description: Active version details
+        versionCount:
+          type: integer
+          format: int32
+          description: Total version count
+      description: Legal document with active version details
+    LegalDocumentWithVersionResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/LegalDocumentWithVersion'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Document with version response
     MarkAllReadResponse:
       type: object
       required:
@@ -7948,6 +9146,29 @@ components:
             type: string
           description: Steps to complete the migration
       description: Migration status for an API version
+    MyAcceptancesResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            userId:
+              type: string
+              description: User ID
+            acceptances:
+              type: array
+              items:
+                $ref: '#/components/schemas/LegalDocumentAcceptance'
+              description: List of acceptances
+          required:
+            - userId
+            - acceptances
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: User's acceptance history
     Notification:
       type: object
       required:
@@ -8306,6 +9527,29 @@ components:
           nullable: true
           description: URL for the last page
       description: Pagination links for navigating through paginated results
+    PendingAcceptancesResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: object
+          properties:
+            hasPending:
+              type: boolean
+              description: Whether there are documents requiring acceptance
+            pendingDocuments:
+              type: array
+              items:
+                $ref: '#/components/schemas/LegalDocumentWithVersion'
+              description: List of documents requiring acceptance
+          required:
+            - hasPending
+            - pendingDocuments
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Check for pending acceptances
     Permission:
       type: object
       required:
@@ -8496,6 +9740,14 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Email preview response
+    PublishVersionRequest:
+      type: object
+      properties:
+        scheduledAt:
+          type: string
+          format: date-time
+          description: Schedule for future (optional)
+      description: Publish a version
     ReportColumnConfig:
       type: object
       required:
@@ -9678,6 +10930,40 @@ components:
             - $ref: '#/components/schemas/FileAccess'
           description: New access level
       description: Request to update file properties
+    UpdateLegalDocumentRequest:
+      type: object
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: URL-friendly slug
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 10
+          description: Locale/language code
+      description: Update document metadata
+    UpdateLegalDocumentVersionRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Version title
+        content:
+          type: string
+          minLength: 1
+          description: Full content
+        changelog:
+          type: string
+          maxLength: 2000
+          description: Summary of changes
+        requiresReAcceptance:
+          type: boolean
+          description: Whether users must re-accept
+      description: Update a draft version
     UpdatePlanRequest:
       type: object
       properties:

@@ -142,6 +142,10 @@ const navAdmin = [
         url: "/admin/announcements",
       },
       {
+        title: "Legal Documents",
+        url: "/admin/legal-documents",
+      },
+      {
         title: "Subscription Plans",
         url: "/admin/subscriptions/plans",
       },

@@ -348,6 +348,16 @@ export const zCreateExampleCommentRequest = z.object({
 });
 
 /**
+ * Create a new version of a document
+ */
+export const zCreateLegalDocumentVersionRequest = z.object({
+    title: z.string().min(1).max(200),
+    content: z.string().min(1),
+    changelog: z.optional(z.string().max(2000)),
+    requiresReAcceptance: z.optional(z.boolean())
+});
+
+/**
  * Create subscription request
  */
 export const zCreateSubscriptionRequest = z.object({
@@ -537,6 +547,17 @@ export const zExamplePost = z.object({
 });
 
 /**
+ * Export acceptances request (for compliance)
+ */
+export const zExportAcceptancesRequest = z.object({
+    documentId: z.optional(z.string()),
+    versionId: z.optional(z.string()),
+    startDate: z.optional(z.iso.datetime()),
+    endDate: z.optional(z.iso.datetime()),
+    format: z.optional(z.enum(['csv', 'json']))
+});
+
+/**
  * File access level
  */
 export const zFileAccess = z.enum(['private', 'public']);
@@ -626,6 +647,127 @@ export const zJob = z.object({
     startedAt: z.optional(z.iso.datetime()),
     completedAt: z.optional(z.iso.datetime()),
     estimatedCompletion: z.optional(z.iso.datetime())
+});
+
+/**
+ * Audit log entry for document changes
+ */
+export const zLegalDocumentAuditLog = z.object({
+    id: z.string(),
+    documentId: z.string(),
+    versionId: z.optional(z.string()),
+    action: z.string(),
+    actorId: z.string(),
+    actorName: z.optional(z.string()),
+    changes: z.optional(z.string()),
+    createdAt: z.iso.datetime()
+});
+
+/**
+ * Status of a legal document or version
+ */
+export const zLegalDocumentStatus = z.enum([
+    'draft',
+    'published',
+    'archived'
+]);
+
+/**
+ * Type of legal document
+ */
+export const zLegalDocumentType = z.enum([
+    'terms_of_service',
+    'privacy_policy',
+    'cookie_policy',
+    'eula',
+    'community_guidelines'
+]);
+
+/**
+ * Record user acceptance
+ */
+export const zAcceptLegalDocumentRequest = z.object({
+    documentType: zLegalDocumentType,
+    versionId: z.string()
+});
+
+/**
+ * Create a new legal document
+ */
+export const zCreateLegalDocumentRequest = z.object({
+    type: zLegalDocumentType,
+    slug: z.optional(z.string().min(1).max(100)),
+    locale: z.optional(z.string().min(2).max(10)),
+    title: z.string().min(1).max(200),
+    content: z.string().min(1)
+});
+
+/**
+ * Legal document metadata (container for versions)
+ */
+export const zLegalDocument = z.object({
+    id: z.string(),
+    type: zLegalDocumentType,
+    slug: z.string(),
+    locale: z.string(),
+    status: zLegalDocumentStatus,
+    activeVersionId: z.optional(z.string()),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    deletedAt: z.optional(z.iso.datetime())
+});
+
+/**
+ * User acceptance record for compliance tracking
+ */
+export const zLegalDocumentAcceptance = z.object({
+    id: z.string(),
+    userId: z.string(),
+    versionId: z.string(),
+    documentId: z.string(),
+    documentType: zLegalDocumentType,
+    acceptedAt: z.iso.datetime(),
+    ipAddress: z.optional(z.string()),
+    userAgent: z.optional(z.string())
+});
+
+/**
+ * Legal document version with content
+ */
+export const zLegalDocumentVersion = z.object({
+    id: z.string(),
+    documentId: z.string(),
+    version: z.int(),
+    title: z.string(),
+    content: z.string(),
+    changelog: z.optional(z.string()),
+    status: zLegalDocumentStatus,
+    publishedAt: z.optional(z.iso.datetime()),
+    scheduledAt: z.optional(z.iso.datetime()),
+    requiresReAcceptance: z.boolean(),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    archivedAt: z.optional(z.iso.datetime())
+});
+
+/**
+ * Legal document with active version details
+ */
+export const zLegalDocumentWithVersion = z.object({
+    id: z.string(),
+    type: zLegalDocumentType,
+    slug: z.string(),
+    locale: z.string(),
+    status: zLegalDocumentStatus,
+    activeVersionId: z.optional(z.string()),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    deletedAt: z.optional(z.iso.datetime()),
+    activeVersion: z.optional(zLegalDocumentVersion),
+    versionCount: z.optional(z.int())
 });
 
 /**
@@ -943,6 +1085,13 @@ export const zPreviewEmailRequest = z.object({
 });
 
 /**
+ * Publish a version
+ */
+export const zPublishVersionRequest = z.object({
+    scheduledAt: z.optional(z.iso.datetime())
+});
+
+/**
  * Column configuration for reports
  */
 export const zReportColumnConfig = z.object({
@@ -1097,6 +1246,39 @@ export const zAcknowledgeAnnouncementResponse = z.object({
  */
 export const zActiveContextResponse = z.object({
     data: zActiveContext,
+    meta: zResponseMeta
+});
+
+/**
+ * Active public document response (for users)
+ */
+export const zActiveLegalDocumentResponse = z.object({
+    data: z.object({
+        id: z.string(),
+        type: zLegalDocumentType,
+        versionId: z.string(),
+        version: z.int(),
+        title: z.string(),
+        content: z.string(),
+        publishedAt: z.iso.datetime(),
+        hasAccepted: z.optional(z.boolean()),
+        acceptedAt: z.optional(z.iso.datetime())
+    }),
+    meta: zResponseMeta
+});
+
+/**
+ * List of active documents for public consumption
+ */
+export const zActiveLegalDocumentsListResponse = z.object({
+    data: z.array(z.object({
+        id: z.string(),
+        type: zLegalDocumentType,
+        versionId: z.string(),
+        title: z.string(),
+        publishedAt: z.iso.datetime(),
+        hasAccepted: z.optional(z.boolean())
+    })),
     meta: zResponseMeta
 });
 
@@ -1318,6 +1500,74 @@ export const zJobResponse = z.object({
 });
 
 /**
+ * Acceptance list response
+ */
+export const zLegalDocumentAcceptanceListResponse = z.object({
+    data: z.array(zLegalDocumentAcceptance),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Acceptance response
+ */
+export const zLegalDocumentAcceptanceResponse = z.object({
+    data: zLegalDocumentAcceptance,
+    meta: zResponseMeta
+});
+
+/**
+ * Audit log list response
+ */
+export const zLegalDocumentAuditLogListResponse = z.object({
+    data: z.array(zLegalDocumentAuditLog),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Legal document list response
+ */
+export const zLegalDocumentListResponse = z.object({
+    data: z.array(zLegalDocumentWithVersion),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single legal document response
+ */
+export const zLegalDocumentResponse = z.object({
+    data: zLegalDocument,
+    meta: zResponseMeta
+});
+
+/**
+ * Version list response
+ */
+export const zLegalDocumentVersionListResponse = z.object({
+    data: z.array(zLegalDocumentVersion),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single version response
+ */
+export const zLegalDocumentVersionResponse = z.object({
+    data: zLegalDocumentVersion,
+    meta: zResponseMeta
+});
+
+/**
+ * Document with version response
+ */
+export const zLegalDocumentWithVersionResponse = z.object({
+    data: zLegalDocumentWithVersion,
+    meta: zResponseMeta
+});
+
+/**
  * Mark all as read response
  */
 export const zMarkAllReadResponse = z.object({
@@ -1350,6 +1600,17 @@ export const zMarkViewedResponse = z.object({
 });
 
 /**
+ * User's acceptance history
+ */
+export const zMyAcceptancesResponse = z.object({
+    data: z.object({
+        userId: z.string(),
+        acceptances: z.array(zLegalDocumentAcceptance)
+    }),
+    meta: zResponseMeta
+});
+
+/**
  * Notification collection response
  */
 export const zNotificationListResponse = z.object({
@@ -1371,6 +1632,17 @@ export const zNotificationPreferencesResponse = z.object({
  */
 export const zNotificationResponse = z.object({
     data: zNotification,
+    meta: zResponseMeta
+});
+
+/**
+ * Check for pending acceptances
+ */
+export const zPendingAcceptancesResponse = z.object({
+    data: z.object({
+        hasPending: z.boolean(),
+        pendingDocuments: z.array(zLegalDocumentWithVersion)
+    }),
     meta: zResponseMeta
 });
 
@@ -1757,6 +2029,24 @@ export const zUpdateExamplePostRequest = z.object({
  */
 export const zUpdateFileRequest = z.object({
     access: z.optional(zFileAccess)
+});
+
+/**
+ * Update document metadata
+ */
+export const zUpdateLegalDocumentRequest = z.object({
+    slug: z.optional(z.string().min(1).max(100)),
+    locale: z.optional(z.string().min(2).max(10))
+});
+
+/**
+ * Update a draft version
+ */
+export const zUpdateLegalDocumentVersionRequest = z.object({
+    title: z.optional(z.string().min(1).max(200)),
+    content: z.optional(z.string().min(1)),
+    changelog: z.optional(z.string().max(2000)),
+    requiresReAcceptance: z.optional(z.boolean())
 });
 
 /**
@@ -2378,6 +2668,257 @@ export const zCouponsAdminUpdateResponse = z.union([
     zErrorResponse
 ]);
 
+export const zLegalDocumentsAdminListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(20),
+        type: z.optional(zLegalDocumentType),
+        status: z.optional(zLegalDocumentStatus),
+        locale: z.optional(z.string()),
+        includeDeleted: z.optional(z.boolean()).default(false)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminListResponse = z.union([
+    zLegalDocumentListResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminCreateData = z.object({
+    body: zCreateLegalDocumentRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+export const zLegalDocumentsAdminCreateResponse = z.union([
+    zErrorResponse,
+    zLegalDocumentWithVersionResponse
+]);
+
+export const zLegalDocumentsAdminExportAcceptancesData = z.object({
+    body: zExportAcceptancesRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminExportAcceptancesResponse = z.union([
+    zAsyncJobResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminDeleteResponse = z.union([
+    zSoftDeleteResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminGetResponse = z.union([
+    zLegalDocumentWithVersionResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminUpdateData = z.object({
+    body: zUpdateLegalDocumentRequest,
+    path: z.object({
+        documentId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminUpdateResponse = z.union([
+    zLegalDocumentResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminListAcceptancesData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string()
+    }),
+    query: z.optional(z.object({
+        versionId: z.optional(z.string()),
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminListAcceptancesResponse = z.union([
+    zLegalDocumentAcceptanceListResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminGetAuditLogData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(50)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminGetAuditLogResponse = z.union([
+    zLegalDocumentAuditLogListResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminListVersionsData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(20),
+        status: z.optional(zLegalDocumentStatus)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminListVersionsResponse = z.union([
+    zLegalDocumentVersionListResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminCreateVersionData = z.object({
+    body: zCreateLegalDocumentVersionRequest,
+    path: z.object({
+        documentId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zLegalDocumentsAdminCreateVersionResponse = z.union([
+    zErrorResponse,
+    zLegalDocumentVersionResponse
+]);
+
+export const zLegalDocumentsAdminGetVersionData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string(),
+        versionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminGetVersionResponse = z.union([
+    zLegalDocumentVersionResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminUpdateVersionData = z.object({
+    body: zUpdateLegalDocumentVersionRequest,
+    path: z.object({
+        documentId: z.string(),
+        versionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminUpdateVersionResponse = z.union([
+    zLegalDocumentVersionResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminPreviewVersionData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string(),
+        versionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminPreviewVersionResponse = z.union([
+    zLegalDocumentVersionResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminPublishVersionData = z.object({
+    body: z.optional(zPublishVersionRequest),
+    path: z.object({
+        documentId: z.string(),
+        versionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminPublishVersionResponse = z.union([
+    zLegalDocumentVersionResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsAdminUnpublishVersionData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentId: z.string(),
+        versionId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsAdminUnpublishVersionResponse = z.union([
+    zLegalDocumentVersionResponse,
+    zErrorResponse
+]);
+
 export const zSubscriptionPlansAdminListData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -2457,6 +2998,84 @@ export const zSubscriptionPlansAdminUpdateData = z.object({
  */
 export const zSubscriptionPlansAdminUpdateResponse = z.union([
     zPlanResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsPublicListActiveData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsPublicListActiveResponse = z.union([
+    zActiveLegalDocumentsListResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsPublicAcceptData = z.object({
+    body: zAcceptLegalDocumentRequest,
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsPublicAcceptResponse = z.union([
+    zLegalDocumentAcceptanceResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsPublicGetMyAcceptancesData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsPublicGetMyAcceptancesResponse = z.union([
+    zMyAcceptancesResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsPublicCheckPendingData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsPublicCheckPendingResponse = z.union([
+    zPendingAcceptancesResponse,
+    zErrorResponse
+]);
+
+export const zLegalDocumentsPublicGetActiveData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        documentType: zLegalDocumentType
+    }),
+    query: z.optional(z.object({
+        locale: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zLegalDocumentsPublicGetActiveResponse = z.union([
+    zActiveLegalDocumentResponse,
     zErrorResponse
 ]);
 

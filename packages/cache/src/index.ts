@@ -11,4 +11,5 @@ export {
   buildAuthzKey,
   buildAuthzPatternForOrg,
   buildAuthzPatternForUser,
+  buildFeatureFlagKey,
 } from "./utils/key-builder";

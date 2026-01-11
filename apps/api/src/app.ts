@@ -21,6 +21,7 @@ import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
 import { jobsModule } from "./modules/jobs";
+import { legalDocumentsModule } from "./modules/legal-documents";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
 import { reportsModule } from "./modules/reports";
@@ -424,6 +425,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(reportsModule, { prefix: "/v1/orgs" });
   await app.register(schedulesModule, { prefix: "/v1/orgs" });
   await app.register(subscriptionsModule, { prefix: "/v1" });
+  await app.register(legalDocumentsModule, { prefix: "/v1" });
 
   return app;
 }

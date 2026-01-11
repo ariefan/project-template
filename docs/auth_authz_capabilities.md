@@ -51,8 +51,8 @@ sequenceDiagram
 
 *   **Package:** `packages/auth`
 *   **Configuration:** `packages/auth/src/index.ts`
-*   **Database Adapter:** Drizzle ORM (`packages/db`)
-*   **Frontend Client:** `apps/web/lib/auth.ts` (Auto-generated client)
+*   **Database Adapter:** Drizzle ORM (`packages/db`) — uses PostgreSQL in production, SQLite for tests
+*   **Frontend Client:** `apps/web/lib/auth.ts` (wrapper around `@workspace/auth/client`)
 
 #### Usage Example (Frontend)
 
@@ -127,7 +127,7 @@ flowchart TD
 *   **Plugin:** `apps/api/src/plugins/authorization.ts`
 
 #### Policy Model
-The system uses a `(sub, role, app, tenant, obj, act)` request structure.
+The system uses a `(sub, role, app, tenant, obj, act, resourceOwnerId)` request structure — 7 parameters to support owner-based permission checks.
 *   **User Assignment:** Stored in `user_role_assignments` table (e.g., User A is "Admin" in Org B).
 *   **Role Definitions:** Stored in `casbin_rules` table (e.g., "Admin" can "delete" "posts").
 

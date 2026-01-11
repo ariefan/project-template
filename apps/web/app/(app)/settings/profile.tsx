@@ -5,25 +5,54 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@workspace/ui/components/input-otp";
 import { Label } from "@workspace/ui/components/label";
 import {
+  type CompressedFileWithPreview,
+  ImageCompressor,
+} from "@workspace/ui/composed/image-compressor";
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import {
+  Camera,
+  Check,
   Loader2,
   MailCheck,
   MailX,
-  RefreshCw,
-  Upload,
+  Trash2,
   User as UserIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { authClient, useSession } from "@/lib/auth";
+import { authClient, useActiveOrganization, useSession } from "@/lib/auth";
+import { env } from "@/lib/env";
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Component requires multiple state handlers
 export function ProfileTab() {
   const { data: session, isPending: sessionLoading } = useSession();
+
+  // Derived state for phone button text
+  const phoneButtonText = session?.user?.phoneNumberVerified
+    ? "Update"
+    : "Verify";
+  const { data: organization } = useActiveOrganization();
   const user = session?.user;
 
   // Form state
@@ -37,6 +66,11 @@ export function ProfileTab() {
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
   // Initialize form when user loads
   useEffect(() => {
@@ -47,6 +81,15 @@ export function ProfileTab() {
       setImage(user.image ?? null);
     }
   }, [user]);
+
+  // Prevent flash or redirect if session is loading
+  if (sessionLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   // Save basic profile (name, image)
   async function handleProfileSave() {
@@ -96,11 +139,33 @@ export function ProfileTab() {
         phoneNumber: phoneNumber || undefined,
       });
       toast.success("Verification code sent to your phone");
+      setIsOtpDialogOpen(true);
     } catch (error) {
       toast.error("Failed to update phone number");
       console.error(error);
     } finally {
       setIsUpdatingPhone(false);
+    }
+  }
+
+  // Mock OTP verification
+  async function handleOtpVerify() {
+    if (otpValue.length !== 6) {
+      toast.error("Please enter a 6-digit code");
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      // In the future, this would call authClient.phoneNumber.verify({ phoneNumber, code: otpValue })
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast.success("Phone number verified successfully! (Mock)");
+      setIsOtpDialogOpen(false);
+    } catch (error) {
+      toast.error("Incorrect verification code");
+      console.error(error);
+    } finally {
+      setIsVerifyingOtp(false);
     }
   }
 
@@ -119,268 +184,343 @@ export function ProfileTab() {
     }
   }
 
-  // Handle image upload
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) {
+  // Handle image upload to storage
+  const uploadAvatar = async (files: CompressedFileWithPreview[]) => {
+    const file = files[0];
+    if (!(file && organization?.id)) {
+      if (!organization?.id) {
+        toast.error("No active organization found for storage");
+      }
       return;
     }
 
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
-      return;
-    }
+    setIsUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", file);
 
-    // Check file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("File must be an image");
-      return;
-    }
+    try {
+      const response = await new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        xhr.open(
+          "POST",
+          `${env.NEXT_PUBLIC_API_URL}/v1/orgs/${organization.id}/files`
+        );
 
-    // Convert to base64
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setImage(base64);
-    };
-    reader.readAsDataURL(file);
-  }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              // Assuming the API returns the file object with a URL or ID that can be turned into a URL
+              // Based on storage-tester, we'll need to get the download URL or public URL
+              // For now, let's assume it returns { data: { id, url, ... } }
+              resolve(
+                data.data?.url ||
+                  `${env.NEXT_PUBLIC_API_URL}/v1/orgs/${organization.id}/files/${data.data?.id}/download`
+              );
+            } catch {
+              reject(new Error("Failed to parse upload response"));
+            }
+          } else {
+            reject(new Error("Upload failed"));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.send(formData);
+      });
+
+      setImage(response);
+      setIsImageDialogOpen(false);
+      toast.success("Image uploaded. Don't forget to save changes!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to upload image"
+      );
+      console.error(error);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   // Remove image
   function handleRemoveImage() {
     setImage(null);
   }
 
-  if (sessionLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
-  }
-
   const isEmailVerified = user?.emailVerified ?? false;
 
   return (
-    <div className="space-y-6">
-      {/* Profile Image Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Picture</CardTitle>
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Profile Settings</CardTitle>
           <CardDescription>
-            Add a profile picture to personalize your account
+            Manage your personal information and profile picture
           </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-6">
-            {/* Avatar Preview */}
-            <div className="relative h-24 w-24 overflow-hidden rounded-full bg-muted">
-              {image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                // biome-ignore lint/correctness/useImageSize: User uploaded image, size unknown
-                // biome-ignore lint/performance/noImgElement: User uploaded image, dynamic source
-                <img
-                  alt={name}
-                  className="h-full w-full object-cover"
-                  src={image}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center font-bold text-3xl text-muted-foreground">
-                  {name?.charAt(0).toUpperCase() ?? (
-                    <UserIcon className="h-8 w-8" />
-                  )}
-                </div>
-              )}
-            </div>
+        </div>
+      </CardHeader>
 
-            {/* Upload Buttons */}
-            <div className="flex flex-col gap-2">
-              <div>
-                <Label
-                  className="cursor-pointer text-foreground text-sm hover:underline"
-                  htmlFor="image-upload"
-                >
-                  <Upload className="mr-1 inline h-4 w-4" />
-                  Upload new image
-                </Label>
-                <Input
-                  accept="image/*"
-                  className="hidden"
-                  id="image-upload"
-                  onChange={handleImageUpload}
-                  type="file"
-                />
-                <p className="text-muted-foreground text-xs">
-                  JPG, PNG or GIF. Max 5MB.
-                </p>
+      <CardContent>
+        <div className="flex flex-col gap-10 md:flex-row">
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="group relative">
+              <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-background bg-muted shadow-xl ring-1 ring-muted transition-transform duration-300 group-hover:scale-[1.02]">
+                {image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  // biome-ignore lint/performance/noImgElement: User uploaded avatar
+                  <img
+                    alt={name}
+                    className="h-full w-full object-cover"
+                    height={128}
+                    src={image}
+                    width={128}
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/30 font-bold text-4xl text-primary/40">
+                    {name?.charAt(0).toUpperCase() || (
+                      <UserIcon className="h-12 w-12" />
+                    )}
+                  </div>
+                )}
               </div>
-              {image && (
-                <Button
-                  onClick={handleRemoveImage}
-                  size="sm"
-                  type="button"
-                  variant="ghost"
-                >
-                  Remove
-                </Button>
-              )}
+
+              <Dialog
+                onOpenChange={setIsImageDialogOpen}
+                open={isImageDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    className="absolute right-0 bottom-0 h-9 w-9 rounded-full border-2 border-background p-0 shadow-lg"
+                    size="icon"
+                    variant="secondary"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Update Profile Picture</DialogTitle>
+                    <DialogDescription>
+                      Upload, crop, and compress your profile picture
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <ImageCompressor
+                      defaultOptions={{
+                        maxSizeMB: 0.5,
+                        maxWidthOrHeight: 400,
+                      }}
+                      isUploading={isUploadingImage}
+                      onUpload={uploadAvatar}
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
+
+            {image && (
+              <Button
+                className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={handleRemoveImage}
+                size="sm"
+                variant="ghost"
+              >
+                <Trash2 className="mr-2 h-3.5 w-3.5" />
+                Remove Photo
+              </Button>
+            )}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Basic Information Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Update your personal information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Name Field */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">Display Name</Label>
-              <Input
-                id="name"
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                value={name}
-              />
-              <p className="text-muted-foreground text-xs">
-                This is your public display name
-              </p>
+          {/* Form Section */}
+          <div className="flex-1 space-y-6">
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                  value={name}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground text-sm">
+                      @
+                    </span>
+                    <Input
+                      className="pl-7"
+                      id="username"
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="username"
+                      value={username}
+                    />
+                  </div>
+                  <Button
+                    disabled={isUpdatingUsername || username === user?.username}
+                    onClick={handleUsernameUpdate}
+                    type="button"
+                    variant="outline"
+                  >
+                    {isUpdatingUsername ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Apply"
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
 
-            {/* Username Field */}
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email Address</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground text-sm">
-                    @
-                  </span>
                   <Input
-                    className="pl-7"
-                    id="username"
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="username"
-                    value={username}
+                    disabled
+                    id="email"
+                    type="email"
+                    value={user?.email ?? ""}
                   />
+                  <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                    {isEmailVerified ? (
+                      <div className="flex items-center gap-1 font-semibold text-green-600 text-xs">
+                        <MailCheck className="h-3.5 w-3.5" />
+                        <span>VERIFIED</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 font-semibold text-amber-600 text-xs">
+                        <MailX className="h-3.5 w-3.5" />
+                        <span>UNVERIFIED</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {!isEmailVerified && (
+                  <Button
+                    disabled={isVerifyingEmail}
+                    onClick={handleResendVerification}
+                    type="button"
+                    variant="outline"
+                  >
+                    {isVerifyingEmail ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Resend"
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="phone"
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+1234567890"
+                  type="tel"
+                  value={phoneNumber}
+                />
                 <Button
-                  disabled={isUpdatingUsername}
-                  onClick={handleUsernameUpdate}
-                  size="sm"
+                  disabled={
+                    isUpdatingPhone || phoneNumber === user?.phoneNumber
+                  }
+                  onClick={handlePhoneUpdate}
                   type="button"
                   variant="outline"
                 >
-                  {isUpdatingUsername ? (
+                  {isUpdatingPhone ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    "Update"
+                    phoneButtonText
                   )}
                 </Button>
               </div>
-              <p className="text-muted-foreground text-xs">
-                Unique identifier for mentions and links
-              </p>
-            </div>
-          </div>
-
-          {/* Email Field with Verification Status */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <div className="flex gap-2">
-              <Input
-                className="flex-1"
-                disabled
-                id="email"
-                type="email"
-                value={user?.email ?? ""}
-              />
-              {isEmailVerified ? (
-                <div className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-green-600 text-sm">
-                  <MailCheck className="h-4 w-4" />
-                  <span>Verified</span>
-                </div>
-              ) : (
-                <Button
-                  disabled={isVerifyingEmail}
-                  onClick={handleResendVerification}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  {isVerifyingEmail ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <RefreshCw className="mr-1 h-4 w-4" />
-                      Verify
-                    </>
-                  )}
-                </Button>
+              {user?.phoneNumberVerified && (
+                <p className="flex items-center gap-1 font-medium text-green-600 text-xs">
+                  <Check className="h-3 w-3" />
+                  Phone number is verified
+                </p>
               )}
             </div>
-            {!isEmailVerified && (
-              <p className="flex items-center gap-1.5 text-amber-600 text-sm">
-                <MailX className="h-4 w-4" />
-                Email not verified. Check your inbox or resend verification.
-              </p>
-            )}
           </div>
+        </div>
+      </CardContent>
+      <CardFooter className="flex items-center justify-between border-t py-4">
+        <p className="text-muted-foreground text-xs italic">
+          Profile information is shared across your active organization. Last
+          updated:{" "}
+          {new Date(user?.updatedAt ?? Date.now()).toLocaleDateString()}
+        </p>
+        <Button disabled={isSaving} onClick={handleProfileSave}>
+          {isSaving ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Check className="mr-2 h-4 w-4" />
+          )}
+          Save Changes
+        </Button>
+      </CardFooter>
 
-          {/* Phone Number Field */}
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <div className="flex gap-2">
-              <Input
-                id="phone"
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+1234567890"
-                type="tel"
-                value={phoneNumber}
-              />
-              <Button
-                disabled={isUpdatingPhone}
-                onClick={handlePhoneUpdate}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                {isUpdatingPhone ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Verify"
-                )}
-              </Button>
-            </div>
-            <p className="text-muted-foreground text-xs">
-              Used for SMS login and two-factor authentication
-            </p>
-            {user?.phoneNumberVerified && (
-              <p className="flex items-center gap-1.5 text-green-600 text-sm">
-                <MailCheck className="h-4 w-4" />
-                Phone number verified
-              </p>
-            )}
-          </div>
-
-          {/* Save Button */}
-          <div className="flex items-center gap-4 border-t pt-4">
-            <Button disabled={isSaving} onClick={handleProfileSave}>
-              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
-            </Button>
+      {/* OTP Verification Dialog */}
+      <Dialog onOpenChange={setIsOtpDialogOpen} open={isOtpDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Verify Phone Number</DialogTitle>
+            <DialogDescription>
+              We've sent a 6-digit verification code to {phoneNumber}. Enter it
+              below to verify your number.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center space-y-4 py-6">
+            <InputOTP
+              maxLength={6}
+              onChange={setOtpValue}
+              onComplete={handleOtpVerify}
+              pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+              value={otpValue}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
             <p className="text-muted-foreground text-sm">
-              Changes are saved immediately
+              Didn't receive the code?{" "}
+              <button
+                className="text-primary hover:underline"
+                onClick={handlePhoneUpdate}
+                type="button"
+              >
+                Resend
+              </button>
             </p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          <DialogFooter>
+            <Button
+              className="w-full"
+              disabled={isVerifyingOtp || otpValue.length !== 6}
+              onClick={handleOtpVerify}
+            >
+              {isVerifyingOtp && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Verify Code
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
   );
 }

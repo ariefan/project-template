@@ -35,15 +35,15 @@ interface AuthorizationDeps {
 }
 
 /**
- * Look up user's role from database for a specific app + tenant
- * Returns the role name or null if no role assigned
+ * Look up user's roles from database for a specific app + tenant
+ * Returns array of role names (supports multiple roles per user)
  */
-async function lookupUserRole(
+async function lookupUserRoles(
   userId: string,
   appId: string,
   tenantId: string | null,
   db: Database
-): Promise<string | null> {
+): Promise<string[]> {
   const conditions = [
     eq(userRoleAssignments.userId, userId),
     eq(userRoleAssignments.applicationId, appId),
@@ -61,10 +61,9 @@ async function lookupUserRole(
     })
     .from(userRoleAssignments)
     .innerJoin(roles, eq(userRoleAssignments.roleId, roles.id))
-    .where(and(...conditions))
-    .limit(1);
+    .where(and(...conditions));
 
-  return result[0]?.roleName ?? null;
+  return result.map((r) => r.roleName);
 }
 
 /**
@@ -151,8 +150,8 @@ async function logDenialIfEnabled(
  *
  * Flow:
  * 1. Check cache
- * 2. Look up user's role from DB (user_role_assignments table)
- * 3. Pass resolved role to Casbin for permission evaluation
+ * 2. Look up user's roles from DB (user_role_assignments table)
+ * 3. Pass each role to Casbin for permission evaluation (short-circuit on first allow)
  * 4. Cache result
  */
 async function performAuthorizationCheck(
@@ -165,45 +164,49 @@ async function performAuthorizationCheck(
     return cacheResult.allowed;
   }
 
-  // Look up user's role from DB
-  const role = await lookupUserRole(
+  // Look up user's roles from DB (supports multiple roles)
+  const userRoles = await lookupUserRoles(
     params.userId,
     params.appId,
     params.orgId,
     deps.db
   );
 
-  // No role assigned = no permission
-  if (!role) {
+  // No roles assigned = no permission
+  if (userRoles.length === 0) {
     deps.log.debug(
       { userId: params.userId, appId: params.appId, orgId: params.orgId },
-      "No role found for user in app+tenant"
+      "No roles found for user in app+tenant"
     );
     await logDenialIfEnabled(params, deps);
     await storeInCache(params, false, deps);
     return false;
   }
 
+  // Check each role - short-circuit on first allow
   // Casbin model: (sub, role, app, tenant, obj, act, resourceOwnerId)
-  const allowed = await deps.enforcer.enforce(
-    params.userId,
-    role,
-    params.appId,
-    params.orgId,
-    params.resource,
-    params.action,
-    params.resourceOwnerId ?? ""
-  );
+  for (const role of userRoles) {
+    const allowed = await deps.enforcer.enforce(
+      params.userId,
+      role,
+      params.appId,
+      params.orgId,
+      params.resource,
+      params.action,
+      params.resourceOwnerId ?? ""
+    );
 
-  // Log denial if enabled
-  if (!allowed) {
-    await logDenialIfEnabled(params, deps);
+    if (allowed) {
+      // Store allow in cache and return
+      await storeInCache(params, true, deps);
+      return true;
+    }
   }
 
-  // Store in cache
-  await storeInCache(params, allowed, deps);
-
-  return allowed;
+  // All roles denied - log and cache
+  await logDenialIfEnabled(params, deps);
+  await storeInCache(params, false, deps);
+  return false;
 }
 
 declare module "fastify" {
@@ -261,11 +264,23 @@ declare module "fastify" {
     invalidateOrgAuthzCache(orgId: string): Promise<void>;
 
     /**
-     * Check if an organization has access to a specific feature based on their subscription
-     * @param orgId Organization ID
-     * @param featureKey Feature key to check
+     * Batch authorization check for multiple resources
+     * Optimized for list views where each item may have different owners
+     *
+     * @param userId User ID from better-auth
+     * @param orgId Organization ID (tenant)
+     * @param resource Resource name (posts, comments, etc.)
+     * @param action Action name (read, create, update, delete, manage)
+     * @param resourceOwnerMap Map of resourceId -> ownerId
+     * @returns Map of resourceId -> allowed boolean
      */
-    checkFeature(orgId: string, featureKey: string): Promise<boolean>;
+    batchAuthorize(
+      userId: string,
+      orgId: string,
+      resource: string,
+      action: string,
+      resourceOwnerMap: Map<string, string>
+    ): Promise<Map<string, boolean>>;
   }
 }
 
@@ -349,17 +364,6 @@ function authorizationPlugin(
     }
   );
 
-  // Decorate fastify with feature check method
-  fastify.decorate(
-    "checkFeature",
-    async (orgId: string, featureKey: string): Promise<boolean> => {
-      const { checkFeatureAccess } = await import(
-        "../modules/subscriptions/services/subscriptions.service"
-      );
-      return checkFeatureAccess(orgId, DEFAULT_APPLICATION_ID, featureKey);
-    }
-  );
-
   // Cache invalidation for user in organization
   fastify.decorate(
     "invalidateAuthzCache",
@@ -389,6 +393,107 @@ function authorizationPlugin(
       }
     }
   );
+
+  // Batch authorization for list endpoints
+  // Helper for checking single resource permission
+  const checkSingleResourcePermission = async (
+    userId: string,
+    orgId: string,
+    resource: string,
+    action: string,
+    resourceId: string,
+    ownerId: string,
+    userRoles: string[]
+  ): Promise<boolean> => {
+    // Check cache first
+    const cacheKey = buildAuthzKey(userId, orgId, resource, action);
+    const cachedValue = deps.cache
+      ? await deps.cache.get<boolean>(`${cacheKey}:${resourceId}`)
+      : null;
+
+    if (cachedValue !== null) {
+      return cachedValue;
+    }
+
+    // Check each role for this resource
+    let allowed = false;
+    for (const role of userRoles) {
+      const roleAllowed = await deps.enforcer.enforce(
+        userId,
+        role,
+        DEFAULT_APPLICATION_ID,
+        orgId,
+        resource,
+        action,
+        ownerId
+      );
+
+      if (roleAllowed) {
+        allowed = true;
+        break;
+      }
+    }
+
+    // Cache the result
+    if (deps.cache) {
+      await deps.cache.set(`${cacheKey}:${resourceId}`, allowed, deps.cacheTtl);
+    }
+
+    return allowed;
+  };
+
+  // Batch authorization for list endpoints
+  const batchAuthorize = async (
+    userId: string,
+    orgId: string,
+    resource: string,
+    action: string,
+    resourceOwnerMap: Map<string, string>
+  ): Promise<Map<string, boolean>> => {
+    // Runtime check: db is required for authorization
+    if (!opts.db) {
+      throw new Error(
+        "Database connection required for authorization. " +
+          "Ensure 'db' option is provided when registering the plugin."
+      );
+    }
+
+    const results = new Map<string, boolean>();
+
+    // Single DB lookup for user's roles (reused for all resources)
+    const userRoles = await lookupUserRoles(
+      userId,
+      DEFAULT_APPLICATION_ID,
+      orgId,
+      opts.db
+    );
+
+    // No roles = deny all
+    if (userRoles.length === 0) {
+      for (const resourceId of resourceOwnerMap.keys()) {
+        results.set(resourceId, false);
+      }
+      return results;
+    }
+
+    // Check each resource
+    for (const [resourceId, ownerId] of resourceOwnerMap) {
+      const allowed = await checkSingleResourcePermission(
+        userId,
+        orgId,
+        resource,
+        action,
+        resourceId,
+        ownerId,
+        userRoles
+      );
+      results.set(resourceId, allowed);
+    }
+
+    return results;
+  };
+
+  fastify.decorate("batchAuthorize", batchAuthorize);
 }
 
 export default fp(authorizationPlugin, {

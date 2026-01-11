@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { allUserRolesList, announcementsAcknowledge, announcementsCreate, announcementsDelete, announcementsDismiss, announcementsGet, announcementsGetStats, announcementsGetUnreadCount, announcementsList, announcementsMarkRead, announcementsMarkViewed, announcementsUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, couponsAdminCreate, couponsAdminDelete, couponsAdminGet, couponsAdminList, couponsAdminUpdate, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsCreate, jobsDownload, jobsGet, jobsList, jobsRetry, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, paymentWebhooksHandleMidtrans, paymentWebhooksHandleXendit, publicPricingListPublicPlans, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesUpdate, scheduledJobsCreate, scheduledJobsDelete, scheduledJobsGet, scheduledJobsGetHistory, scheduledJobsList, scheduledJobsPause, scheduledJobsResume, scheduledJobsRunNow, scheduledJobsUpdate, subscriptionPlansAdminCreate, subscriptionPlansAdminDelete, subscriptionPlansAdminGet, subscriptionPlansAdminList, subscriptionPlansAdminUpdate, subscriptionsApplyCoupon, subscriptionsCancel, subscriptionsCreate, subscriptionsGetCurrent, subscriptionsResume, subscriptionsUpdate, subscriptionsValidateCoupon, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
-import type { AllUserRolesListData, AllUserRolesListResponse, AnnouncementsAcknowledgeData, AnnouncementsAcknowledgeResponse, AnnouncementsCreateData, AnnouncementsCreateResponse, AnnouncementsDeleteData, AnnouncementsDeleteResponse, AnnouncementsDismissData, AnnouncementsDismissResponse, AnnouncementsGetData, AnnouncementsGetResponse, AnnouncementsGetStatsData, AnnouncementsGetStatsResponse, AnnouncementsGetUnreadCountData, AnnouncementsGetUnreadCountResponse, AnnouncementsListData, AnnouncementsListResponse, AnnouncementsMarkReadData, AnnouncementsMarkReadResponse, AnnouncementsMarkViewedData, AnnouncementsMarkViewedResponse, AnnouncementsUpdateData, AnnouncementsUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CouponsAdminCreateData, CouponsAdminCreateResponse, CouponsAdminDeleteData, CouponsAdminDeleteResponse, CouponsAdminGetData, CouponsAdminGetResponse, CouponsAdminListData, CouponsAdminListResponse, CouponsAdminUpdateData, CouponsAdminUpdateResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsCreateData, JobsCreateResponse, JobsDownloadData, JobsDownloadResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, JobsRetryData, JobsRetryResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, PaymentWebhooksHandleMidtransData, PaymentWebhooksHandleMidtransResponse, PaymentWebhooksHandleXenditData, PaymentWebhooksHandleXenditResponse, PublicPricingListPublicPlansData, PublicPricingListPublicPlansResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledJobsCreateData, ScheduledJobsCreateResponse, ScheduledJobsDeleteData, ScheduledJobsDeleteResponse, ScheduledJobsGetData, ScheduledJobsGetHistoryData, ScheduledJobsGetHistoryResponse, ScheduledJobsGetResponse, ScheduledJobsListData, ScheduledJobsListResponse, ScheduledJobsPauseData, ScheduledJobsPauseResponse, ScheduledJobsResumeData, ScheduledJobsResumeResponse, ScheduledJobsRunNowData, ScheduledJobsRunNowResponse, ScheduledJobsUpdateData, ScheduledJobsUpdateResponse, SubscriptionPlansAdminCreateData, SubscriptionPlansAdminCreateResponse, SubscriptionPlansAdminDeleteData, SubscriptionPlansAdminDeleteResponse, SubscriptionPlansAdminGetData, SubscriptionPlansAdminGetResponse, SubscriptionPlansAdminListData, SubscriptionPlansAdminListResponse, SubscriptionPlansAdminUpdateData, SubscriptionPlansAdminUpdateResponse, SubscriptionsApplyCouponData, SubscriptionsApplyCouponResponse, SubscriptionsCancelData, SubscriptionsCancelResponse, SubscriptionsCreateData, SubscriptionsCreateResponse, SubscriptionsGetCurrentData, SubscriptionsGetCurrentResponse, SubscriptionsResumeData, SubscriptionsResumeResponse, SubscriptionsUpdateData, SubscriptionsUpdateResponse, SubscriptionsValidateCouponData, SubscriptionsValidateCouponResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
+import { allUserRolesList, announcementsAcknowledge, announcementsCreate, announcementsDelete, announcementsDismiss, announcementsGet, announcementsGetStats, announcementsGetUnreadCount, announcementsList, announcementsMarkRead, announcementsMarkViewed, announcementsUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, couponsAdminCreate, couponsAdminDelete, couponsAdminGet, couponsAdminList, couponsAdminUpdate, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsCreate, jobsDownload, jobsGet, jobsList, jobsRetry, legalDocumentsAdminCreate, legalDocumentsAdminCreateVersion, legalDocumentsAdminDelete, legalDocumentsAdminExportAcceptances, legalDocumentsAdminGet, legalDocumentsAdminGetAuditLog, legalDocumentsAdminGetVersion, legalDocumentsAdminList, legalDocumentsAdminListAcceptances, legalDocumentsAdminListVersions, legalDocumentsAdminPreviewVersion, legalDocumentsAdminPublishVersion, legalDocumentsAdminUnpublishVersion, legalDocumentsAdminUpdate, legalDocumentsAdminUpdateVersion, legalDocumentsPublicAccept, legalDocumentsPublicCheckPending, legalDocumentsPublicGetActive, legalDocumentsPublicGetMyAcceptances, legalDocumentsPublicListActive, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, paymentWebhooksHandleMidtrans, paymentWebhooksHandleXendit, publicPricingListPublicPlans, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesUpdate, scheduledJobsCreate, scheduledJobsDelete, scheduledJobsGet, scheduledJobsGetHistory, scheduledJobsList, scheduledJobsPause, scheduledJobsResume, scheduledJobsRunNow, scheduledJobsUpdate, subscriptionPlansAdminCreate, subscriptionPlansAdminDelete, subscriptionPlansAdminGet, subscriptionPlansAdminList, subscriptionPlansAdminUpdate, subscriptionsApplyCoupon, subscriptionsCancel, subscriptionsCreate, subscriptionsGetCurrent, subscriptionsResume, subscriptionsUpdate, subscriptionsValidateCoupon, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { AllUserRolesListData, AllUserRolesListResponse, AnnouncementsAcknowledgeData, AnnouncementsAcknowledgeResponse, AnnouncementsCreateData, AnnouncementsCreateResponse, AnnouncementsDeleteData, AnnouncementsDeleteResponse, AnnouncementsDismissData, AnnouncementsDismissResponse, AnnouncementsGetData, AnnouncementsGetResponse, AnnouncementsGetStatsData, AnnouncementsGetStatsResponse, AnnouncementsGetUnreadCountData, AnnouncementsGetUnreadCountResponse, AnnouncementsListData, AnnouncementsListResponse, AnnouncementsMarkReadData, AnnouncementsMarkReadResponse, AnnouncementsMarkViewedData, AnnouncementsMarkViewedResponse, AnnouncementsUpdateData, AnnouncementsUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CouponsAdminCreateData, CouponsAdminCreateResponse, CouponsAdminDeleteData, CouponsAdminDeleteResponse, CouponsAdminGetData, CouponsAdminGetResponse, CouponsAdminListData, CouponsAdminListResponse, CouponsAdminUpdateData, CouponsAdminUpdateResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsCreateData, JobsCreateResponse, JobsDownloadData, JobsDownloadResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, JobsRetryData, JobsRetryResponse, LegalDocumentsAdminCreateData, LegalDocumentsAdminCreateResponse, LegalDocumentsAdminCreateVersionData, LegalDocumentsAdminCreateVersionResponse, LegalDocumentsAdminDeleteData, LegalDocumentsAdminDeleteResponse, LegalDocumentsAdminExportAcceptancesData, LegalDocumentsAdminExportAcceptancesResponse, LegalDocumentsAdminGetAuditLogData, LegalDocumentsAdminGetAuditLogResponse, LegalDocumentsAdminGetData, LegalDocumentsAdminGetResponse, LegalDocumentsAdminGetVersionData, LegalDocumentsAdminGetVersionResponse, LegalDocumentsAdminListAcceptancesData, LegalDocumentsAdminListAcceptancesResponse, LegalDocumentsAdminListData, LegalDocumentsAdminListResponse, LegalDocumentsAdminListVersionsData, LegalDocumentsAdminListVersionsResponse, LegalDocumentsAdminPreviewVersionData, LegalDocumentsAdminPreviewVersionResponse, LegalDocumentsAdminPublishVersionData, LegalDocumentsAdminPublishVersionResponse, LegalDocumentsAdminUnpublishVersionData, LegalDocumentsAdminUnpublishVersionResponse, LegalDocumentsAdminUpdateData, LegalDocumentsAdminUpdateResponse, LegalDocumentsAdminUpdateVersionData, LegalDocumentsAdminUpdateVersionResponse, LegalDocumentsPublicAcceptData, LegalDocumentsPublicAcceptResponse, LegalDocumentsPublicCheckPendingData, LegalDocumentsPublicCheckPendingResponse, LegalDocumentsPublicGetActiveData, LegalDocumentsPublicGetActiveResponse, LegalDocumentsPublicGetMyAcceptancesData, LegalDocumentsPublicGetMyAcceptancesResponse, LegalDocumentsPublicListActiveData, LegalDocumentsPublicListActiveResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, PaymentWebhooksHandleMidtransData, PaymentWebhooksHandleMidtransResponse, PaymentWebhooksHandleXenditData, PaymentWebhooksHandleXenditResponse, PublicPricingListPublicPlansData, PublicPricingListPublicPlansResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledJobsCreateData, ScheduledJobsCreateResponse, ScheduledJobsDeleteData, ScheduledJobsDeleteResponse, ScheduledJobsGetData, ScheduledJobsGetHistoryData, ScheduledJobsGetHistoryResponse, ScheduledJobsGetResponse, ScheduledJobsListData, ScheduledJobsListResponse, ScheduledJobsPauseData, ScheduledJobsPauseResponse, ScheduledJobsResumeData, ScheduledJobsResumeResponse, ScheduledJobsRunNowData, ScheduledJobsRunNowResponse, ScheduledJobsUpdateData, ScheduledJobsUpdateResponse, SubscriptionPlansAdminCreateData, SubscriptionPlansAdminCreateResponse, SubscriptionPlansAdminDeleteData, SubscriptionPlansAdminDeleteResponse, SubscriptionPlansAdminGetData, SubscriptionPlansAdminGetResponse, SubscriptionPlansAdminListData, SubscriptionPlansAdminListResponse, SubscriptionPlansAdminUpdateData, SubscriptionPlansAdminUpdateResponse, SubscriptionsApplyCouponData, SubscriptionsApplyCouponResponse, SubscriptionsCancelData, SubscriptionsCancelResponse, SubscriptionsCreateData, SubscriptionsCreateResponse, SubscriptionsGetCurrentData, SubscriptionsGetCurrentResponse, SubscriptionsResumeData, SubscriptionsResumeResponse, SubscriptionsUpdateData, SubscriptionsUpdateResponse, SubscriptionsValidateCouponData, SubscriptionsValidateCouponResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -227,6 +227,414 @@ export const couponsAdminUpdateMutation = (options?: Partial<Options<CouponsAdmi
     return mutationOptions;
 };
 
+export const legalDocumentsAdminListQueryKey = (options?: Options<LegalDocumentsAdminListData>) => createQueryKey('legalDocumentsAdminList', options);
+
+/**
+ * List legal documents
+ *
+ * List all legal documents
+ */
+export const legalDocumentsAdminListOptions = (options?: Options<LegalDocumentsAdminListData>) => queryOptions<LegalDocumentsAdminListResponse, DefaultError, LegalDocumentsAdminListResponse, ReturnType<typeof legalDocumentsAdminListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsAdminList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminListQueryKey(options)
+});
+
+export const legalDocumentsAdminListInfiniteQueryKey = (options?: Options<LegalDocumentsAdminListData>): QueryKey<Options<LegalDocumentsAdminListData>> => createQueryKey('legalDocumentsAdminList', options, true);
+
+/**
+ * List legal documents
+ *
+ * List all legal documents
+ */
+export const legalDocumentsAdminListInfiniteOptions = (options?: Options<LegalDocumentsAdminListData>) => infiniteQueryOptions<LegalDocumentsAdminListResponse, DefaultError, InfiniteData<LegalDocumentsAdminListResponse>, QueryKey<Options<LegalDocumentsAdminListData>>, number | Pick<QueryKey<Options<LegalDocumentsAdminListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<LegalDocumentsAdminListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await legalDocumentsAdminList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminListInfiniteQueryKey(options)
+});
+
+/**
+ * Create legal document
+ *
+ * Create a new legal document with initial version
+ */
+export const legalDocumentsAdminCreateMutation = (options?: Partial<Options<LegalDocumentsAdminCreateData>>): UseMutationOptions<LegalDocumentsAdminCreateResponse, DefaultError, Options<LegalDocumentsAdminCreateData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminCreateResponse, DefaultError, Options<LegalDocumentsAdminCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Export acceptances
+ *
+ * Export acceptances for compliance
+ */
+export const legalDocumentsAdminExportAcceptancesMutation = (options?: Partial<Options<LegalDocumentsAdminExportAcceptancesData>>): UseMutationOptions<LegalDocumentsAdminExportAcceptancesResponse, DefaultError, Options<LegalDocumentsAdminExportAcceptancesData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminExportAcceptancesResponse, DefaultError, Options<LegalDocumentsAdminExportAcceptancesData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminExportAcceptances({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Archive legal document
+ *
+ * Archive (soft delete) a document
+ */
+export const legalDocumentsAdminDeleteMutation = (options?: Partial<Options<LegalDocumentsAdminDeleteData>>): UseMutationOptions<LegalDocumentsAdminDeleteResponse, DefaultError, Options<LegalDocumentsAdminDeleteData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminDeleteResponse, DefaultError, Options<LegalDocumentsAdminDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const legalDocumentsAdminGetQueryKey = (options: Options<LegalDocumentsAdminGetData>) => createQueryKey('legalDocumentsAdminGet', options);
+
+/**
+ * Get legal document
+ *
+ * Get a specific document by ID
+ */
+export const legalDocumentsAdminGetOptions = (options: Options<LegalDocumentsAdminGetData>) => queryOptions<LegalDocumentsAdminGetResponse, DefaultError, LegalDocumentsAdminGetResponse, ReturnType<typeof legalDocumentsAdminGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsAdminGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminGetQueryKey(options)
+});
+
+/**
+ * Update legal document
+ *
+ * Update document metadata
+ */
+export const legalDocumentsAdminUpdateMutation = (options?: Partial<Options<LegalDocumentsAdminUpdateData>>): UseMutationOptions<LegalDocumentsAdminUpdateResponse, DefaultError, Options<LegalDocumentsAdminUpdateData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminUpdateResponse, DefaultError, Options<LegalDocumentsAdminUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminUpdate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const legalDocumentsAdminListAcceptancesQueryKey = (options: Options<LegalDocumentsAdminListAcceptancesData>) => createQueryKey('legalDocumentsAdminListAcceptances', options);
+
+/**
+ * List document acceptances
+ *
+ * Get acceptances for a document/version
+ */
+export const legalDocumentsAdminListAcceptancesOptions = (options: Options<LegalDocumentsAdminListAcceptancesData>) => queryOptions<LegalDocumentsAdminListAcceptancesResponse, DefaultError, LegalDocumentsAdminListAcceptancesResponse, ReturnType<typeof legalDocumentsAdminListAcceptancesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsAdminListAcceptances({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminListAcceptancesQueryKey(options)
+});
+
+export const legalDocumentsAdminListAcceptancesInfiniteQueryKey = (options: Options<LegalDocumentsAdminListAcceptancesData>): QueryKey<Options<LegalDocumentsAdminListAcceptancesData>> => createQueryKey('legalDocumentsAdminListAcceptances', options, true);
+
+/**
+ * List document acceptances
+ *
+ * Get acceptances for a document/version
+ */
+export const legalDocumentsAdminListAcceptancesInfiniteOptions = (options: Options<LegalDocumentsAdminListAcceptancesData>) => infiniteQueryOptions<LegalDocumentsAdminListAcceptancesResponse, DefaultError, InfiniteData<LegalDocumentsAdminListAcceptancesResponse>, QueryKey<Options<LegalDocumentsAdminListAcceptancesData>>, number | Pick<QueryKey<Options<LegalDocumentsAdminListAcceptancesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<LegalDocumentsAdminListAcceptancesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await legalDocumentsAdminListAcceptances({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminListAcceptancesInfiniteQueryKey(options)
+});
+
+export const legalDocumentsAdminGetAuditLogQueryKey = (options: Options<LegalDocumentsAdminGetAuditLogData>) => createQueryKey('legalDocumentsAdminGetAuditLog', options);
+
+/**
+ * Get document audit log
+ *
+ * Get audit log for a document
+ */
+export const legalDocumentsAdminGetAuditLogOptions = (options: Options<LegalDocumentsAdminGetAuditLogData>) => queryOptions<LegalDocumentsAdminGetAuditLogResponse, DefaultError, LegalDocumentsAdminGetAuditLogResponse, ReturnType<typeof legalDocumentsAdminGetAuditLogQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsAdminGetAuditLog({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminGetAuditLogQueryKey(options)
+});
+
+export const legalDocumentsAdminGetAuditLogInfiniteQueryKey = (options: Options<LegalDocumentsAdminGetAuditLogData>): QueryKey<Options<LegalDocumentsAdminGetAuditLogData>> => createQueryKey('legalDocumentsAdminGetAuditLog', options, true);
+
+/**
+ * Get document audit log
+ *
+ * Get audit log for a document
+ */
+export const legalDocumentsAdminGetAuditLogInfiniteOptions = (options: Options<LegalDocumentsAdminGetAuditLogData>) => infiniteQueryOptions<LegalDocumentsAdminGetAuditLogResponse, DefaultError, InfiniteData<LegalDocumentsAdminGetAuditLogResponse>, QueryKey<Options<LegalDocumentsAdminGetAuditLogData>>, number | Pick<QueryKey<Options<LegalDocumentsAdminGetAuditLogData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<LegalDocumentsAdminGetAuditLogData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await legalDocumentsAdminGetAuditLog({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminGetAuditLogInfiniteQueryKey(options)
+});
+
+export const legalDocumentsAdminListVersionsQueryKey = (options: Options<LegalDocumentsAdminListVersionsData>) => createQueryKey('legalDocumentsAdminListVersions', options);
+
+/**
+ * List document versions
+ *
+ * List all versions of a document
+ */
+export const legalDocumentsAdminListVersionsOptions = (options: Options<LegalDocumentsAdminListVersionsData>) => queryOptions<LegalDocumentsAdminListVersionsResponse, DefaultError, LegalDocumentsAdminListVersionsResponse, ReturnType<typeof legalDocumentsAdminListVersionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsAdminListVersions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminListVersionsQueryKey(options)
+});
+
+export const legalDocumentsAdminListVersionsInfiniteQueryKey = (options: Options<LegalDocumentsAdminListVersionsData>): QueryKey<Options<LegalDocumentsAdminListVersionsData>> => createQueryKey('legalDocumentsAdminListVersions', options, true);
+
+/**
+ * List document versions
+ *
+ * List all versions of a document
+ */
+export const legalDocumentsAdminListVersionsInfiniteOptions = (options: Options<LegalDocumentsAdminListVersionsData>) => infiniteQueryOptions<LegalDocumentsAdminListVersionsResponse, DefaultError, InfiniteData<LegalDocumentsAdminListVersionsResponse>, QueryKey<Options<LegalDocumentsAdminListVersionsData>>, number | Pick<QueryKey<Options<LegalDocumentsAdminListVersionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<LegalDocumentsAdminListVersionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await legalDocumentsAdminListVersions({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminListVersionsInfiniteQueryKey(options)
+});
+
+/**
+ * Create document version
+ *
+ * Create a new version (as draft)
+ */
+export const legalDocumentsAdminCreateVersionMutation = (options?: Partial<Options<LegalDocumentsAdminCreateVersionData>>): UseMutationOptions<LegalDocumentsAdminCreateVersionResponse, DefaultError, Options<LegalDocumentsAdminCreateVersionData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminCreateVersionResponse, DefaultError, Options<LegalDocumentsAdminCreateVersionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminCreateVersion({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const legalDocumentsAdminGetVersionQueryKey = (options: Options<LegalDocumentsAdminGetVersionData>) => createQueryKey('legalDocumentsAdminGetVersion', options);
+
+/**
+ * Get document version
+ *
+ * Get a specific version
+ */
+export const legalDocumentsAdminGetVersionOptions = (options: Options<LegalDocumentsAdminGetVersionData>) => queryOptions<LegalDocumentsAdminGetVersionResponse, DefaultError, LegalDocumentsAdminGetVersionResponse, ReturnType<typeof legalDocumentsAdminGetVersionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsAdminGetVersion({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminGetVersionQueryKey(options)
+});
+
+/**
+ * Update document version
+ *
+ * Update a draft version
+ */
+export const legalDocumentsAdminUpdateVersionMutation = (options?: Partial<Options<LegalDocumentsAdminUpdateVersionData>>): UseMutationOptions<LegalDocumentsAdminUpdateVersionResponse, DefaultError, Options<LegalDocumentsAdminUpdateVersionData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminUpdateVersionResponse, DefaultError, Options<LegalDocumentsAdminUpdateVersionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminUpdateVersion({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const legalDocumentsAdminPreviewVersionQueryKey = (options: Options<LegalDocumentsAdminPreviewVersionData>) => createQueryKey('legalDocumentsAdminPreviewVersion', options);
+
+/**
+ * Preview document version
+ *
+ * Preview a version (render without publishing)
+ */
+export const legalDocumentsAdminPreviewVersionOptions = (options: Options<LegalDocumentsAdminPreviewVersionData>) => queryOptions<LegalDocumentsAdminPreviewVersionResponse, DefaultError, LegalDocumentsAdminPreviewVersionResponse, ReturnType<typeof legalDocumentsAdminPreviewVersionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsAdminPreviewVersion({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsAdminPreviewVersionQueryKey(options)
+});
+
+/**
+ * Publish document version
+ *
+ * Publish a version (makes it active, archives previous)
+ */
+export const legalDocumentsAdminPublishVersionMutation = (options?: Partial<Options<LegalDocumentsAdminPublishVersionData>>): UseMutationOptions<LegalDocumentsAdminPublishVersionResponse, DefaultError, Options<LegalDocumentsAdminPublishVersionData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminPublishVersionResponse, DefaultError, Options<LegalDocumentsAdminPublishVersionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminPublishVersion({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Unpublish document version
+ *
+ * Unpublish a version (revert to previous or no active)
+ */
+export const legalDocumentsAdminUnpublishVersionMutation = (options?: Partial<Options<LegalDocumentsAdminUnpublishVersionData>>): UseMutationOptions<LegalDocumentsAdminUnpublishVersionResponse, DefaultError, Options<LegalDocumentsAdminUnpublishVersionData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsAdminUnpublishVersionResponse, DefaultError, Options<LegalDocumentsAdminUnpublishVersionData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsAdminUnpublishVersion({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const subscriptionPlansAdminListQueryKey = (options?: Options<SubscriptionPlansAdminListData>) => createQueryKey('subscriptionPlansAdminList', options);
 
 /**
@@ -368,6 +776,105 @@ export const subscriptionPlansAdminUpdateMutation = (options?: Partial<Options<S
     };
     return mutationOptions;
 };
+
+export const legalDocumentsPublicListActiveQueryKey = (options?: Options<LegalDocumentsPublicListActiveData>) => createQueryKey('legalDocumentsPublicListActive', options);
+
+/**
+ * List active legal documents
+ *
+ * List all active legal documents
+ */
+export const legalDocumentsPublicListActiveOptions = (options?: Options<LegalDocumentsPublicListActiveData>) => queryOptions<LegalDocumentsPublicListActiveResponse, DefaultError, LegalDocumentsPublicListActiveResponse, ReturnType<typeof legalDocumentsPublicListActiveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsPublicListActive({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsPublicListActiveQueryKey(options)
+});
+
+/**
+ * Accept legal document
+ *
+ * Accept a legal document
+ */
+export const legalDocumentsPublicAcceptMutation = (options?: Partial<Options<LegalDocumentsPublicAcceptData>>): UseMutationOptions<LegalDocumentsPublicAcceptResponse, DefaultError, Options<LegalDocumentsPublicAcceptData>> => {
+    const mutationOptions: UseMutationOptions<LegalDocumentsPublicAcceptResponse, DefaultError, Options<LegalDocumentsPublicAcceptData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await legalDocumentsPublicAccept({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const legalDocumentsPublicGetMyAcceptancesQueryKey = (options?: Options<LegalDocumentsPublicGetMyAcceptancesData>) => createQueryKey('legalDocumentsPublicGetMyAcceptances', options);
+
+/**
+ * Get my acceptances
+ *
+ * Get current user's acceptance history
+ */
+export const legalDocumentsPublicGetMyAcceptancesOptions = (options?: Options<LegalDocumentsPublicGetMyAcceptancesData>) => queryOptions<LegalDocumentsPublicGetMyAcceptancesResponse, DefaultError, LegalDocumentsPublicGetMyAcceptancesResponse, ReturnType<typeof legalDocumentsPublicGetMyAcceptancesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsPublicGetMyAcceptances({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsPublicGetMyAcceptancesQueryKey(options)
+});
+
+export const legalDocumentsPublicCheckPendingQueryKey = (options?: Options<LegalDocumentsPublicCheckPendingData>) => createQueryKey('legalDocumentsPublicCheckPending', options);
+
+/**
+ * Check pending acceptances
+ *
+ * Check if user has pending documents to accept
+ */
+export const legalDocumentsPublicCheckPendingOptions = (options?: Options<LegalDocumentsPublicCheckPendingData>) => queryOptions<LegalDocumentsPublicCheckPendingResponse, DefaultError, LegalDocumentsPublicCheckPendingResponse, ReturnType<typeof legalDocumentsPublicCheckPendingQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsPublicCheckPending({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsPublicCheckPendingQueryKey(options)
+});
+
+export const legalDocumentsPublicGetActiveQueryKey = (options: Options<LegalDocumentsPublicGetActiveData>) => createQueryKey('legalDocumentsPublicGetActive', options);
+
+/**
+ * Get active legal document
+ *
+ * Get the active version of a specific document type
+ */
+export const legalDocumentsPublicGetActiveOptions = (options: Options<LegalDocumentsPublicGetActiveData>) => queryOptions<LegalDocumentsPublicGetActiveResponse, DefaultError, LegalDocumentsPublicGetActiveResponse, ReturnType<typeof legalDocumentsPublicGetActiveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await legalDocumentsPublicGetActive({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: legalDocumentsPublicGetActiveQueryKey(options)
+});
 
 export const migrationGetStatusQueryKey = (options?: Options<MigrationGetStatusData>) => createQueryKey('migrationGetStatus', options);
 

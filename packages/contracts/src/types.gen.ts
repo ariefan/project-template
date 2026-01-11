@@ -5,6 +5,20 @@ export type ClientOptions = {
 };
 
 /**
+ * Record user acceptance
+ */
+export type AcceptLegalDocumentRequest = {
+    /**
+     * Document type being accepted
+     */
+    documentType: LegalDocumentType;
+    /**
+     * Version ID being accepted
+     */
+    versionId: string;
+};
+
+/**
  * Acknowledge announcement response
  */
 export type AcknowledgeAnnouncementResponse = {
@@ -48,6 +62,84 @@ export type ActiveContext = {
  */
 export type ActiveContextResponse = {
     data: ActiveContext;
+    meta: ResponseMeta;
+};
+
+/**
+ * Active public document response (for users)
+ */
+export type ActiveLegalDocumentResponse = {
+    data: {
+        /**
+         * Document ID
+         */
+        id: string;
+        /**
+         * Document type
+         */
+        type: LegalDocumentType;
+        /**
+         * Version ID
+         */
+        versionId: string;
+        /**
+         * Version number
+         */
+        version: number;
+        /**
+         * Title
+         */
+        title: string;
+        /**
+         * Content
+         */
+        content: string;
+        /**
+         * When published
+         */
+        publishedAt: string;
+        /**
+         * Whether user has accepted this version
+         */
+        hasAccepted?: boolean;
+        /**
+         * When user accepted (if applicable)
+         */
+        acceptedAt?: string;
+    };
+    meta: ResponseMeta;
+};
+
+/**
+ * List of active documents for public consumption
+ */
+export type ActiveLegalDocumentsListResponse = {
+    data: Array<{
+        /**
+         * Document ID
+         */
+        id: string;
+        /**
+         * Document type
+         */
+        type: LegalDocumentType;
+        /**
+         * Version ID
+         */
+        versionId: string;
+        /**
+         * Title
+         */
+        title: string;
+        /**
+         * When published
+         */
+        publishedAt: string;
+        /**
+         * Whether user has accepted
+         */
+        hasAccepted?: boolean;
+    }>;
     meta: ResponseMeta;
 };
 
@@ -999,6 +1091,54 @@ export type CreateJobRequest = {
 };
 
 /**
+ * Create a new legal document
+ */
+export type CreateLegalDocumentRequest = {
+    /**
+     * Document type
+     */
+    type: LegalDocumentType;
+    /**
+     * URL-friendly slug (auto-generated if not provided)
+     */
+    slug?: string;
+    /**
+     * Locale/language code
+     */
+    locale?: string;
+    /**
+     * Initial version title
+     */
+    title: string;
+    /**
+     * Initial version content
+     */
+    content: string;
+};
+
+/**
+ * Create a new version of a document
+ */
+export type CreateLegalDocumentVersionRequest = {
+    /**
+     * Version title
+     */
+    title: string;
+    /**
+     * Full content
+     */
+    content: string;
+    /**
+     * Summary of changes
+     */
+    changelog?: string;
+    /**
+     * Whether users must re-accept
+     */
+    requiresReAcceptance?: boolean;
+};
+
+/**
  * Create subscription plan request
  */
 export type CreatePlanRequest = {
@@ -1643,6 +1783,32 @@ export type ExamplePostResponse = {
 export type ExamplePostStatus = 'draft' | 'published' | 'archived';
 
 /**
+ * Export acceptances request (for compliance)
+ */
+export type ExportAcceptancesRequest = {
+    /**
+     * Document ID to export acceptances for
+     */
+    documentId?: string;
+    /**
+     * Version ID to export acceptances for
+     */
+    versionId?: string;
+    /**
+     * Start date filter
+     */
+    startDate?: string;
+    /**
+     * End date filter
+     */
+    endDate?: string;
+    /**
+     * Export format
+     */
+    format?: 'csv' | 'json';
+};
+
+/**
  * Request body for triggering an export
  */
 export type ExportRequest = {
@@ -2020,6 +2186,322 @@ export type JobResponse = {
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
 
 /**
+ * Legal document metadata (container for versions)
+ */
+export type LegalDocument = {
+    /**
+     * Unique document identifier
+     */
+    id: string;
+    /**
+     * Document type
+     */
+    type: LegalDocumentType;
+    /**
+     * URL-friendly slug
+     */
+    slug: string;
+    /**
+     * Locale/language code (ISO 639-1)
+     */
+    locale: string;
+    /**
+     * Current status
+     */
+    status: LegalDocumentStatus;
+    /**
+     * Currently active version ID (if published)
+     */
+    activeVersionId?: string;
+    /**
+     * User who created this document
+     */
+    createdBy: string;
+    /**
+     * Creation timestamp
+     */
+    createdAt: string;
+    /**
+     * Last update timestamp
+     */
+    updatedAt: string;
+    /**
+     * Soft delete timestamp
+     */
+    deletedAt?: string;
+};
+
+/**
+ * User acceptance record for compliance tracking
+ */
+export type LegalDocumentAcceptance = {
+    /**
+     * Unique acceptance identifier
+     */
+    id: string;
+    /**
+     * User who accepted
+     */
+    userId: string;
+    /**
+     * Version that was accepted
+     */
+    versionId: string;
+    /**
+     * Document ID (denormalized for queries)
+     */
+    documentId: string;
+    /**
+     * Document type (denormalized for queries)
+     */
+    documentType: LegalDocumentType;
+    /**
+     * When the user accepted
+     */
+    acceptedAt: string;
+    /**
+     * IP address at time of acceptance
+     */
+    ipAddress?: string;
+    /**
+     * User agent string at time of acceptance
+     */
+    userAgent?: string;
+};
+
+/**
+ * Acceptance list response
+ */
+export type LegalDocumentAcceptanceListResponse = {
+    data: Array<LegalDocumentAcceptance>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Acceptance response
+ */
+export type LegalDocumentAcceptanceResponse = {
+    data: LegalDocumentAcceptance;
+    meta: ResponseMeta;
+};
+
+/**
+ * Audit log entry for document changes
+ */
+export type LegalDocumentAuditLog = {
+    /**
+     * Unique log identifier
+     */
+    id: string;
+    /**
+     * Document ID
+     */
+    documentId: string;
+    /**
+     * Version ID (if applicable)
+     */
+    versionId?: string;
+    /**
+     * Action performed
+     */
+    action: string;
+    /**
+     * User who performed the action
+     */
+    actorId: string;
+    /**
+     * Actor name (denormalized)
+     */
+    actorName?: string;
+    /**
+     * JSON of changes made
+     */
+    changes?: string;
+    /**
+     * Timestamp
+     */
+    createdAt: string;
+};
+
+/**
+ * Audit log list response
+ */
+export type LegalDocumentAuditLogListResponse = {
+    data: Array<LegalDocumentAuditLog>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Legal document list response
+ */
+export type LegalDocumentListResponse = {
+    data: Array<LegalDocumentWithVersion>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Single legal document response
+ */
+export type LegalDocumentResponse = {
+    data: LegalDocument;
+    meta: ResponseMeta;
+};
+
+/**
+ * Status of a legal document or version
+ */
+export type LegalDocumentStatus = 'draft' | 'published' | 'archived';
+
+/**
+ * Type of legal document
+ */
+export type LegalDocumentType = 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'eula' | 'community_guidelines';
+
+/**
+ * Legal document version with content
+ */
+export type LegalDocumentVersion = {
+    /**
+     * Unique version identifier
+     */
+    id: string;
+    /**
+     * Parent document ID
+     */
+    documentId: string;
+    /**
+     * Version number (semantic: 1, 2, 3...)
+     */
+    version: number;
+    /**
+     * Version title
+     */
+    title: string;
+    /**
+     * Full content (Markdown supported)
+     */
+    content: string;
+    /**
+     * Summary of changes from previous version
+     */
+    changelog?: string;
+    /**
+     * Version status
+     */
+    status: LegalDocumentStatus;
+    /**
+     * When this version was published
+     */
+    publishedAt?: string;
+    /**
+     * Scheduled publish time (for future publishing)
+     */
+    scheduledAt?: string;
+    /**
+     * Whether users must re-accept when this version is published
+     */
+    requiresReAcceptance: boolean;
+    /**
+     * User who created this version
+     */
+    createdBy: string;
+    /**
+     * Creation timestamp
+     */
+    createdAt: string;
+    /**
+     * Last update timestamp
+     */
+    updatedAt: string;
+    /**
+     * Archive timestamp
+     */
+    archivedAt?: string;
+};
+
+/**
+ * Version list response
+ */
+export type LegalDocumentVersionListResponse = {
+    data: Array<LegalDocumentVersion>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Single version response
+ */
+export type LegalDocumentVersionResponse = {
+    data: LegalDocumentVersion;
+    meta: ResponseMeta;
+};
+
+/**
+ * Legal document with active version details
+ */
+export type LegalDocumentWithVersion = {
+    /**
+     * Unique document identifier
+     */
+    id: string;
+    /**
+     * Document type
+     */
+    type: LegalDocumentType;
+    /**
+     * URL-friendly slug
+     */
+    slug: string;
+    /**
+     * Locale/language code (ISO 639-1)
+     */
+    locale: string;
+    /**
+     * Current status
+     */
+    status: LegalDocumentStatus;
+    /**
+     * Currently active version ID (if published)
+     */
+    activeVersionId?: string;
+    /**
+     * User who created this document
+     */
+    createdBy: string;
+    /**
+     * Creation timestamp
+     */
+    createdAt: string;
+    /**
+     * Last update timestamp
+     */
+    updatedAt: string;
+    /**
+     * Soft delete timestamp
+     */
+    deletedAt?: string;
+    /**
+     * Active version details
+     */
+    activeVersion?: LegalDocumentVersion;
+    /**
+     * Total version count
+     */
+    versionCount?: number;
+};
+
+/**
+ * Document with version response
+ */
+export type LegalDocumentWithVersionResponse = {
+    data: LegalDocumentWithVersion;
+    meta: ResponseMeta;
+};
+
+/**
  * Mark all as read response
  */
 export type MarkAllReadResponse = {
@@ -2107,6 +2589,23 @@ export type MigrationStatusResponse = {
      * Steps to complete the migration
      */
     migrationChecklist?: Array<string>;
+};
+
+/**
+ * User's acceptance history
+ */
+export type MyAcceptancesResponse = {
+    data: {
+        /**
+         * User ID
+         */
+        userId: string;
+        /**
+         * List of acceptances
+         */
+        acceptances: Array<LegalDocumentAcceptance>;
+    };
+    meta: ResponseMeta;
 };
 
 /**
@@ -2441,6 +2940,23 @@ export type PaginationLinks = {
 };
 
 /**
+ * Check for pending acceptances
+ */
+export type PendingAcceptancesResponse = {
+    data: {
+        /**
+         * Whether there are documents requiring acceptance
+         */
+        hasPending: boolean;
+        /**
+         * List of documents requiring acceptance
+         */
+        pendingDocuments: Array<LegalDocumentWithVersion>;
+    };
+    meta: ResponseMeta;
+};
+
+/**
  * Permission definition
  *
  * Permissions define what actions can be performed on resources.
@@ -2605,6 +3121,16 @@ export type PreviewEmailResponse = {
         subject: string;
     };
     meta: ResponseMeta;
+};
+
+/**
+ * Publish a version
+ */
+export type PublishVersionRequest = {
+    /**
+     * Schedule for future (optional)
+     */
+    scheduledAt?: string;
 };
 
 /**
@@ -3687,6 +4213,42 @@ export type UpdateFileRequest = {
 };
 
 /**
+ * Update document metadata
+ */
+export type UpdateLegalDocumentRequest = {
+    /**
+     * URL-friendly slug
+     */
+    slug?: string;
+    /**
+     * Locale/language code
+     */
+    locale?: string;
+};
+
+/**
+ * Update a draft version
+ */
+export type UpdateLegalDocumentVersionRequest = {
+    /**
+     * Version title
+     */
+    title?: string;
+    /**
+     * Full content
+     */
+    content?: string;
+    /**
+     * Summary of changes
+     */
+    changelog?: string;
+    /**
+     * Whether users must re-accept
+     */
+    requiresReAcceptance?: boolean;
+};
+
+/**
  * Update subscription plan request
  */
 export type UpdatePlanRequest = {
@@ -4653,6 +5215,412 @@ export type CouponsAdminUpdateResponses = {
 
 export type CouponsAdminUpdateResponse = CouponsAdminUpdateResponses[keyof CouponsAdminUpdateResponses];
 
+export type LegalDocumentsAdminListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page number
+         */
+        page?: number;
+        /**
+         * Items per page
+         */
+        pageSize?: number;
+        /**
+         * Filter by type
+         */
+        type?: LegalDocumentType;
+        /**
+         * Filter by status
+         */
+        status?: LegalDocumentStatus;
+        /**
+         * Filter by locale
+         */
+        locale?: string;
+        /**
+         * Include deleted documents
+         */
+        includeDeleted?: boolean;
+    };
+    url: '/v1/admin/legal-documents';
+};
+
+export type LegalDocumentsAdminListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentListResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminListResponse = LegalDocumentsAdminListResponses[keyof LegalDocumentsAdminListResponses];
+
+export type LegalDocumentsAdminCreateData = {
+    /**
+     * Document data
+     */
+    body: CreateLegalDocumentRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/admin/legal-documents';
+};
+
+export type LegalDocumentsAdminCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: LegalDocumentWithVersionResponse;
+};
+
+export type LegalDocumentsAdminCreateResponse = LegalDocumentsAdminCreateResponses[keyof LegalDocumentsAdminCreateResponses];
+
+export type LegalDocumentsAdminExportAcceptancesData = {
+    /**
+     * Export options
+     */
+    body: ExportAcceptancesRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/admin/legal-documents/export-acceptances';
+};
+
+export type LegalDocumentsAdminExportAcceptancesResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: AsyncJobResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminExportAcceptancesResponse = LegalDocumentsAdminExportAcceptancesResponses[keyof LegalDocumentsAdminExportAcceptancesResponses];
+
+export type LegalDocumentsAdminDeleteData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}';
+};
+
+export type LegalDocumentsAdminDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminDeleteResponse = LegalDocumentsAdminDeleteResponses[keyof LegalDocumentsAdminDeleteResponses];
+
+export type LegalDocumentsAdminGetData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}';
+};
+
+export type LegalDocumentsAdminGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentWithVersionResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminGetResponse = LegalDocumentsAdminGetResponses[keyof LegalDocumentsAdminGetResponses];
+
+export type LegalDocumentsAdminUpdateData = {
+    /**
+     * Updated data
+     */
+    body: UpdateLegalDocumentRequest;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}';
+};
+
+export type LegalDocumentsAdminUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminUpdateResponse = LegalDocumentsAdminUpdateResponses[keyof LegalDocumentsAdminUpdateResponses];
+
+export type LegalDocumentsAdminListAcceptancesData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+    };
+    query?: {
+        /**
+         * Filter by version
+         */
+        versionId?: string;
+        /**
+         * Page number
+         */
+        page?: number;
+        /**
+         * Items per page
+         */
+        pageSize?: number;
+    };
+    url: '/v1/admin/legal-documents/{documentId}/acceptances';
+};
+
+export type LegalDocumentsAdminListAcceptancesResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentAcceptanceListResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminListAcceptancesResponse = LegalDocumentsAdminListAcceptancesResponses[keyof LegalDocumentsAdminListAcceptancesResponses];
+
+export type LegalDocumentsAdminGetAuditLogData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+    };
+    query?: {
+        /**
+         * Page number
+         */
+        page?: number;
+        /**
+         * Items per page
+         */
+        pageSize?: number;
+    };
+    url: '/v1/admin/legal-documents/{documentId}/audit-log';
+};
+
+export type LegalDocumentsAdminGetAuditLogResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentAuditLogListResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminGetAuditLogResponse = LegalDocumentsAdminGetAuditLogResponses[keyof LegalDocumentsAdminGetAuditLogResponses];
+
+export type LegalDocumentsAdminListVersionsData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+    };
+    query?: {
+        /**
+         * Page number
+         */
+        page?: number;
+        /**
+         * Items per page
+         */
+        pageSize?: number;
+        /**
+         * Filter by status
+         */
+        status?: LegalDocumentStatus;
+    };
+    url: '/v1/admin/legal-documents/{documentId}/versions';
+};
+
+export type LegalDocumentsAdminListVersionsResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentVersionListResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminListVersionsResponse = LegalDocumentsAdminListVersionsResponses[keyof LegalDocumentsAdminListVersionsResponses];
+
+export type LegalDocumentsAdminCreateVersionData = {
+    /**
+     * Version data
+     */
+    body: CreateLegalDocumentVersionRequest;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}/versions';
+};
+
+export type LegalDocumentsAdminCreateVersionResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has succeeded and a new resource has been created as a result.
+     */
+    201: LegalDocumentVersionResponse;
+};
+
+export type LegalDocumentsAdminCreateVersionResponse = LegalDocumentsAdminCreateVersionResponses[keyof LegalDocumentsAdminCreateVersionResponses];
+
+export type LegalDocumentsAdminGetVersionData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+        /**
+         * Version ID
+         */
+        versionId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}/versions/{versionId}';
+};
+
+export type LegalDocumentsAdminGetVersionResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentVersionResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminGetVersionResponse = LegalDocumentsAdminGetVersionResponses[keyof LegalDocumentsAdminGetVersionResponses];
+
+export type LegalDocumentsAdminUpdateVersionData = {
+    /**
+     * Updated data
+     */
+    body: UpdateLegalDocumentVersionRequest;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+        /**
+         * Version ID
+         */
+        versionId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}/versions/{versionId}';
+};
+
+export type LegalDocumentsAdminUpdateVersionResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentVersionResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminUpdateVersionResponse = LegalDocumentsAdminUpdateVersionResponses[keyof LegalDocumentsAdminUpdateVersionResponses];
+
+export type LegalDocumentsAdminPreviewVersionData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+        /**
+         * Version ID
+         */
+        versionId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}/versions/{versionId}/preview';
+};
+
+export type LegalDocumentsAdminPreviewVersionResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentVersionResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminPreviewVersionResponse = LegalDocumentsAdminPreviewVersionResponses[keyof LegalDocumentsAdminPreviewVersionResponses];
+
+export type LegalDocumentsAdminPublishVersionData = {
+    /**
+     * Publish options
+     */
+    body?: PublishVersionRequest;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+        /**
+         * Version ID
+         */
+        versionId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}/versions/{versionId}/publish';
+};
+
+export type LegalDocumentsAdminPublishVersionResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentVersionResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminPublishVersionResponse = LegalDocumentsAdminPublishVersionResponses[keyof LegalDocumentsAdminPublishVersionResponses];
+
+export type LegalDocumentsAdminUnpublishVersionData = {
+    body?: never;
+    path: {
+        /**
+         * Document ID
+         */
+        documentId: string;
+        /**
+         * Version ID
+         */
+        versionId: string;
+    };
+    query?: never;
+    url: '/v1/admin/legal-documents/{documentId}/versions/{versionId}/unpublish';
+};
+
+export type LegalDocumentsAdminUnpublishVersionResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentVersionResponse | ErrorResponse;
+};
+
+export type LegalDocumentsAdminUnpublishVersionResponse = LegalDocumentsAdminUnpublishVersionResponses[keyof LegalDocumentsAdminUnpublishVersionResponses];
+
 export type SubscriptionPlansAdminListData = {
     body?: never;
     path?: never;
@@ -4790,6 +5758,109 @@ export type SubscriptionPlansAdminUpdateResponses = {
 };
 
 export type SubscriptionPlansAdminUpdateResponse = SubscriptionPlansAdminUpdateResponses[keyof SubscriptionPlansAdminUpdateResponses];
+
+export type LegalDocumentsPublicListActiveData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Filter by locale (uses user preference if not specified)
+         */
+        locale?: string;
+    };
+    url: '/v1/legal';
+};
+
+export type LegalDocumentsPublicListActiveResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ActiveLegalDocumentsListResponse | ErrorResponse;
+};
+
+export type LegalDocumentsPublicListActiveResponse = LegalDocumentsPublicListActiveResponses[keyof LegalDocumentsPublicListActiveResponses];
+
+export type LegalDocumentsPublicAcceptData = {
+    /**
+     * Acceptance data
+     */
+    body: AcceptLegalDocumentRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/legal/accept';
+};
+
+export type LegalDocumentsPublicAcceptResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: LegalDocumentAcceptanceResponse | ErrorResponse;
+};
+
+export type LegalDocumentsPublicAcceptResponse = LegalDocumentsPublicAcceptResponses[keyof LegalDocumentsPublicAcceptResponses];
+
+export type LegalDocumentsPublicGetMyAcceptancesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/legal/my-acceptances';
+};
+
+export type LegalDocumentsPublicGetMyAcceptancesResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: MyAcceptancesResponse | ErrorResponse;
+};
+
+export type LegalDocumentsPublicGetMyAcceptancesResponse = LegalDocumentsPublicGetMyAcceptancesResponses[keyof LegalDocumentsPublicGetMyAcceptancesResponses];
+
+export type LegalDocumentsPublicCheckPendingData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Locale override
+         */
+        locale?: string;
+    };
+    url: '/v1/legal/pending';
+};
+
+export type LegalDocumentsPublicCheckPendingResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: PendingAcceptancesResponse | ErrorResponse;
+};
+
+export type LegalDocumentsPublicCheckPendingResponse = LegalDocumentsPublicCheckPendingResponses[keyof LegalDocumentsPublicCheckPendingResponses];
+
+export type LegalDocumentsPublicGetActiveData = {
+    body?: never;
+    path: {
+        /**
+         * Document type
+         */
+        documentType: LegalDocumentType;
+    };
+    query?: {
+        /**
+         * Locale override
+         */
+        locale?: string;
+    };
+    url: '/v1/legal/{documentType}';
+};
+
+export type LegalDocumentsPublicGetActiveResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ActiveLegalDocumentResponse | ErrorResponse;
+};
+
+export type LegalDocumentsPublicGetActiveResponse = LegalDocumentsPublicGetActiveResponses[keyof LegalDocumentsPublicGetActiveResponses];
 
 export type MigrationGetStatusData = {
     body?: never;

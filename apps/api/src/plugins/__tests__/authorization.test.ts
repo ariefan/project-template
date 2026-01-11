@@ -1,15 +1,30 @@
 import type { AuthorizationAuditService } from "@workspace/authorization";
 import type { CacheProvider } from "@workspace/cache";
+import type { Database } from "@workspace/db";
 import type { Enforcer } from "casbin";
 import Fastify, { type FastifyInstance } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import authorizationPlugin from "../authorization";
+
+/**
+ * Create a mock database that returns specified roles for user lookups
+ */
+function createMockDb(roles: string[] = ["member"]): Database {
+  const mockResult = roles.map((roleName) => ({ roleName }));
+  return {
+    select: vi.fn().mockReturnThis(),
+    from: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockResolvedValue(mockResult),
+  } as unknown as Database;
+}
 
 describe("Authorization Plugin", () => {
   let app: FastifyInstance;
   let mockCache: CacheProvider;
   let mockAuditService: AuthorizationAuditService;
   let mockEnforcer: Enforcer;
+  let mockDb: Database;
 
   beforeEach(() => {
     // Clear all mocks before each test
@@ -26,6 +41,9 @@ describe("Authorization Plugin", () => {
       getRolesForUserInDomain: vi.fn(),
       enableAutoSave: vi.fn(),
     } as unknown as Enforcer;
+
+    // Create mock database that returns a role
+    mockDb = createMockDb(["member"]);
 
     // Create mock cache provider
     mockCache = {
@@ -83,7 +101,10 @@ describe("Authorization Plugin", () => {
 
   describe("authorize() method", () => {
     it("should return false when enforcer denies", async () => {
-      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
+      await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
+        db: mockDb,
+      });
 
       // Mock enforcer to deny
       vi.spyOn(app.enforcer, "enforce").mockResolvedValue(false);
@@ -94,7 +115,10 @@ describe("Authorization Plugin", () => {
     });
 
     it("should return true when enforcer allows", async () => {
-      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
+      await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
+        db: mockDb,
+      });
 
       // Mock enforcer to allow
       vi.spyOn(app.enforcer, "enforce").mockResolvedValue(true);
@@ -107,6 +131,7 @@ describe("Authorization Plugin", () => {
     it("should check cache first when cache is enabled", async () => {
       await app.register(authorizationPlugin, {
         enforcer: mockEnforcer,
+        db: mockDb,
         cache: mockCache,
       });
 
@@ -129,6 +154,7 @@ describe("Authorization Plugin", () => {
     it("should call enforcer on cache miss", async () => {
       await app.register(authorizationPlugin, {
         enforcer: mockEnforcer,
+        db: mockDb,
         cache: mockCache,
       });
 
@@ -142,9 +168,12 @@ describe("Authorization Plugin", () => {
       expect(mockCache.get).toHaveBeenCalled();
       expect(app.enforcer.enforce).toHaveBeenCalledWith(
         "user1",
+        "member", // role resolved from mockDb
+        "app_default", // DEFAULT_APPLICATION_ID
         "org1",
         "posts",
-        "read"
+        "read",
+        "" // empty resourceOwnerId
       );
       // Should cache the result
       expect(mockCache.set).toHaveBeenCalledWith(
@@ -157,6 +186,7 @@ describe("Authorization Plugin", () => {
     it("should log permission denials when audit logging is enabled", async () => {
       await app.register(authorizationPlugin, {
         enforcer: mockEnforcer,
+        db: mockDb,
         auditService: mockAuditService,
         logPermissionDenials: true,
       });
@@ -180,6 +210,7 @@ describe("Authorization Plugin", () => {
     it("should NOT log permission denials when flag is disabled", async () => {
       await app.register(authorizationPlugin, {
         enforcer: mockEnforcer,
+        db: mockDb,
         auditService: mockAuditService,
         logPermissionDenials: false,
       });
@@ -193,7 +224,10 @@ describe("Authorization Plugin", () => {
     });
 
     it("should return false on error", async () => {
-      await app.register(authorizationPlugin, { enforcer: mockEnforcer });
+      await app.register(authorizationPlugin, {
+        enforcer: mockEnforcer,
+        db: mockDb,
+      });
 
       // Mock enforcer to throw error
       vi.spyOn(app.enforcer, "enforce").mockRejectedValue(
@@ -278,6 +312,7 @@ describe("Authorization Plugin", () => {
     it("should use custom cache TTL when provided", async () => {
       await app.register(authorizationPlugin, {
         enforcer: mockEnforcer,
+        db: mockDb,
         cache: mockCache,
         cacheTtlSeconds: 600, // 10 minutes
       });

@@ -32,3 +32,11 @@ export function buildAuthzPatternForUser(
 export function buildAuthzPatternForOrg(orgId: string): string {
   return `authz:*:${orgId}:*`;
 }
+
+/**
+ * Build a cache key for feature flag checks
+ * Format: feature:{orgId}:{featureKey}
+ */
+export function buildFeatureFlagKey(orgId: string, featureKey: string): string {
+  return `feature:${orgId}:${featureKey}`;
+}
