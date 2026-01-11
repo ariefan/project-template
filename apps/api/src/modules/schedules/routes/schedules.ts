@@ -11,6 +11,11 @@ import {
   zCreateScheduledJobRequest,
   zUpdateScheduledJobRequest,
 } from "@workspace/contracts/zod";
+import type {
+  DayOfWeek,
+  JobDeliveryMethod,
+  ScheduleFrequency,
+} from "@workspace/db/schema";
 import type { FastifyInstance } from "fastify";
 import { handleError, ValidationError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
@@ -105,10 +110,8 @@ export function schedulesRoutes(app: FastifyInstance) {
           pageSize: pageSize ? Number(pageSize) : undefined,
           orderBy,
           jobType,
-          // biome-ignore lint/suspicious/noExplicitAny: Drizzle enum type mismatch
-          frequency: frequency as any,
-          // biome-ignore lint/suspicious/noExplicitAny: Drizzle enum type mismatch
-          deliveryMethod: deliveryMethod as any,
+          frequency: frequency as ScheduleFrequency,
+          deliveryMethod: deliveryMethod as JobDeliveryMethod,
           isActive,
           search,
         });
@@ -150,6 +153,7 @@ export function schedulesRoutes(app: FastifyInstance) {
         // Create schedule
         const schedule = await schedulesService.createSchedule(orgId, userId, {
           ...validatedBody,
+          dayOfWeek: validatedBody.dayOfWeek as DayOfWeek,
           startDate: validatedBody.startDate
             ? new Date(validatedBody.startDate)
             : undefined,
