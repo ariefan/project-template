@@ -5,6 +5,7 @@ import { userRoleRoutes } from "./user-role-routes";
 import { violationRoutes } from "./violation-routes";
 
 export { contextRoutes } from "./context-routes";
+export { globalRoleRoutes } from "./global-role-routes";
 
 export function authorizationModule(app: FastifyInstance) {
   // Multi-app RBAC routes

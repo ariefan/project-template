@@ -107,7 +107,7 @@ export function AnnouncementBanner() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="mb-4 space-y-2">
       {displayAnnouncements.map((announcement) => {
         const config = PRIORITY_CONFIG[announcement.priority];
         const Icon = config.icon;
@@ -168,7 +168,7 @@ export function AnnouncementBanner() {
         );
       })}
       {filteredAnnouncements.length > 3 && (
-        <div className="mb-2 flex w-full justify-center">
+        <div className="flex w-full justify-center">
           <Button
             className="w-full"
             onClick={() => setIsExpanded(!isExpanded)}

@@ -16,7 +16,11 @@ import { env } from "./env";
 import { announcementsModule } from "./modules/announcements";
 import { applicationsModule } from "./modules/applications";
 import { authRoutes } from "./modules/auth";
-import { authorizationModule, contextRoutes } from "./modules/authorization";
+import {
+  authorizationModule,
+  contextRoutes,
+  globalRoleRoutes,
+} from "./modules/authorization";
 import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
@@ -415,6 +419,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(authRoutes);
   await app.register(applicationsModule, { prefix: "/v1" });
   await app.register(contextRoutes, { prefix: "/v1" });
+  await app.register(globalRoleRoutes, { prefix: "/v1" });
   await app.register(authorizationModule, { prefix: "/v1/orgs" });
   await app.register(announcementsModule, { prefix: "/v1/orgs" });
   await app.register(examplePostsModule, { prefix: "/v1/orgs" });

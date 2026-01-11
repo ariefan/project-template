@@ -26,7 +26,7 @@ import type { FastifyInstance } from "fastify";
 import { handleError, NotFoundError } from "../../lib/errors";
 import { createMeta } from "../../lib/response";
 import { validateBody } from "../../lib/validation";
-import { requirePermission } from "../auth/authorization-middleware";
+import { requireAuth } from "../auth/middleware";
 
 /**
  * Helper to map RolePermission to contracts Permission type
@@ -91,36 +91,28 @@ function parsePermissions(
 }
 
 /**
- * Tenant-scoped role management routes
+ * Global role management routes (no tenant scope)
+ *
+ * Note: These routes use requireAuth only (no org-scoped permission check)
+ * since global roles are not tied to any organization.
  *
  * Routes:
- * - GET    /:orgId/roles          - List tenant roles
- * - POST   /:orgId/roles          - Create tenant role
- * - GET    /:orgId/roles/:roleId  - Get role details
- * - PATCH  /:orgId/roles/:roleId  - Update role
- * - DELETE /:orgId/roles/:roleId  - Delete role
- *
- * Note: Global roles are in global-role-routes.ts
+ * - GET    /roles              - List global roles
+ * - POST   /roles              - Create global role
+ * - GET    /roles/:roleId      - Get role details
+ * - PATCH  /roles/:roleId      - Update role
+ * - DELETE /roles/:roleId      - Delete role
  */
-export function roleRoutes(app: FastifyInstance) {
+export function globalRoleRoutes(app: FastifyInstance) {
   const roleService = new RoleService(getDefaultDb(), app.enforcer);
 
-  // Tenant-scoped Roles
-
-  // List tenant roles
-  app.get<{
-    Params: { orgId: string };
-  }>(
-    "/:orgId/roles",
-    { preHandler: [requirePermission("settings", "read")] },
+  // List global roles
+  app.get(
+    "/roles",
+    { preHandler: [requireAuth] },
     async (request): Promise<RoleListResponse | ErrorResponse> => {
       try {
-        const { orgId } = request.params;
-        const roles = await roleService.listTenantRoles(
-          DEFAULT_APPLICATION_ID,
-          orgId
-        );
-
+        const roles = await roleService.listGlobalRoles(DEFAULT_APPLICATION_ID);
         const roleData = await Promise.all(
           roles.map(async (role) => {
             const permissions = await roleService.getPermissions(role.id);
@@ -148,26 +140,21 @@ export function roleRoutes(app: FastifyInstance) {
     }
   );
 
-  // Create tenant role
+  // Create global role
   app.post<{
-    Params: { orgId: string };
     Body: CreateRoleRequest;
   }>(
-    "/:orgId/roles",
+    "/roles",
     {
-      preHandler: [
-        requirePermission("settings", "manage"),
-        validateBody(zCreateRoleRequest),
-      ],
+      preHandler: [requireAuth, validateBody(zCreateRoleRequest)],
     },
     async (request, reply): Promise<RoleResponse | ErrorResponse> => {
       try {
-        const { orgId } = request.params;
         const { name, description, permissions } = request.body;
 
         const input: CreateRoleInput = {
           applicationId: DEFAULT_APPLICATION_ID,
-          tenantId: orgId,
+          tenantId: null,
           name,
           description,
           permissions: parsePermissions(permissions),
@@ -175,9 +162,6 @@ export function roleRoutes(app: FastifyInstance) {
         };
 
         const role = await roleService.create(input);
-
-        // Invalidate cache for this organization
-        await request.server.invalidateOrgAuthzCache(orgId);
 
         reply.status(201);
         return {
@@ -193,12 +177,12 @@ export function roleRoutes(app: FastifyInstance) {
     }
   );
 
-  // Get tenant role by ID
+  // Get role by ID
   app.get<{
-    Params: { orgId: string; roleId: string };
+    Params: { roleId: string };
   }>(
-    "/:orgId/roles/:roleId",
-    { preHandler: [requirePermission("settings", "read")] },
+    "/roles/:roleId",
+    { preHandler: [requireAuth] },
     async (request, reply): Promise<RoleResponse | ErrorResponse> => {
       try {
         const { roleId } = request.params;
@@ -226,21 +210,18 @@ export function roleRoutes(app: FastifyInstance) {
     }
   );
 
-  // Update tenant role
+  // Update role
   app.patch<{
-    Params: { orgId: string; roleId: string };
+    Params: { roleId: string };
     Body: UpdateRoleRequest;
   }>(
-    "/:orgId/roles/:roleId",
+    "/roles/:roleId",
     {
-      preHandler: [
-        requirePermission("settings", "manage"),
-        validateBody(zUpdateRoleRequest),
-      ],
+      preHandler: [requireAuth, validateBody(zUpdateRoleRequest)],
     },
     async (request, reply): Promise<RoleResponse | ErrorResponse> => {
       try {
-        const { orgId, roleId } = request.params;
+        const { roleId } = request.params;
         const { name, description, permissions } = request.body;
 
         const existingRole = await roleService.getById(roleId);
@@ -266,9 +247,6 @@ export function roleRoutes(app: FastifyInstance) {
           return response as ErrorResponse;
         }
 
-        // Invalidate cache for the organization
-        await request.server.invalidateOrgAuthzCache(orgId);
-
         const updatedPermissions = await roleService.getPermissions(roleId);
 
         return {
@@ -284,18 +262,18 @@ export function roleRoutes(app: FastifyInstance) {
     }
   );
 
-  // Delete tenant role
+  // Delete role
   app.delete<{
-    Params: { orgId: string; roleId: string };
+    Params: { roleId: string };
   }>(
-    "/:orgId/roles/:roleId",
-    { preHandler: [requirePermission("settings", "manage")] },
+    "/roles/:roleId",
+    { preHandler: [requireAuth] },
     async (
       request,
       reply
     ): Promise<{ meta: { requestId: string } } | ErrorResponse> => {
       try {
-        const { orgId, roleId } = request.params;
+        const { roleId } = request.params;
 
         const role = await roleService.getById(roleId);
         if (!role) {
@@ -308,16 +286,15 @@ export function roleRoutes(app: FastifyInstance) {
         const deleted = await roleService.delete(roleId);
 
         if (!deleted) {
-          const error = new NotFoundError("Role not found");
+          const error = new NotFoundError(
+            "Role not found or cannot be deleted"
+          );
           const { statusCode, response } = handleError(error, request.id);
           reply.status(statusCode);
           return response as ErrorResponse;
         }
 
-        // Invalidate cache for the organization
-        await request.server.invalidateOrgAuthzCache(orgId);
-
-        reply.status(200);
+        reply.status(204);
         return { meta: createMeta(request.id) };
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));

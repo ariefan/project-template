@@ -18,6 +18,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -43,6 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select";
+import { Spinner } from "@workspace/ui/components/spinner";
 import {
   Table,
   TableBody,
@@ -52,11 +58,22 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 import { format } from "date-fns";
-import { ArrowLeft, Loader2, Plus, Shield, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Shield, Trash2, UserCog } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
-import { authClient, useActiveOrganization } from "@/lib/auth";
+import { authClient, useActiveOrganization, useSession } from "@/lib/auth";
+
+// Organization role options
+const ORG_ROLES = [
+  { value: "member", label: "Member", description: "Basic access" },
+  {
+    value: "admin",
+    label: "Admin",
+    description: "Can manage users and settings",
+  },
+  { value: "owner", label: "Owner", description: "Full control" },
+] as const;
 
 interface UserDetailProps {
   userId: string;
@@ -67,6 +84,7 @@ interface OrganizationMember {
   userId: string;
   organizationId: string;
   role: string;
+  createdAt: string;
   user: {
     id: string;
     name: string;
@@ -77,8 +95,13 @@ interface OrganizationMember {
 
 export function UserDetail({ userId }: UserDetailProps) {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
   const { data: orgData } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
+  const currentUserId = session?.user?.id;
+
+  // UI State
+  const [mounted, setMounted] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -86,11 +109,11 @@ export function UserDetail({ userId }: UserDetailProps) {
     roleId: string;
     roleName: string;
   } | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [orgRoleDialogOpen, setOrgRoleDialogOpen] = useState(false);
+  const [selectedOrgRole, setSelectedOrgRole] = useState<string>("");
+  const [orgRoleError, setOrgRoleError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
   // Fetch user info from organization members
   const { data: orgFullData } = useQuery({
@@ -106,9 +129,18 @@ export function UserDetail({ userId }: UserDetailProps) {
   });
 
   const members: OrganizationMember[] = orgFullData?.data?.members ?? [];
-  const user = members.find((m) => m.userId === userId)?.user;
+  const member = members.find((m) => m.userId === userId);
+  const user = member?.user;
+  const userOrgRole = member?.role ?? "member";
 
-  // Fetch user's roles in this tenant
+  // Get current user's org role
+  const currentUserMember = members.find((m) => m.userId === currentUserId);
+  const currentUserRole = currentUserMember?.role ?? "member";
+  const isOwnerOrAdmin =
+    currentUserRole === "owner" || currentUserRole === "admin";
+  const isOwner = currentUserRole === "owner";
+
+  // Fetch user's RBAC roles in this tenant
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     ...userTenantRolesListOptions({
       client: apiClient,
@@ -120,7 +152,7 @@ export function UserDetail({ userId }: UserDetailProps) {
   const userRoles: UserRoleAssignment[] =
     (rolesData as { data?: UserRoleAssignment[] })?.data ?? [];
 
-  // Fetch available roles
+  // Fetch available RBAC roles
   const { data: availableRolesData } = useQuery({
     ...tenantRolesListOptions({
       client: apiClient,
@@ -138,13 +170,11 @@ export function UserDetail({ userId }: UserDetailProps) {
     (r) => !assignedRoleIds.has(r.id)
   );
 
-  // Assign role mutation
+  // Assign RBAC role mutation
   const assignMutation = useMutation({
     ...userTenantRolesAssignMutation({ client: apiClient }),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["userTenantRolesList"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["userTenantRolesList"] });
       setIsDialogOpen(false);
       setSelectedRoleId("");
       setError(null);
@@ -154,21 +184,42 @@ export function UserDetail({ userId }: UserDetailProps) {
     },
   });
 
-  // Remove role mutation
+  // Remove RBAC role mutation
   const removeMutation = useMutation({
     ...userTenantRolesRemoveMutation({ client: apiClient }),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["userTenantRolesList"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["userTenantRolesList"] });
       setRemoveTarget(null);
     },
   });
 
+  // Update org role mutation
+  const updateOrgRoleMutation = useMutation({
+    mutationFn: async (newRole: string) => {
+      // @ts-expect-error - Better Auth organization.updateMemberRole exists at runtime
+      const result = await authClient.organization.updateMemberRole({
+        memberId: member?.id,
+        role: newRole,
+        organizationId: orgId,
+      });
+      if (result.error)
+        throw new Error(result.error.message || "Failed to update role");
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["organization-members", orgId],
+      });
+      setOrgRoleDialogOpen(false);
+      setOrgRoleError(null);
+    },
+    onError: (err: Error) => {
+      setOrgRoleError(err.message);
+    },
+  });
+
   function handleAssignRole() {
-    if (!selectedRoleId) {
-      return;
-    }
+    if (!selectedRoleId) return;
     assignMutation.mutate({
       path: { orgId, userId },
       body: { roleId: selectedRoleId },
@@ -183,13 +234,39 @@ export function UserDetail({ userId }: UserDetailProps) {
     }
   }
 
-  function renderContent() {
-    // Only show loading state after component is mounted on client
-    // to prevent hydration mismatch with server render
+  function handleOrgRoleChange() {
+    if (!selectedOrgRole || selectedOrgRole === userOrgRole) return;
+    updateOrgRoleMutation.mutate(selectedOrgRole);
+  }
+
+  function getInitials(name: string | undefined, email: string): string {
+    if (name) {
+      return name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    return email[0]?.toUpperCase() ?? "U";
+  }
+
+  function canChangeOrgRole(): boolean {
+    // Only owners can change roles
+    if (!isOwner) return false;
+    // Can't change own role if you're the only owner
+    if (userId === currentUserId && userOrgRole === "owner") {
+      const ownerCount = members.filter((m) => m.role === "owner").length;
+      if (ownerCount <= 1) return false;
+    }
+    return true;
+  }
+
+  function renderRolesContent() {
     if (mounted && rolesLoading) {
       return (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Spinner className="size-8 text-muted-foreground" />
         </div>
       );
     }
@@ -197,7 +274,7 @@ export function UserDetail({ userId }: UserDetailProps) {
     if (!mounted || userRoles.length === 0) {
       return (
         <div className="py-8 text-center text-muted-foreground">
-          No roles assigned to this user yet.
+          No RBAC roles assigned to this user yet.
         </div>
       );
     }
@@ -230,6 +307,7 @@ export function UserDetail({ userId }: UserDetailProps) {
               </TableCell>
               <TableCell className="text-right">
                 <Button
+                  className="text-destructive hover:text-destructive"
                   disabled={removeMutation.isPending}
                   onClick={() =>
                     setRemoveTarget({
@@ -252,7 +330,8 @@ export function UserDetail({ userId }: UserDetailProps) {
 
   return (
     <>
-      <Card>
+      {/* User Profile Card */}
+      <Card className="mb-6">
         <CardHeader>
           <div className="flex items-center gap-4">
             <Button asChild size="icon" variant="ghost">
@@ -260,14 +339,129 @@ export function UserDetail({ userId }: UserDetailProps) {
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            <div className="flex items-center gap-3">
-              <Shield className="h-6 w-6 text-primary" />
-              <div>
-                <CardTitle>{user?.name || "User"}&apos;s Roles</CardTitle>
-                <CardDescription>
-                  {user?.email ?? "Manage the roles assigned to this user"}
-                </CardDescription>
+            <Avatar className="size-16">
+              <AvatarImage alt={user?.name} src={user?.image} />
+              <AvatarFallback className="text-lg">
+                {getInitials(user?.name, user?.email ?? "U")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <CardTitle className="text-xl">
+                {user?.name || "Unknown User"}
+              </CardTitle>
+              <CardDescription>{user?.email}</CardDescription>
+              {member && (
+                <p className="mt-1 text-muted-foreground text-sm">
+                  Member since{" "}
+                  {format(new Date(member.createdAt), "MMMM d, yyyy")}
+                </p>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-muted-foreground text-sm">Organization Role</p>
+              <div className="mt-1 flex items-center gap-2">
+                <Badge
+                  variant={
+                    userOrgRole === "owner"
+                      ? "default"
+                      : userOrgRole === "admin"
+                        ? "secondary"
+                        : "outline"
+                  }
+                >
+                  {userOrgRole}
+                </Badge>
               </div>
+            </div>
+            {canChangeOrgRole() && (
+              <Dialog
+                onOpenChange={setOrgRoleDialogOpen}
+                open={orgRoleDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    onClick={() => setSelectedOrgRole(userOrgRole)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <UserCog className="mr-2 h-4 w-4" />
+                    Change Role
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Change Organization Role</DialogTitle>
+                    <DialogDescription>
+                      Update the organization role for{" "}
+                      {user?.name || user?.email}.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {orgRoleError && (
+                    <div className="rounded-md bg-destructive/10 p-3 text-destructive text-sm">
+                      {orgRoleError}
+                    </div>
+                  )}
+                  <Select
+                    onValueChange={setSelectedOrgRole}
+                    value={selectedOrgRole}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ORG_ROLES.map((role) => (
+                        <SelectItem key={role.value} value={role.value}>
+                          <div>
+                            <span className="font-medium">{role.label}</span>
+                            <span className="ml-2 text-muted-foreground text-sm">
+                              — {role.description}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <DialogFooter>
+                    <Button
+                      onClick={() => setOrgRoleDialogOpen(false)}
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      disabled={
+                        updateOrgRoleMutation.isPending ||
+                        selectedOrgRole === userOrgRole
+                      }
+                      onClick={handleOrgRoleChange}
+                    >
+                      {updateOrgRoleMutation.isPending && (
+                        <Spinner className="mr-2" />
+                      )}
+                      Update Role
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* RBAC Roles Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Shield className="h-6 w-6 text-primary" />
+            <div>
+              <CardTitle>Permission Roles</CardTitle>
+              <CardDescription>
+                RBAC roles that grant specific permissions
+              </CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -322,9 +516,7 @@ export function UserDetail({ userId }: UserDetailProps) {
                     onClick={handleAssignRole}
                     type="button"
                   >
-                    {assignMutation.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
+                    {assignMutation.isPending && <Spinner className="mr-2" />}
                     Assign
                   </Button>
                 </DialogFooter>
@@ -332,10 +524,11 @@ export function UserDetail({ userId }: UserDetailProps) {
             </Dialog>
           </div>
 
-          {renderContent()}
+          {renderRolesContent()}
         </CardContent>
       </Card>
 
+      {/* Remove RBAC Role Confirmation */}
       <AlertDialog
         onOpenChange={(open) => !open && setRemoveTarget(null)}
         open={Boolean(removeTarget)}
@@ -344,19 +537,18 @@ export function UserDetail({ userId }: UserDetailProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Role</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove the "{removeTarget?.roleName}"
-              role from this user?
+              Are you sure you want to remove the &quot;{removeTarget?.roleName}
+              &quot; role from this user?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={removeMutation.isPending}
               onClick={handleRemoveConfirm}
             >
-              {removeMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {removeMutation.isPending && <Spinner className="mr-2" />}
               Remove
             </AlertDialogAction>
           </AlertDialogFooter>

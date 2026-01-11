@@ -50,7 +50,7 @@ export function userRoleRoutes(app: FastifyInstance) {
   }>(
     "/:orgId/users/:userId/roles",
     { preHandler: [requireAuth] },
-    async (request, reply): Promise<UserRoleResponse | ErrorResponse> => {
+    async (request, reply) => {
       try {
         const { orgId, userId } = request.params;
         const currentUser = request.user;
@@ -80,18 +80,17 @@ export function userRoleRoutes(app: FastifyInstance) {
         );
 
         return {
-          data: {
-            userId,
-            applicationId: DEFAULT_APPLICATION_ID,
-            tenantId: orgId,
-            roles: assignments.map((a) => ({
-              id: a.id,
-              roleId: a.roleId,
-              roleName: a.role.name,
-              assignedAt: a.assignedAt.toISOString(),
-              assignedBy: a.assignedBy,
-            })),
-          },
+          data: assignments.map((a) => ({
+            id: a.id,
+            userId: a.userId,
+            applicationId: a.applicationId,
+            tenantId: a.tenantId ?? undefined,
+            roleId: a.roleId,
+            roleName: a.role.name,
+            isGlobalRole: a.tenantId === null,
+            assignedAt: a.assignedAt.toISOString(),
+            assignedBy: a.assignedBy ?? undefined,
+          })),
           meta: createMeta(request.id),
         };
       } catch (error) {
@@ -115,12 +114,12 @@ export function userRoleRoutes(app: FastifyInstance) {
         validateBody(zAssignRoleRequest),
       ],
     },
-    async (request, reply): Promise<UserRoleResponse | ErrorResponse> => {
+    async (request, reply) => {
       try {
         const { orgId, userId } = request.params;
         const { roleId } = request.body;
 
-        await userRoleService.assignRole({
+        const assignment = await userRoleService.assignRole({
           userId,
           roleId,
           applicationId: DEFAULT_APPLICATION_ID,
@@ -149,26 +148,27 @@ export function userRoleRoutes(app: FastifyInstance) {
           }
         }
 
-        // Return updated roles
+        // Return the newly created assignment per contract
+        // Fetch with role relation to get role name
         const assignments = await userRoleService.getUserRoles(
           userId,
           DEFAULT_APPLICATION_ID,
           orgId
         );
+        const createdAssignment = assignments.find((a) => a.roleId === roleId);
 
-        reply.status(200);
+        reply.status(201);
         return {
           data: {
-            userId,
-            applicationId: DEFAULT_APPLICATION_ID,
-            tenantId: orgId,
-            roles: assignments.map((a) => ({
-              id: a.id,
-              roleId: a.roleId,
-              roleName: a.role.name,
-              assignedAt: a.assignedAt.toISOString(),
-              assignedBy: a.assignedBy,
-            })),
+            id: assignment.id,
+            userId: assignment.userId,
+            applicationId: assignment.applicationId,
+            tenantId: assignment.tenantId ?? undefined,
+            roleId: assignment.roleId,
+            roleName: createdAssignment?.role.name ?? "Unknown",
+            isGlobalRole: assignment.tenantId === null,
+            assignedAt: assignment.assignedAt.toISOString(),
+            assignedBy: assignment.assignedBy ?? undefined,
           },
           meta: createMeta(request.id),
         };

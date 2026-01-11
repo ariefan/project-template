@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Role } from "@workspace/contracts";
 import {
-  tenantRolesDeleteMutation,
-  tenantRolesListOptions,
+  globalRolesDeleteMutation,
+  globalRolesListOptions,
 } from "@workspace/contracts/query";
 import {
   AlertDialog,
@@ -35,42 +35,37 @@ import {
 } from "@workspace/ui/components/table";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { format } from "date-fns";
-import { Edit, Loader2, Plus, Shield, Trash2 } from "lucide-react";
+import { Edit, Globe, Loader2, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
-import { useActiveOrganization } from "@/lib/auth";
 
-export function RolesList() {
+export function GlobalRolesList() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: orgData } = useActiveOrganization();
-  const orgId = orgData?.id ?? "";
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     name: string;
   } | null>(null);
 
   const { data, isLoading, error } = useQuery({
-    ...tenantRolesListOptions({
+    ...globalRolesListOptions({
       client: apiClient,
-      path: { orgId },
     }),
-    enabled: Boolean(orgId),
   });
 
   const deleteMutation = useMutation({
-    ...tenantRolesDeleteMutation({ client: apiClient }),
+    ...globalRolesDeleteMutation({ client: apiClient }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tenantRolesList"] });
+      queryClient.invalidateQueries({ queryKey: ["globalRolesList"] });
       setDeleteTarget(null);
     },
   });
 
   function handleDeleteConfirm() {
     if (deleteTarget) {
-      deleteMutation.mutate({ path: { orgId, roleId: deleteTarget.id } });
+      deleteMutation.mutate({ path: { roleId: deleteTarget.id } });
     }
   }
 
@@ -86,10 +81,10 @@ export function RolesList() {
     }
 
     if (error) {
-      console.error("Roles loading error:", error);
+      console.error("Global roles loading error:", error);
       return (
         <div className="py-8 text-center text-destructive">
-          Failed to load roles:{" "}
+          Failed to load global roles:{" "}
           {error instanceof Error ? error.message : "Unknown error"}
         </div>
       );
@@ -98,7 +93,7 @@ export function RolesList() {
     if (roles.length === 0) {
       return (
         <div className="py-8 text-center text-muted-foreground">
-          No roles found. Create your first role to get started.
+          No global roles found. Create your first global role to get started.
         </div>
       );
     }
@@ -117,7 +112,7 @@ export function RolesList() {
         </TableHeader>
         <TableBody>
           {roles.map((role) => (
-            <RoleRow
+            <GlobalRoleRow
               deletePending={deleteMutation.isPending}
               key={role.id}
               onDelete={() => setDeleteTarget({ id: role.id, name: role.name })}
@@ -135,33 +130,33 @@ export function RolesList() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Shield className="h-6 w-6 text-primary" />
+              <Globe className="h-6 w-6 text-primary" />
               <div>
-                <CardTitle>Roles</CardTitle>
+                <CardTitle>Global Roles</CardTitle>
                 <CardDescription>
-                  Manage organization roles and their permissions
+                  Manage app-wide roles that apply across all organizations
                 </CardDescription>
               </div>
             </div>
             <Button asChild>
-              <Link href="/admin/roles/new">
+              <Link href="/admin/roles/global/new">
                 <Plus className="mr-2 h-4 w-4" />
-                New Role
+                New Global Role
               </Link>
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {/* Navigation tabs between tenant and global roles */}
-          <Tabs className="mb-4" defaultValue="tenant">
+          <Tabs className="mb-4" defaultValue="global">
             <TabsList>
-              <TabsTrigger value="tenant">Tenant Roles</TabsTrigger>
               <TabsTrigger
-                onClick={() => router.push("/admin/roles/global")}
-                value="global"
+                onClick={() => router.push("/admin/roles")}
+                value="tenant"
               >
-                Global Roles
+                Tenant Roles
               </TabsTrigger>
+              <TabsTrigger value="global">Global Roles</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -175,10 +170,11 @@ export function RolesList() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Role</AlertDialogTitle>
+            <AlertDialogTitle>Delete Global Role</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the role "{deleteTarget?.name}"?
-              This action cannot be undone.
+              Are you sure you want to delete the global role "
+              {deleteTarget?.name}"? This will affect all organizations. This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -199,13 +195,13 @@ export function RolesList() {
   );
 }
 
-interface RoleRowProps {
+interface GlobalRoleRowProps {
   role: Role;
   onDelete: () => void;
   deletePending: boolean;
 }
 
-function RoleRow({ role, onDelete, deletePending }: RoleRowProps) {
+function GlobalRoleRow({ role, onDelete, deletePending }: GlobalRoleRowProps) {
   return (
     <TableRow>
       <TableCell className="font-medium">{role.name}</TableCell>
@@ -217,9 +213,7 @@ function RoleRow({ role, onDelete, deletePending }: RoleRowProps) {
           <Badge variant={role.isSystemRole ? "secondary" : "outline"}>
             {role.isSystemRole ? "System" : "Custom"}
           </Badge>
-          <Badge variant={role.isGlobalRole ? "default" : "outline"}>
-            {role.isGlobalRole ? "Global" : "Tenant"}
-          </Badge>
+          <Badge variant="default">Global</Badge>
         </div>
       </TableCell>
       <TableCell>
@@ -234,7 +228,7 @@ function RoleRow({ role, onDelete, deletePending }: RoleRowProps) {
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
           <Button asChild size="icon" variant="ghost">
-            <Link href={`/admin/roles/${role.id}`}>
+            <Link href={`/admin/roles/global/${role.id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
