@@ -95,7 +95,7 @@ export function DataViewPagination({
       <PaginationBase
         pagination={paginationState}
         rowInfo={{
-          total: total,
+          total,
         }}
         showPageNumbers={showPageNumbers}
         showRowInfo={showRowInfo}
@@ -133,14 +133,14 @@ export function SimplePagination({ className }: SimplePaginationProps) {
   };
 
   return (
-     <div className={cn("flex items-center justify-center", className)}>
-        <PaginationBase
-          pagination={paginationState}
-          rowInfo={{ total }}
-          showPageNumbers={false}
-          showRowInfo={false}
-          variant="mobile"
-        />
-     </div>
+    <div className={cn("flex items-center justify-center", className)}>
+      <PaginationBase
+        pagination={paginationState}
+        rowInfo={{ total }}
+        showPageNumbers={false}
+        showRowInfo={false}
+        variant="mobile"
+      />
+    </div>
   );
 }

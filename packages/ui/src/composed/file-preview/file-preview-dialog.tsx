@@ -48,12 +48,9 @@ export function FilePreviewDialog({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  // Reset state when file URL changes
-  useEffect(() => {
-    setIsLoading(true);
-    setHasError(false);
-    setZoom(1);
-  }, [fileUrl]);
+  // State defaults to initial values.
+  // We rely on the parent checking `key={fileUrl}` to remount the component
+  // and reset state when the file URL changes.
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -167,83 +164,93 @@ export function FilePreviewDialog({
 
         {/* Content area */}
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-4">
-          {isImage ? (
-            <div className="relative flex size-full items-center justify-center">
-              {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                </div>
-              )}
-              {hasError ? (
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <p className="text-muted-foreground text-sm">
-                    Failed to load preview
-                  </p>
-                  <Button
-                    onClick={() => {
-                      setIsLoading(true);
-                      setHasError(false);
-                    }}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Retry
-                  </Button>
-                </div>
-              ) : (
-                // biome-ignore lint/correctness/useImageSize: Dynamic content
-                // biome-ignore lint/performance/noImgElement: Framework-agnostic
-                // biome-ignore lint/a11y/noNoninteractiveElementInteractions: Image click handled for zoom
-                <img
-                  alt={fileName ?? "Preview"}
-                  className={cn(
-                    "max-h-full max-w-full object-contain transition-transform duration-200",
-                    isLoading && "opacity-0"
+          {(() => {
+            if (isImage) {
+              return (
+                <div className="relative flex size-full items-center justify-center">
+                  {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    </div>
                   )}
-                  onError={() => {
-                    setIsLoading(false);
-                    setHasError(true);
-                  }}
-                  onLoad={() => setIsLoading(false)}
-                  src={fileUrl}
-                  style={{ transform: `scale(${zoom})` }}
-                />
-              )}
-            </div>
-          ) : isPdf ? (
-            <div className="size-full">
-               <object
-                className="size-full rounded-md border"
-                data={fileUrl}
-                type="application/pdf"
-              >
-                <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-                  <p className="text-muted-foreground">
-                    Unable to display PDF directly.
-                  </p>
-                  <Button asChild variant="outline">
-                    <a href={fileUrl} rel="noreferrer" target="_blank">
-                      Download PDF
-                    </a>
-                  </Button>
+                  {hasError ? (
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <p className="text-muted-foreground text-sm">
+                        Failed to load preview
+                      </p>
+                      <Button
+                        onClick={() => {
+                          setIsLoading(true);
+                          setHasError(false);
+                        }}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Retry
+                      </Button>
+                    </div>
+                  ) : (
+                    // biome-ignore lint/correctness/useImageSize: Dynamic content
+                    // biome-ignore lint/performance/noImgElement: Framework-agnostic
+                    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: Image click handled for zoom
+                    <img
+                      alt={fileName ?? "Preview"}
+                      className={cn(
+                        "max-h-full max-w-full object-contain transition-transform duration-200",
+                        isLoading && "opacity-0"
+                      )}
+                      onError={() => {
+                        setIsLoading(false);
+                        setHasError(true);
+                      }}
+                      onLoad={() => setIsLoading(false)}
+                      src={fileUrl}
+                      style={{ transform: `scale(${zoom})` }}
+                    />
+                  )}
                 </div>
-              </object>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3 text-center">
-              <p className="text-muted-foreground text-sm">
-                Preview not available for this file type
-              </p>
-              {fileType && (
-                <p className="text-muted-foreground text-xs">{fileType}</p>
-              )}
-               <Button asChild variant="outline">
-                <a href={fileUrl} rel="noreferrer" target="_blank">
-                  Download File
-                </a>
-              </Button>
-            </div>
-          )}
+              );
+            }
+
+            if (isPdf) {
+              return (
+                <div className="size-full">
+                  <object
+                    className="size-full rounded-md border"
+                    data={fileUrl}
+                    type="application/pdf"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+                      <p className="text-muted-foreground">
+                        Unable to display PDF directly.
+                      </p>
+                      <Button asChild variant="outline">
+                        <a href={fileUrl} rel="noreferrer" target="_blank">
+                          Download PDF
+                        </a>
+                      </Button>
+                    </div>
+                  </object>
+                </div>
+              );
+            }
+
+            return (
+              <div className="flex flex-col items-center gap-3 text-center">
+                <p className="text-muted-foreground text-sm">
+                  Preview not available for this file type
+                </p>
+                {fileType && (
+                  <p className="text-muted-foreground text-xs">{fileType}</p>
+                )}
+                <Button asChild variant="outline">
+                  <a href={fileUrl} rel="noreferrer" target="_blank">
+                    Download File
+                  </a>
+                </Button>
+              </div>
+            );
+          })()}
         </div>
       </DialogContent>
     </Dialog>

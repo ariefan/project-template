@@ -1827,6 +1827,7 @@ function FileManagerPageContent() {
               : undefined
           }
           fileUrl={`${env.NEXT_PUBLIC_API_URL}/storage/preview/${previewFile.path}`}
+          key={previewFile.path}
           onOpenChange={setPreviewOpen}
           open={previewOpen}
         />
