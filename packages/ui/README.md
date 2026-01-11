@@ -234,15 +234,11 @@ import { DataView } from "@workspace/ui/composed/data-view";
 
 ### Dialogs & Overlays
 - `ConfirmDialog` - Confirmation dialog with customizable actions
-- `FilePreviewDialog` - Preview files before upload
+- `FilePreviewDialog` - Preview files before upload (supports Images and PDF)
 - `ImageCropDialog` - Crop images before upload
 
 ### Data Display
 - `DataView` - Flexible data list/table with pagination
-- `DataTableColumnHeader` - Sortable column headers
-- `DataTableColumnToggle` - Column visibility controls
-- `DataTablePagination` / `DataListPagination` - Pagination controls
-- `PaginationBase` - Base pagination component
 
 ### Media & Files
 - `FileUploadWithProgress` - Upload files with progress indicator

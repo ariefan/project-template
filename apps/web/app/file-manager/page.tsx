@@ -57,7 +57,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
-import { FilePreviewDialog } from "@workspace/ui/composed/file-preview-dialog";
+import { FilePreviewDialog } from "@workspace/ui/composed/file-preview/file-preview-dialog";
 import {
   AlertCircle,
   ChevronRight,

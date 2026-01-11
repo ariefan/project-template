@@ -26,16 +26,15 @@ export interface FilePreviewDialogProps {
 /**
  * Fullscreen file preview dialog component.
  *
- * Supports image previews with zoom controls and keyboard shortcuts.
- * Designed for extensibility to support additional file types.
+ * Supports image and PDF previews.
  *
  * @example
  * <FilePreviewDialog
  *   open={isOpen}
  *   onOpenChange={setIsOpen}
- *   fileUrl="/storage/preview/image.jpg"
- *   fileName="image.jpg"
- *   fileType="image"
+ *   fileUrl="/storage/preview/document.pdf"
+ *   fileName="document.pdf"
+ *   fileType="application/pdf"
  * />
  */
 export function FilePreviewDialog({
@@ -54,7 +53,7 @@ export function FilePreviewDialog({
     setIsLoading(true);
     setHasError(false);
     setZoom(1);
-  }, []);
+  }, [fileUrl]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -98,6 +97,8 @@ export function FilePreviewDialog({
 
   const isImage =
     (fileType === "image" || fileType?.startsWith("image/")) ?? true;
+
+  const isPdf = fileType === "pdf" || fileType === "application/pdf";
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
@@ -209,6 +210,25 @@ export function FilePreviewDialog({
                 />
               )}
             </div>
+          ) : isPdf ? (
+            <div className="size-full">
+               <object
+                className="size-full rounded-md border"
+                data={fileUrl}
+                type="application/pdf"
+              >
+                <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+                  <p className="text-muted-foreground">
+                    Unable to display PDF directly.
+                  </p>
+                  <Button asChild variant="outline">
+                    <a href={fileUrl} rel="noreferrer" target="_blank">
+                      Download PDF
+                    </a>
+                  </Button>
+                </div>
+              </object>
+            </div>
           ) : (
             <div className="flex flex-col items-center gap-3 text-center">
               <p className="text-muted-foreground text-sm">
@@ -217,6 +237,11 @@ export function FilePreviewDialog({
               {fileType && (
                 <p className="text-muted-foreground text-xs">{fileType}</p>
               )}
+               <Button asChild variant="outline">
+                <a href={fileUrl} rel="noreferrer" target="_blank">
+                  Download File
+                </a>
+              </Button>
             </div>
           )}
         </div>
