@@ -2,6 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { examplePostsListOptions } from "@workspace/contracts/query";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Archive, FileCheck, FilePlus, FileText } from "lucide-react";
 import type { Stat } from "@/components/layouts/stats-grid";
 import { StatsGrid } from "@/components/layouts/stats-grid";
@@ -92,5 +99,31 @@ export function StatsCards() {
     },
   ];
 
+  const isLoading = !(totalData && draftData && publishedData && archivedData);
+
+  if (isLoading) {
+    return <StatsCardsSkeleton />;
+  }
+
   return <StatsGrid stats={stats} />;
+}
+
+function StatsCardsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton list is static
+        <Card data-slot="card" key={i}>
+          <CardHeader className="pb-2">
+            <CardDescription>
+              <Skeleton className="h-4 w-20" />
+            </CardDescription>
+            <CardTitle>
+              <Skeleton className="h-8 w-16" />
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      ))}
+    </div>
+  );
 }

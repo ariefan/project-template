@@ -28,6 +28,7 @@ import { UnreadAnnouncementsBadge } from "@/app/(app)/announcements/unread-badge
 import { NavMain } from "@/components/layouts/nav-main";
 import { NavUser } from "@/components/layouts/nav-user";
 import { OrgSwitcher } from "@/components/layouts/org-switcher";
+import { AppVersion } from "./app-version";
 
 // Core application features
 const navApplication = [
@@ -183,6 +184,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
+        <AppVersion />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

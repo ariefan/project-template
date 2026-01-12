@@ -8,8 +8,9 @@ import { Button } from "@workspace/ui/components/button";
 import {
   type BulkAction,
   type ColumnDef,
+  ColumnsButton,
   DataView as DataViewComponent,
-  DataViewExport,
+  ExportButton,
   FilterButton,
   type RowAction,
   SearchInput,
@@ -18,7 +19,7 @@ import {
   ViewToggle,
 } from "@workspace/ui/composed/data-view";
 import { Edit, Plus, RotateCcw, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
@@ -63,7 +64,12 @@ export default function CrudPage() {
 
   const posts = (clientData as { data?: ExamplePost[] })?.data ?? [];
 
+  const [mounted, setMounted] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [editingPost, setEditingPost] = useState<ExamplePost | undefined>();
 
   // Column definitions
@@ -73,10 +79,6 @@ export default function CrudPage() {
       header: "ID",
       accessorKey: "id",
       width: 100,
-      cell: ({ value }) => {
-        const id = String(value);
-        return id.length > 8 ? `${id.substring(0, 8)}...` : id;
-      },
     },
     {
       id: "title",
@@ -126,10 +128,6 @@ export default function CrudPage() {
       filterable: true,
       filterType: "text",
       width: 120,
-      cell: ({ value }) => {
-        const id = String(value);
-        return id.length > 8 ? `${id.substring(0, 8)}...` : id;
-      },
     },
     {
       id: "createdAt",
@@ -216,15 +214,7 @@ export default function CrudPage() {
   }
 
   function renderContent() {
-    if (orgLoading || clientLoading) {
-      return (
-        <div className="py-8 text-center text-muted-foreground">
-          Loading posts...
-        </div>
-      );
-    }
-
-    if (!orgData?.id) {
+    if (!(orgData?.id || orgLoading)) {
       return (
         <div className="py-8 text-center text-muted-foreground">
           Please select an organization
@@ -251,6 +241,7 @@ export default function CrudPage() {
       filterable: true,
       getRowId: (row: ExamplePost) => row.id,
       hoverable: true,
+      loading: orgLoading || clientLoading,
       loadingMessage: "Loading posts...",
       multiSelect: true,
       pageSizeOptions: [10, 25, 50, 100],
@@ -263,14 +254,14 @@ export default function CrudPage() {
       searchable: true,
       selectable: true,
       sortable: true,
-      striped: true,
       toolbarLeft: <SearchInput showFieldSelector />,
       toolbarRight: (
         <>
+          <ViewToggle />
+          <ColumnsButton />
           <FilterButton />
           <SortButton />
-          <ViewToggle />
-          <DataViewExport />
+          <ExportButton />
         </>
       ),
     };
@@ -293,11 +284,11 @@ export default function CrudPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className="container mx-auto max-w-7xl p-4">
       <PageHeader
         actions={
-          orgId ? (
-            <Button onClick={handleCreateNew} size="sm">
+          mounted && orgId ? (
+            <Button onClick={handleCreateNew}>
               <Plus className="size-4" />
               <span className="hidden sm:inline">New Post</span>
             </Button>

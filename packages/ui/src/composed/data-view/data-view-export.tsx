@@ -10,6 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
+import {
   Check,
   ClipboardCopy,
   Download,
@@ -24,7 +30,7 @@ import { type ExportOptions, useDataExport } from "./use-data-export";
 // Export Button
 // ============================================================================
 
-export interface DataViewExportProps {
+export interface ExportButtonProps {
   /** Custom class name */
   className?: string;
   /** Show selected only option (default: true) */
@@ -40,7 +46,7 @@ export interface DataViewExportProps {
   };
 }
 
-export function DataViewExport({
+export function ExportButton({
   className,
   showSelectedOnly = true,
   defaultOptions,
@@ -50,7 +56,7 @@ export function DataViewExport({
     pdf: true,
     clipboard: true,
   },
-}: DataViewExportProps) {
+}: ExportButtonProps) {
   const { processedData, selectedRows, config } = useDataView();
   const { exportCSV, exportToClipboard, exportExcel, exportPDF } =
     useDataExport({
@@ -77,12 +83,19 @@ export function DataViewExport({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button className={className} size="sm" variant="outline">
-          <Download className="size-4" />
-          <span className="hidden md:inline">Export</span>
-        </Button>
-      </DropdownMenuTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button className={className} size="icon" variant="ghost">
+                <Download className="size-4" />
+                <span className="sr-only">Export</span>
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Export</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuLabel>Export</DropdownMenuLabel>
         <DropdownMenuSeparator />

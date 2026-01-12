@@ -345,20 +345,17 @@ export function FilterButton({ className }: FilterButtonProps) {
           <TooltipTrigger asChild>
             <PopoverTrigger asChild>
               <Button
-                className={cn("gap-1.5", className)}
-                size="sm"
-                variant={activeFilterCount > 0 ? "secondary" : "outline"}
+                className={className}
+                size="icon"
+                variant={activeFilterCount > 0 ? "secondary" : "ghost"}
               >
                 <Filter className="size-4" />
-                <span className="hidden md:inline">Filters</span>
                 {activeFilterCount > 0 && (
-                  <Badge
-                    className="ml-1 px-1.5 py-0 text-xs"
-                    variant="secondary"
-                  >
+                  <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
                     {activeFilterCount}
-                  </Badge>
+                  </span>
                 )}
+                <span className="sr-only">Filters</span>
               </Button>
             </PopoverTrigger>
           </TooltipTrigger>
@@ -645,7 +642,7 @@ export function SortButton({ className }: SortButtonProps) {
   const currentSortValue = sort
     ? `${sort.field}:${sort.direction}`
     : "__none__";
-  const currentSortLabel = sort
+  const _currentSortLabel = sort
     ? getSortLabel(sort.field, sort.direction)
     : null;
 
@@ -656,21 +653,12 @@ export function SortButton({ className }: SortButtonProps) {
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <Button
-                className={cn("gap-1.5", className)}
-                size="sm"
-                variant="outline"
+                className={className}
+                size="icon"
+                variant={sort ? "secondary" : "ghost"}
               >
                 <ArrowUpDown className="size-4" />
-                <span className="hidden md:inline">Sort</span>
-                {currentSortLabel && (
-                  <Badge
-                    className="ml-1 max-w-32 truncate px-1.5 py-0 text-xs"
-                    variant="secondary"
-                  >
-                    {currentSortLabel}
-                  </Badge>
-                )}
-                <ChevronDown className="ml-auto size-4 opacity-50" />
+                <span className="sr-only">Sort</span>
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
@@ -722,10 +710,10 @@ export function DataViewViewOptions({ className }: DataViewViewOptionsProps) {
           aria-label="Toggle columns"
           className={cn("hidden lg:flex", className)}
           size="sm"
-          variant="outline"
+          variant="ghost"
         >
           <LayoutGrid className="mr-2 size-4" />
-          View
+          <span className="hidden lg:inline">View</span>
           <ChevronDown className="ml-auto size-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>

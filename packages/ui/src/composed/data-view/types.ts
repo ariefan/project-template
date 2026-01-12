@@ -237,6 +237,8 @@ export interface DataViewConfig<T = unknown> {
   hoverable?: boolean;
   /** Border style */
   bordered?: boolean;
+  /** Wrap content in a Card */
+  withCard?: boolean;
   /** Card style for grid view */
   gridCardClassName?: string;
   /** Custom list item renderer */

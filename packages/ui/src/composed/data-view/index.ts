@@ -11,10 +11,15 @@ export {
   DataViewBulkActions,
   InlineBulkActions,
 } from "./data-view-bulk-actions";
-export { DataViewColumnToggle } from "./data-view-column-toggle";
-export type { DataViewExportProps } from "./data-view-export";
+export {
+  ColumnsButton,
+  type ColumnsButtonProps,
+} from "./data-view-column-toggle";
 // Export components
-export { DataViewExport } from "./data-view-export";
+export {
+  ExportButton,
+  type ExportButtonProps,
+} from "./data-view-export";
 export { DataViewGrid } from "./data-view-grid";
 export { DataViewList } from "./data-view-list";
 // Pagination components

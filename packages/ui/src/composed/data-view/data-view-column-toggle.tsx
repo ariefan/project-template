@@ -19,11 +19,11 @@ import { Settings2 } from "lucide-react";
 import * as React from "react";
 import { useDataView } from "./context";
 
-export interface DataViewColumnToggleProps {
+export interface ColumnsButtonProps {
   className?: string;
 }
 
-export function DataViewColumnToggle({ className }: DataViewColumnToggleProps) {
+export function ColumnsButton({ className }: ColumnsButtonProps) {
   const { config, columnVisibility, setColumnVisibility } = useDataView();
 
   const toggleColumn = React.useCallback(
@@ -58,11 +58,11 @@ export function DataViewColumnToggle({ className }: DataViewColumnToggleProps) {
               <Button
                 aria-label="Toggle columns"
                 className={className}
-                size="sm"
-                variant="outline"
+                size="icon"
+                variant="ghost"
               >
-                <Settings2 className="mr-2 size-4" />
-                View
+                <Settings2 className="size-4" />
+                <span className="sr-only">Columns</span>
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>

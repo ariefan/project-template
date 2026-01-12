@@ -62,7 +62,10 @@ export function renderFieldContent<T>(
 
   if (ellipsis) {
     return (
-      <span className="truncate" title={content}>
+      <span
+        className="inline-block max-w-full truncate align-bottom"
+        title={content}
+      >
         {content}
       </span>
     );

@@ -8,8 +8,9 @@ import { Button } from "@workspace/ui/components/button";
 import {
   type BulkAction,
   type ColumnDef,
+  ColumnsButton,
   DataView as DataViewComponent,
-  DataViewExport,
+  ExportButton,
   FilterButton,
   type RowAction,
   SearchInput,
@@ -325,10 +326,11 @@ export default function ReportTemplatesPage() {
       toolbarLeft: <SearchInput showFieldSelector />,
       toolbarRight: (
         <>
+          <ViewToggle />
+          <ColumnsButton />
           <FilterButton />
           <SortButton />
-          <ViewToggle />
-          <DataViewExport />
+          <ExportButton />
         </>
       ),
     };

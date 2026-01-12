@@ -81,6 +81,7 @@ export function DataViewGrid<T>({
         isEmpty={paginatedData.length === 0}
         loading={loading}
         loadingMessage={config.loadingMessage}
+        viewMode="grid"
       />
     );
   }
@@ -215,15 +216,16 @@ function GridCard<T>({
   return (
     <Card
       className={cn(
-        "transition-all",
-        hoverable !== false && "hover:border-primary/20 hover:shadow-md",
-        selected && "ring-2 ring-primary",
+        "overflow-hidden transition-all",
+        // Subtle primary hover for branded feel (consistent with table/list)
+        hoverable !== false && "hover:bg-primary/5",
+        selected && "bg-primary/10",
         cardClassName
       )}
     >
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-1 items-start gap-2">
+        <div className="flex min-w-0 items-start justify-between gap-2 overflow-hidden">
+          <div className="flex min-w-0 flex-1 items-start gap-2 overflow-hidden">
             {selectable && (
               <Checkbox
                 aria-label="Select item"
@@ -234,12 +236,12 @@ function GridCard<T>({
             )}
             <div className="min-w-0 flex-1">
               {primaryField && (
-                <div className="truncate font-semibold">
+                <div className="min-w-0 truncate font-semibold">
                   {renderField(primaryField)}
                 </div>
               )}
               {secondaryField && (
-                <div className="truncate text-muted-foreground text-sm">
+                <div className="min-w-0 truncate text-muted-foreground text-sm">
                   {renderField(secondaryField)}
                 </div>
               )}
@@ -255,15 +257,13 @@ function GridCard<T>({
           <div className="space-y-1.5">
             {otherFields.slice(0, 4).map((field) => (
               <div
-                className="flex items-center justify-between gap-2 text-sm"
+                className="flex min-w-0 items-center justify-between gap-2 text-sm"
                 key={field.id}
               >
                 <span className="shrink-0 text-muted-foreground">
                   {field.label}
                 </span>
-                <span className="truncate text-right">
-                  {renderField(field)}
-                </span>
+                <div className="truncate text-right">{renderField(field)}</div>
               </div>
             ))}
           </div>

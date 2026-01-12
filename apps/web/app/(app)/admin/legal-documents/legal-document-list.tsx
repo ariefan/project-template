@@ -69,7 +69,7 @@ export function LegalDocumentList() {
         client: apiClient,
         query: { page: 1, pageSize: 100 },
       });
-      return response.data;
+      return response.data ?? { data: [], meta: { total: 0 } };
     },
   });
 

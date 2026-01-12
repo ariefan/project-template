@@ -50,10 +50,7 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
-      className={cn(
-        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-        className
-      )}
+      className={cn("border-b transition-colors hover:bg-muted/50", className)}
       data-slot="table-row"
       {...props}
     />
@@ -64,7 +61,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       className={cn(
-        "h-10 px-3 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "h-10 px-3 text-left align-middle font-medium text-muted-foreground text-xs uppercase tracking-wider first:pl-4 last:pr-4 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       data-slot="table-head"
@@ -77,7 +74,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       className={cn(
-        "p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "p-3 align-middle first:pl-4 last:pr-4 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       data-slot="table-cell"
@@ -140,9 +137,13 @@ export function DataViewTable<T>({
 
     if (ellipsis) {
       return (
-        <span className="block truncate" title={content}>
+        <div
+          className="truncate"
+          style={{ maxWidth: column.maxWidth ?? "16rem" }}
+          title={content}
+        >
           {content}
-        </span>
+        </div>
       );
     }
 
@@ -216,6 +217,7 @@ export function DataViewTable<T>({
         isEmpty={paginatedData.length === 0}
         loading={loading}
         loadingMessage={config.loadingMessage}
+        viewMode="table"
       />
     );
   }
@@ -224,7 +226,10 @@ export function DataViewTable<T>({
     <Table className={className}>
       <TableHeader>
         <TableRow
-          className={cn(config.hoverable === false && "hover:bg-transparent")}
+          className={cn(
+            config.hoverable === false && "hover:bg-transparent",
+            "bg-muted hover:bg-muted/50"
+          )}
         >
           {config.selectable && (
             <TableHead className="w-10">
@@ -251,7 +256,7 @@ export function DataViewTable<T>({
             >
               {column.sortable !== false && config.sortable !== false ? (
                 <button
-                  className="-ml-2 inline-flex items-center gap-1 rounded px-2 py-1 transition-colors hover:text-foreground"
+                  className="-ml-2 inline-flex items-center gap-1 rounded px-2 py-1 uppercase transition-colors hover:text-foreground"
                   onClick={() => toggleSort(column.id)}
                   type="button"
                 >
@@ -279,8 +284,12 @@ export function DataViewTable<T>({
             <TableRow
               className={cn(
                 config.hoverable === false && "hover:bg-transparent",
-                config.striped && "odd:bg-muted/30",
-                config.dense && "[&>td]:py-1.5"
+                config.striped && "odd:bg-muted/40",
+                config.dense && "[&>td]:py-1.5",
+                // Subtle primary hover for branded feel
+                "hover:bg-primary/5",
+                // Ensure selected state interacts nicely with hover/stripe
+                isSelected && "bg-primary/10 hover:bg-primary/10"
               )}
               data-state={isSelected ? "selected" : undefined}
               key={rowId}

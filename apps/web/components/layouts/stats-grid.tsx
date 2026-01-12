@@ -46,34 +46,38 @@ function StatCard({ stat }: { stat: Stat }) {
 
   return (
     <Card className="@container/card" data-slot="card">
-      <CardHeader className="relative">
+      <CardHeader className="relative pb-2">
+        {/* Decorative icon */}
         {Icon && (
-          <div className="absolute top-2 right-2">
-            <Icon className="size-14 text-muted-foreground/50" />
+          <div className="absolute top-3 right-3">
+            <Icon className="size-10 text-muted-foreground/30" />
           </div>
         )}
+
         <CardDescription>{stat.label}</CardDescription>
-        <CardTitle className="font-semibold @[250px]/card:text-3xl text-2xl tabular-nums">
-          {stat.value}
-        </CardTitle>
-        {stat.trend && TrendIcon && (
-          <Badge className="mt-2" variant="outline">
-            <TrendIcon className="size-3" />
-            {stat.trend.value}
-          </Badge>
-        )}
-      </CardHeader>
-      {stat.footer && (
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            {stat.footer.label}
-            {TrendIcon && <TrendIcon className="size-4" />}
-          </div>
-          {stat.footer.description && (
-            <div className="text-muted-foreground">
-              {stat.footer.description}
-            </div>
+
+        <div className="flex items-baseline gap-2">
+          <CardTitle className="font-semibold @[250px]/card:text-3xl text-2xl tabular-nums">
+            {stat.value}
+          </CardTitle>
+          {stat.trend && TrendIcon && (
+            <Badge
+              className="gap-0.5"
+              variant={stat.trend.direction === "up" ? "default" : "secondary"}
+            >
+              <TrendIcon className="size-3" />
+              {stat.trend.value}
+            </Badge>
           )}
+        </div>
+      </CardHeader>
+
+      {stat.footer && (
+        <CardFooter className="pt-0 text-muted-foreground text-sm">
+          <span className="truncate">
+            {stat.footer.label}
+            {stat.footer.description && ` — ${stat.footer.description}`}
+          </span>
         </CardFooter>
       )}
     </Card>

@@ -13,9 +13,9 @@ import { Skeleton } from "@workspace/ui/components/skeleton";
 import { cn } from "@workspace/ui/lib/utils";
 import { Database, SearchX } from "lucide-react";
 import * as React from "react";
+import { Card, CardContent } from "../../components/card";
 import { DataViewProvider, useDataView } from "./context";
 import { InlineBulkActions } from "./data-view-bulk-actions";
-import { DataViewColumnToggle } from "./data-view-column-toggle";
 import { DataViewGrid } from "./data-view-grid";
 import { DataViewList } from "./data-view-list";
 import { DataViewPagination, SimplePagination } from "./data-view-pagination";
@@ -90,12 +90,14 @@ export function DataView<T>({
   toolbarClassName,
   contentClassName,
   // Custom content
+  // Custom content
   toolbarTop,
   toolbarLeft,
   primaryAction,
   toolbarRight,
   emptyState,
   loadingState,
+  withCard = true,
 }: DataViewProps<T>) {
   // Responsive view handling
   const responsive = useResponsiveView({
@@ -137,6 +139,7 @@ export function DataView<T>({
       striped,
       hoverable,
       bordered,
+      withCard,
       gridCardClassName,
       listItemRenderer,
       gridCardRenderer,
@@ -168,6 +171,7 @@ export function DataView<T>({
       striped,
       hoverable,
       bordered,
+      withCard,
       gridCardClassName,
       listItemRenderer,
       gridCardRenderer,
@@ -176,6 +180,15 @@ export function DataView<T>({
       clientSideThreshold,
     ]
   );
+
+  const { withCard: _withCard, ..._otherConfig } = config;
+  // If withCard is true, we wrap the main content in a Card + CardContent
+  // and we automatically apply the negative margin to the inner content to make it bleed
+
+  const RootComp = config.withCard ? Card : "div";
+  const rootProps = config.withCard
+    ? { className: cn("space-y-4 py-4", className) } // Reduce default Card py-6 to py-4
+    : { className: cn("space-y-4", className) };
 
   return (
     <DataViewProvider
@@ -197,56 +210,106 @@ export function DataView<T>({
       totalCount={totalCount}
       view={view}
     >
-      <div className={cn("space-y-4", className)}>
-        {/* Toolbar Top */}
-        {toolbarTop}
+      <RootComp {...rootProps}>
+        {config.withCard ? (
+          <CardContent className="px-4">
+            <div className="space-y-4">
+              {/* Toolbar Top */}
+              {toolbarTop}
 
-        {/* Toolbar */}
-        <DataViewToolbar
-          className={toolbarClassName}
-          leftContent={toolbarLeft}
-          primaryAction={primaryAction}
-          rightContent={
-            <div className="flex items-center gap-2">
-              {toolbarRight}
-              <DataViewColumnToggle />
+              {/* Toolbar */}
+              <DataViewToolbar
+                className={toolbarClassName}
+                leftContent={toolbarLeft}
+                primaryAction={primaryAction}
+                rightContent={toolbarRight}
+              >
+                {selectable && <InlineBulkActions />}
+              </DataViewToolbar>
+
+              {/* Active Filters */}
+              <ActiveFilters />
+
+              {/* Content */}
+              <div
+                className={cn(
+                  bordered && "rounded-lg border",
+                  // If withCard is true, we force full-bleed unless contentClassName overrides it
+                  config.withCard && "-mx-4",
+                  contentClassName
+                )}
+              >
+                <DataViewContentRenderer
+                  data={data}
+                  emptyState={emptyState}
+                  loading={loading}
+                  loadingState={loadingState}
+                  view={view}
+                />
+              </div>
+
+              {/* Pagination */}
+              {paginated && (
+                <>
+                  {/* Desktop pagination */}
+                  <div className="hidden sm:block">
+                    <DataViewPagination />
+                  </div>
+                  {/* Mobile pagination */}
+                  <div className="sm:hidden">
+                    <SimplePagination />
+                  </div>
+                </>
+              )}
             </div>
-          }
-        >
-          {selectable && <InlineBulkActions />}
-        </DataViewToolbar>
+          </CardContent>
+        ) : (
+          <div className="space-y-4">
+            {/* Toolbar Top */}
+            {toolbarTop}
 
-        {/* Active Filters */}
-        <ActiveFilters />
+            {/* Toolbar */}
+            <DataViewToolbar
+              className={toolbarClassName}
+              leftContent={toolbarLeft}
+              primaryAction={primaryAction}
+              rightContent={toolbarRight}
+            >
+              {selectable && <InlineBulkActions />}
+            </DataViewToolbar>
 
-        {/* Content */}
-        <div className={cn(bordered && "rounded-lg border", contentClassName)}>
-          <DataViewContentRenderer
-            data={data}
-            emptyState={emptyState}
-            loading={loading}
-            loadingState={loadingState}
-            view={view}
-          />
-        </div>
+            {/* Active Filters */}
+            <ActiveFilters />
 
-        {/* Pagination */}
-        {paginated && (
-          <>
-            {/* Desktop pagination */}
-            <div className="hidden sm:block">
-              <DataViewPagination />
+            {/* Content */}
+            <div
+              className={cn(bordered && "rounded-lg border", contentClassName)}
+            >
+              <DataViewContentRenderer
+                data={data}
+                emptyState={emptyState}
+                loading={loading}
+                loadingState={loadingState}
+                view={view}
+              />
             </div>
-            {/* Mobile pagination */}
-            <div className="sm:hidden">
-              <SimplePagination />
-            </div>
-          </>
+
+            {/* Pagination */}
+            {paginated && (
+              <>
+                {/* Desktop pagination */}
+                <div className="hidden sm:block">
+                  <DataViewPagination />
+                </div>
+                {/* Mobile pagination */}
+                <div className="sm:hidden">
+                  <SimplePagination />
+                </div>
+              </>
+            )}
+          </div>
         )}
-
-        {/* Floating bulk actions (alternative to inline) */}
-        {/* <DataViewBulkActions position="floating" /> */}
-      </div>
+      </RootComp>
     </DataViewProvider>
   );
 }

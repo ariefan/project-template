@@ -79,6 +79,7 @@ export function DataViewList<T>({
         isEmpty={paginatedData.length === 0}
         loading={loading}
         loadingMessage={config.loadingMessage}
+        viewMode="list"
       />
     );
   }
@@ -164,14 +165,17 @@ function ListItem<T>({
     });
   };
 
-  // Build description from other fields
+  // Build description from other fields (limit to 2 fields, truncate values)
   const descriptionContent =
     otherFields.length > 0
       ? otherFields
-          .slice(0, 4)
+          .slice(0, 2)
           .map((field) => {
-            const value = getFieldValue(row, field);
-            return `${field.label}: ${String(value ?? "")}`;
+            const value = String(getFieldValue(row, field) ?? "");
+            // Truncate long values to 30 characters
+            const truncatedValue =
+              value.length > 30 ? `${value.slice(0, 30)}...` : value;
+            return `${field.label}: ${truncatedValue}`;
           })
           .join(" · ")
       : null;
@@ -227,8 +231,9 @@ function ListItem<T>({
   return (
     <Item
       className={cn(
-        hoverable !== false && "hover:bg-muted/50",
-        selected && "bg-muted ring-1 ring-primary"
+        // Subtle primary hover for branded feel (consistent with table)
+        hoverable !== false && "hover:bg-primary/5",
+        selected && "bg-primary/10"
       )}
       size={dense ? "sm" : "default"}
     >
@@ -242,17 +247,21 @@ function ListItem<T>({
         </ItemMedia>
       )}
 
-      <ItemContent>
+      <ItemContent className="min-w-0">
         <ItemTitle>
-          {primaryField && renderField(primaryField)}
+          {primaryField && (
+            <span className="shrink-0">{renderField(primaryField)}</span>
+          )}
           {secondaryField && (
-            <span className="font-normal text-muted-foreground">
+            <span className="min-w-0 truncate font-normal text-muted-foreground">
               {renderField(secondaryField)}
             </span>
           )}
         </ItemTitle>
         {descriptionContent && (
-          <ItemDescription>{descriptionContent}</ItemDescription>
+          <ItemDescription className="truncate">
+            {descriptionContent}
+          </ItemDescription>
         )}
       </ItemContent>
 

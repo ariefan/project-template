@@ -6,8 +6,9 @@ import { Progress } from "@workspace/ui/components/progress";
 import {
   type BulkAction,
   type ColumnDef,
+  ColumnsButton,
   DataView as DataViewComponent,
-  DataViewExport,
+  ExportButton,
   FilterButton,
   type RowAction,
   SearchInput,
@@ -326,10 +327,11 @@ function JobsContent() {
         }
         toolbarRight={
           <>
+            <ViewToggle />
+            <ColumnsButton />
             <FilterButton />
             <SortButton />
-            <ViewToggle />
-            <DataViewExport />
+            <ExportButton />
           </>
         }
         totalCount={totalCount}

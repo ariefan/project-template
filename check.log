@@ -1,0 +1,303 @@
+
+> project-template@0.0.1 check C:\dev\project-template
+> turbo typecheck && biome check --write
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/cache:typecheck: 
+@workspace/cache:typecheck: > @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/ui-mobile:typecheck: 
+@workspace/ui-mobile:typecheck: > @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck
+@workspace/cache:typecheck: > tsc --noEmit
+@workspace/cache:typecheck: 
+@workspace/ui-mobile:typecheck: 
+@workspace/ui:typecheck: cache miss, executing 28af58fc9fd1985a
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/metrics:typecheck: 
+@workspace/metrics:typecheck: > @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit
+@workspace/metrics:typecheck: 
+@workspace/utils:typecheck: cache hit, replaying logs ad063b8f986b570f
+@workspace/utils:typecheck: 
+@workspace/utils:typecheck: > @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit
+@workspace/utils:typecheck: 
+@workspace/db:typecheck: cache hit, replaying logs 7b6e0780f8f8c21d
+@workspace/db:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+mobile:typecheck: 
+mobile:typecheck: > mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: 
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+@workspace/authorization:typecheck: cache hit, replaying logs fb9ed2bd5c7ae6c0
+@workspace/authorization:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/test-utils:typecheck: cache hit, replaying logs 88be5b797594860a
+@workspace/test-utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/auth:typecheck: cache hit, replaying logs 28e61ebf84995645
+@workspace/auth:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/reports:typecheck: cache hit, replaying logs f85a176615efd843
+@workspace/reports:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/notifications:typecheck: cache hit, replaying logs 122d8205415c16cd
+@workspace/notifications:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+api:typecheck: cache hit, replaying logs a36e610aff4e30bb
+api:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> api@0.0.1 typecheck C:\dev\project-template\apps\api
+api:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui:typecheck: 
+@workspace/ui:typecheck: > @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit
+@workspace/ui:typecheck: 
+@workspace/feature-files:typecheck: cache miss, executing ac3fa8b3f60eb417
+@workspace/feature-files:typecheck: 
+@workspace/feature-files:typecheck: > @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit
+@workspace/feature-files:typecheck: 
+web:typecheck: cache miss, executing 8520acf40d7b4649
+drive:typecheck: cache miss, executing c9c44b3abd01f129
+web:typecheck: 
+web:typecheck: > web@0.0.1 typecheck C:\dev\project-template\apps\web
+web:typecheck: > tsc --noEmit
+web:typecheck: 
+drive:typecheck: 
+drive:typecheck: > drive@0.0.1 typecheck C:\dev\project-template\apps\drive
+drive:typecheck: > tsc --noEmit
+drive:typecheck: 
+
+ Tasks:    17 successful, 17 total
+Cached:    13 cached, 17 total
+  Time:    37.81s 
+
+apps\web\app\(app)\announcements\announcements-list.tsx:16:3 lint/suspicious/noShadowRestrictedNames ━━━━━━━━━━
+
+  × Do not shadow the global "DataView" property.
+  
+    14 │ import {
+    15 │   type ColumnDef,
+  > 16 │   DataView,
+       │   ^^^^^^^^
+    17 │   DataViewActionMenu,
+    18 │   FilterButton,
+  
+  i Consider renaming this variable. It's easy to confuse the origin of variables when they're named after a known global.
+  
+
+apps\web\app\(app)\pages\crud\components\stats-cards.tsx:115:37 lint/suspicious/noArrayIndexKey ━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    113 │     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    114 │       {Array.from({ length: 4 }).map((_, i) => (
+  > 115 │         <Card data-slot="card" key={i}>
+        │                                     ^
+    116 │           <CardHeader className="pb-2">
+    117 │             <CardDescription>
+  
+  i This is the source of the key value.
+  
+    112 │   return (
+    113 │     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+  > 114 │       {Array.from({ length: 4 }).map((_, i) => (
+        │                                          ^
+    115 │         <Card data-slot="card" key={i}>
+    116 │           <CardHeader className="pb-2">
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+apps\web\env.d.ts:1:9 lint/style/noNamespace ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × TypeScript's namespaces are an outdated way to organize code.
+  
+  > 1 │ declare namespace NodeJS {
+      │         ^^^^^^^^^^^^^^^^^^
+  > 2 │   interface ProcessEnv {
+  > 3 │     BUILD_COMMIT?: string;
+  > 4 │     BUILD_TIME?: string;
+  > 5 │     APP_VERSION?: string;
+  > 6 │   }
+  > 7 │ }
+      │ ^
+    8 │ 
+  
+  i Prefer the ES6 modules (import/export) over namespaces.
+  
+
+apps\web\next.config.mjs:1:26 lint/style/useNodejsImportProtocol  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × A Node.js builtin module should be imported with the node: protocol.
+  
+  > 1 │ import { execSync } from "child_process";
+      │                          ^^^^^^^^^^^^^^^
+    2 │ import { createRequire } from "module";
+    3 │ 
+  
+  i Using the node: protocol is more explicit and signals that the imported module belongs to Node.js.
+  
+  i Unsafe fix: Add the node: protocol.
+  
+     1    │ - import·{·execSync·}·from·"child_process";
+        1 │ + import·{·execSync·}·from·"node:child_process";
+     2  2 │   import { createRequire } from "module";
+     3  3 │   
+  
+
+apps\web\next.config.mjs:2:31 lint/style/useNodejsImportProtocol  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × A Node.js builtin module should be imported with the node: protocol.
+  
+    1 │ import { execSync } from "child_process";
+  > 2 │ import { createRequire } from "module";
+      │                               ^^^^^^^^
+    3 │ 
+    4 │ const require = createRequire(import.meta.url);
+  
+  i Using the node: protocol is more explicit and signals that the imported module belongs to Node.js.
+  
+  i Unsafe fix: Add the node: protocol.
+  
+     1  1 │   import { execSync } from "child_process";
+     2    │ - import·{·createRequire·}·from·"module";
+        2 │ + import·{·createRequire·}·from·"node:module";
+     3  3 │   
+     4  4 │   const require = createRequire(import.meta.url);
+  
+
+packages\ui\src\composed\data-view\content-placeholder.tsx:93:74 lint/suspicious/noArrayIndexKey ━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    91 │       {/* Data rows */}
+    92 │       {Array.from({ length: 5 }).map((_, i) => (
+  > 93 │         <div className="flex items-center gap-4 border-b px-4 py-3" key={i}>
+       │                                                                          ^
+    94 │           <Skeleton className="size-4 rounded" />
+    95 │           <Skeleton
+  
+  i This is the source of the key value.
+  
+    90 │       </div>
+    91 │       {/* Data rows */}
+  > 92 │       {Array.from({ length: 5 }).map((_, i) => (
+       │                                          ^
+    93 │         <div className="flex items-center gap-4 border-b px-4 py-3" key={i}>
+    94 │           <Skeleton className="size-4 rounded" />
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+packages\ui\src\composed\data-view\content-placeholder.tsx:115:65 lint/suspicious/noArrayIndexKey ━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    113 │     <div className="w-full divide-y">
+    114 │       {Array.from({ length: 5 }).map((_, i) => (
+  > 115 │         <div className="flex items-center gap-4 px-4 py-3" key={i}>
+        │                                                                 ^
+    116 │           <Skeleton className="size-4 rounded" />
+    117 │           <div className="flex-1 space-y-2">
+  
+  i This is the source of the key value.
+  
+    112 │   return (
+    113 │     <div className="w-full divide-y">
+  > 114 │       {Array.from({ length: 5 }).map((_, i) => (
+        │                                          ^
+    115 │         <div className="flex items-center gap-4 px-4 py-3" key={i}>
+    116 │           <Skeleton className="size-4 rounded" />
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+packages\ui\src\composed\data-view\content-placeholder.tsx:141:20 lint/suspicious/noArrayIndexKey ━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    139 │     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    140 │       {Array.from({ length: 6 }).map((_, i) => (
+  > 141 │         <Card key={i}>
+        │                    ^
+    142 │           <CardHeader className="pb-2">
+    143 │             <div className="flex items-start justify-between">
+  
+  i This is the source of the key value.
+  
+    138 │   return (
+    139 │     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  > 140 │       {Array.from({ length: 6 }).map((_, i) => (
+        │                                          ^
+    141 │         <Card key={i}>
+    142 │           <CardHeader className="pb-2">
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+packages\ui\src\composed\data-view\data-view-toolbar.tsx:645:9 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━
+
+  × This variable currentSortLabel is unused.
+  
+    643 │     ? `${sort.field}:${sort.direction}`
+    644 │     : "__none__";
+  > 645 │   const currentSortLabel = sort
+        │         ^^^^^^^^^^^^^^^^
+    646 │     ? getSortLabel(sort.field, sort.direction)
+    647 │     : null;
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend currentSortLabel with an underscore.
+  
+    643 643 │       ? `${sort.field}:${sort.direction}`
+    644 644 │       : "__none__";
+    645     │ - ··const·currentSortLabel·=·sort
+        645 │ + ··const·_currentSortLabel·=·sort
+    646 646 │       ? getSortLabel(sort.field, sort.direction)
+    647 647 │       : null;
+  
+
+packages\ui\src\composed\data-view\data-view.tsx:184:35 lint/correctness/noUnusedVariables ━━━━━━━━━━
+
+  × This variable otherConfig is unused.
+  
+    182 │   );
+    183 │ 
+  > 184 │   const { withCard: _withCard, ...otherConfig } = config;
+        │                                   ^^^^^^^^^^^
+    185 │   // If withCard is true, we wrap the main content in a Card + CardContent
+    186 │   // and we automatically apply the negative margin to the inner content to make it bleed
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+
+Skipped 3 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
+
+Checked 748 files in 1068ms. No fixes applied.
+Found 10 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while applying fixes.
+  
+
+ ELIFECYCLE  Command failed with exit code 1.

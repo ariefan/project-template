@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Features } from "@/components/landing/features";
 import { FinalCTA } from "@/components/landing/final-cta";
-import { Footer } from "@/components/landing/footer";
 import { Hero } from "@/components/landing/hero";
-import { Navigation } from "@/components/landing/navigation";
 import { Stats } from "@/components/landing/stats";
 
 export const metadata: Metadata = {
@@ -20,15 +18,11 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen">
-      <Navigation />
-      <main>
-        <Hero />
-        <Features />
-        <Stats />
-        <FinalCTA />
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <Hero />
+      <Features />
+      <Stats />
+      <FinalCTA />
+    </main>
   );
 }
