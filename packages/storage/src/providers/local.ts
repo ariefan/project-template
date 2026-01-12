@@ -123,6 +123,17 @@ export class LocalStorageProvider implements StorageProvider {
 
   async listFiles(path: string, recursive = false): Promise<FileInfo[]> {
     const fullPath = join(this.basePath, path);
+
+    // Return empty array if directory doesn't exist
+    try {
+      await stat(fullPath);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        return [];
+      }
+      throw error;
+    }
+
     const entries = await readdir(fullPath, { withFileTypes: true });
     const files: FileInfo[] = [];
 

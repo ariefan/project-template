@@ -45,9 +45,11 @@
     "@tanstack/react-table": "^8.21.3",
     "@workspace/auth": "workspace:*",
     "@workspace/contracts": "workspace:*",
+    "@workspace/feature-files": "workspace:^",
     "@workspace/notifications": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@workspace/utils": "workspace:*",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
@@ -65,7 +67,6 @@
     "recharts": "2.15.4",
     "sonner": "^2.0.7",
     "vaul": "^1.1.2",
-    "browser-image-compression": "^2.0.2",
     "zod": "^4.2.1"
   },
   "devDependencies": {

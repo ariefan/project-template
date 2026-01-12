@@ -16,8 +16,8 @@ import {
 } from "@workspace/ui/components/dropdown-menu";
 import { cn } from "@workspace/ui/lib/utils";
 import { MoreHorizontal } from "lucide-react";
-import type { FileInfo } from "./file-manager-context";
-import { getFileIcon, getFileType } from "./lib/file-utils";
+import type { FileInfo } from "../context/file-manager-context";
+import { getFileIcon, getFileType } from "../lib/file-utils";
 
 interface FileListViewProps {
   files: FileInfo[];

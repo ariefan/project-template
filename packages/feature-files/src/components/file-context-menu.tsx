@@ -5,8 +5,8 @@ import {
   ContextMenuContent,
   ContextMenuTrigger,
 } from "@workspace/ui/components/context-menu";
-import type { FileInfo } from "./file-manager-context";
-import { renderContextMenuItems } from "./lib/context-menu-items";
+import type { FileInfo } from "../context/file-manager-context";
+import { renderContextMenuItems } from "../lib/context-menu-items";
 
 interface FileContextMenuProps {
   file: FileInfo;

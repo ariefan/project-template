@@ -13,7 +13,7 @@ import {
   Folder,
 } from "lucide-react";
 
-type FileType =
+export type FileType =
   | "folder"
   | "image"
   | "video"
@@ -50,6 +50,7 @@ export function getFileType(fileName: string, isDirectory: boolean): FileType {
     "pptx",
     "txt",
     "rtf",
+    "csv",
   ];
   const archiveExts = ["zip", "rar", "7z", "tar", "gz"];
   const codeExts = [
@@ -64,6 +65,9 @@ export function getFileType(fileName: string, isDirectory: boolean): FileType {
     "java",
     "cpp",
     "c",
+    "md",
+    "yaml",
+    "yml",
   ];
 
   if (imageExts.includes(ext)) {
@@ -155,4 +159,43 @@ export function formatBytes(bytes: number): string {
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
+}
+
+import type { FileInfo, SortBy } from "../context/file-manager-context";
+
+export function compareFiles(
+  a: FileInfo,
+  b: FileInfo,
+  sortBy: SortBy,
+  sortDirection: "asc" | "desc"
+): number {
+  if (a.isDirectory && !b.isDirectory) {
+    return -1;
+  }
+  if (!a.isDirectory && b.isDirectory) {
+    return 1;
+  }
+
+  let comparison = 0;
+  switch (sortBy) {
+    case "name":
+      comparison = a.name.localeCompare(b.name);
+      break;
+    case "type":
+      comparison = getFileType(a.name, a.isDirectory).localeCompare(
+        getFileType(b.name, b.isDirectory)
+      );
+      break;
+    case "size":
+      comparison = a.size - b.size;
+      break;
+    case "modified":
+      comparison =
+        new Date(a.modified).getTime() - new Date(b.modified).getTime();
+      break;
+    default:
+      comparison = 0;
+  }
+
+  return sortDirection === "desc" ? -comparison : comparison;
 }

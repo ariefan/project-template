@@ -12,20 +12,20 @@ import {
 import { FilePreviewDialog } from "@workspace/ui/composed/file-preview/file-preview-dialog";
 import { Download, Eye, Share2, X } from "lucide-react";
 import { useState } from "react";
-import { env } from "@/lib/env";
-import type { FileInfo } from "./file-manager-context";
+import type { FileInfo } from "../context/file-manager-context";
 import {
   formatBytes,
   getFileIcon,
   getFileType,
   getFileTypeBadge,
-} from "./lib/file-utils";
+} from "../lib/file-utils";
 
 interface FileDetailsSidebarProps {
   file: FileInfo | null;
   isOpen: boolean;
   onClose: () => void;
   onDownload?: (file: FileInfo) => void;
+  previewBaseUrl?: string;
 }
 
 export function FileDetailsSidebar({
@@ -33,6 +33,7 @@ export function FileDetailsSidebar({
   isOpen,
   onClose,
   onDownload,
+  previewBaseUrl = "",
 }: FileDetailsSidebarProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -42,6 +43,7 @@ export function FileDetailsSidebar({
 
   const fileType = getFileType(file.name, file.isDirectory);
   const isImage = fileType === "image";
+  const previewUrl = `${previewBaseUrl}/storage/preview/${file.path}`;
 
   return (
     <>
@@ -73,7 +75,7 @@ export function FileDetailsSidebar({
                     alt={file.name}
                     className="max-h-48 max-w-full rounded object-contain"
                     height={192}
-                    src={`${env.NEXT_PUBLIC_API_URL}/storage/preview/${file.path}`}
+                    src={previewUrl}
                     width={192}
                   />
                 </div>
@@ -158,7 +160,7 @@ export function FileDetailsSidebar({
       <FilePreviewDialog
         fileName={file.name}
         fileType={isImage ? "image" : undefined}
-        fileUrl={`${env.NEXT_PUBLIC_API_URL}/storage/preview/${file.path}`}
+        fileUrl={previewUrl}
         onOpenChange={setPreviewOpen}
         open={previewOpen}
       />

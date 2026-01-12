@@ -26,7 +26,11 @@ import {
   SortAsc,
   Upload,
 } from "lucide-react";
-import type { SortBy, SortDirection, ViewMode } from "./file-manager-context";
+import type {
+  SortBy,
+  SortDirection,
+  ViewMode,
+} from "../context/file-manager-context";
 
 interface FileToolbarProps {
   searchQuery: string;

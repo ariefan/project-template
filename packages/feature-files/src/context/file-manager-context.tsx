@@ -14,11 +14,12 @@ export type SortBy = "name" | "type" | "size" | "modified";
 export type SortDirection = "asc" | "desc";
 export type ViewMode = "grid" | "list";
 
-interface FileManagerContextValue {
+export interface FileManagerContextValue {
   currentPath: string;
   setCurrentPath: (path: string) => void;
   files: FileInfo[];
   setFiles: (files: FileInfo[]) => void;
+  // We can expand this later
 }
 
 const FileManagerContext = createContext<FileManagerContextValue | null>(null);
@@ -42,10 +43,12 @@ export function FileManagerProvider({ children }: FileManagerProviderProps) {
   );
 }
 
-export function useFileManager(): FileManagerContextValue {
+export function useFileManagerContext(): FileManagerContextValue {
   const context = useContext(FileManagerContext);
   if (!context) {
-    throw new Error("useFileManager must be used within FileManagerProvider");
+    throw new Error(
+      "useFileManagerContext must be used within FileManagerProvider"
+    );
   }
   return context;
 }

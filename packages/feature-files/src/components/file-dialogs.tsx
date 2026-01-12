@@ -10,10 +10,9 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
-import { cn } from "@workspace/ui/lib/utils";
-import { Upload, UploadCloud } from "lucide-react";
+import { FileUploadWithProgress } from "@workspace/ui/composed/file-upload-with-progress";
 import { useState } from "react";
-import type { FileInfo } from "./file-manager-context";
+import type { FileInfo } from "../context/file-manager-context";
 
 interface FileDialogsProps {
   // Delete dialog
@@ -34,6 +33,10 @@ interface FileDialogsProps {
   isUploading: boolean;
   uploadProgress: Record<string, number>;
   onUpload: (files: FileList | File[]) => void;
+  onSingleUpload: (
+    fileState: { file: File; id: string },
+    onProgress?: (progress: number, speed: number, eta: number) => void
+  ) => Promise<void>;
 
   // New folder dialog
   showNewFolderDialog: boolean;
@@ -70,9 +73,10 @@ export function FileDialogs({
   showUploadDialog,
   setShowUploadDialog,
   currentPath,
-  isUploading,
-  uploadProgress,
+  isUploading: _isUploading,
+  uploadProgress: _uploadProgress,
   onUpload,
+  onSingleUpload,
   showNewFolderDialog,
   setShowNewFolderDialog,
   newFolderName,
@@ -92,17 +96,17 @@ export function FileDialogs({
   onRenameConfirm,
 }: FileDialogsProps) {
   // Drag state for upload dialog
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [_isDragOver, setIsDragOver] = useState(false);
   const [dragCounter, setDragCounter] = useState(0);
 
-  const handleDragEnter = (e: React.DragEvent) => {
+  const _handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragCounter((prev) => prev + 1);
     setIsDragOver(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const _handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragCounter((prev) => prev - 1);
@@ -111,12 +115,12 @@ export function FileDialogs({
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const _handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const _handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragCounter(0);
@@ -177,70 +181,12 @@ export function FileDialogs({
               Upload files to {currentPath || "/"}
             </DialogDescription>
           </DialogHeader>
-          {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: Drag and drop zone */}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag and drop zone */}
-          <section
-            className={cn(
-              "relative rounded-lg border-2 border-dashed p-8 text-center transition-all duration-200",
-              isDragOver
-                ? "scale-[1.02] border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-muted-foreground/50"
-            )}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            {isDragOver && (
-              <div className="fade-in zoom-in absolute inset-0 flex animate-in duration-200">
-                <div className="m-auto flex flex-col items-center gap-3">
-                  <UploadCloud className="h-16 w-16 animate-bounce text-primary" />
-                  <p className="font-semibold text-lg text-primary">
-                    Drop files to upload
-                  </p>
-                </div>
-              </div>
-            )}
 
-            <div className={cn(isDragOver && "opacity-0")}>
-              <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <p className="mb-2 font-medium">Drag and drop files here</p>
-              <p className="mb-4 text-muted-foreground text-sm">or</p>
-              <label className="cursor-pointer" htmlFor="file-upload">
-                <input
-                  className="hidden"
-                  id="file-upload"
-                  multiple
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files.length > 0) {
-                      onUpload(e.target.files);
-                    }
-                  }}
-                  type="file"
-                />
-                <Button type="button">Browse files</Button>
-              </label>
-              {isUploading && (
-                <div className="mt-4 space-y-2">
-                  <p className="font-medium text-sm">Uploading...</p>
-                  {Object.entries(uploadProgress).map(([file, percent]) => (
-                    <div className="space-y-1" key={file}>
-                      <div className="flex justify-between text-xs">
-                        <span>{file}</span>
-                        <span>{Math.round(percent)}%</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full bg-primary transition-all"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
+          <FileUploadWithProgress
+            maxFileSize={50 * 1024 * 1024}
+            multiple={true}
+            onUpload={onSingleUpload} // 50MB
+          />
         </DialogContent>
       </Dialog>
 

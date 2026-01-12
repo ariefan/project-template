@@ -1,0 +1,41 @@
+{
+  "name": "drive",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/ui": "workspace:*",
+    "@workspace/feature-files": "workspace:*",
+    "@workspace/auth": "workspace:*",
+    "@workspace/storage": "workspace:*",
+    "@workspace/db": "workspace:*",
+    "@workspace/notifications": "workspace:*",
+    "@workspace/utils": "workspace:*",
+    "next": "^16.1.1",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "lucide-react": "^0.475.0",
+    "zod": "^4.2.1",
+    "sonner": "^2.0.7",
+    "@tanstack/react-query": "^5.90.12",
+    "class-variance-authority": "^0.7.1",
+    "next-themes": "^0.4.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/node": "^20.19.25",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "tailwindcss": "^4.0.0",
+    "postcss": "^8.4.31"
+  }
+}

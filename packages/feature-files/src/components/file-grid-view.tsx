@@ -7,8 +7,8 @@ import {
   ContextMenuTrigger,
 } from "@workspace/ui/components/context-menu";
 import { cn } from "@workspace/ui/lib/utils";
-import type { FileInfo } from "./file-manager-context";
-import { getFileIcon, getFileType } from "./lib/file-utils";
+import type { FileInfo } from "../context/file-manager-context";
+import { getFileIcon, getFileType } from "../lib/file-utils";
 
 interface FileGridViewProps {
   files: FileInfo[];

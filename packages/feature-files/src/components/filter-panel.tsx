@@ -8,7 +8,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 
-type FilterType =
+export type FilterType =
   | "all"
   | "folder"
   | "image"
@@ -81,5 +81,3 @@ export function FilterPanel({
     </div>
   );
 }
-
-export type { FilterType };

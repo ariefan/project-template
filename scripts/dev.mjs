@@ -149,6 +149,7 @@ async function main() {
     } else {
       console.log("🌐 API:    http://localhost:3001");
       console.log("🌐 Web:    http://localhost:3000");
+      console.log("🌐 Drive:  http://localhost:3002");
       console.log("🌐 Mobile: http://localhost:8081");
     }
 
