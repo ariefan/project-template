@@ -43,8 +43,12 @@ export function DataViewPagination({
 
   const { page, pageSize, total } = pagination;
 
-  // Hide pagination when there are no records
-  if (total === 0) {
+  // Calculate minimum page size
+  const minPageSize = Math.min(...pageSizeOptions);
+
+  // Hide pagination when total items effectively fit in the smallest page size option
+  // This avoids showing controls when there's no choice to be made
+  if (total <= minPageSize) {
     return null;
   }
 
@@ -77,7 +81,10 @@ export function DataViewPagination({
             onValueChange={(value) => setPageSize(Number(value))}
             value={String(pageSize)}
           >
-            <SelectTrigger className="w-18" size="sm">
+            <SelectTrigger
+              className="h-8 w-auto min-w-[3.5rem] border-none px-2 shadow-none hover:bg-accent hover:text-accent-foreground focus:ring-0"
+              size="sm"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -116,7 +123,15 @@ interface SimplePaginationProps {
 export function SimplePagination({ className }: SimplePaginationProps) {
   const { pagination, setPage, totalPages, config } = useDataView();
 
-  if (!config.paginated || totalPages <= 1) {
+  if (!config.paginated) {
+    return null;
+  }
+
+  const pageSizeOptions = pagination.pageSizeOptions ??
+    config.pageSizeOptions ?? [10, 25, 50, 100];
+  const minPageSize = Math.min(...pageSizeOptions);
+
+  if (pagination.total <= minPageSize) {
     return null;
   }
 

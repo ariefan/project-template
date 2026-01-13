@@ -172,10 +172,7 @@ function ListItem<T>({
           .slice(0, 2)
           .map((field) => {
             const value = String(getFieldValue(row, field) ?? "");
-            // Truncate long values to 30 characters
-            const truncatedValue =
-              value.length > 30 ? `${value.slice(0, 30)}...` : value;
-            return `${field.label}: ${truncatedValue}`;
+            return `${field.label}: ${value}`;
           })
           .join(" · ")
       : null;
@@ -233,7 +230,8 @@ function ListItem<T>({
       className={cn(
         // Subtle primary hover for branded feel (consistent with table)
         hoverable !== false && "hover:bg-primary/5",
-        selected && "bg-primary/10"
+        selected && "bg-primary/10",
+        "flex-nowrap items-start"
       )}
       size={dense ? "sm" : "default"}
     >
@@ -248,9 +246,11 @@ function ListItem<T>({
       )}
 
       <ItemContent className="min-w-0">
-        <ItemTitle>
+        <ItemTitle className="w-full">
           {primaryField && (
-            <span className="shrink-0">{renderField(primaryField)}</span>
+            <span className="min-w-0 truncate">
+              {renderField(primaryField)}
+            </span>
           )}
           {secondaryField && (
             <span className="min-w-0 truncate font-normal text-muted-foreground">
@@ -259,13 +259,13 @@ function ListItem<T>({
           )}
         </ItemTitle>
         {descriptionContent && (
-          <ItemDescription className="truncate">
-            {descriptionContent}
-          </ItemDescription>
+          <ItemDescription>{descriptionContent}</ItemDescription>
         )}
       </ItemContent>
 
-      {hasActions && <ItemActions>{renderActionCell()}</ItemActions>}
+      {hasActions && (
+        <ItemActions className="shrink-0">{renderActionCell()}</ItemActions>
+      )}
     </Item>
   );
 }

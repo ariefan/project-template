@@ -252,11 +252,11 @@ export function DataView<T>({
               {paginated && (
                 <>
                   {/* Desktop pagination */}
-                  <div className="hidden sm:block">
+                  <div className="my-0 hidden sm:block">
                     <DataViewPagination />
                   </div>
                   {/* Mobile pagination */}
-                  <div className="sm:hidden">
+                  <div className="my-0 sm:hidden">
                     <SimplePagination />
                   </div>
                 </>
@@ -298,11 +298,11 @@ export function DataView<T>({
             {paginated && (
               <>
                 {/* Desktop pagination */}
-                <div className="hidden sm:block">
+                <div className="my-0 hidden sm:block">
                   <DataViewPagination />
                 </div>
                 {/* Mobile pagination */}
-                <div className="sm:hidden">
+                <div className="my-0 sm:hidden">
                   <SimplePagination />
                 </div>
               </>

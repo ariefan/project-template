@@ -21,6 +21,9 @@ interface PageHeaderProps {
 
   // Optional badge next to title
   badge?: React.ReactNode;
+
+  // Optional icon
+  icon?: React.ReactNode;
 }
 
 export function PageHeader({
@@ -32,6 +35,7 @@ export function PageHeader({
   actions,
   stats,
   badge,
+  icon,
 }: PageHeaderProps) {
   const router = useRouter();
 
@@ -65,16 +69,22 @@ export function PageHeader({
             </Button>
           )}
 
-          {/* Title with optional badge */}
-          <div className="flex items-center gap-2">
-            <h1 className="font-bold text-2xl">{title}</h1>
-            {badge}
-          </div>
+          {/* Icon and Title/Description Group */}
+          <div className="flex items-center gap-4">
+            {/* Icon Section (Left) */}
+            {icon && <div className="shrink-0 text-primary">{icon}</div>}
 
-          {/* Description */}
-          {description && (
-            <p className="mt-1 text-muted-foreground">{description}</p>
-          )}
+            {/* Text Section (Right) */}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-bold text-2xl">{title}</h1>
+                {badge}
+              </div>
+              {description && (
+                <p className="mt-1 text-muted-foreground">{description}</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Actions */}

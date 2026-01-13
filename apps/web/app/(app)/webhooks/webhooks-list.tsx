@@ -12,6 +12,7 @@ import {
   webhooksListDeliveriesOptions,
   webhooksListEventTypesOptions,
   webhooksListOptions,
+  webhooksRetryDeliveryMutation,
   webhooksRotateSecretMutation,
   webhooksTestMutation,
   webhooksUpdateMutation,
@@ -28,13 +29,7 @@ import {
 } from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card";
+import { Card, CardContent } from "@workspace/ui/components/card";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 import {
   Dialog,
@@ -61,14 +56,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@workspace/ui/components/sheet";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Textarea } from "@workspace/ui/components/textarea";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -86,11 +74,11 @@ import {
   RefreshCw,
   Send,
   Trash2,
-  Webhook as WebhookIcon,
   X,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 
@@ -108,17 +96,29 @@ interface WebhookFormData {
   events: string[];
 }
 
+import {
+  type ColumnDef,
+  ColumnsButton,
+  DataView as DataTable,
+  FilterButton,
+  type FilterValue,
+  SearchInput,
+  SortButton,
+} from "@workspace/ui/composed/data-view"; // Import DataView and Toolbar components
+import { PageHeader } from "@/components/layouts/page-header";
+
+// ... previous imports ...
+
 export function WebhooksList() {
   const queryClient = useQueryClient();
   const { data: orgData } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  // DataView State
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filters, setFilters] = useState<FilterValue[]>([]);
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<WebhookRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -135,15 +135,33 @@ export function WebhooksList() {
     events: [],
   });
 
-  const { data, isLoading, error } = useQuery({
+  // Calculate isActive filter
+  const activeFilterVal = filters.find((f) => f.field === "isActive")?.value;
+  const isActiveFilter = (() => {
+    if (activeFilterVal === "true") {
+      return true;
+    }
+    if (activeFilterVal === "false") {
+      return false;
+    }
+    return undefined;
+  })();
+
+  const { data, isLoading } = useQuery({
     ...webhooksListOptions({
       client: apiClient,
       path: { orgId },
-      query: { page, pageSize: 20 },
+      query: {
+        page,
+        pageSize,
+        isActive: isActiveFilter,
+      },
     }),
     enabled: Boolean(orgId),
+    placeholderData: (previousData) => previousData,
   });
 
+  // ... event types query ...
   const { data: eventTypesData } = useQuery({
     ...webhooksListEventTypesOptions({
       client: apiClient,
@@ -152,6 +170,8 @@ export function WebhooksList() {
     enabled: Boolean(orgId),
   });
 
+  // ... mutations (create, update, delete, rotate, test, retry) - KEEP THESE ...
+  // (Copied strictly from previous context to avoid losing logic)
   const createMutation = useMutation({
     ...webhooksCreateMutation({ client: apiClient }),
     onSuccess: (response) => {
@@ -164,9 +184,11 @@ export function WebhooksList() {
       }
       setCreateDialogOpen(false);
       resetForm();
+      toast.success("Webhook created successfully");
     },
     onError: (err) => {
       setFormError(getErrorMessage(err));
+      toast.error("Failed to create webhook");
     },
   });
 
@@ -176,9 +198,11 @@ export function WebhooksList() {
       queryClient.invalidateQueries({ queryKey: ["webhooksList"] });
       setEditTarget(null);
       resetForm();
+      toast.success("Webhook updated successfully");
     },
     onError: (err) => {
       setFormError(getErrorMessage(err));
+      toast.error("Failed to update webhook");
     },
   });
 
@@ -187,6 +211,10 @@ export function WebhooksList() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["webhooksList"] });
       setDeleteTarget(null);
+      toast.success("Webhook deleted successfully");
+    },
+    onError: () => {
+      toast.error("Failed to delete webhook");
     },
   });
 
@@ -201,13 +229,31 @@ export function WebhooksList() {
         setNewSecret(rotatedData.data.secret);
       }
       setRotateTarget(null);
+      toast.success("Secret rotated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to rotate secret");
     },
   });
 
   const testMutation = useMutation({
     ...webhooksTestMutation({ client: apiClient }),
+    onSuccess: (response) => {
+      const r = response as {
+        data?: { success?: boolean; httpStatus?: number; error?: string };
+      };
+      if (r.data?.success) {
+        toast.success(`Test sent: HTTP ${r.data.httpStatus}`);
+      } else if (r.data?.error) {
+        toast.error(`Test failed: ${r.data.error}`);
+      }
+    },
+    onError: () => {
+      toast.error("Failed to send test event");
+    },
   });
 
+  // ... form handlers ...
   function resetForm() {
     setFormData({ name: "", url: "", description: "", events: [] });
     setFormError(null);
@@ -288,19 +334,10 @@ export function WebhooksList() {
 
   async function copyToClipboard(text: string) {
     await navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard");
   }
 
   const webhooks = (data as { data?: WebhookRecord[] })?.data ?? [];
-  const pagination = (
-    data as {
-      pagination?: {
-        totalPages: number;
-        hasNext: boolean;
-        hasPrevious: boolean;
-        totalCount: number;
-      };
-    }
-  )?.pagination;
 
   const eventTypes = (
     eventTypesData as {
@@ -308,179 +345,131 @@ export function WebhooksList() {
     }
   )?.data?.eventTypes;
 
-  function renderContent() {
-    if (mounted && isLoading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+  // Define Columns
+  const columns: ColumnDef<WebhookRecord>[] = [
+    {
+      id: "name",
+      header: "Name",
+      accessorKey: "name",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.name || "Unnamed"}</span>
+      ),
+    },
+    {
+      id: "url",
+      header: "URL",
+      accessorKey: "url",
+      cell: ({ row }) => (
+        <span
+          className="block max-w-[300px] truncate text-muted-foreground"
+          title={row.url}
+        >
+          {row.url}
+        </span>
+      ),
+    },
+    {
+      id: "events",
+      header: "Events",
+      accessorKey: "events",
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1">
+          {row.events.slice(0, 2).map((event) => (
+            <Badge key={event} variant="outline">
+              {event}
+            </Badge>
+          ))}
+          {row.events.length > 2 && (
+            <Badge variant="outline">+{row.events.length - 2}</Badge>
+          )}
         </div>
-      );
-    }
-
-    if (error) {
-      console.error("Webhooks loading error:", error);
-      return (
-        <div className="py-12 text-center text-destructive">
-          Failed to load webhooks:{" "}
-          {error instanceof Error ? error.message : "Unknown error"}
-        </div>
-      );
-    }
-
-    if (webhooks.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <WebhookIcon className="mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-muted-foreground">No webhooks configured</p>
-          <p className="mt-1 text-muted-foreground text-sm">
-            Create a webhook to receive event notifications
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>URL</TableHead>
-              <TableHead>Events</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {webhooks.map((webhook) => (
-              <TableRow key={webhook.id}>
-                <TableCell className="font-medium">
-                  {webhook.name ?? "Unnamed"}
-                </TableCell>
-                <TableCell className="max-w-[200px] truncate text-muted-foreground">
-                  {webhook.url}
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {webhook.events.slice(0, 2).map((event) => (
-                      <Badge key={event} variant="outline">
-                        {event}
-                      </Badge>
-                    ))}
-                    {webhook.events.length > 2 && (
-                      <Badge variant="outline">
-                        +{webhook.events.length - 2}
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={
-                      webhook.isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }
-                    variant="secondary"
-                  >
-                    {webhook.isActive ? "active" : "inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEditOpen(webhook)}>
-                        <Activity className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleToggleStatus(webhook)}
-                      >
-                        {webhook.isActive ? (
-                          <>
-                            <X className="mr-2 h-4 w-4" />
-                            Disable
-                          </>
-                        ) : (
-                          <>
-                            <Check className="mr-2 h-4 w-4" />
-                            Enable
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setDeliveriesTarget(webhook)}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Deliveries
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleTest(webhook.id)}>
-                        <Play className="mr-2 h-4 w-4" />
-                        Send Test
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setRotateTarget(webhook.id)}
-                      >
-                        <Key className="mr-2 h-4 w-4" />
-                        Rotate Secret
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => setDeleteTarget(webhook.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {pagination && (
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-muted-foreground text-sm">
-              Page {page} of {pagination.totalPages} ({pagination.totalCount}{" "}
-              webhooks)
-            </div>
-            <div className="flex gap-2">
-              <Button
-                disabled={!pagination.hasPrevious}
-                onClick={() => setPage((p) => p - 1)}
-                size="sm"
-                variant="outline"
-              >
-                Previous
-              </Button>
-              <Button
-                disabled={!pagination.hasNext}
-                onClick={() => setPage((p) => p + 1)}
-                size="sm"
-                variant="outline"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
+      ),
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessorKey: "isActive",
+      filterable: true,
+      filterType: "select",
+      filterOptions: [
+        { label: "Active", value: "true" },
+        { label: "Inactive", value: "false" },
+      ],
+      cell: ({ row }) => (
+        <Badge
+          className={
+            row.isActive
+              ? "bg-green-100 text-green-800 hover:bg-green-100"
+              : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+          }
+          variant="secondary"
+        >
+          {row.isActive ? "active" : "inactive"}
+        </Badge>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      align: "right",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="icon" variant="ghost">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleEditOpen(row)}>
+              <Activity className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleToggleStatus(row)}>
+              {row.isActive ? (
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  Disable
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Enable
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setDeliveriesTarget(row)}>
+              <Eye className="mr-2 h-4 w-4" />
+              View Deliveries
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleTest(row.id)}>
+              <Play className="mr-2 h-4 w-4" />
+              Send Test
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setRotateTarget(row.id)}>
+              <Key className="mr-2 h-4 w-4" />
+              Rotate Secret
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => setDeleteTarget(row.id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   function renderEventSelector() {
+    // ... existing implementation ...
     if (!eventTypes) {
       return (
         <div className="flex items-center justify-center py-4">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Skeleton className="h-4 w-4 rounded-full" />
         </div>
       );
     }
@@ -513,110 +502,136 @@ export function WebhooksList() {
     );
   }
 
+  const createAction = (
+    <Dialog
+      onOpenChange={(open) => {
+        setCreateDialogOpen(open);
+        if (!open) {
+          resetForm();
+        }
+      }}
+      open={createDialogOpen}
+    >
+      <DialogTrigger asChild>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Webhook
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Create Webhook</DialogTitle>
+          <DialogDescription>
+            Configure an endpoint to receive event notifications
+          </DialogDescription>
+        </DialogHeader>
+        {formError && (
+          <div className="rounded-md bg-destructive/10 p-3 text-destructive text-sm">
+            {formError}
+          </div>
+        )}
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Name (optional)</Label>
+            <Input
+              id="name"
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="My Webhook"
+              value={formData.name}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="url">URL</Label>
+            <Input
+              id="url"
+              onChange={(e) =>
+                setFormData({ ...formData, url: e.target.value })
+              }
+              placeholder="https://example.com/webhook"
+              value={formData.url}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description (optional)</Label>
+            <Textarea
+              id="description"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  description: e.target.value,
+                })
+              }
+              placeholder="Describe what this webhook is for"
+              value={formData.description}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label>Events</Label>
+            <div className="max-h-[200px] overflow-y-auto rounded-md border p-3">
+              {renderEventSelector()}
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            disabled={createMutation.isPending}
+            onClick={handleCreateSubmit}
+          >
+            {createMutation.isPending && (
+              <Skeleton className="mr-2 h-4 w-4 rounded-full" />
+            )}
+            Create Webhook
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  // Dialogs and Sheets are rendered outside DataView but used by it's actions
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Send className="h-6 w-6 text-primary" />
-              <div>
-                <CardTitle>Webhooks</CardTitle>
-                <CardDescription>
-                  Configure endpoints to receive event notifications
-                </CardDescription>
-              </div>
-            </div>
-            <Dialog
-              onOpenChange={(open) => {
-                setCreateDialogOpen(open);
-                if (!open) {
-                  resetForm();
-                }
-              }}
-              open={createDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Webhook
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Create Webhook</DialogTitle>
-                  <DialogDescription>
-                    Configure an endpoint to receive event notifications
-                  </DialogDescription>
-                </DialogHeader>
-                {formError && (
-                  <div className="rounded-md bg-destructive/10 p-3 text-destructive text-sm">
-                    {formError}
-                  </div>
-                )}
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Name (optional)</Label>
-                    <Input
-                      id="name"
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      placeholder="My Webhook"
-                      value={formData.name}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="url">URL</Label>
-                    <Input
-                      id="url"
-                      onChange={(e) =>
-                        setFormData({ ...formData, url: e.target.value })
-                      }
-                      placeholder="https://example.com/webhook"
-                      value={formData.url}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="description">Description (optional)</Label>
-                    <Textarea
-                      id="description"
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      placeholder="Describe what this webhook is for"
-                      value={formData.description}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Events</Label>
-                    <div className="max-h-[200px] overflow-y-auto rounded-md border p-3">
-                      {renderEventSelector()}
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    disabled={createMutation.isPending}
-                    onClick={handleCreateSubmit}
-                  >
-                    {createMutation.isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Create Webhook
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>{renderContent()}</CardContent>
-      </Card>
+      <PageHeader
+        actions={createAction}
+        description="Configure endpoints to receive event notifications"
+        icon={<Send className="size-6" />}
+        title="Webhooks"
+      />
+      <DataTable
+        columns={columns}
+        data={webhooks}
+        emptyMessage="No webhooks found"
+        filters={filters}
+        // Pagination
+        getRowId={(row) => row.id}
+        loading={isLoading}
+        onFiltersChange={setFilters}
+        // Filters
+        onPaginationChange={(p) => {
+          setPage(p.page);
+          setPageSize(p.pageSize);
+        }}
+        paginated
+        // Actions
+        pagination={{
+          page,
+          pageSize,
+          total:
+            (data as { meta?: { totalCount?: number } } | undefined)?.meta
+              ?.totalCount ?? 0,
+        }}
+        toolbarLeft={<SearchInput placeholder="Search webhooks..." />}
+        toolbarRight={
+          <>
+            <ColumnsButton />
+            <FilterButton />
+            <SortButton />
+          </>
+        }
+      />
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog - KEEP SAME */}
       <Dialog
         onOpenChange={(open) => {
           if (!open) {
@@ -626,6 +641,7 @@ export function WebhooksList() {
         }}
         open={Boolean(editTarget)}
       >
+        {/* ... existing content ... */}
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Webhook</DialogTitle>
@@ -680,7 +696,7 @@ export function WebhooksList() {
               onClick={handleEditSubmit}
             >
               {updateMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Skeleton className="mr-2 h-4 w-4 rounded-full" />
               )}
               Save Changes
             </Button>
@@ -688,7 +704,7 @@ export function WebhooksList() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      {/* Delete Confirmation - KEEP SAME */}
       <AlertDialog
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         open={Boolean(deleteTarget)}
@@ -708,7 +724,7 @@ export function WebhooksList() {
               onClick={handleDeleteConfirm}
             >
               {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Skeleton className="mr-2 h-4 w-4 rounded-full" />
               )}
               Delete
             </AlertDialogAction>
@@ -716,7 +732,7 @@ export function WebhooksList() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Rotate Secret Confirmation */}
+      {/* Rotate Secret Confirmation - KEEP SAME */}
       <AlertDialog
         onOpenChange={(open) => !open && setRotateTarget(null)}
         open={Boolean(rotateTarget)}
@@ -736,7 +752,7 @@ export function WebhooksList() {
               onClick={handleRotateConfirm}
             >
               {rotateMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Skeleton className="mr-2 h-4 w-4 rounded-full" />
               )}
               Rotate Secret
             </AlertDialogAction>
@@ -744,7 +760,7 @@ export function WebhooksList() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* New Secret Display */}
+      {/* New Secret Display - KEEP SAME */}
       <Dialog onOpenChange={() => setNewSecret(null)} open={Boolean(newSecret)}>
         <DialogContent>
           <DialogHeader>
@@ -769,7 +785,7 @@ export function WebhooksList() {
         </DialogContent>
       </Dialog>
 
-      {/* Deliveries Sheet */}
+      {/* Deliveries Sheet - KEEP SAME */}
       <Sheet
         onOpenChange={(open) => !open && setDeliveriesTarget(null)}
         open={Boolean(deliveriesTarget)}
@@ -810,21 +826,13 @@ function DeliveriesPanel({
   });
 
   const retryMutation = useMutation({
-    mutationFn: async (deliveryId: string) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"}/v1/orgs/${orgId}/webhooks/${webhookId}/deliveries/${deliveryId}/retry`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to retry delivery");
-      }
-      return response.json();
-    },
+    ...webhooksRetryDeliveryMutation({ client: apiClient }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["webhooksListDeliveries"] });
+      toast.success("Delivery retry initiated");
+    },
+    onError: () => {
+      toast.error("Failed to retry delivery");
     },
   });
 
@@ -913,7 +921,11 @@ function DeliveriesPanel({
                 delivery.status === "exhausted") && (
                 <Button
                   disabled={retryMutation.isPending}
-                  onClick={() => retryMutation.mutate(delivery.id)}
+                  onClick={() =>
+                    retryMutation.mutate({
+                      path: { orgId, webhookId, deliveryId: delivery.id },
+                    })
+                  }
                   size="sm"
                   variant="outline"
                 >
