@@ -197,6 +197,15 @@ export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
       // Two-Factor Authentication
       twoFactor({
         issuer: appName,
+        otpOptions: {
+          async sendOTP({ user, otp }) {
+            type UserWithPhone = typeof user & { phoneNumber?: string };
+            const userWithPhone = user as UserWithPhone;
+            if (userWithPhone.phoneNumber) {
+              await smsService.sendOTP(userWithPhone.phoneNumber, otp);
+            }
+          },
+        },
       }),
 
       // Phone number authentication

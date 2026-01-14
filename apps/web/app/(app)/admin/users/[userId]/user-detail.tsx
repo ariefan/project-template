@@ -33,10 +33,12 @@ import {
 } from "@workspace/ui/components/select";
 import { Spinner } from "@workspace/ui/components/spinner";
 import { format } from "date-fns";
-import { ArrowLeft, UserCog } from "lucide-react";
+import { ArrowLeft, Eye, UserCog } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient, useActiveOrganization, useSession } from "@/lib/auth";
+import { UserAdminActionsCard } from "./user-admin-actions-card";
 import { UserRolesCard } from "./user-roles-card";
 
 // Organization role options
@@ -68,9 +70,11 @@ interface OrganizationMember {
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: legacy component
 export function UserDetail({ userId }: UserDetailProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
+  const { data: session, refetch: refetchSession } = useSession();
   const { data: orgData } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
   const currentUserId = session?.user?.id;
@@ -103,6 +107,8 @@ export function UserDetail({ userId }: UserDetailProps) {
   const currentUserMember = members.find((m) => m.userId === currentUserId);
   const currentUserRole = currentUserMember?.role ?? "member";
   const isOwner = currentUserRole === "owner";
+  const isOwnerOrAdmin =
+    currentUserRole === "owner" || currentUserRole === "admin";
 
   // Update org role mutation
   const updateOrgRoleMutation = useMutation({
@@ -129,6 +135,32 @@ export function UserDetail({ userId }: UserDetailProps) {
       setOrgRoleError(err.message);
     },
   });
+
+  // Impersonate user mutation
+  const impersonateMutation = useMutation({
+    mutationFn: async () => {
+      // @ts-expect-error - Better Auth admin.impersonateUser exists at runtime
+      const result = await authClient.admin.impersonateUser({ userId });
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to impersonate user");
+      }
+      return result;
+    },
+    onSuccess: async () => {
+      await refetchSession();
+      router.refresh();
+      router.push("/dashboard");
+    },
+  });
+
+  function canImpersonate(): boolean {
+    // Can't impersonate yourself
+    if (userId === currentUserId) {
+      return false;
+    }
+    // Only owners and admins can impersonate
+    return isOwnerOrAdmin;
+  }
 
   function handleOrgRoleChange() {
     if (!selectedOrgRole || selectedOrgRole === userOrgRole) {
@@ -205,6 +237,21 @@ export function UserDetail({ userId }: UserDetailProps) {
                 </p>
               )}
             </div>
+            {canImpersonate() && (
+              <Button
+                disabled={impersonateMutation.isPending}
+                onClick={() => impersonateMutation.mutate()}
+                size="sm"
+                variant="outline"
+              >
+                {impersonateMutation.isPending ? (
+                  <Spinner className="mr-2" />
+                ) : (
+                  <Eye className="mr-2 size-4" />
+                )}
+                Impersonate User
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -295,6 +342,15 @@ export function UserDetail({ userId }: UserDetailProps) {
       {/* RBAC Roles Card */}
       <UserRolesCard
         orgId={orgId}
+        userId={userId}
+        userName={user?.name ?? "this user"}
+      />
+
+      {/* Admin Actions Card */}
+      <UserAdminActionsCard
+        canManage={isOwnerOrAdmin}
+        isCurrentUser={userId === currentUserId}
+        userEmail={user?.email ?? ""}
         userId={userId}
         userName={user?.name ?? "this user"}
       />

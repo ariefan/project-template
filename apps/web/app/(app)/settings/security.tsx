@@ -7,9 +7,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
-import { Separator } from "@workspace/ui/components/separator";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemSeparator,
+  ItemTitle,
+} from "@workspace/ui/components/item";
 import { DeleteAccountDialog } from "./profile-delete-dialog";
 import { TwoFactorDialog } from "./security-2fa-dialog";
+import { ApiKeysDialog } from "./security-api-keys";
 import { PasskeyDialog } from "./security-passkey-dialog";
 import { ChangePasswordDialog } from "./security-password-dialog";
 import { SessionsCard } from "./security-sessions";
@@ -24,64 +33,86 @@ export function SecurityTab() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div>
-              <p className="font-medium">Two-Factor Authentication</p>
-              <p className="text-muted-foreground text-sm">
+        <ItemGroup className="rounded-lg border" title="Authentication">
+          <Item>
+            <ItemContent className="gap-1">
+              <ItemTitle>Password</ItemTitle>
+              <ItemDescription>
+                Change your password to keep your account secure
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <ChangePasswordDialog />
+            </ItemActions>
+          </Item>
+          <ItemSeparator />
+          <Item>
+            <ItemContent className="gap-1">
+              <ItemTitle>Two-Factor Authentication</ItemTitle>
+              <ItemDescription>
                 Add an extra layer of security to your account
-              </p>
-            </div>
-            <TwoFactorDialog />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div>
-              <p className="font-medium">Passkeys</p>
-              <p className="text-muted-foreground text-sm">
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <TwoFactorDialog />
+            </ItemActions>
+          </Item>
+          <ItemSeparator />
+          <Item>
+            <ItemContent className="gap-1">
+              <ItemTitle>Passkeys</ItemTitle>
+              <ItemDescription>
                 Use biometric authentication for passwordless login
-              </p>
-            </div>
-            <PasskeyDialog />
-          </div>
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <PasskeyDialog />
+            </ItemActions>
+          </Item>
+        </ItemGroup>
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div>
-              <p className="font-medium">Change Password</p>
-              <p className="text-muted-foreground text-sm">
-                Update your account password
-              </p>
-            </div>
-            <ChangePasswordDialog />
-          </div>
+        <ItemGroup className="rounded-lg border" title="Access Control">
+          <Item>
+            <ItemContent className="gap-1">
+              <ItemTitle>Active Sessions</ItemTitle>
+              <ItemDescription>
+                Manage devices where you're currently logged in
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <SessionsCard />
+            </ItemActions>
+          </Item>
+          <ItemSeparator />
+          <Item>
+            <ItemContent className="gap-1">
+              <ItemTitle>API Keys</ItemTitle>
+              <ItemDescription>
+                Manage API keys for programmatic access
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <ApiKeysDialog />
+            </ItemActions>
+          </Item>
+        </ItemGroup>
 
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div>
-              <p className="font-medium">Active Sessions</p>
-              <p className="text-muted-foreground text-sm">
-                View and manage your active sessions
-              </p>
-            </div>
-            <SessionsCard />
-          </div>
-        </div>
-
-        <Separator />
-
-        <div>
-          <h3 className="mb-4 font-medium text-destructive text-lg">
-            Danger Zone
-          </h3>
-          <div className="flex items-center justify-between rounded-lg border border-destructive/50 p-4">
-            <div>
-              <p className="font-medium">Delete Account</p>
-              <p className="text-muted-foreground text-sm">
-                Permanently delete your account and all data
-              </p>
-            </div>
-            <DeleteAccountDialog />
-          </div>
-        </div>
+        <ItemGroup
+          className="rounded-lg border border-destructive/50"
+          title="Danger Zone"
+        >
+          <Item>
+            <ItemContent className="gap-1">
+              <ItemTitle className="text-destructive">Delete Account</ItemTitle>
+              <ItemDescription>
+                Permanently remove your account and all data
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <DeleteAccountDialog />
+            </ItemActions>
+          </Item>
+        </ItemGroup>
       </CardContent>
     </Card>
   );

@@ -9,6 +9,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@workspace/ui/components/dialog";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemSeparator,
+  ItemTitle,
+} from "@workspace/ui/components/item";
 import { Globe, Laptop, Loader2, Smartphone } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -67,12 +77,12 @@ export function SessionsCard() {
 
   function getIcon(userAgent?: string | null) {
     if (!userAgent) {
-      return <Globe className="h-5 w-5" />;
+      return <Globe className="size-6" />;
     }
     if (userAgent.toLowerCase().includes("mobile")) {
-      return <Smartphone className="h-5 w-5" />;
+      return <Smartphone className="size-6" />;
     }
-    return <Laptop className="h-5 w-5" />;
+    return <Laptop className="size-6" />;
   }
 
   return (
@@ -80,7 +90,7 @@ export function SessionsCard() {
       <DialogTrigger asChild>
         <Button variant="outline">View All</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Active Sessions</DialogTitle>
           <DialogDescription>
@@ -88,55 +98,59 @@ export function SessionsCard() {
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
+        {loading && (
           <div className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : (
+        )}
+
+        {!loading && sessions.length === 0 && (
+          <p className="py-4 text-center text-muted-foreground">
+            No sessions found.
+          </p>
+        )}
+
+        {!loading && sessions.length > 0 && (
           <div className="space-y-4">
-            {sessions.length === 0 ? (
-              <p className="py-4 text-center text-muted-foreground">
-                No sessions found.
-              </p>
-            ) : (
-              sessions.map((session) => (
-                <div
-                  className="flex items-center justify-between rounded-lg border p-4"
-                  key={session.id}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-full bg-muted p-2">
-                      {getIcon(session.userAgent)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm">
-                          {session.userAgent || "Unknown Device"}
-                        </p>
-                        {session.isCurrent && (
-                          <span className="rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
-                            Current
-                          </span>
-                        )}
+            <ItemGroup>
+              {sessions.map((session, index) => (
+                <div key={session.id}>
+                  <Item>
+                    <ItemMedia>
+                      <div className="rounded-full bg-muted p-2">
+                        {getIcon(session.userAgent)}
                       </div>
-                      <p className="text-muted-foreground text-xs">
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>
+                        {session.userAgent || "Unknown Device"}
+                      </ItemTitle>
+                      <ItemDescription className="text-muted-foreground text-xs">
                         {session.ipAddress || "Unknown IP"} •{" "}
                         {new Date(session.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  {!session.isCurrent && (
-                    <Button
-                      onClick={() => handleRevoke(session.id)}
-                      size="sm"
-                      variant="outline" // Passing ID, hope it works or I need token.
-                    >
-                      Revoke
-                    </Button>
-                  )}
+                      </ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      {session.isCurrent && (
+                        <span className="rounded-full border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
+                          Current
+                        </span>
+                      )}
+                      {!session.isCurrent && (
+                        <Button
+                          onClick={() => handleRevoke(session.id)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          Revoke
+                        </Button>
+                      )}
+                    </ItemActions>
+                  </Item>
+                  {index < sessions.length - 1 && <ItemSeparator />}
                 </div>
-              ))
-            )}
+              ))}
+            </ItemGroup>
           </div>
         )}
       </DialogContent>

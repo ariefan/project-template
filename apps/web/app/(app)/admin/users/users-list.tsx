@@ -49,8 +49,9 @@ import {
   SearchInput,
 } from "@workspace/ui/composed/data-view";
 import { format } from "date-fns";
-import { Edit, Mail, Plus, Trash2, X } from "lucide-react";
+import { Edit, Eye, Mail, Plus, Trash2, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
 import { authClient, useActiveOrganization, useSession } from "@/lib/auth";
@@ -86,8 +87,9 @@ interface Invitation {
 }
 
 export function UsersList() {
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
+  const { data: session, refetch: refetchSession } = useSession();
   const { data: orgData } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
   const currentUserId = session?.user?.id;
@@ -246,6 +248,25 @@ export function UsersList() {
     }
   }
 
+  // Impersonate user mutation
+  const impersonateMutation = useMutation({
+    mutationFn: async (targetUserId: string) => {
+      // @ts-expect-error - Better Auth admin.impersonateUser exists at runtime
+      const result = await authClient.admin.impersonateUser({
+        userId: targetUserId,
+      });
+      if (result.error) {
+        throw new Error(result.error.message || "Failed to impersonate user");
+      }
+      return result;
+    },
+    onSuccess: async () => {
+      await refetchSession();
+      router.refresh();
+      router.push("/dashboard");
+    },
+  });
+
   const membersColumns = useMemo<ColumnDef<OrganizationMember>[]>(() => {
     const getInitials = (name: string | undefined, email: string) => {
       if (name) {
@@ -339,8 +360,21 @@ export function UsersList() {
         header: "",
         cell: ({ row }) => {
           const member = row;
+          const canImpersonate =
+            member.userId !== currentUserId && isOwnerOrAdmin;
           return (
             <div className="flex items-center justify-end gap-1">
+              {canImpersonate && (
+                <Button
+                  disabled={impersonateMutation.isPending}
+                  onClick={() => impersonateMutation.mutate(member.userId)}
+                  size="icon"
+                  title="Impersonate user"
+                  variant="ghost"
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              )}
               <Button asChild size="icon" variant="ghost">
                 <Link href={`/admin/users/${member.userId}`}>
                   <Edit className="h-4 w-4" />
@@ -361,7 +395,7 @@ export function UsersList() {
         },
       },
     ];
-  }, [currentUserId, currentUserRole, isOwnerOrAdmin]);
+  }, [currentUserId, currentUserRole, isOwnerOrAdmin, impersonateMutation]);
 
   const invitationsColumns = useMemo<ColumnDef<Invitation>[]>(
     () => [

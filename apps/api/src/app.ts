@@ -144,6 +144,7 @@ function buildStorageConfig() {
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: App bootstrap requires sequential plugin registration with conditional logic
 export async function buildApp(config: AppConfig) {
+  console.log("--- BUILDING APP (Hot Reload Check) ---");
   const app = Fastify({ logger: true });
 
   // Decorate Fastify with auth instance for use in routes
@@ -417,6 +418,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(storageRoutes);
   await app.register(migrationRoutes);
   await app.register(authRoutes);
+
   await app.register(applicationsModule, { prefix: "/v1" });
   await app.register(contextRoutes, { prefix: "/v1" });
   await app.register(globalRoleRoutes, { prefix: "/v1" });

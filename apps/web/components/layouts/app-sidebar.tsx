@@ -17,10 +17,15 @@ import {
   FileSpreadsheet,
   FileText,
   FolderOpen,
+  Gavel,
   Home,
-  LetterTextIcon,
+  Key,
+  Megaphone,
+  Package,
   Settings,
   Shield,
+  UserCog,
+  Users,
   Webhook,
 } from "lucide-react";
 import type * as React from "react";
@@ -86,12 +91,6 @@ const navSystem = [
     title: "Reports",
     url: "/reports/templates",
     icon: FileSpreadsheet,
-    items: [
-      {
-        title: "Templates",
-        url: "/reports/templates",
-      },
-    ],
   },
 ];
 
@@ -114,6 +113,10 @@ const navDeveloper = [
         title: "Storage",
         url: "/developer/storage",
       },
+      {
+        title: "CRUD Example",
+        url: "/pages/crud",
+      },
     ],
   },
 ];
@@ -126,46 +129,39 @@ const navAdmin = [
     icon: Settings,
   },
   {
-    title: "Admin",
+    title: "Org Users",
     url: "/admin/users",
-    icon: Shield,
-    items: [
-      {
-        title: "Users",
-        url: "/admin/users",
-      },
-      {
-        title: "Roles",
-        url: "/admin/roles",
-      },
-      {
-        title: "Announcements",
-        url: "/admin/announcements",
-      },
-      {
-        title: "Legal Documents",
-        url: "/admin/legal-documents",
-      },
-      {
-        title: "Subscription Plans",
-        url: "/admin/subscriptions/plans",
-      },
-    ],
+    icon: Users,
   },
-];
-
-// Demo pages (can be removed in production)
-const navExamples = [
   {
-    title: "Pages",
-    url: "/pages/crud",
-    icon: LetterTextIcon,
-    items: [
-      {
-        title: "CRUD",
-        url: "/pages/crud",
-      },
-    ],
+    title: "System Users",
+    url: "/admin/system/users",
+    icon: UserCog,
+  },
+  {
+    title: "Roles",
+    url: "/admin/roles",
+    icon: Shield,
+  },
+  {
+    title: "SSO",
+    url: "/admin/sso",
+    icon: Key,
+  },
+  {
+    title: "Announcements",
+    url: "/admin/announcements",
+    icon: Megaphone,
+  },
+  {
+    title: "Legal Documents",
+    url: "/admin/legal-documents",
+    icon: Gavel,
+  },
+  {
+    title: "Subscription Plans",
+    url: "/admin/subscriptions/plans",
+    icon: Package,
   },
 ];
 
@@ -180,7 +176,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={navSystem} label="System" />
         <NavMain items={navDeveloper} label="Developer" />
         <NavMain items={navAdmin} label="Administration" />
-        <NavMain items={navExamples} label="Examples" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
