@@ -28,6 +28,7 @@ import { jobsModule } from "./modules/jobs";
 import { legalDocumentsModule } from "./modules/legal-documents";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
+import { organizationsModule } from "./modules/organizations";
 import { reportsModule } from "./modules/reports";
 import { schedulesModule } from "./modules/schedules";
 import { createScheduler } from "./modules/schedules/services/scheduler";
@@ -429,6 +430,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(filesModule, { prefix: "/v1/orgs" });
   await app.register(webhooksModule, { prefix: "/v1/orgs" });
   await app.register(notificationsModule, { prefix: "/v1" });
+  await app.register(organizationsModule, { prefix: "/v1/orgs" });
   await app.register(reportsModule, { prefix: "/v1/orgs" });
   await app.register(schedulesModule, { prefix: "/v1/orgs" });
   await app.register(subscriptionsModule, { prefix: "/v1" });

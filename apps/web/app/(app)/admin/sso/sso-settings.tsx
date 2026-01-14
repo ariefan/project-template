@@ -31,18 +31,24 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient, useActiveOrganization } from "@/lib/auth";
 
-interface OIDCProvider {
-  id: string;
-  name: string;
-  issuer: string;
+interface OIDCConfig {
   clientId: string;
-  createdAt: Date;
+  clientSecret: string;
+}
+
+interface SSOProvider {
+  id: string;
+  providerId: string;
+  issuer: string;
+  domain: string;
+  oidcConfig: OIDCConfig | null;
+  samlConfig: unknown | null;
+  organizationId: string;
 }
 
 export function SsoSettings() {
   const { data: activeOrg, isPending: isOrgLoading } = useActiveOrganization();
   const [mounted, setMounted] = useState(false);
-  // const [debugData, setDebugData] = useState<any>(null); // Removed
 
   useEffect(() => {
     setMounted(true);
@@ -51,13 +57,14 @@ export function SsoSettings() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [providers, setProviders] = useState<OIDCProvider[]>([]);
+  const [providers, setProviders] = useState<SSOProvider[]>([]);
 
   const [newProvider, setNewProvider] = useState({
-    name: "",
+    name: "", // maps to providerId
     issuer: "",
     clientId: "",
     clientSecret: "",
+    domain: "",
   });
 
   const fetchProviders = useCallback(async () => {
@@ -67,16 +74,23 @@ export function SsoSettings() {
     setFetching(true);
 
     try {
-      // @ts-expect-error - sso plugin method
-      const { data, error } = await authClient.organization.listOidcProviders({
-        organizationId: activeOrg.id,
-      });
+      // Use custom endpoint since better-auth client doesn't expose list by org
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/orgs/${activeOrg.id}/sso-providers`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
-      if (error) {
-        throw new Error(error.message || "Failed to fetch providers");
+      if (!response.ok) {
+        throw new Error("Failed to fetch providers");
       }
 
-      setProviders((data as unknown as OIDCProvider[]) || []);
+      const json = await response.json();
+      setProviders(json.data || []);
     } catch (_e) {
       // biome-ignore lint/suspicious/noExplicitAny: error handling
       const err = _e as any;
@@ -97,12 +111,25 @@ export function SsoSettings() {
     if (!confirm("Are you sure you want to remove this provider?")) {
       return;
     }
+    if (!activeOrg?.id) {
+      return;
+    }
+
     try {
       setLoading(true);
-      // @ts-expect-error - sso plugin method
-      await authClient.organization.deleteOidcProvider({
-        providerId,
-      });
+      // Use custom endpoint since better-auth client doesn't expose delete by org in the way we want
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/orgs/${activeOrg.id}/sso-providers/${providerId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete provider");
+      }
+
       toast.success("Provider removed");
       fetchProviders();
     } catch (_e) {
@@ -150,21 +177,21 @@ export function SsoSettings() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
+            <TableHead>Name (Provider ID)</TableHead>
             <TableHead>Issuer</TableHead>
-            <TableHead>Client ID</TableHead>
+            <TableHead>Domain</TableHead>
             <TableHead className="w-[50px]" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {providers.map((p) => (
             <TableRow key={p.id}>
-              <TableCell className="font-medium">{p.name}</TableCell>
+              <TableCell className="font-medium">{p.providerId}</TableCell>
               <TableCell className="font-mono text-xs">{p.issuer}</TableCell>
-              <TableCell className="font-mono text-xs">{p.clientId}</TableCell>
+              <TableCell className="font-mono text-xs">{p.domain}</TableCell>
               <TableCell>
                 <Button
-                  onClick={() => handleDeleteProvider(p.id)}
+                  onClick={() => handleDeleteProvider(p.providerId)}
                   size="icon"
                   variant="ghost"
                 >
@@ -180,8 +207,6 @@ export function SsoSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Debug View Removed */}
-
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -208,12 +233,12 @@ export function SsoSettings() {
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label>Provider Name</Label>
+                    <Label>Provider ID (Name)</Label>
                     <Input
                       onChange={(e) =>
                         setNewProvider({ ...newProvider, name: e.target.value })
                       }
-                      placeholder="e.g. Okta"
+                      placeholder="e.g. okta-oidc"
                       value={newProvider.name}
                     />
                   </div>
@@ -228,6 +253,19 @@ export function SsoSettings() {
                       }
                       placeholder="https://..."
                       value={newProvider.issuer}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Domain</Label>
+                    <Input
+                      onChange={(e) =>
+                        setNewProvider({
+                          ...newProvider,
+                          domain: e.target.value,
+                        })
+                      }
+                      placeholder="example.com"
+                      value={newProvider.domain}
                     />
                   </div>
                   <div className="space-y-2">
@@ -261,18 +299,30 @@ export function SsoSettings() {
                     onClick={async () => {
                       setLoading(true);
                       try {
-                        // @ts-expect-error - sso plugin method
-                        await authClient.organization.createOidcProvider({
-                          name: newProvider.name,
+                        const { error } = await authClient.sso.register({
+                          providerId: newProvider.name,
                           issuer: newProvider.issuer,
-                          clientId: newProvider.clientId,
-                          clientSecret: newProvider.clientSecret,
+                          domain: newProvider.domain,
+                          organizationId: activeOrg.id,
+                          oidcConfig: {
+                            clientId: newProvider.clientId,
+                            clientSecret: newProvider.clientSecret,
+                          },
                         });
+
+                        if (error) {
+                          throw error;
+                        }
+
                         toast.success("Provider added successfully");
                         setOpen(false);
                         fetchProviders();
                       } catch (_e) {
-                        toast.error("Failed to add provider");
+                        // biome-ignore lint/suspicious/noExplicitAny: error handling
+                        const err = _e as any;
+                        toast.error(
+                          `Failed to add provider: ${err.message || err.statusText}`
+                        );
                       } finally {
                         setLoading(false);
                       }
