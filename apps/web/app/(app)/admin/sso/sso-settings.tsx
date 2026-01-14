@@ -26,7 +26,14 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs";
+import { Textarea } from "@workspace/ui/components/textarea";
+import { ClipboardCopy, Loader2, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient, useActiveOrganization } from "@/lib/auth";
@@ -36,13 +43,19 @@ interface OIDCConfig {
   clientSecret: string;
 }
 
+interface SAMLConfig {
+  entryPoint: string;
+  issuer: string;
+  cert: string;
+}
+
 interface SSOProvider {
   id: string;
   providerId: string;
   issuer: string;
   domain: string;
   oidcConfig: OIDCConfig | null;
-  samlConfig: unknown | null;
+  samlConfig: SAMLConfig | null;
   organizationId: string;
 }
 
@@ -58,13 +71,18 @@ export function SsoSettings() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [providers, setProviders] = useState<SSOProvider[]>([]);
+  const [activeTab, setActiveTab] = useState("oidc");
 
   const [newProvider, setNewProvider] = useState({
     name: "", // maps to providerId
     issuer: "",
+    domain: "",
+    // OIDC
     clientId: "",
     clientSecret: "",
-    domain: "",
+    // SAML
+    entryPoint: "",
+    cert: "",
   });
 
   const fetchProviders = useCallback(async () => {
@@ -74,7 +92,6 @@ export function SsoSettings() {
     setFetching(true);
 
     try {
-      // Use custom endpoint since better-auth client doesn't expose list by org
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/orgs/${activeOrg.id}/sso-providers`,
         {
@@ -117,7 +134,6 @@ export function SsoSettings() {
 
     try {
       setLoading(true);
-      // Use custom endpoint since better-auth client doesn't expose delete by org in the way we want
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/orgs/${activeOrg.id}/sso-providers/${providerId}`,
         {
@@ -177,18 +193,116 @@ export function SsoSettings() {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Type</TableHead>
             <TableHead>Name (Provider ID)</TableHead>
-            <TableHead>Issuer</TableHead>
             <TableHead>Domain</TableHead>
+            <TableHead>Issuer / Entity ID</TableHead>
+            <TableHead>SP Metadata (SAML)</TableHead>
             <TableHead className="w-[50px]" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {providers.map((p) => (
             <TableRow key={p.id}>
+              <TableCell className="font-medium">
+                {p.oidcConfig ? "OIDC" : "SAML"}
+              </TableCell>
               <TableCell className="font-medium">{p.providerId}</TableCell>
-              <TableCell className="font-mono text-xs">{p.issuer}</TableCell>
               <TableCell className="font-mono text-xs">{p.domain}</TableCell>
+              <TableCell
+                className="max-w-[200px] truncate font-mono text-xs"
+                title={p.issuer}
+              >
+                {p.issuer}
+              </TableCell>
+              <TableCell>
+                {p.samlConfig ? (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        className="h-7 text-xs"
+                        size="sm"
+                        variant="outline"
+                      >
+                        View Metadata
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Service Provider Metadata</DialogTitle>
+                        <DialogDescription>
+                          Use these values to configure your Identity Provider
+                          (IdP).
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                          <Label>Entity ID (Issuer)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              readOnly
+                              value={`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sso/saml2/sp/metadata?providerId=${p.providerId}`}
+                            />
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `${process.env.NEXT_PUBLIC_API_URL}/api/auth/sso/saml2/sp/metadata?providerId=${p.providerId}`
+                                );
+                                toast.success("Copied to clipboard");
+                              }}
+                              size="icon"
+                              variant="ghost"
+                            >
+                              <ClipboardCopy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>ACS URL (Callback)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              readOnly
+                              value={`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sso/saml2/callback/${p.providerId}`}
+                            />
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `${process.env.NEXT_PUBLIC_API_URL}/api/auth/sso/saml2/callback/${p.providerId}`
+                                );
+                                toast.success("Copied to clipboard");
+                              }}
+                              size="icon"
+                              variant="ghost"
+                            >
+                              <ClipboardCopy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Metadata URL</Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              readOnly
+                              value={`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sso/saml2/sp/metadata?providerId=${p.providerId}`}
+                            />
+                            <Button asChild size="icon" variant="ghost">
+                              <a
+                                href={`${process.env.NEXT_PUBLIC_API_URL}/api/auth/sso/saml2/sp/metadata?providerId=${p.providerId}`}
+                                rel="noreferrer"
+                                target="_blank"
+                              >
+                                <ClipboardCopy className="h-4 w-4 rotate-90" />
+                              </a>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <span className="text-muted-foreground text-xs">-</span>
+                )}
+              </TableCell>
               <TableCell>
                 <Button
                   onClick={() => handleDeleteProvider(p.providerId)}
@@ -224,116 +338,202 @@ export function SsoSettings() {
                   Add Provider
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Add Identity Provider</DialogTitle>
                   <DialogDescription>
-                    Configure a new OIDC identity provider.
+                    Configure a new identity provider.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label>Provider ID (Name)</Label>
-                    <Input
-                      onChange={(e) =>
-                        setNewProvider({ ...newProvider, name: e.target.value })
-                      }
-                      placeholder="e.g. okta-oidc"
-                      value={newProvider.name}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Wrapper / Issuer URL</Label>
-                    <Input
-                      onChange={(e) =>
-                        setNewProvider({
-                          ...newProvider,
-                          issuer: e.target.value,
-                        })
-                      }
-                      placeholder="https://..."
-                      value={newProvider.issuer}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Domain</Label>
-                    <Input
-                      onChange={(e) =>
-                        setNewProvider({
-                          ...newProvider,
-                          domain: e.target.value,
-                        })
-                      }
-                      placeholder="example.com"
-                      value={newProvider.domain}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Client ID</Label>
-                    <Input
-                      onChange={(e) =>
-                        setNewProvider({
-                          ...newProvider,
-                          clientId: e.target.value,
-                        })
-                      }
-                      value={newProvider.clientId}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Client Secret</Label>
-                    <Input
-                      onChange={(e) =>
-                        setNewProvider({
-                          ...newProvider,
-                          clientSecret: e.target.value,
-                        })
-                      }
-                      type="password"
-                      value={newProvider.clientSecret}
-                    />
-                  </div>
-                  <Button
-                    className="w-full"
-                    disabled={loading}
-                    onClick={async () => {
-                      setLoading(true);
-                      try {
-                        const { error } = await authClient.sso.register({
-                          providerId: newProvider.name,
-                          issuer: newProvider.issuer,
-                          domain: newProvider.domain,
-                          organizationId: activeOrg.id,
-                          oidcConfig: {
-                            clientId: newProvider.clientId,
-                            clientSecret: newProvider.clientSecret,
-                          },
-                        });
+                <Tabs
+                  className="w-full"
+                  onValueChange={setActiveTab}
+                  value={activeTab}
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="oidc">OIDC / OAuth 2</TabsTrigger>
+                    <TabsTrigger value="saml">SAML 2.0</TabsTrigger>
+                  </TabsList>
 
-                        if (error) {
-                          throw error;
+                  <div className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Provider ID</Label>
+                        <Input
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder={
+                            activeTab === "oidc" ? "okta-oidc" : "okta-saml"
+                          }
+                          value={newProvider.name}
+                        />
+                        <p className="text-[10px] text-muted-foreground">
+                          Unique ID (e.g. okta, google)
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Domain</Label>
+                        <Input
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              domain: e.target.value,
+                            })
+                          }
+                          placeholder="example.com"
+                          value={newProvider.domain}
+                        />
+                      </div>
+                    </div>
+
+                    <TabsContent className="mt-0 space-y-4" value="oidc">
+                      <div className="space-y-2">
+                        <Label>Issuer URL</Label>
+                        <Input
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              issuer: e.target.value,
+                            })
+                          }
+                          placeholder="https://your-org.okta.com"
+                          value={newProvider.issuer}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Client ID</Label>
+                        <Input
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              clientId: e.target.value,
+                            })
+                          }
+                          value={newProvider.clientId}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Client Secret</Label>
+                        <Input
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              clientSecret: e.target.value,
+                            })
+                          }
+                          type="password"
+                          value={newProvider.clientSecret}
+                        />
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent className="mt-0 space-y-4" value="saml">
+                      <div className="space-y-2">
+                        <Label>Entry Point (SSO URL)</Label>
+                        <Input
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              entryPoint: e.target.value,
+                            })
+                          }
+                          placeholder="https://idp.example.com/sso"
+                          value={newProvider.entryPoint}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Issuer (Entity ID)</Label>
+                        <Input
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              issuer: e.target.value,
+                            })
+                          }
+                          placeholder="http://www.okta.com/exk..."
+                          value={newProvider.issuer}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Certificate (X.509)</Label>
+                        <Textarea
+                          className="min-h-[100px] font-mono text-xs"
+                          onChange={(e) =>
+                            setNewProvider({
+                              ...newProvider,
+                              cert: e.target.value,
+                            })
+                          }
+                          placeholder="-----BEGIN CERTIFICATE-----..."
+                          value={newProvider.cert}
+                        />
+                      </div>
+                    </TabsContent>
+
+                    <Button
+                      className="mt-2 w-full"
+                      disabled={loading}
+                      onClick={async () => {
+                        setLoading(true);
+                        try {
+                          // Prepare payload based on active tab
+                          // biome-ignore lint/suspicious/noExplicitAny: complex payload type construction
+                          const payload: any = {
+                            providerId: newProvider.name,
+                            domain: newProvider.domain,
+                            organizationId: activeOrg.id,
+                          };
+
+                          if (activeTab === "oidc") {
+                            payload.issuer = newProvider.issuer; // OIDC issuer
+                            payload.oidcConfig = {
+                              clientId: newProvider.clientId,
+                              clientSecret: newProvider.clientSecret,
+                            };
+                          } else {
+                            // SAML
+                            // For SAML, issuer in payload is the IdP Entity ID?
+                            // Better Auth docs say: issuer: "https://idp.example.com"
+                            payload.issuer = newProvider.issuer; // IdP Entity ID
+                            payload.samlConfig = {
+                              entryPoint: newProvider.entryPoint,
+                              cert: newProvider.cert,
+                              // Standard callback is auto-generated but can be explicit
+                            };
+                          }
+
+                          const { error } =
+                            await authClient.sso.register(payload);
+
+                          if (error) {
+                            throw error;
+                          }
+
+                          toast.success("Provider added successfully");
+                          setOpen(false);
+                          fetchProviders();
+                        } catch (_e) {
+                          // biome-ignore lint/suspicious/noExplicitAny: error handling
+                          const err = _e as any;
+                          toast.error(
+                            `Failed to add provider: ${err.message || err.statusText}`
+                          );
+                        } finally {
+                          setLoading(false);
                         }
-
-                        toast.success("Provider added successfully");
-                        setOpen(false);
-                        fetchProviders();
-                      } catch (_e) {
-                        // biome-ignore lint/suspicious/noExplicitAny: error handling
-                        const err = _e as any;
-                        toast.error(
-                          `Failed to add provider: ${err.message || err.statusText}`
-                        );
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
-                  >
-                    {loading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Add Provider
-                  </Button>
-                </div>
+                      }}
+                    >
+                      {loading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Add Provider
+                    </Button>
+                  </div>
+                </Tabs>
               </DialogContent>
             </Dialog>
           </div>

@@ -139,6 +139,11 @@ const navAdmin = [
     icon: UserCog,
   },
   {
+    title: "Organization",
+    url: "/admin/organization",
+    icon: Settings,
+  },
+  {
     title: "Roles",
     url: "/admin/roles",
     icon: Shield,
