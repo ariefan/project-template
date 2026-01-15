@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import type * as React from "react";
 import { Button } from "../../components/button";
 import { cn } from "../../lib/utils";
 import { FileUploadProvider, useFileUpload } from "./file-upload-context";
@@ -49,44 +49,41 @@ function FileUploaderContent({
   return (
     <div className={cn("space-y-4", className)}>
       {!hasFiles || options.multiple ? (
-         <FileUploadDropzone
-            className={dropzoneClassName}
-            description={dropzoneDescription}
-            icon={dropzoneIcon}
-            label={dropzoneLabel}
-         />
+        <FileUploadDropzone
+          className={dropzoneClassName}
+          description={dropzoneDescription}
+          icon={dropzoneIcon}
+          label={dropzoneLabel}
+        />
       ) : null}
 
       {hasFiles && (
         <>
-            <FileUploadList className={listClassName} showUploadAction={!options.autoUpload} />
+          <FileUploadList
+            className={listClassName}
+            showUploadAction={!options.autoUpload}
+          />
 
-            <div className="flex items-center justify-between gap-2">
-                {showTrigger && options.multiple && (
-                    <FileUploadTrigger size="sm" />
-                )}
+          <div className="flex items-center justify-between gap-2">
+            {showTrigger && options.multiple && <FileUploadTrigger size="sm" />}
 
-                <div className="flex items-center gap-2 ml-auto">
-                    <Button
-                        disabled={isUploading}
-                        onClick={handleClear}
-                        size="sm"
-                        variant="ghost"
-                    >
-                        Clear All
-                    </Button>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                disabled={isUploading}
+                onClick={handleClear}
+                size="sm"
+                variant="ghost"
+              >
+                Clear All
+              </Button>
 
-                    {showUploadAll && !options.autoUpload && hasIdleFiles && (
-                        <Button
-                            disabled={isUploading}
-                            onClick={uploadAll}
-                            size="sm"
-                        >
-                            {isUploading ? "Uploading..." : "Upload All"}
-                        </Button>
-                    )}
-                </div>
+              {showUploadAll && !options.autoUpload && hasIdleFiles && (
+                <Button disabled={isUploading} onClick={uploadAll} size="sm">
+                  {isUploading ? "Uploading..." : "Upload All"}
+                </Button>
+              )}
             </div>
+          </div>
         </>
       )}
     </div>

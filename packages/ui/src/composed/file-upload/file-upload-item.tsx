@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, FileIcon, FileImage, RefreshCw, Trash2, X } from "lucide-react";
+import { Check, FileIcon, RefreshCw, Upload, X } from "lucide-react";
 import { Button } from "../../components/button";
 import { cn } from "../../lib/utils";
 import type { UploadFile } from "./types";
@@ -29,8 +29,8 @@ export function FileUploadItem({
         {/* Thumbnail / Icon */}
         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded bg-muted">
           {isImage && file.file.preview ? (
-             // biome-ignore lint/correctness/useImageSize: Dynamic thumbnails
-             // biome-ignore lint/performance/noImgElement: Framework-agnostic
+            // biome-ignore lint/correctness/useImageSize: Dynamic thumbnails
+            // biome-ignore lint/performance/noImgElement: Framework-agnostic
             <img
               alt={file.file.name}
               className="h-full w-full object-cover"
@@ -64,7 +64,10 @@ export function FileUploadItem({
               </span>
             )}
             {file.status === "error" && (
-              <span className="text-destructive font-medium truncate max-w-[200px]" title={file.error}>
+              <span
+                className="max-w-[200px] truncate font-medium text-destructive"
+                title={file.error}
+              >
                 {file.error || "Upload failed"}
               </span>
             )}
@@ -75,49 +78,49 @@ export function FileUploadItem({
               </span>
             )}
             {file.status === "idle" && (
-                <span className="text-muted-foreground">Ready to upload</span>
+              <span className="text-muted-foreground">Ready to upload</span>
             )}
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-1">
-           {showUploadAction && file.status === "idle" && onUpload && (
-             <Button
-                className="h-8 w-8"
-                onClick={() => onUpload(file.id)}
-                size="icon"
-                title="Upload"
-                variant="ghost"
-             >
-                <UploadIcon className="h-4 w-4" />
-             </Button>
-           )}
+          {showUploadAction && file.status === "idle" && onUpload && (
+            <Button
+              className="h-8 w-8"
+              onClick={() => onUpload(file.id)}
+              size="icon"
+              title="Upload"
+              variant="ghost"
+            >
+              <Upload className="h-4 w-4" />
+            </Button>
+          )}
 
-           {file.status === "error" && onRetry && (
-             <Button
-                className="h-8 w-8"
-                onClick={() => onRetry(file.id)}
-                size="icon"
-                title="Retry"
-                variant="ghost"
-             >
-                <RefreshCw className="h-4 w-4" />
-             </Button>
-           )}
+          {file.status === "error" && onRetry && (
+            <Button
+              className="h-8 w-8"
+              onClick={() => onRetry(file.id)}
+              size="icon"
+              title="Retry"
+              variant="ghost"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          )}
 
-           {onRemove && (
-             <Button
-                className="h-8 w-8"
-                disabled={file.status === "uploading"}
-                onClick={() => onRemove(file.id)}
-                size="icon"
-                title="Remove"
-                variant="ghost"
-             >
-                <X className="h-4 w-4" />
-             </Button>
-           )}
+          {onRemove && (
+            <Button
+              className="h-8 w-8"
+              disabled={file.status === "uploading"}
+              onClick={() => onRemove(file.id)}
+              size="icon"
+              title="Remove"
+              variant="ghost"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -135,23 +138,4 @@ export function FileUploadItem({
       )}
     </div>
   );
-}
-
-function UploadIcon({ className }: { className?: string }) {
-    return (
-        <svg
-            className={className}
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" x2="12" y1="3" y2="15" />
-        </svg>
-    )
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { cn } from "../../lib/utils";
 import { useFileUpload } from "./file-upload-context";
 import { FileUploadItem } from "./file-upload-item";
@@ -22,20 +21,20 @@ export function FileUploadList({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-        {files.map((file) => (
-          <div
-            key={file.id}
-            className="animate-in fade-in slide-in-from-top-1 duration-200"
-          >
-            <FileUploadItem
-              file={file}
-              onRemove={removeFile}
-              onRetry={retryFile}
-              onUpload={showUploadAction ? uploadFile : undefined}
-              showUploadAction={showUploadAction}
-            />
-          </div>
-        ))}
+      {files.map((file) => (
+        <div
+          className="fade-in slide-in-from-top-1 animate-in duration-200"
+          key={file.id}
+        >
+          <FileUploadItem
+            file={file}
+            onRemove={removeFile}
+            onRetry={retryFile}
+            onUpload={showUploadAction ? uploadFile : undefined}
+            showUploadAction={showUploadAction}
+          />
+        </div>
+      ))}
     </div>
   );
 }

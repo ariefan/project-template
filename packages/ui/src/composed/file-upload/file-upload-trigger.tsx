@@ -27,7 +27,7 @@ export function FileUploadTrigger({
       addFiles(Array.from(e.target.files));
     }
     if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      fileInputRef.current.value = "";
     }
   };
 
@@ -41,17 +41,15 @@ export function FileUploadTrigger({
         {...props}
       >
         {children || (
-            <>
-                <Plus className="h-4 w-4" />
-                Add files
-            </>
+          <>
+            <Plus className="h-4 w-4" />
+            Add files
+          </>
         )}
       </Button>
       <input
         accept={
-          options.accept
-            ? Object.keys(options.accept).join(",")
-            : undefined
+          options.accept ? Object.keys(options.accept).join(",") : undefined
         }
         className="hidden"
         disabled={options.disabled}

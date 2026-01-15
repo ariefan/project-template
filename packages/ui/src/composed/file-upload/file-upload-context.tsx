@@ -2,12 +2,17 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import type { FileUploadContextType, FileUploadOptions, UploadFile, FileWithPreview } from "./types";
+import type {
+  FileUploadContextType,
+  FileUploadOptions,
+  FileWithPreview,
+  UploadFile,
+} from "./types";
 import { formatBytes } from "./utils";
 
-const FileUploadContext = React.createContext<FileUploadContextType | undefined>(
-  undefined
-);
+const FileUploadContext = React.createContext<
+  FileUploadContextType | undefined
+>(undefined);
 
 export function useFileUpload() {
   const context = React.useContext(FileUploadContext);
@@ -63,7 +68,7 @@ export function FileUploadProvider({
           : undefined;
 
         const fileWithPreview = Object.assign(file, {
-            preview
+          preview,
         }) as FileWithPreview;
 
         const id = `${file.name}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -82,15 +87,15 @@ export function FileUploadProvider({
 
       if (validFiles.length > 0) {
         setFiles((prev) => {
-            if (!options.multiple) {
-                // If not multiple, replace existing files
-                // Cleanup old previews
-                for (const f of prev) {
-                   if (f.file.preview) URL.revokeObjectURL(f.file.preview);
-                }
-                return validFiles;
+          if (!options.multiple) {
+            // If not multiple, replace existing files
+            // Cleanup old previews
+            for (const f of prev) {
+              if (f.file.preview) URL.revokeObjectURL(f.file.preview);
             }
-            return [...prev, ...validFiles];
+            return validFiles;
+          }
+          return [...prev, ...validFiles];
         });
 
         // Auto upload
@@ -103,21 +108,25 @@ export function FileUploadProvider({
         }
       }
     },
-    [options.disabled, options.maxFiles, options.maxSize, options.multiple, options.autoUpload, files.length]
+    [
+      options.disabled,
+      options.maxFiles,
+      options.maxSize,
+      options.multiple,
+      options.autoUpload,
+      files.length,
+    ]
   );
 
-  const removeFile = React.useCallback(
-    (id: string) => {
-      setFiles((prev) => {
-        const file = prev.find((f) => f.id === id);
-        if (file?.file.preview) {
-          URL.revokeObjectURL(file.file.preview);
-        }
-        return prev.filter((f) => f.id !== id);
-      });
-    },
-    []
-  );
+  const removeFile = React.useCallback((id: string) => {
+    setFiles((prev) => {
+      const file = prev.find((f) => f.id === id);
+      if (file?.file.preview) {
+        URL.revokeObjectURL(file.file.preview);
+      }
+      return prev.filter((f) => f.id !== id);
+    });
+  }, []);
 
   const updateFile = React.useCallback(
     (id: string, updates: Partial<UploadFile>) => {
@@ -130,10 +139,10 @@ export function FileUploadProvider({
 
   const clearFiles = React.useCallback(() => {
     setFiles((prev) => {
-        for (const f of prev) {
-            if (f.file.preview) URL.revokeObjectURL(f.file.preview);
-        }
-        return [];
+      for (const f of prev) {
+        if (f.file.preview) URL.revokeObjectURL(f.file.preview);
+      }
+      return [];
     });
   }, []);
 
@@ -141,27 +150,35 @@ export function FileUploadProvider({
   const uploadFileInternal = React.useCallback(
     async (fileState: UploadFile) => {
       if (!options.onUpload) {
-         // If no upload handler, just mark as completed (mock)
-         updateFile(fileState.id, { status: "completed", progress: 100 });
-         return;
+        // If no upload handler, just mark as completed (mock)
+        updateFile(fileState.id, { status: "completed", progress: 100 });
+        return;
       }
 
       if (uploadingIdsRef.current.has(fileState.id)) return;
 
       uploadingIdsRef.current.add(fileState.id);
-      updateFile(fileState.id, { status: "uploading", progress: 0, error: undefined });
+      updateFile(fileState.id, {
+        status: "uploading",
+        progress: 0,
+        error: undefined,
+      });
 
       try {
-        const result = await options.onUpload(fileState, (progress) => {
-          updateFile(fileState.id, { progress });
-        });
+        const result = await options.onUpload(
+          fileState,
+          (progress, speed, eta) => {
+            updateFile(fileState.id, { progress, speed, eta });
+          }
+        );
         updateFile(fileState.id, {
-            status: "completed",
-            progress: 100,
-            uploadedUrl: typeof result === 'string' ? result : undefined
+          status: "completed",
+          progress: 100,
+          uploadedUrl: typeof result === "string" ? result : undefined,
         });
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : "Upload failed";
+        const errorMsg =
+          error instanceof Error ? error.message : "Upload failed";
         updateFile(fileState.id, { status: "error", error: errorMsg });
       } finally {
         uploadingIdsRef.current.delete(fileState.id);

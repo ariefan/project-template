@@ -1,6 +1,12 @@
 "use client";
 
-import { Check, Loader2, RotateCw, X } from "lucide-react";
+import {
+  Check,
+  FlipHorizontal,
+  FlipVertical,
+  Loader2,
+  RotateCw,
+} from "lucide-react";
 import * as React from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
 import { toast } from "sonner";
@@ -15,7 +21,6 @@ import {
   DialogTitle,
 } from "../../components/dialog";
 import { Slider } from "../../components/slider";
-import { cn } from "../../lib/utils";
 
 export interface CropResult {
   blob: Blob;
@@ -41,6 +46,8 @@ export function ImageCropDialog({
   const [crop, setCrop] = React.useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = React.useState(1);
   const [rotation, setRotation] = React.useState(0);
+  const [flipH, setFlipH] = React.useState(false);
+  const [flipV, setFlipV] = React.useState(false);
   const [croppedAreaPixels, setCroppedAreaPixels] = React.useState<Area | null>(
     null
   );
@@ -71,6 +78,8 @@ export function ImageCropDialog({
     // Reset state
     setZoom(1);
     setRotation(0);
+    setFlipH(false);
+    setFlipV(false);
     setCrop({ x: 0, y: 0 });
     setAspect(undefined);
 
@@ -79,23 +88,23 @@ export function ImageCropDialog({
     };
   }, [imageFile]);
 
-  const onCropChange = (crop: Point) => {
-    setCrop(crop);
+  const onCropChange = (newCrop: Point) => {
+    setCrop(newCrop);
   };
 
-  const onZoomChange = (zoom: number) => {
-    setZoom(zoom);
+  const onZoomChange = (newZoom: number) => {
+    setZoom(newZoom);
   };
 
   const onCropCompleteHandler = (
     _croppedArea: Area,
-    croppedAreaPixels: Area
+    croppedAreaPixelsValue: Area
   ) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+    setCroppedAreaPixels(croppedAreaPixelsValue);
   };
 
   const createCroppedImage = async () => {
-    if (!imageSrc || !croppedAreaPixels || !imageFile) {
+    if (!(imageSrc && croppedAreaPixels && imageFile)) {
       return;
     }
 
@@ -104,7 +113,9 @@ export function ImageCropDialog({
       const croppedImage = await getCroppedImg(
         imageSrc,
         croppedAreaPixels,
-        rotation
+        rotation,
+        flipH,
+        flipV
       );
       if (croppedImage) {
         onCropComplete({
@@ -121,13 +132,15 @@ export function ImageCropDialog({
     }
   };
 
-  // Helper to create the cropped image
+  // Helper to create the cropped image with flip support
   const getCroppedImg = async (
-    imageSrc: string,
+    imgSrc: string,
     pixelCrop: Area,
-    rotation = 0
+    rot = 0,
+    flipHorizontal = false,
+    flipVertical = false
   ): Promise<{ blob: Blob; url: string } | null> => {
-    const image = await createImage(imageSrc);
+    const image = await createImage(imgSrc);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -145,7 +158,9 @@ export function ImageCropDialog({
 
     // translate canvas context to a central location on image to allow rotating around the center.
     ctx.translate(safeArea / 2, safeArea / 2);
-    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.rotate((rot * Math.PI) / 180);
+    // Apply flip transformations
+    ctx.scale(flipHorizontal ? -1 : 1, flipVertical ? -1 : 1);
     ctx.translate(-safeArea / 2, -safeArea / 2);
 
     // draw rotated image and store data.
@@ -172,12 +187,9 @@ export function ImageCropDialog({
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
         if (!blob) {
-          // biome-ignore lint/style/noArguments: legacy
           reject(new Error("Canvas is empty"));
           return;
         }
-        // biome-ignore lint/performance/noDelete: memory management
-        // blob.name = imageFile?.name;
         const url = URL.createObjectURL(blob);
         resolve({ blob, url });
       }, imageFile?.type || "image/jpeg");
@@ -189,9 +201,17 @@ export function ImageCropDialog({
       const image = new Image();
       image.addEventListener("load", () => resolve(image));
       image.addEventListener("error", (error) => reject(error));
-      image.setAttribute("crossOrigin", "anonymous"); // needed to avoid cross-origin issues on CodeSandbox
+      image.setAttribute("crossOrigin", "anonymous");
       image.src = url;
     });
+
+  const handleFlipH = () => {
+    setFlipH((prev) => !prev);
+  };
+
+  const handleFlipV = () => {
+    setFlipV((prev) => !prev);
+  };
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
@@ -199,7 +219,7 @@ export function ImageCropDialog({
         <DialogHeader>
           <DialogTitle>Crop Image</DialogTitle>
           <DialogDescription>
-            Adjust the image crop, zoom, and rotation.
+            Adjust the image crop, zoom, rotation, and flip.
           </DialogDescription>
         </DialogHeader>
 
@@ -214,6 +234,15 @@ export function ImageCropDialog({
               onRotationChange={setRotation}
               onZoomChange={onZoomChange}
               rotation={rotation}
+              transform={[
+                `translate(${crop.x}px, ${crop.y}px)`,
+                `rotateZ(${rotation}deg)`,
+                `scale(${zoom})`,
+                flipH ? "scaleX(-1)" : "",
+                flipV ? "scaleY(-1)" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               zoom={zoom}
             />
           )}
@@ -260,14 +289,42 @@ export function ImageCropDialog({
                   {a.label}
                 </Button>
               ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-16 shrink-0 text-muted-foreground text-sm">
+              Transform
+            </span>
+            <div className="flex gap-2">
               <Button
                 className="h-7 text-xs"
+                disabled={isProcessing}
                 onClick={() => setRotation((r) => (r + 90) % 360)}
                 size="sm"
                 variant="outline"
               >
                 <RotateCw className="mr-1 h-3 w-3" />
-                Rotate 90°
+                90°
+              </Button>
+              <Button
+                className="h-7 text-xs"
+                disabled={isProcessing}
+                onClick={handleFlipH}
+                size="sm"
+                variant={flipH ? "default" : "outline"}
+              >
+                <FlipHorizontal className="mr-1 h-3 w-3" />
+                Flip H
+              </Button>
+              <Button
+                className="h-7 text-xs"
+                disabled={isProcessing}
+                onClick={handleFlipV}
+                size="sm"
+                variant={flipV ? "default" : "outline"}
+              >
+                <FlipVertical className="mr-1 h-3 w-3" />
+                Flip V
               </Button>
             </div>
           </div>

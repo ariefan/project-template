@@ -36,7 +36,7 @@ export function FileUploadDropzone({
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files) {
-        addFiles(Array.from(e.dataTransfer.files));
+      addFiles(Array.from(e.dataTransfer.files));
     }
   };
 
@@ -50,7 +50,7 @@ export function FileUploadDropzone({
     }
     // Reset input
     if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      fileInputRef.current.value = "";
     }
   };
 
@@ -65,7 +65,7 @@ export function FileUploadDropzone({
         options.disabled && "cursor-not-allowed opacity-60",
         className
       )}
-      onClick={!options.disabled ? handleClick : undefined}
+      onClick={options.disabled ? undefined : handleClick}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -81,9 +81,7 @@ export function FileUploadDropzone({
     >
       <input
         accept={
-          options.accept
-            ? Object.keys(options.accept).join(",")
-            : undefined
+          options.accept ? Object.keys(options.accept).join(",") : undefined
         }
         className="hidden"
         disabled={options.disabled}
