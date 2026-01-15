@@ -94,6 +94,7 @@ import "./models/subscription.tsp";
 import "./models/coupon.tsp";
 import "./models/payment-event.tsp";
 import "./models/legal-document.tsp";
+import "./models/system-organization.tsp";
 // import "./models/product.tsp";     ← Example: Add new models
 
 // ============================================================================
@@ -118,6 +119,7 @@ import "./routes/coupons.tsp";
 import "./routes/pricing.tsp";
 import "./routes/payment-webhooks.tsp";
 import "./routes/legal-documents.tsp";
+import "./routes/system-organizations.tsp";
 // import "./routes/products.tsp";    ← Example: Add new routes
 
 using TypeSpec.Http;

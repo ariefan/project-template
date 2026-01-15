@@ -18,9 +18,27 @@ import { env } from "@/lib/env";
  *
  * The baseURL is read from validated environment configuration.
  */
-export const authClient: AuthClient = createAuthClientInstance({
+export const authClient = createAuthClientInstance({
   baseURL: env.NEXT_PUBLIC_API_URL,
-});
+}) as AuthClient & {
+  organization: {
+    update: (params: {
+      organizationId: string;
+      data: {
+        name?: string;
+        slug?: string;
+        logo?: string;
+        // biome-ignore lint/suspicious/noExplicitAny: explicit any for metadata
+        metadata?: Record<string, any>;
+      };
+      // biome-ignore lint/suspicious/noExplicitAny: explicit any for response
+    }) => Promise<{ data: any; error: any }>;
+  };
+  sso: {
+    // biome-ignore lint/suspicious/noExplicitAny: explicit any for sso
+    register: (params: any) => Promise<{ data: any; error: any }>;
+  };
+};
 
 /**
  * Export commonly used auth functions and hooks.

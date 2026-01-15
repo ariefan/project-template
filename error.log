@@ -1,0 +1,9 @@
+
+> web@0.0.1 typecheck C:\dev\project-template\apps\web
+> tsc --noEmit
+
+app/(app)/admin/organization/page.tsx(85,37): error TS2339: Property 'update' does not exist on type '{ checkRolePermission: <R extends "member" | "admin" | "owner">(data: ({ permission: { readonly organization?: ("update" | "delete")[] | undefined; readonly member?: ("update" | "delete" | "create")[] | undefined; readonly invitation?: ("create" | "cancel")[] | undefined; readonly team?: ("update" | ... 1 more ... |...'.
+app/(app)/admin/sso/sso-settings.tsx(510,46): error TS2339: Property 'sso' does not exist on type '{ useListPasskeys: () => { data: Passkey[] | null; error: BetterFetchError | null; isPending: boolean; isRefetching: boolean; refetch: (queryParams?: { query?: SessionQueryParams | undefined; } | undefined) => Promise<...>; }; } & ... 29 more ... & { ...; }'.
+C:\dev\project-template\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  web@0.0.1 typecheck: `tsc --noEmit`
+Exit status 2

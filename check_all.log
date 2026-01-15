@@ -1,0 +1,169 @@
+
+> project-template@0.0.1 check C:\dev\project-template
+> turbo typecheck && biome check --write
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/db:typecheck: cache hit, replaying logs 7b6e0780f8f8c21d
+@workspace/db:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui:typecheck: cache hit, replaying logs 3c8b076a4506ad59
+@workspace/ui:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/utils:typecheck: cache hit, replaying logs ad063b8f986b570f
+@workspace/utils:typecheck: 
+@workspace/utils:typecheck: > @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit
+@workspace/utils:typecheck: 
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/cache:typecheck: 
+@workspace/cache:typecheck: > @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/cache:typecheck: > tsc --noEmit
+@workspace/cache:typecheck: 
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/metrics:typecheck: 
+@workspace/metrics:typecheck: > @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit
+@workspace/metrics:typecheck: 
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/ui-mobile:typecheck: 
+@workspace/ui-mobile:typecheck: > @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck
+@workspace/ui-mobile:typecheck: 
+@workspace/authorization:typecheck: cache hit, replaying logs fb9ed2bd5c7ae6c0
+@workspace/authorization:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/auth:typecheck: cache hit, replaying logs 65b3ad87a7fe8920
+@workspace/auth:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/test-utils:typecheck: cache hit, replaying logs 88be5b797594860a
+@workspace/test-utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/notifications:typecheck: cache hit, replaying logs 122d8205415c16cd
+@workspace/notifications:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/feature-files:typecheck: cache hit, replaying logs c1e5b62a44095f8d
+@workspace/feature-files:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/reports:typecheck: cache hit, replaying logs f85a176615efd843
+@workspace/reports:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+drive:typecheck: cache hit, replaying logs 74f4ad5e49a66c16
+web:typecheck: cache miss, executing 550082bbe009123d
+api:typecheck: cache hit, replaying logs d4e4abb34cc38533
+api:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> api@0.0.1 typecheck C:\dev\project-template\apps\api
+api:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+drive:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> drive@0.0.1 typecheck C:\dev\project-template\apps\drive
+drive:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+mobile:typecheck: 
+mobile:typecheck: > mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: 
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+web:typecheck: 
+web:typecheck: > web@0.0.1 typecheck C:\dev\project-template\apps\web
+web:typecheck: > tsc --noEmit
+web:typecheck: 
+
+ Tasks:    17 successful, 17 total
+Cached:    16 cached, 17 total
+  Time:    36.21s 
+
+apps\web\lib\auth.ts:31:35 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    29 │         slug?: string;
+    30 │         logo?: string;
+  > 31 │         metadata?: Record<string, any>;
+       │                                   ^^^
+    32 │       };
+    33 │     }) => Promise<{ data: any; error: any }>;
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\lib\auth.ts:33:27 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    31 │         metadata?: Record<string, any>;
+    32 │       };
+  > 33 │     }) => Promise<{ data: any; error: any }>;
+       │                           ^^^
+    34 │   };
+    35 │   sso: {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\lib\auth.ts:33:39 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    31 │         metadata?: Record<string, any>;
+    32 │       };
+  > 33 │     }) => Promise<{ data: any; error: any }>;
+       │                                       ^^^
+    34 │   };
+    35 │   sso: {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\lib\auth.ts:36:24 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    34 │   };
+    35 │   sso: {
+  > 36 │     register: (params: any) => Promise<{ data: any; error: any }>;
+       │                        ^^^
+    37 │   };
+    38 │ };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\lib\auth.ts:36:48 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    34 │   };
+    35 │   sso: {
+  > 36 │     register: (params: any) => Promise<{ data: any; error: any }>;
+       │                                                ^^^
+    37 │   };
+    38 │ };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\lib\auth.ts:36:60 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    34 │   };
+    35 │   sso: {
+  > 36 │     register: (params: any) => Promise<{ data: any; error: any }>;
+       │                                                            ^^^
+    37 │   };
+    38 │ };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+Checked 761 files in 2s. Fixed 9 files.
+Found 6 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while applying fixes.
+  
+
+ ELIFECYCLE  Command failed with exit code 1.

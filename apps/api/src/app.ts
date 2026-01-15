@@ -40,6 +40,7 @@ import { webhooksModule } from "./modules/webhooks";
 import authorizationPlugin from "./plugins/authorization";
 import rateLimitPlugin from "./plugins/rate-limit";
 import securityHeadersPlugin from "./plugins/security-headers";
+import { systemOrganizationsRoutes } from "./routes/system-organizations/system-organizations.routes";
 
 export interface AppConfig {
   auth: Auth;
@@ -435,6 +436,9 @@ export async function buildApp(config: AppConfig) {
   await app.register(schedulesModule, { prefix: "/v1/orgs" });
   await app.register(subscriptionsModule, { prefix: "/v1" });
   await app.register(legalDocumentsModule, { prefix: "/v1" });
+  await app.register(systemOrganizationsRoutes, {
+    prefix: "/v1/system-organizations",
+  });
 
   return app;
 }

@@ -1951,6 +1951,24 @@ export const zSwitchContextResponse = z.object({
 });
 
 /**
+ * System organization model
+ */
+export const zSystemOrganization = z.object({
+    id: z.string(),
+    name: z.string(),
+    slug: z.string(),
+    logo: z.union([
+        z.string(),
+        z.null()
+    ]),
+    createdAt: z.string(),
+    metadata: z.union([
+        z.string(),
+        z.null()
+    ])
+});
+
+/**
  * Unread announcement count response
  */
 export const zUnreadAnnouncementsResponse = z.object({
@@ -2122,6 +2140,22 @@ export const zUpdateSubscriptionRequest = z.object({
 });
 
 /**
+ * Request to update a system organization
+ */
+export const zUpdateSystemOrganizationRequest = z.object({
+    name: z.optional(z.string()),
+    slug: z.optional(z.string()),
+    logo: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    metadata: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+/**
  * Request to update a webhook
  */
 export const zUpdateWebhookRequest = z.object({
@@ -2283,6 +2317,36 @@ export const zFileListResponse = z.object({
  */
 export const zFileResponse = z.object({
     data: zFile,
+    meta: zResponseMeta
+});
+
+/**
+ * Warning message included in responses for non-fatal issues
+ *
+ * Examples: deprecated endpoints, capped page size, rate limit approaching
+ */
+export const zWarning = z.object({
+    code: z.string(),
+    message: z.string(),
+    documentationUrl: z.optional(z.string())
+});
+
+/**
+ * List of system organizations response
+ */
+export const zSystemOrganizationListResponse = z.object({
+    data: z.array(zSystemOrganization),
+    pagination: zPagination,
+    warnings: z.optional(z.array(zWarning)),
+    meta: zResponseMeta
+});
+
+/**
+ * System organization response
+ */
+export const zSystemOrganizationResponse = z.object({
+    data: zSystemOrganization,
+    warnings: z.optional(z.array(zWarning)),
     meta: zResponseMeta
 });
 
@@ -5147,6 +5211,47 @@ export const zGlobalRolesUpdateResponse = z.union([
     zRoleResponse,
     zErrorResponse
 ]);
+
+export const zSystemOrganizationsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.optional(z.never()),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(20),
+        search: z.optional(z.string())
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSystemOrganizationsListResponse = zSystemOrganizationListResponse;
+
+export const zSystemOrganizationsDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSystemOrganizationsDeleteResponse = zSoftDeleteResponse;
+
+export const zSystemOrganizationsUpdateData = z.object({
+    body: zUpdateSystemOrganizationRequest,
+    path: z.object({
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zSystemOrganizationsUpdateResponse = zSystemOrganizationResponse;
 
 export const zAvailableContextsListData = z.object({
     body: z.optional(z.never()),

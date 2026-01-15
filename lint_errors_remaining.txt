@@ -1,0 +1,351 @@
+
+> web@0.0.1 lint C:\dev\project-template\apps\web
+> biome lint .
+
+actions\system-organizations.ts:17:8 lint/style/useConsistentTypeDefinitions  FIXABLE  ━━━━━━━━━━━━━
+
+  × Use of the type detected.
+  
+  > 17 │ export type ListSystemOrganizationsResult = {
+       │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 18 │   data: {
+        ...
+  > 22 │   error: string | null;
+  > 23 │ };
+       │ ^^
+    24 │ 
+    25 │ export async function listSystemOrganizations({
+  
+  i The codebase should use a consistent coding style for the definition of types. This improves the readability and consistency.
+  
+  i Unsafe fix: Use interface.
+  
+     15  15 │   ␍
+     16  16 │   ␍
+     17     │ - export·type·ListSystemOrganizationsResult·=·{␍
+         17 │ + export·interface·ListSystemOrganizationsResult·{␍
+     18  18 │     data: {␍
+     19  19 │       organizations: SystemOrganization[];␍
+    ······· │ 
+     21  21 │     } | null;␍
+     22  22 │     error: string | null;␍
+     23     │ - };␍
+         23 │ + }␍
+     24  24 │   ␍
+     25  25 │   export async function listSystemOrganizations({␍
+  
+
+actions\system-organizations.ts:66:19 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    64 │       error: null,
+    65 │     };
+  > 66 │   } catch (error: any) {
+       │                   ^^^
+    67 │     console.error("Failed to list organizations:", error);
+    68 │     return { data: null, error: "Failed to fetch organizations" };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+actions\system-organizations.ts:90:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    88 │       console.error("API Error updating organization:", error);
+    89 │       const errorMessage = typeof error === 'object' && error !== null && 'message' in error·
+  > 90 │         ? (error as any).message·
+       │                     ^^^
+    91 │         : "Failed to update organization";
+    92 │       return { data: null, error: errorMessage };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+actions\system-organizations.ts:96:19 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    95 │     return { data: result?.data ?? null, error: null };
+  > 96 │   } catch (error: any) {
+       │                   ^^^
+    97 │     console.error("Failed to update organization:", error);·
+    98 │     return { data: null, error: "Failed to update organization" };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+actions\system-organizations.ts:116:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    114 │       console.error("API Error deleting organization:", error);
+    115 │       const errorMessage = typeof error === 'object' && error !== null && 'message' in error·
+  > 116 │         ? (error as any).message·
+        │                     ^^^
+    117 │         : "Failed to delete organization";
+    118 │       return { success: false, error: errorMessage };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+actions\system-organizations.ts:122:19 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    121 │     return { success: true, error: null };
+  > 122 │   } catch (error: any) {
+        │                   ^^^
+    123 │     console.error("Failed to delete organization:", error);
+    124 │     return { success: false, error: "Failed to delete organization" };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\system\organizations\delete-organization-dialog.tsx:34:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    32 │   const mutation = useMutation({
+    33 │     mutationFn: async () => {
+  > 34 │       if (!organization) return;
+       │       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    35 │       
+    36 │       const result = await deleteSystemOrganization(organization.id);
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    34 │ ······if·(!organization)·{·return;·}␍
+       │                          ++       ++
+
+app\(app)\admin\system\organizations\edit-organization-dialog.tsx:45:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    43 │   const mutation = useMutation({
+    44 │     mutationFn: async () => {
+  > 45 │       if (!organization) return;
+       │       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    46 │       
+    47 │       const updateData: UpdateSystemOrganizationRequest = {
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    45 │ ······if·(!organization)·{·return;·}␍
+       │                          ++       ++
+
+app\(app)\admin\system\organizations\system-organizations-list.tsx:42:9 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━
+
+  × This variable total is unused.
+  
+    41 │   const organizations = result?.data?.organizations ?? [];
+  > 42 │   const total = result?.data?.total ?? 0;
+       │         ^^^^^
+    43 │ 
+    44 │   const columns = useMemo<ColumnDef<SystemOrganization>[]>(
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend total with an underscore.
+  
+     40  40 │   ␍
+     41  41 │     const organizations = result?.data?.organizations ?? [];␍
+     42     │ - ··const·total·=·result?.data?.total·??·0;␍
+         42 │ + ··const·_total·=·result?.data?.total·??·0;␍
+     43  43 │   ␍
+     44  44 │     const columns = useMemo<ColumnDef<SystemOrganization>[]>(␍
+  
+
+app\(app)\organization\general\page.tsx:57:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    55 │       });
+    56 │ 
+  > 57 │       if (error) throw error;
+       │       ^^^^^^^^^^^^^^^^^^^^^^^
+    58 │       
+    59 │       await refetch();
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    57 │ ······if·(error)·{·throw·error;·}␍
+       │                  ++            ++
+
+app\(app)\organization\general\page.tsx:61:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    59 │       await refetch();
+    60 │       toast.success("Organization updated successfully");
+  > 61 │     } catch (error: any) {
+       │                     ^^^
+    62 │       toast.error(error.message || "Failed to update organization");
+    63 │     } finally {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\organization\general\page.tsx:12:7 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━
+
+  × This variable client is unused.
+  
+    10 │ // Cast authClient to any to access plugin methods
+    11 │ // biome-ignore lint/suspicious/noExplicitAny: library types are incomplete
+  > 12 │ const client = authClient as any;
+       │       ^^^^^^
+    13 │ 
+    14 │ export default function OrganizationGeneralPage() {
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend client with an underscore.
+  
+    10 10 │   // Cast authClient to any to access plugin methods␍
+    11 11 │   // biome-ignore lint/suspicious/noExplicitAny: library types are incomplete␍
+    12    │ - const·client·=·authClient·as·any;␍
+       12 │ + const·_client·=·authClient·as·any;␍
+    13 13 │   ␍
+    14 14 │   export default function OrganizationGeneralPage() {␍
+  
+
+app\(app)\settings\organization.tsx:156:68 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    154 │ type ProfileFormValues = z.infer<typeof profileSchema>;
+    155 │ 
+  > 156 │ function OrganizationProfileForm({ organization }: { organization: any }) {
+        │                                                                    ^^^
+    157 │   const form = useForm<ProfileFormValues>({
+    158 │     resolver: zodResolver(profileSchema),
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\settings\organization.tsx:179:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    177 │       });
+    178 │       
+  > 179 │       if (error) throw error;
+        │       ^^^^^^^^^^^^^^^^^^^^^^^
+    180 │       toast.success("Organization profile updated");
+    181 │     } catch (error: any) {
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    179 │ ······if·(error)·{·throw·error;·}␍
+        │                  ++            ++
+
+app\(app)\settings\organization.tsx:181:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    179 │       if (error) throw error;
+    180 │       toast.success("Organization profile updated");
+  > 181 │     } catch (error: any) {
+        │                     ^^^
+    182 │         toast.error(error.message || "Failed to update profile");
+    183 │     }
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\settings\organization.tsx:253:68 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    251 │ }
+    252 │ 
+  > 253 │ function OrganizationMembersList({ organization }: { organization: any }) {
+        │                                                                    ^^^
+    254 │     const {·
+    255 │         data: members,
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\settings\organization.tsx:272:13 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    270 │                 role
+    271 │             });
+  > 272 │             if (error) throw error;
+        │             ^^^^^^^^^^^^^^^^^^^^^^^
+    273 │             toast.success("Member role updated");
+    274 │         } catch (e: any) {
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    272 │ ············if·(error)·{·throw·error;·}␍
+        │                        ++            ++
+
+app\(app)\settings\organizations\new\page.tsx:54:46 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    52 │     setLoading(true);
+    53 │     try {
+  > 54 │       const { error } = await (authClient as any).organization.create({
+       │                                              ^^^
+    55 │         name: data.name,
+    56 │         slug: data.slug,
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\settings\organizations\new\page.tsx:67:17 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    65 │       router.push("/dashboard");
+    66 │       router.refresh();
+  > 67 │     } catch (e: any) {
+       │                 ^^^
+    68 │       toast.error(
+    69 │         e.message || "Failed to create organization. Please try again."
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\settings\settings-panel.tsx:62:56 lint/suspicious/noArrayIndexKey ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    60 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+    61 │               {Array.from({ length: 5 }).map((_, i) => (
+  > 62 │                 <Skeleton className="h-10 w-full" key={i} />
+       │                                                        ^
+    63 │               ))}
+    64 │             </div>
+  
+  i This is the source of the key value.
+  
+    59 │           <aside className="w-full flex-shrink-0 md:w-64">
+    60 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+  > 61 │               {Array.from({ length: 5 }).map((_, i) => (
+       │                                                  ^
+    62 │                 <Skeleton className="h-10 w-full" key={i} />
+    63 │               ))}
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 5.
+Checked 186 files in 129ms. No fixes applied.
+Found 25 errors.
+lint ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+C:\dev\project-template\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  web@0.0.1 lint: `biome lint .`
+Exit status 1

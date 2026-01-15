@@ -11,6 +11,7 @@ import {
   Bell,
   BellRing,
   Briefcase,
+  Building2,
   CalendarClock,
   Code,
   CreditCard,
@@ -121,37 +122,41 @@ const navDeveloper = [
   },
 ];
 
-// Administration and settings
-const navAdmin = [
+// Organization Management
+const navOrganization = [
   {
-    title: "Settings",
-    url: "/settings",
+    title: "General",
+    url: "/organization/general",
     icon: Settings,
   },
   {
-    title: "Org Users",
-    url: "/admin/users",
+    title: "Members",
+    url: "/organization/members",
     icon: Users,
   },
+  {
+    title: "Roles",
+    url: "/organization/roles",
+    icon: Shield,
+  },
+  {
+    title: "SSO",
+    url: "/organization/sso",
+    icon: Key,
+  },
+];
+
+// Administration and settings
+const navAdmin = [
   {
     title: "System Users",
     url: "/admin/system/users",
     icon: UserCog,
   },
   {
-    title: "Organization",
-    url: "/admin/organization",
-    icon: Settings,
-  },
-  {
-    title: "Roles",
-    url: "/admin/roles",
-    icon: Shield,
-  },
-  {
-    title: "SSO",
-    url: "/admin/sso",
-    icon: Key,
+    title: "System Orgs",
+    url: "/admin/system/organizations",
+    icon: Building2,
   },
   {
     title: "Announcements",
@@ -178,9 +183,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navApplication} label="Application" />
+        <NavMain items={navOrganization} label="Organization" />
         <NavMain items={navSystem} label="System" />
         <NavMain items={navDeveloper} label="Developer" />
-        <NavMain items={navAdmin} label="Administration" />
+        <NavMain items={navAdmin} label="System Admin" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

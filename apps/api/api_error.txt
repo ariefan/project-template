@@ -1,0 +1,8 @@
+src/routes/system-organizations/system-organizations.routes.ts(102,9): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ id?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; name?: string | SQL<unknown> | PgColumn<...> | undefined; createdAt?: SQL<...> | ... 2 more ... | undefined; slug?: string | ... 2 more ... | undefined; metadata?: string | ... 3 more ... | undefined; logo?: string...'.
+src/routes/system-organizations/system-organizations.routes.ts(109,13): error TS18048: 'updated' is possibly 'undefined'.
+src/routes/system-organizations/system-organizations.routes.ts(110,15): error TS18048: 'updated' is possibly 'undefined'.
+src/routes/system-organizations/system-organizations.routes.ts(111,15): error TS18048: 'updated' is possibly 'undefined'.
+src/routes/system-organizations/system-organizations.routes.ts(112,15): error TS18048: 'updated' is possibly 'undefined'.
+src/routes/system-organizations/system-organizations.routes.ts(113,20): error TS18048: 'updated' is possibly 'undefined'.
+src/routes/system-organizations/system-organizations.routes.ts(114,19): error TS18048: 'updated' is possibly 'undefined'.
+src/routes/system-organizations/system-organizations.routes.ts(114,53): error TS18048: 'updated' is possibly 'undefined'.

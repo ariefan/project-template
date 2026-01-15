@@ -57,7 +57,7 @@ export function SettingsPanel() {
           <aside className="w-full flex-shrink-0 md:w-64">
             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
               {Array.from({ length: 5 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton list
+                // biome-ignore lint/suspicious/noArrayIndexKey: skeletons don't reorder
                 <Skeleton className="h-10 w-full" key={i} />
               ))}
             </div>
@@ -83,6 +83,7 @@ export function SettingsPanel() {
       label: "General",
       icon: Settings,
     },
+
     {
       id: "appearance",
       label: "Appearance",
@@ -137,6 +138,7 @@ export function SettingsPanel() {
         <div className="min-w-0 flex-1">
           {activeTab === "profile" && <ProfileTab />}
           {activeTab === "general" && <GeneralTab />}
+
           {activeTab === "appearance" && <AppearanceTab />}
           {activeTab === "notifications" && <NotificationsTab />}
           {activeTab === "security" && <SecurityTab />}

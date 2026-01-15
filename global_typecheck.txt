@@ -1,0 +1,110 @@
+
+> project-template@0.0.1 typecheck C:\dev\project-template
+> turbo typecheck
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/ui:typecheck: cache hit, replaying logs 47dc3fb672852c97
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/ui:typecheck: 
+@workspace/ui:typecheck: > @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit
+@workspace/ui:typecheck: 
+@workspace/cache:typecheck: 
+@workspace/cache:typecheck: > @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/cache:typecheck: > tsc --noEmit
+@workspace/cache:typecheck: 
+@workspace/db:typecheck: cache hit, replaying logs fca45d949aec0e13
+@workspace/db:typecheck: 
+@workspace/db:typecheck: > @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit
+@workspace/db:typecheck: 
+@workspace/utils:typecheck: cache hit, replaying logs ad063b8f986b570f
+@workspace/utils:typecheck: 
+@workspace/utils:typecheck: > @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit
+@workspace/utils:typecheck: 
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/metrics:typecheck: 
+@workspace/metrics:typecheck: > @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit
+@workspace/metrics:typecheck: 
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/ui-mobile:typecheck: 
+@workspace/ui-mobile:typecheck: > @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck
+@workspace/ui-mobile:typecheck: 
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/test-utils:typecheck: cache hit, replaying logs 618c0fad0f6efe99
+@workspace/test-utils:typecheck: 
+@workspace/test-utils:typecheck: > @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit
+@workspace/test-utils:typecheck: 
+@workspace/reports:typecheck: cache hit, replaying logs 243092e073d76e05
+@workspace/reports:typecheck: 
+@workspace/reports:typecheck: > @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit
+@workspace/reports:typecheck: 
+@workspace/authorization:typecheck: cache hit, replaying logs e3e04d46d0088fad
+@workspace/authorization:typecheck: 
+@workspace/authorization:typecheck: > @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit
+@workspace/authorization:typecheck: 
+@workspace/auth:typecheck: cache hit, replaying logs cd9f1a18d8cfbc22
+@workspace/auth:typecheck: 
+@workspace/auth:typecheck: > @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit
+@workspace/auth:typecheck: 
+@workspace/notifications:typecheck: cache hit, replaying logs 24f9856779d811b0
+@workspace/notifications:typecheck: 
+@workspace/notifications:typecheck: > @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit
+@workspace/notifications:typecheck: 
+@workspace/feature-files:typecheck: cache hit, replaying logs 5556aef1b0723a60
+@workspace/feature-files:typecheck: 
+@workspace/feature-files:typecheck: > @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit
+@workspace/feature-files:typecheck: 
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+api:typecheck: cache miss, executing 88665c02f94d16ea
+drive:typecheck: cache hit, replaying logs 45141b3a2f52d6f7
+web:typecheck: cache miss, executing 91c9aa8dc458c7af
+drive:typecheck: 
+drive:typecheck: > drive@0.0.1 typecheck C:\dev\project-template\apps\drive
+drive:typecheck: > tsc --noEmit
+drive:typecheck: 
+mobile:typecheck: 
+mobile:typecheck: > mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: 
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+web:typecheck: 
+web:typecheck: > web@0.0.1 typecheck C:\dev\project-template\apps\web
+web:typecheck: > tsc --noEmit
+web:typecheck: 
+api:typecheck: 
+api:typecheck: > api@0.0.1 typecheck C:\dev\project-template\apps\api
+api:typecheck: > tsc --noEmit
+api:typecheck: 
+api:typecheck: src/routes/system-organizations/system-organizations.routes.ts(108,13): error TS18048: 'updated' is possibly 'undefined'.
+api:typecheck: src/routes/system-organizations/system-organizations.routes.ts(109,15): error TS18048: 'updated' is possibly 'undefined'.
+api:typecheck: src/routes/system-organizations/system-organizations.routes.ts(110,15): error TS18048: 'updated' is possibly 'undefined'.
+api:typecheck: src/routes/system-organizations/system-organizations.routes.ts(111,15): error TS18048: 'updated' is possibly 'undefined'.
+api:typecheck: src/routes/system-organizations/system-organizations.routes.ts(112,20): error TS18048: 'updated' is possibly 'undefined'.
+api:typecheck: src/routes/system-organizations/system-organizations.routes.ts(113,19): error TS18048: 'updated' is possibly 'undefined'.
+api:typecheck: src/routes/system-organizations/system-organizations.routes.ts(113,53): error TS18048: 'updated' is possibly 'undefined'.
+api:typecheck:  ELIFECYCLE  Command failed with exit code 2.
+api:typecheck: ERROR: command finished with error: command (C:\dev\project-template\apps\api) C:\Program Files\nodejs\pnpm.CMD run typecheck exited (2)
+api#typecheck: command (C:\dev\project-template\apps\api) C:\Program Files\nodejs\pnpm.CMD run typecheck exited (2)
+
+ Tasks:    15 successful, 17 total
+Cached:    15 cached, 17 total
+  Time:    18.958s 
+Failed:    api#typecheck
+
+ ERROR  run failed: command  exited (2)
+ ELIFECYCLE  Command failed with exit code 2.

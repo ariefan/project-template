@@ -4045,6 +4045,76 @@ export type SwitchContextResponse = {
 };
 
 /**
+ * System organization model
+ */
+export type SystemOrganization = {
+    /**
+     * Organization ID
+     */
+    id: string;
+    /**
+     * Organization name
+     */
+    name: string;
+    /**
+     * Organization slug
+     */
+    slug: string;
+    /**
+     * Organization logo URL
+     */
+    logo: string | null;
+    /**
+     * Creation date
+     */
+    createdAt: string;
+    /**
+     * Metadata (JSON string or object)
+     */
+    metadata: string | null;
+};
+
+/**
+ * List of system organizations response
+ */
+export type SystemOrganizationListResponse = {
+    /**
+     * Array of resources
+     */
+    data: Array<SystemOrganization>;
+    /**
+     * Pagination information
+     */
+    pagination: Pagination;
+    /**
+     * Non-fatal warnings (e.g., deprecation notices)
+     */
+    warnings?: Array<Warning>;
+    /**
+     * Response metadata
+     */
+    meta: ResponseMeta;
+};
+
+/**
+ * System organization response
+ */
+export type SystemOrganizationResponse = {
+    /**
+     * The resource data
+     */
+    data: SystemOrganization;
+    /**
+     * Non-fatal warnings (e.g., deprecation notices)
+     */
+    warnings?: Array<Warning>;
+    /**
+     * Response metadata
+     */
+    meta: ResponseMeta;
+};
+
+/**
  * Unread announcement count response
  */
 export type UnreadAnnouncementsResponse = {
@@ -4521,6 +4591,16 @@ export type UpdateSubscriptionRequest = {
 };
 
 /**
+ * Request to update a system organization
+ */
+export type UpdateSystemOrganizationRequest = {
+    name?: string;
+    slug?: string;
+    logo?: string | null;
+    metadata?: string | null;
+};
+
+/**
  * Request to update a webhook
  */
 export type UpdateWebhookRequest = {
@@ -4752,6 +4832,26 @@ export type ValidateCouponResponse = {
  * Virus scan status for uploaded files
  */
 export type VirusScanStatus = 'pending' | 'scanning' | 'clean' | 'infected' | 'failed';
+
+/**
+ * Warning message included in responses for non-fatal issues
+ *
+ * Examples: deprecated endpoints, capped page size, rate limit approaching
+ */
+export type Warning = {
+    /**
+     * Warning code (e.g., endpointDeprecated, pageSizeCapped)
+     */
+    code: string;
+    /**
+     * Human-readable warning message
+     */
+    message: string;
+    /**
+     * URL to documentation about this warning (optional)
+     */
+    documentationUrl?: string;
+};
 
 /**
  * Webhook configuration
@@ -9519,6 +9619,103 @@ export type GlobalRolesUpdateResponses = {
 };
 
 export type GlobalRolesUpdateResponse = GlobalRolesUpdateResponses[keyof GlobalRolesUpdateResponses];
+
+export type SystemOrganizationsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        pageSize?: number;
+        search?: string;
+    };
+    url: '/v1/system-organizations';
+};
+
+export type SystemOrganizationsListErrors = {
+    /**
+     * Access is unauthorized.
+     */
+    401: unknown;
+    /**
+     * Access is forbidden.
+     */
+    403: unknown;
+};
+
+export type SystemOrganizationsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SystemOrganizationListResponse;
+};
+
+export type SystemOrganizationsListResponse = SystemOrganizationsListResponses[keyof SystemOrganizationsListResponses];
+
+export type SystemOrganizationsDeleteData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/system-organizations/{id}';
+};
+
+export type SystemOrganizationsDeleteErrors = {
+    /**
+     * Access is unauthorized.
+     */
+    401: unknown;
+    /**
+     * Access is forbidden.
+     */
+    403: unknown;
+    /**
+     * The server cannot find the requested resource.
+     */
+    404: unknown;
+};
+
+export type SystemOrganizationsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SoftDeleteResponse;
+};
+
+export type SystemOrganizationsDeleteResponse = SystemOrganizationsDeleteResponses[keyof SystemOrganizationsDeleteResponses];
+
+export type SystemOrganizationsUpdateData = {
+    body: UpdateSystemOrganizationRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/v1/system-organizations/{id}';
+};
+
+export type SystemOrganizationsUpdateErrors = {
+    /**
+     * Access is unauthorized.
+     */
+    401: unknown;
+    /**
+     * Access is forbidden.
+     */
+    403: unknown;
+    /**
+     * The server cannot find the requested resource.
+     */
+    404: unknown;
+};
+
+export type SystemOrganizationsUpdateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: SystemOrganizationResponse;
+};
+
+export type SystemOrganizationsUpdateResponse = SystemOrganizationsUpdateResponses[keyof SystemOrganizationsUpdateResponses];
 
 export type AvailableContextsListData = {
     body?: never;

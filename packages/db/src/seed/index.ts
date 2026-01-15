@@ -370,6 +370,7 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     "reports",
     "announcements",
     "schedules",
+    "organizations",
   ];
   const actions = ["read", "create", "update", "delete", "manage"];
 

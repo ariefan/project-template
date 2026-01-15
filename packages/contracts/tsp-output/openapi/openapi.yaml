@@ -33,6 +33,7 @@ tags:
   - name: Subscriptions
   - name: Legal Documents (Admin)
   - name: Legal Documents (Public)
+  - name: System Organizations
 paths:
   /health:
     get:
@@ -6064,6 +6065,101 @@ paths:
           description: 'There is no content to send for this request, but the headers may be useful. '
       tags:
         - Roles
+  /v1/system-organizations:
+    get:
+      operationId: SystemOrganizations_list
+      description: List all system organizations (Admin only)
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 20
+          explode: false
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemOrganizationListResponse'
+        '401':
+          description: Access is unauthorized.
+        '403':
+          description: Access is forbidden.
+      tags:
+        - System Organizations
+  /v1/system-organizations/{id}:
+    patch:
+      operationId: SystemOrganizations_update
+      description: Update a system organization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemOrganizationResponse'
+        '401':
+          description: Access is unauthorized.
+        '403':
+          description: Access is forbidden.
+        '404':
+          description: The server cannot find the requested resource.
+      tags:
+        - System Organizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSystemOrganizationRequest'
+    delete:
+      operationId: SystemOrganizations_delete
+      description: Delete a system organization (soft delete)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoftDeleteResponse'
+        '401':
+          description: Access is unauthorized.
+        '403':
+          description: Access is forbidden.
+        '404':
+          description: The server cannot find the requested resource.
+      tags:
+        - System Organizations
   /v1/users/me/available-contexts:
     get:
       operationId: AvailableContexts_list
@@ -10761,6 +10857,83 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Context switch response
+    SystemOrganization:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - logo
+        - createdAt
+        - metadata
+      properties:
+        id:
+          type: string
+          description: Organization ID
+        name:
+          type: string
+          description: Organization name
+        slug:
+          type: string
+          description: Organization slug
+        logo:
+          type: string
+          nullable: true
+          description: Organization logo URL
+        createdAt:
+          type: string
+          description: Creation date
+        metadata:
+          type: string
+          nullable: true
+          description: Metadata (JSON string or object)
+      description: System organization model
+    SystemOrganizationListResponse:
+      type: object
+      required:
+        - data
+        - pagination
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SystemOrganization'
+          description: Array of resources
+        pagination:
+          allOf:
+            - $ref: '#/components/schemas/Pagination'
+          description: Pagination information
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Warning'
+          description: Non-fatal warnings (e.g., deprecation notices)
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/ResponseMeta'
+          description: Response metadata
+      description: List of system organizations response
+    SystemOrganizationResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          allOf:
+            - $ref: '#/components/schemas/SystemOrganization'
+          description: The resource data
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Warning'
+          description: Non-fatal warnings (e.g., deprecation notices)
+        meta:
+          allOf:
+            - $ref: '#/components/schemas/ResponseMeta'
+          description: Response metadata
+      description: System organization response
     UnreadAnnouncementsResponse:
       type: object
       required:
@@ -11197,6 +11370,20 @@ components:
           type: boolean
           description: Cancel at end of period
       description: Update subscription request
+    UpdateSystemOrganizationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        metadata:
+          type: string
+          nullable: true
+      description: Request to update a system organization
     UpdateWebhookRequest:
       type: object
       properties:
@@ -11485,6 +11672,25 @@ components:
         - infected
         - failed
       description: Virus scan status for uploaded files
+    Warning:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Warning code (e.g., endpointDeprecated, pageSizeCapped)
+        message:
+          type: string
+          description: Human-readable warning message
+        documentationUrl:
+          type: string
+          description: URL to documentation about this warning (optional)
+      description: |-
+        Warning message included in responses for non-fatal issues
+
+        Examples: deprecated endpoints, capped page size, rate limit approaching
     Webhook:
       type: object
       required:
