@@ -16,12 +16,12 @@ import {
 import * as React from "react";
 import { toast } from "sonner";
 
-import { Badge } from "../components/badge";
-import { Button } from "../components/button";
-import { Checkbox } from "../components/checkbox";
-import { Label } from "../components/label";
-import { Slider } from "../components/slider";
-import { cn } from "../lib/utils";
+import { Badge } from "../../components/badge";
+import { Button } from "../../components/button";
+import { Checkbox } from "../../components/checkbox";
+import { Label } from "../../components/label";
+import { Slider } from "../../components/slider";
+import { cn } from "../../lib/utils";
 import { type CropResult, ImageCropDialog } from "./image-crop-dialog";
 
 export interface CompressionOptions {
@@ -437,8 +437,8 @@ export function ImageCompressor({
               <Checkbox
                 checked={enableCropping}
                 id="enable-cropping"
-                onCheckedChange={(checked) =>
-                  setEnableCropping(checked as boolean)
+                onCheckedChange={(checked: boolean) =>
+                  setEnableCropping(checked)
                 }
               />
             </div>
@@ -454,7 +454,7 @@ export function ImageCompressor({
                 id="maxSizeMB"
                 max={10}
                 min={0.1}
-                onValueChange={([value]) => {
+                onValueChange={([value]: number[]) => {
                   if (value !== undefined) {
                     setCompressionOptions((prev) => ({
                       ...prev,
@@ -478,7 +478,7 @@ export function ImageCompressor({
                 id="maxDimension"
                 max={4096}
                 min={480}
-                onValueChange={([value]) => {
+                onValueChange={([value]: number[]) => {
                   if (value !== undefined) {
                     setCompressionOptions((prev) => ({
                       ...prev,
@@ -495,10 +495,10 @@ export function ImageCompressor({
               <div className="flex items-center gap-3">
                 <Checkbox
                   checked={compressionOptions.useWebWorker}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setCompressionOptions((prev) => ({
                       ...prev,
-                      useWebWorker: checked as boolean,
+                      useWebWorker: checked,
                     }))
                   }
                 />
@@ -508,10 +508,10 @@ export function ImageCompressor({
               <div className="flex items-center gap-3">
                 <Checkbox
                   checked={compressionOptions.alwaysKeepResolution}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setCompressionOptions((prev) => ({
                       ...prev,
-                      alwaysKeepResolution: checked as boolean,
+                      alwaysKeepResolution: checked,
                     }))
                   }
                 />
@@ -776,7 +776,7 @@ export function ImageCompressor({
       <ImageCropDialog
         imageFile={fileToCrop}
         onCropComplete={handleCropComplete}
-        onOpenChange={(open) => {
+        onOpenChange={(open: boolean) => {
           if (open) {
             setCropDialogOpen(open);
           } else {
