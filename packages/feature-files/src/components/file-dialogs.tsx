@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
-import { FileUploadWithProgress } from "@workspace/ui/composed/file-upload-with-progress";
+import { FileUploader } from "@workspace/ui/composed/file-upload";
 import { useState } from "react";
 import type { FileInfo } from "../context/file-manager-context";
 
@@ -35,8 +35,8 @@ interface FileDialogsProps {
   onUpload: (files: FileList | File[]) => void;
   onSingleUpload: (
     fileState: { file: File; id: string },
-    onProgress?: (progress: number, speed: number, eta: number) => void
-  ) => Promise<void>;
+    onProgress: (progress: number) => void
+  ) => Promise<string | void>;
 
   // New folder dialog
   showNewFolderDialog: boolean;
@@ -182,8 +182,8 @@ export function FileDialogs({
             </DialogDescription>
           </DialogHeader>
 
-          <FileUploadWithProgress
-            maxFileSize={50 * 1024 * 1024}
+          <FileUploader
+            maxSize={50 * 1024 * 1024}
             multiple={true}
             onUpload={onSingleUpload} // 50MB
           />

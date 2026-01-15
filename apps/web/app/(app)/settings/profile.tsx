@@ -28,7 +28,7 @@ import { Label } from "@workspace/ui/components/label";
 import {
   type CompressedFileWithPreview,
   ImageCompressor,
-} from "@workspace/ui/composed/image-compressor";
+} from "@workspace/ui/composed/file-upload";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import {
   Camera,

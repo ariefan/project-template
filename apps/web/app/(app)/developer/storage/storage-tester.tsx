@@ -24,13 +24,13 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
 import {
-  FileUploadWithProgress,
-  type UploadFileState,
-} from "@workspace/ui/composed/file-upload-with-progress";
+  FileUploader,
+  type UploadFile,
+} from "@workspace/ui/composed/file-upload";
 import {
   type CompressedFileWithPreview,
   ImageCompressor,
-} from "@workspace/ui/composed/image-compressor";
+} from "@workspace/ui/composed/file-upload";
 import { Code, Crop, Download, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -64,7 +64,9 @@ export function StorageTester() {
 
   const [activeTab, setActiveTab] = useState("upload");
   const [isClient, setIsClient] = useState(false);
-  const [uploadMode, setUploadMode] = useState<"quick" | "bulk">("bulk");
+  // FileUploader options
+  const [isMultiple, setIsMultiple] = useState(true);
+
   const [isUploadingCompressed, setIsUploadingCompressed] = useState(false);
   const [showCode, setShowCode] = useState(false);
 
@@ -110,10 +112,11 @@ export function StorageTester() {
   };
 
   // Upload with progress tracking using XMLHttpRequest
-  const uploadFile = (
-    fileState: UploadFileState,
-    onProgress?: (progress: number, speed: number, eta: number) => void
-  ): Promise<void> => {
+  // Note: Updated to match FileUploader interface
+  const uploadFile = async (
+    fileState: UploadFile,
+    onProgress: (progress: number) => void
+  ): Promise<string | void> => {
     if (!organization?.id) {
       throw new Error("No organization selected");
     }
@@ -123,16 +126,11 @@ export function StorageTester() {
 
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      const startTime = Date.now();
 
       xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable && onProgress) {
+        if (e.lengthComputable) {
           const progress = Math.round((e.loaded / e.total) * 100);
-          const elapsed = (Date.now() - startTime) / 1000;
-          const speed = e.loaded / elapsed;
-          const remaining = e.total - e.loaded;
-          const eta = speed > 0 ? remaining / speed : 0;
-          onProgress(progress, speed, eta);
+          onProgress(progress);
         }
       });
 
@@ -180,7 +178,7 @@ export function StorageTester() {
             progress: 0,
             status: "idle",
           },
-          undefined
+          () => {} // No progress tracking for this simplified example
         );
         successCount++;
       } catch {
@@ -275,9 +273,8 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
 };
 
 // Usage
-await uploadFile(selectedFile, (progress) => {
-  console.log(\`Upload: \${progress}%\`);
-});`}</code>
+<FileUploader onUpload={uploadFile} />
+`}</code>
             </pre>
           </CardContent>
         </Card>
@@ -306,18 +303,29 @@ await uploadFile(selectedFile, (progress) => {
         <TabsContent value="upload">
           <Card>
             <CardHeader>
-              <CardTitle>File Upload</CardTitle>
-              <CardDescription>
-                Upload files to your organization storage with progress tracking
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>File Upload</CardTitle>
+                  <CardDescription>
+                    Upload files to your organization storage with progress tracking
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                    <Button
+                        onClick={() => setIsMultiple(!isMultiple)}
+                        size="sm"
+                        variant="outline"
+                    >
+                        {isMultiple ? "Multi-File" : "Single File"} Mode
+                    </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <FileUploadWithProgress
-                maxFileSize={MAX_FILE_SIZE}
-                multiple
+              <FileUploader
+                maxSize={MAX_FILE_SIZE}
+                multiple={isMultiple}
                 onUpload={uploadFile}
-                onUploadModeChange={setUploadMode}
-                uploadMode={uploadMode}
               />
             </CardContent>
           </Card>
