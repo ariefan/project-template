@@ -3396,6 +3396,13 @@ paths:
           schema:
             type: string
           explode: false
+        - name: kind
+          in: query
+          required: false
+          description: Filter by file kind
+          schema:
+            $ref: '#/components/schemas/FileKind'
+          explode: false
         - name: virusScanStatus
           in: query
           required: false
@@ -7523,6 +7530,37 @@ components:
           type: string
           description: Author user ID
           example: usr_author123
+        category:
+          type: string
+          description: Post category
+        tags:
+          type: array
+          items:
+            type: string
+          description: Post tags
+        isFeatured:
+          type: boolean
+          description: Whether the post is featured
+        publishDate:
+          type: string
+          format: date-time
+          description: Scheduled publish date
+        coverImageId:
+          type: string
+          description: Cover image file ID
+        attachmentFileId:
+          type: string
+          description: Attachment file ID
+        galleryImageIds:
+          type: array
+          items:
+            type: string
+          description: Gallery images (file IDs)
+        documentFileIds:
+          type: array
+          items:
+            type: string
+          description: Attached documents (file IDs)
         status:
           allOf:
             - $ref: '#/components/schemas/ExamplePostStatus'
@@ -8191,6 +8229,10 @@ components:
         - title
         - content
         - authorId
+        - tags
+        - isFeatured
+        - galleryImageIds
+        - documentFileIds
         - status
         - isDeleted
         - createdAt
@@ -8216,6 +8258,41 @@ components:
           type: string
           description: Author user ID
           example: usr_author123
+        category:
+          type: string
+          description: Post category
+          example: technology
+        tags:
+          type: array
+          items:
+            type: string
+          description: Post tags
+          example:
+            - typescript
+            - api
+        isFeatured:
+          type: boolean
+          description: Whether the post is featured
+        publishDate:
+          type: string
+          format: date-time
+          description: Scheduled publish date
+        coverImageId:
+          type: string
+          description: Cover image file ID
+        attachmentFileId:
+          type: string
+          description: Attachment file ID
+        galleryImageIds:
+          type: array
+          items:
+            type: string
+          description: Gallery images (file IDs)
+        documentFileIds:
+          type: array
+          items:
+            type: string
+          description: Attached documents (file IDs)
         status:
           allOf:
             - $ref: '#/components/schemas/ExamplePostStatus'
@@ -8389,11 +8466,13 @@ components:
         - filename
         - size
         - mimeType
+        - kind
         - storagePath
         - uploadedBy
         - uploadedAt
         - virusScanStatus
         - access
+        - status
         - isDeleted
       properties:
         id:
@@ -8413,6 +8492,10 @@ components:
           type: string
           description: MIME type (verified via magic bytes, not client-provided)
           example: application/pdf
+        kind:
+          allOf:
+            - $ref: '#/components/schemas/FileKind'
+          description: Inferred file kind
         storagePath:
           type: string
           description: Storage path (internal, not exposed to clients in production)
@@ -8446,6 +8529,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/FileAccess'
           description: Access level
+        status:
+          allOf:
+            - $ref: '#/components/schemas/FileStatus'
+          description: File lifecycle status
         isDeleted:
           type: boolean
           description: Whether the file is soft deleted
@@ -8492,6 +8579,16 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: File deletion response
+    FileKind:
+      type: string
+      enum:
+        - image
+        - video
+        - audio
+        - document
+        - archive
+        - other
+      description: File kind
     FileListResponse:
       type: object
       required:
@@ -8519,6 +8616,12 @@ components:
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       description: Single file response
+    FileStatus:
+      type: string
+      enum:
+        - temporary
+        - persistent
+      description: File status
     InitiateUploadRequest:
       type: object
       required:
@@ -11090,6 +11193,37 @@ components:
         content:
           type: string
           description: Post content (optional)
+        category:
+          type: string
+          description: Post category
+        tags:
+          type: array
+          items:
+            type: string
+          description: Post tags
+        isFeatured:
+          type: boolean
+          description: Whether the post is featured
+        publishDate:
+          type: string
+          format: date-time
+          description: Scheduled publish date
+        coverImageId:
+          type: string
+          description: Cover image file ID
+        attachmentFileId:
+          type: string
+          description: Attachment file ID
+        galleryImageIds:
+          type: array
+          items:
+            type: string
+          description: Gallery images (file IDs)
+        documentFileIds:
+          type: array
+          items:
+            type: string
+          description: Attached documents (file IDs)
         status:
           allOf:
             - $ref: '#/components/schemas/ExamplePostStatus'

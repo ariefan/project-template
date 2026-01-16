@@ -50,7 +50,7 @@ function StatCard({ stat }: { stat: Stat }) {
         {/* Decorative icon */}
         {Icon && (
           <div className="absolute top-3 right-3">
-            <Icon className="size-10 text-muted-foreground/30" />
+            <Icon className="size-10 text-muted-foreground" />
           </div>
         )}
 

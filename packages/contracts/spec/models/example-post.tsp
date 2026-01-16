@@ -41,6 +41,32 @@ model ExamplePost {
   @example("usr_author123")
   authorId: string;
 
+  /** Post category */
+  @example("technology")
+  category?: string;
+
+  /** Post tags */
+  @example(#["typescript", "api"])
+  tags: string[];
+
+  /** Whether the post is featured */
+  isFeatured: boolean;
+
+  /** Scheduled publish date */
+  publishDate?: utcDateTime;
+
+  /** Cover image file ID */
+  coverImageId?: string;
+
+  /** Attachment file ID */
+  attachmentFileId?: string;
+
+  /** Gallery images (file IDs) */
+  galleryImageIds: string[];
+
+  /** Attached documents (file IDs) */
+  documentFileIds: string[];
+
   /** Post status */
   status: ExamplePostStatus;
 
@@ -79,6 +105,30 @@ model CreateExamplePostRequest {
   @example("usr_author123")
   authorId: string;
 
+  /** Post category */
+  category?: string;
+
+  /** Post tags */
+  tags?: string[];
+
+  /** Whether the post is featured */
+  isFeatured?: boolean;
+
+  /** Scheduled publish date */
+  publishDate?: utcDateTime;
+
+  /** Cover image file ID */
+  coverImageId?: string;
+
+  /** Attachment file ID */
+  attachmentFileId?: string;
+
+  /** Gallery images (file IDs) */
+  galleryImageIds?: string[];
+
+  /** Attached documents (file IDs) */
+  documentFileIds?: string[];
+
   /** Post status (default: draft) */
   status?: ExamplePostStatus;
 }
@@ -92,6 +142,30 @@ model UpdateExamplePostRequest {
 
   /** Post content (optional) */
   content?: string;
+
+  /** Post category */
+  category?: string;
+
+  /** Post tags */
+  tags?: string[];
+
+  /** Whether the post is featured */
+  isFeatured?: boolean;
+
+  /** Scheduled publish date */
+  publishDate?: utcDateTime;
+
+  /** Cover image file ID */
+  coverImageId?: string;
+
+  /** Attachment file ID */
+  attachmentFileId?: string;
+
+  /** Gallery images (file IDs) */
+  galleryImageIds?: string[];
+
+  /** Attached documents (file IDs) */
+  documentFileIds?: string[];
 
   /** Post status (optional) */
   status?: ExamplePostStatus;

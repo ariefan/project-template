@@ -4,7 +4,7 @@ export * from "./file-upload-item";
 export * from "./file-upload-list";
 export * from "./file-upload-trigger";
 export * from "./file-uploader";
-export * from "./image-compressor";
 export * from "./image-crop-dialog";
+export * from "./image-uploader";
 export * from "./types";
 export * from "./utils";

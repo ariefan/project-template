@@ -39,6 +39,7 @@ export {
   ActiveFilters,
   DataViewToolbar,
   FilterButton,
+  RefreshButton,
   SearchInput,
   SortButton,
   ViewToggle,

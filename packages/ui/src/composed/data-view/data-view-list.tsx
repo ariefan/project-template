@@ -6,7 +6,6 @@ import {
   Item,
   ItemActions,
   ItemContent,
-  ItemDescription,
   ItemGroup,
   ItemMedia,
   ItemSeparator,
@@ -17,14 +16,39 @@ import * as React from "react";
 import { DataViewActionMenu } from "./action-menu";
 import { ContentPlaceholder } from "./content-placeholder";
 import { useDataView } from "./context";
-import type { FieldDef, RowAction } from "./types";
+import type { ColumnDef, FieldDef, RowAction } from "./types";
 import {
   deriveFieldsFromColumns,
   filterVisibleActions,
   getFieldValue,
   isActionDisabled,
-  renderFieldContent,
 } from "./utils";
+
+// ============================================================================
+// Smart Field Detection
+// ============================================================================
+
+/**
+ * Auto-detect primary (title) field from columns.
+ * Priority: "title" > "name" > "label" > first non-ID column
+ */
+function detectPrimaryField<T>(
+  columns: ColumnDef<T>[]
+): ColumnDef<T> | undefined {
+  const patterns = ["title", "name", "label", "subject"];
+  for (const pattern of patterns) {
+    const match = columns.find(
+      (col) =>
+        col.id.toLowerCase() === pattern ||
+        String(col.accessorKey).toLowerCase() === pattern
+    );
+    if (match) {
+      return match;
+    }
+  }
+  // Fall back to first column that's not named exactly "id"
+  return columns.find((col) => col.id.toLowerCase() !== "id");
+}
 
 // ============================================================================
 // DataViewList
@@ -51,7 +75,6 @@ export function DataViewList<T>({
   const { config, paginatedData, loading, selectedIds, toggleRowSelection } =
     useDataView<T>();
 
-  // Derive fields from columns if not provided
   const fields: FieldDef<T>[] = React.useMemo(() => {
     if (overrideFields) {
       return overrideFields;
@@ -65,13 +88,17 @@ export function DataViewList<T>({
     ) as FieldDef<T>[];
   }, [overrideFields, config.fields, config.columns]);
 
+  // Smart detection - only need primary field
+  const primaryField = React.useMemo(
+    () => detectPrimaryField(config.columns as ColumnDef<T>[]),
+    [config.columns]
+  );
+
   const rowActions =
     overrideRowActions ?? (config.rowActions as RowAction<T>[] | undefined);
   const itemRenderer = overrideItemRenderer ?? config.listItemRenderer;
-
   const visibleFields = fields.filter((field) => !field.hideInList);
 
-  // Use ContentPlaceholder for loading/empty states
   if (loading || paginatedData.length === 0) {
     return (
       <ContentPlaceholder
@@ -106,11 +133,12 @@ export function DataViewList<T>({
 
         return (
           <React.Fragment key={rowId}>
-            <ListItem
+            <SmartListItem
+              columns={config.columns as ColumnDef<T>[]}
               dense={config.dense}
-              fields={visibleFields}
               hoverable={config.hoverable}
               onSelect={() => toggleRowSelection(rowId)}
+              primaryField={primaryField}
               row={row}
               rowActions={rowActions}
               selectable={config.selectable}
@@ -125,12 +153,13 @@ export function DataViewList<T>({
 }
 
 // ============================================================================
-// ListItem
+// SmartListItem
 // ============================================================================
 
-interface ListItemProps<T> {
+interface SmartListItemProps<T> {
   row: T;
-  fields: FieldDef<T>[];
+  columns: ColumnDef<T>[];
+  primaryField: ColumnDef<T> | undefined;
   rowActions?: RowAction<T>[];
   selected: boolean;
   onSelect: () => void;
@@ -139,82 +168,76 @@ interface ListItemProps<T> {
   hoverable?: boolean;
 }
 
-function ListItem<T>({
+function SmartListItem<T>({
   row,
-  fields,
+  columns,
+  primaryField,
   rowActions,
   selected,
   onSelect,
   selectable,
   dense,
   hoverable,
-}: ListItemProps<T>) {
-  const primaryField = fields.find((f) => f.primary);
-  const secondaryField = fields.find((f) => f.secondary);
-  const otherFields = fields.filter((f) => !(f.primary || f.secondary));
+}: SmartListItemProps<T>) {
+  // Get value from column
+  const getValue = (col: ColumnDef<T>) =>
+    getFieldValue(row, { accessorKey: col.accessorKey as keyof T });
 
-  const renderField = (field: FieldDef<T>) => {
-    const value = getFieldValue(row, field);
-    return renderFieldContent({
-      row,
-      value,
-      render: field.render,
-      ellipsis: field.ellipsis,
-      type: field.type,
-      badgeVariants: field.badgeVariants,
-    });
+  // Use column's cell renderer if available
+  const renderCellValue = (
+    col: ColumnDef<T>,
+    value: unknown
+  ): React.ReactNode => {
+    if (col.cell) {
+      return col.cell({ row, value });
+    }
+    return String(value ?? "");
   };
 
-  // Build description from other fields (limit to 2 fields, truncate values)
-  const descriptionContent =
-    otherFields.length > 0
-      ? otherFields
-          .slice(0, 2)
-          .map((field) => {
-            const value = String(getFieldValue(row, field) ?? "");
-            return `${field.label}: ${value}`;
-          })
-          .join(" · ")
-      : null;
+  const primaryValue = primaryField ? getValue(primaryField) : undefined;
 
-  const renderActionCell = () => {
-    if (!rowActions || rowActions.length === 0) {
+  // All other visible columns (excluding primary and exact "id" column)
+  const otherColumns = columns.filter(
+    (col) =>
+      col.id !== primaryField?.id &&
+      col.id.toLowerCase() !== "id" &&
+      !col.hidden
+  );
+
+  // Actions
+  const renderActions = () => {
+    if (!rowActions?.length) {
       return null;
     }
-
-    const visibleActions = filterVisibleActions(rowActions, row);
-    const inlineActions = visibleActions.filter((action) => action.inline);
-    const menuActions = visibleActions.filter((action) => !action.inline);
+    const visible = filterVisibleActions(rowActions, row);
+    const inline = visible.filter((a) => a.inline);
+    const menu = visible.filter((a) => !a.inline);
 
     return (
       <div className="flex items-center gap-1">
-        {inlineActions.map((action) => {
-          const disabled = isActionDisabled(action, row);
-          return (
-            <Button
-              className="size-8"
-              disabled={disabled}
-              key={action.id}
-              onClick={() => action.onAction(row)}
-              size="icon"
-              title={action.label}
-              variant="ghost"
-            >
-              {action.icon && (
-                <action.icon
-                  className={cn(
-                    "size-4",
-                    action.variant === "destructive" && "text-destructive"
-                  )}
-                />
-              )}
-              <span className="sr-only">{action.label}</span>
-            </Button>
-          );
-        })}
-        {menuActions.length > 0 && (
+        {inline.map((action) => (
+          <Button
+            className="size-8"
+            disabled={isActionDisabled(action, row)}
+            key={action.id}
+            onClick={() => action.onAction(row)}
+            size="icon"
+            title={action.label}
+            variant="ghost"
+          >
+            {action.icon && (
+              <action.icon
+                className={cn(
+                  "size-4",
+                  action.variant === "destructive" && "text-destructive"
+                )}
+              />
+            )}
+          </Button>
+        ))}
+        {menu.length > 0 && (
           <DataViewActionMenu
-            actions={menuActions}
+            actions={menu}
             row={row}
             triggerVariant="button"
           />
@@ -223,12 +246,9 @@ function ListItem<T>({
     );
   };
 
-  const hasActions = rowActions && rowActions.length > 0;
-
   return (
     <Item
       className={cn(
-        // Subtle primary hover for branded feel (consistent with table)
         hoverable !== false && "hover:bg-primary/5",
         selected && "bg-primary/10",
         "flex-nowrap items-start"
@@ -245,26 +265,44 @@ function ListItem<T>({
         </ItemMedia>
       )}
 
-      <ItemContent className="min-w-0">
-        <ItemTitle className="w-full">
-          {primaryField && (
-            <span className="min-w-0 truncate">
-              {renderField(primaryField)}
+      <ItemContent className="min-w-0 flex-1 gap-1 overflow-hidden">
+        {/* Title: Only primary field */}
+        {!!primaryValue && (
+          <ItemTitle className="w-full">
+            <span className="block truncate font-medium">
+              {String(primaryValue)}
             </span>
-          )}
-          {secondaryField && (
-            <span className="min-w-0 truncate font-normal text-muted-foreground">
-              {renderField(secondaryField)}
-            </span>
-          )}
-        </ItemTitle>
-        {descriptionContent && (
-          <ItemDescription>{descriptionContent}</ItemDescription>
+          </ItemTitle>
+        )}
+
+        {/* Description: All other fields (using div to allow block content from cell renderers) */}
+        {otherColumns.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 overflow-hidden text-muted-foreground text-sm">
+            {otherColumns.map((col) => {
+              const value = getValue(col);
+              if (value === undefined || value === null) {
+                return null;
+              }
+              return (
+                <span
+                  className="inline-flex max-w-full items-center gap-1"
+                  key={col.id}
+                >
+                  <span className="shrink-0 text-muted-foreground">
+                    {col.header}:
+                  </span>
+                  <span className="truncate">
+                    {renderCellValue(col, value)}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
         )}
       </ItemContent>
 
-      {hasActions && (
-        <ItemActions className="shrink-0">{renderActionCell()}</ItemActions>
+      {rowActions?.length && (
+        <ItemActions className="shrink-0">{renderActions()}</ItemActions>
       )}
     </Item>
   );

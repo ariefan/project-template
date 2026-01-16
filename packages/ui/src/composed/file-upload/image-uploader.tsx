@@ -22,6 +22,8 @@ import { Checkbox } from "../../components/checkbox";
 import { Label } from "../../components/label";
 import { Slider } from "../../components/slider";
 import { cn } from "../../lib/utils";
+import { FilePreviewDialog } from "../file-preview/file-preview-dialog";
+import { DropzonePrimitive } from "./dropzone-primitive";
 import { type CropResult, ImageCropDialog } from "./image-crop-dialog";
 
 export interface CompressionOptions {
@@ -37,16 +39,16 @@ export interface CompressedFileWithPreview extends File {
   preview?: string;
 }
 
-export interface ImageCompressorProps {
+export interface ImageUploaderProps {
   /**
    * Callback when files are compressed
    */
   onCompressed?: (files: CompressedFileWithPreview[]) => void;
 
   /**
-   * Callback when upload is requested
+   * Callback when upload is requested/confirmed
    */
-  onUpload?: (files: CompressedFileWithPreview[]) => void;
+  onConfirm?: (files: CompressedFileWithPreview[]) => void;
 
   /**
    * Default compression options
@@ -54,9 +56,26 @@ export interface ImageCompressorProps {
   defaultOptions?: Partial<CompressionOptions>;
 
   /**
-   * Show upload button after compression
+   * Show upload/confirm button after compression
    */
-  showUploadButton?: boolean;
+  showConfirmButton?: boolean;
+  /**
+   * Show compression options UI
+   * @default false
+   */
+  showCompressionOptions?: boolean;
+
+  /**
+   * Enable cropping by default
+   * @default false
+   */
+  enableCropping?: boolean;
+
+  /**
+   * Automatically upload after compression (if cropping is disabled)
+   * @default false
+   */
+  autoUpload?: boolean;
 
   /**
    * Is currently uploading
@@ -64,6 +83,11 @@ export interface ImageCompressorProps {
   isUploading?: boolean;
 
   className?: string;
+  showCompressionDetails?: boolean;
+  /**
+   * Initial images to process on mount
+   */
+  initialImages?: File[];
 }
 
 // Format bytes to human readable
@@ -78,22 +102,27 @@ function formatBytes(bytes: number): string {
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Image compression requires complex state management
-export function ImageCompressor({
+export function ImageUploader({
   onCompressed,
-  onUpload,
+  onConfirm,
   defaultOptions,
-  showUploadButton = true,
+  showConfirmButton = true,
+  showCompressionOptions = false,
+  showCompressionDetails = false,
+  enableCropping: defaultEnableCropping = false,
+  autoUpload = false,
   isUploading = false,
   className,
-}: ImageCompressorProps) {
+  initialImages,
+}: ImageUploaderProps) {
   const [_sourceFiles, setSourceFiles] = React.useState<File[]>([]);
   const [compressedFiles, setCompressedFiles] = React.useState<
     CompressedFileWithPreview[]
   >([]);
   const [isCompressing, setIsCompressing] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [showCompressionOptions, setShowCompressionOptions] =
-    React.useState(true);
+  const [isCompressionOptionsOpen, setIsCompressionOptionsOpen] =
+    React.useState(false);
   const [compressionOptions, setCompressionOptions] =
     React.useState<CompressionOptions>({
       maxSizeMB: defaultOptions?.maxSizeMB ?? 1,
@@ -103,16 +132,30 @@ export function ImageCompressor({
     });
 
   // Cropping state
-  const [enableCropping, setEnableCropping] = React.useState(false);
+  const [enableCropping, setEnableCropping] = React.useState(
+    defaultEnableCropping
+  );
   const [cropDialogOpen, setCropDialogOpen] = React.useState(false);
   const [fileToCrop, setFileToCrop] = React.useState<File | null>(null);
   const [cropQueue, setCropQueue] = React.useState<File[]>([]);
   const [processedCrops, setProcessedCrops] = React.useState<CropResult[]>([]);
 
+  // Preview state
+  const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [previewUrl, setPreviewUrl] = React.useState("");
+  const [previewName, setPreviewName] = React.useState("");
+  const [previewType, setPreviewType] = React.useState("");
+
   // Dynamically import browser-image-compression to avoid SSR issues
   const [browserImageCompression, setBrowserImageCompression] = React.useState<
     typeof import("browser-image-compression").default | null
   >(null);
+
+  const processedInitialImagesRef = React.useRef(false);
+
+  React.useEffect(() => {
+    setEnableCropping(defaultEnableCropping);
+  }, [defaultEnableCropping]);
 
   React.useEffect(() => {
     import("browser-image-compression").then((module) => {
@@ -127,6 +170,7 @@ export function ImageCompressor({
         return Object.assign(file, {
           originalSize: file.size,
           compressedSize: file.size,
+          preview: URL.createObjectURL(file),
         }) as CompressedFileWithPreview;
       }
 
@@ -134,6 +178,7 @@ export function ImageCompressor({
         return Object.assign(file, {
           originalSize: file.size,
           compressedSize: file.size,
+          preview: URL.createObjectURL(file),
         }) as CompressedFileWithPreview;
       }
 
@@ -158,6 +203,7 @@ export function ImageCompressor({
         return Object.assign(file, {
           originalSize: file.size,
           compressedSize: file.size,
+          preview: URL.createObjectURL(file), // Fallback preview
         }) as CompressedFileWithPreview;
       }
     },
@@ -167,7 +213,7 @@ export function ImageCompressor({
   // Handle file selection
   const handleFileSelect = React.useCallback(
     // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: File selection validation logic is inherently complex
-    (files: FileList | null) => {
+    (files: FileList | File[] | null, skipCrop = false) => {
       if (!files) {
         return;
       }
@@ -181,7 +227,7 @@ export function ImageCompressor({
         return;
       }
 
-      if (enableCropping) {
+      if (enableCropping && !skipCrop) {
         // Add to queue for cropping
         setCropQueue((prev) => {
           const existing = prev.map((f) => f.name);
@@ -202,7 +248,7 @@ export function ImageCompressor({
           return [...prev, ...filtered];
         });
 
-        if (browserImageCompression && newFiles.length > 0) {
+        if (newFiles.length > 0) {
           setIsCompressing(true);
           Promise.all(newFiles.map((file) => compressSingleFile(file)))
             .then((compressed) => {
@@ -211,8 +257,28 @@ export function ImageCompressor({
                 const newCompressed = compressed.filter(
                   (f) => !existingNames.includes(f.name)
                 );
-                return [...prev, ...newCompressed];
+
+                const nextFiles = [...prev, ...newCompressed];
+
+                // Auto upload if enabled and cropping is disabled
+                // We perform the side-effect here but outside the state setter logic in a way
+                // However, doing it inside setState callback is risky.
+                // Better approach: Calculate nextFiles outside.
+                return nextFiles;
               });
+
+              // Safe way: Use a functional update to get the value, but we need to trigger the side effect.
+              // Actually, we can't easily get the 'prev' value outside.
+              // Solution: Use a separate useEffect or timeout, OR just rely on the fact we are in a Promise callback.
+              // Using setTimeout to break the render cycle is a safe pattern here.
+              if (autoUpload && (!enableCropping || skipCrop)) {
+                setTimeout(() => {
+                  setCompressedFiles((current) => {
+                    onConfirm?.(current);
+                    return current;
+                  });
+                }, 0);
+              }
 
               const totalOriginal = compressed.reduce(
                 (acc, f) => acc + f.originalSize,
@@ -241,13 +307,26 @@ export function ImageCompressor({
       }
     },
     [
-      browserImageCompression,
       compressSingleFile,
       cropDialogOpen,
       enableCropping,
       onCompressed,
+      autoUpload,
+      onConfirm,
     ]
   );
+
+  // Handle initial images
+  React.useEffect(() => {
+    if (
+      initialImages &&
+      initialImages.length > 0 &&
+      !processedInitialImagesRef.current
+    ) {
+      processedInitialImagesRef.current = true;
+      handleFileSelect(initialImages, true);
+    }
+  }, [initialImages, handleFileSelect]);
 
   // Handle crop complete
   const handleCropComplete = React.useCallback(
@@ -277,7 +356,24 @@ export function ImageCompressor({
           })
         )
           .then((compressed) => {
-            setCompressedFiles(compressed);
+            setCompressedFiles((prev) => {
+              const existingNames = prev.map((f) => f.name);
+              const newCompressed = compressed.filter(
+                (f) => !existingNames.includes(f.name)
+              );
+              return [...prev, ...newCompressed];
+            });
+
+            // Auto upload if enabled
+            if (autoUpload) {
+              setTimeout(() => {
+                setCompressedFiles((current) => {
+                  onConfirm?.(current);
+                  return current;
+                });
+              }, 0);
+            }
+
             setProcessedCrops([]);
 
             const totalOriginal = compressed.reduce(
@@ -305,7 +401,14 @@ export function ImageCompressor({
           });
       }
     },
-    [cropQueue, processedCrops, compressSingleFile, onCompressed]
+    [
+      cropQueue,
+      processedCrops,
+      compressSingleFile,
+      onCompressed,
+      autoUpload,
+      onConfirm,
+    ]
   );
 
   // Handle skip crop
@@ -325,14 +428,6 @@ export function ImageCompressor({
       setCropDialogOpen(false);
     }
   }, [cropQueue, fileToCrop]);
-
-  // Handle upload
-  const handleUpload = React.useCallback(() => {
-    if (compressedFiles.length === 0) {
-      return;
-    }
-    onUpload?.(compressedFiles);
-  }, [compressedFiles, onUpload]);
 
   // Remove compressed file
   const removeCompressedFile = React.useCallback((index: number) => {
@@ -407,130 +502,144 @@ export function ImageCompressor({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Options */}
-      <div className="rounded-lg border bg-muted/30 p-4">
-        <button
-          className="flex w-full items-center justify-between font-medium text-sm"
-          onClick={() => setShowCompressionOptions(!showCompressionOptions)}
-          type="button"
-        >
-          <span>Compression Options</span>
-          {showCompressionOptions ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
+      {showCompressionOptions && (
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <button
+            className="flex w-full items-center justify-between font-medium text-sm"
+            onClick={() =>
+              setIsCompressionOptionsOpen(!isCompressionOptionsOpen)
+            }
+            type="button"
+          >
+            <span>Compression Options</span>
+            {isCompressionOptionsOpen ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+
+          {isCompressionOptionsOpen && (
+            <div className="mt-4 space-y-4">
+              {/* Enable cropping toggle */}
+              <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <div className="flex flex-1 flex-col gap-1">
+                  <Label className="cursor-pointer" htmlFor="enable-cropping">
+                    Enable image cropping
+                  </Label>
+                  <p className="text-muted-foreground text-xs">
+                    Crop, rotate, and flip images before compression
+                  </p>
+                </div>
+                <Checkbox
+                  checked={enableCropping}
+                  id="enable-cropping"
+                  onCheckedChange={(checked: boolean) =>
+                    setEnableCropping(checked)
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="maxSizeMB">Max file size (MB)</Label>
+                  <span className="text-muted-foreground text-sm">
+                    {compressionOptions.maxSizeMB} MB
+                  </span>
+                </div>
+                <Slider
+                  id="maxSizeMB"
+                  max={10}
+                  min={0.1}
+                  onValueChange={([value]: number[]) => {
+                    if (value !== undefined) {
+                      setCompressionOptions((prev) => ({
+                        ...prev,
+                        maxSizeMB: value,
+                      }));
+                    }
+                  }}
+                  step={0.1}
+                  value={[compressionOptions.maxSizeMB]}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="maxDimension">Max width/height (px)</Label>
+                  <span className="text-muted-foreground text-sm">
+                    {compressionOptions.maxWidthOrHeight} px
+                  </span>
+                </div>
+                <Slider
+                  id="maxDimension"
+                  max={4096}
+                  min={480}
+                  onValueChange={([value]: number[]) => {
+                    if (value !== undefined) {
+                      setCompressionOptions((prev) => ({
+                        ...prev,
+                        maxWidthOrHeight: value,
+                      }));
+                    }
+                  }}
+                  step={32}
+                  value={[compressionOptions.maxWidthOrHeight]}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={compressionOptions.useWebWorker}
+                    onCheckedChange={(checked: boolean) =>
+                      setCompressionOptions((prev) => ({
+                        ...prev,
+                        useWebWorker: checked,
+                      }))
+                    }
+                  />
+                  <Label className="cursor-pointer">Use Web Worker</Label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={compressionOptions.alwaysKeepResolution}
+                    onCheckedChange={(checked: boolean) =>
+                      setCompressionOptions((prev) => ({
+                        ...prev,
+                        alwaysKeepResolution: checked,
+                      }))
+                    }
+                  />
+                  <Label className="cursor-pointer">Keep resolution</Label>
+                </div>
+              </div>
+            </div>
           )}
-        </button>
+        </div>
+      )}
 
-        {showCompressionOptions && (
-          <div className="mt-4 space-y-4">
-            {/* Enable cropping toggle */}
-            <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <div className="flex flex-1 flex-col gap-1">
-                <Label className="cursor-pointer" htmlFor="enable-cropping">
-                  Enable image cropping
-                </Label>
-                <p className="text-muted-foreground text-xs">
-                  Crop, rotate, and flip images before compression
-                </p>
-              </div>
-              <Checkbox
-                checked={enableCropping}
-                id="enable-cropping"
-                onCheckedChange={(checked: boolean) =>
-                  setEnableCropping(checked)
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="maxSizeMB">Max file size (MB)</Label>
-                <span className="text-muted-foreground text-sm">
-                  {compressionOptions.maxSizeMB} MB
-                </span>
-              </div>
-              <Slider
-                id="maxSizeMB"
-                max={10}
-                min={0.1}
-                onValueChange={([value]: number[]) => {
-                  if (value !== undefined) {
-                    setCompressionOptions((prev) => ({
-                      ...prev,
-                      maxSizeMB: value,
-                    }));
-                  }
-                }}
-                step={0.1}
-                value={[compressionOptions.maxSizeMB]}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="maxDimension">Max width/height (px)</Label>
-                <span className="text-muted-foreground text-sm">
-                  {compressionOptions.maxWidthOrHeight} px
-                </span>
-              </div>
-              <Slider
-                id="maxDimension"
-                max={4096}
-                min={480}
-                onValueChange={([value]: number[]) => {
-                  if (value !== undefined) {
-                    setCompressionOptions((prev) => ({
-                      ...prev,
-                      maxWidthOrHeight: value,
-                    }));
-                  }
-                }}
-                step={32}
-                value={[compressionOptions.maxWidthOrHeight]}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={compressionOptions.useWebWorker}
-                  onCheckedChange={(checked: boolean) =>
-                    setCompressionOptions((prev) => ({
-                      ...prev,
-                      useWebWorker: checked,
-                    }))
-                  }
-                />
-                <Label className="cursor-pointer">Use Web Worker</Label>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={compressionOptions.alwaysKeepResolution}
-                  onCheckedChange={(checked: boolean) =>
-                    setCompressionOptions((prev) => ({
-                      ...prev,
-                      alwaysKeepResolution: checked,
-                    }))
-                  }
-                />
-                <Label className="cursor-pointer">Keep resolution</Label>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* File Preview Dialog */}
+      <FilePreviewDialog
+        fileName={previewName}
+        fileType={previewType}
+        fileUrl={previewUrl}
+        onOpenChange={setPreviewOpen}
+        open={previewOpen}
+      />
 
       {/* Upload Area */}
       {compressedFiles.length === 0 && !hasFilesInQueue ? (
-        // biome-ignore lint/a11y/useSemanticElements: Drop zone requires div for drag events
-        <div
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors ${
+        <DropzonePrimitive
+          className={cn(
+            "gap-4",
             isDragging
               ? "border-primary bg-primary/5"
               : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
-          }`}
+          )}
+          compact={false}
           onClick={() => document.getElementById("compression-input")?.click()}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -541,19 +650,12 @@ export function ImageCompressor({
               document.getElementById("compression-input")?.click();
             }
           }}
-          role="button"
-          tabIndex={0}
         >
-          <FileImage className="mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="font-medium">
-            {enableCropping ? "Crop & Compress Images" : "Drop images here"}
-          </p>
-          <p className="text-muted-foreground text-sm">
-            or click to browse •{" "}
-            {enableCropping
-              ? "Crop, then compress"
-              : "Images will be auto-compressed"}
-          </p>
+          <FileImage className="h-10 w-10 text-muted-foreground" />
+          <div className="space-y-1 text-center sm:text-left">
+            <p className="font-medium text-lg">Drop images here</p>
+            <p className="text-muted-foreground text-sm">or click to browse</p>
+          </div>
           <input
             accept="image/*"
             className="hidden"
@@ -562,7 +664,7 @@ export function ImageCompressor({
             onChange={(e) => handleFileSelect(e.target.files)}
             type="file"
           />
-        </div>
+        </DropzonePrimitive>
       ) : (
         <div className="space-y-3">
           {/* Crop queue indicator */}
@@ -582,13 +684,9 @@ export function ImageCompressor({
           )}
 
           {/* Add more files button */}
-          {/* biome-ignore lint/a11y/useSemanticElements: Drop zone requires div for drag events */}
-          <div
-            className={`flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed py-2 text-sm transition-colors ${
-              isDragging
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-primary/50"
-            }`}
+          <DropzonePrimitive
+            className="py-2"
+            compact={true}
             onClick={() =>
               document.getElementById("compression-input")?.click()
             }
@@ -601,8 +699,6 @@ export function ImageCompressor({
                 document.getElementById("compression-input")?.click();
               }
             }}
-            role="button"
-            tabIndex={0}
           >
             <Plus className="mr-2 h-4 w-4" />
             Add more images
@@ -614,14 +710,14 @@ export function ImageCompressor({
               onChange={(e) => handleFileSelect(e.target.files)}
               type="file"
             />
-          </div>
+          </DropzonePrimitive>
 
           {/* Compressed files list */}
           {compressedFiles.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="font-medium text-sm">
-                  Compressed ({compressedFiles.length})
+                  Images ({compressedFiles.length})
                 </h3>
                 <Button
                   className="text-muted-foreground text-xs"
@@ -669,9 +765,12 @@ export function ImageCompressor({
                             <>
                               <Button
                                 className="h-7 w-7 p-0"
-                                onClick={() =>
-                                  window.open(file.preview, "_blank")
-                                }
+                                onClick={() => {
+                                  setPreviewUrl(file.preview ?? "");
+                                  setPreviewName(file.name);
+                                  setPreviewType(file.type);
+                                  setPreviewOpen(true);
+                                }}
                                 size="icon"
                                 title="View"
                                 variant="secondary"
@@ -709,18 +808,20 @@ export function ImageCompressor({
                           </p>
                           <div className="flex items-center gap-1.5 text-white/80 text-xs">
                             <span>{formatBytes(file.compressedSize)}</span>
-                            <Badge
-                              className="text-xs"
-                              variant={
-                                Number.parseFloat(savings) > 0
-                                  ? "default"
-                                  : "secondary"
-                              }
-                            >
-                              {Number.parseFloat(savings) > 0
-                                ? `-${savings}%`
-                                : "0%"}
-                            </Badge>
+                            {showCompressionDetails && (
+                              <Badge
+                                className="text-xs"
+                                variant={
+                                  Number.parseFloat(savings) > 0
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
+                                {Number.parseFloat(savings) > 0
+                                  ? `-${savings}%`
+                                  : "0%"}
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -749,12 +850,12 @@ export function ImageCompressor({
             </div>
           )}
 
-          {/* Upload button */}
-          {showUploadButton && onUpload && compressedFiles.length > 0 && (
+          {/* Confirm Button */}
+          {showConfirmButton && onConfirm && compressedFiles.length > 0 && (
             <Button
               className="w-full"
               disabled={isUploading || isCompressing}
-              onClick={handleUpload}
+              onClick={() => onConfirm(compressedFiles)}
             >
               {isUploading ? (
                 <>
@@ -764,7 +865,7 @@ export function ImageCompressor({
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload Compressed ({compressedFiles.length})
+                  Confirm Upload ({compressedFiles.length})
                 </>
               )}
             </Button>
@@ -783,7 +884,9 @@ export function ImageCompressor({
             handleSkipCrop();
           }
         }}
+        onSelectFile={setFileToCrop}
         open={cropDialogOpen}
+        queue={cropQueue}
       />
     </div>
   );

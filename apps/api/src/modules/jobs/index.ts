@@ -17,6 +17,7 @@ export {
   type JobResult,
   jobHandlerRegistry,
   registerReportHandler,
+  registerStorageCleanupHandler,
   registerTestHandler,
 } from "./handlers";
 

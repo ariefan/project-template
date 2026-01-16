@@ -1,4 +1,9 @@
-import type { FileAccess, FileRow, FileUploadRow } from "@workspace/db/schema";
+import type {
+  FileAccess,
+  FileKind,
+  FileRow,
+  FileUploadRow,
+} from "@workspace/db/schema";
 import type { StorageProvider } from "@workspace/storage";
 import * as filesRepository from "../repositories/files.repository";
 import {
@@ -41,6 +46,42 @@ function generateFileId(): string {
  */
 function generateUploadId(): string {
   return `upload_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}`;
+}
+
+/**
+ * Infer file kind from MIME type
+ */
+function inferFileKind(mimeType: string): FileKind {
+  if (mimeType.startsWith("image/")) {
+    return "image";
+  }
+  if (mimeType.startsWith("video/")) {
+    return "video";
+  }
+  if (mimeType.startsWith("audio/")) {
+    return "audio";
+  }
+  if (
+    mimeType.startsWith("text/") ||
+    mimeType.includes("pdf") ||
+    mimeType.includes("document") ||
+    mimeType.includes("msword") ||
+    mimeType.includes("excel") ||
+    mimeType.includes("presentation")
+  ) {
+    return "document";
+  }
+  if (
+    mimeType.includes("zip") ||
+    mimeType.includes("tar") ||
+    mimeType.includes("compressed") ||
+    mimeType.includes("archive") ||
+    mimeType.includes("7z") ||
+    mimeType.includes("rar")
+  ) {
+    return "archive";
+  }
+  return "other";
 }
 
 export interface InitiateUploadInput {
@@ -176,12 +217,14 @@ export async function confirmUpload(
     filename: upload.filename,
     size: metadata.size,
     mimeType: upload.contentType,
+    kind: inferFileKind(upload.contentType),
     storagePath: upload.storagePath,
     metadata: upload.metadata,
     uploadedBy: upload.createdBy,
     // Stubbed virus scan - auto-mark as clean
     virusScanStatus: "clean",
     virusScanCompletedAt: new Date(),
+    status: "temporary", // New files are temporary until attached
   });
 
   // Mark upload as confirmed
@@ -245,12 +288,14 @@ export async function directUpload(input: DirectUploadInput): Promise<FileRow> {
     filename: sanitizedFilename,
     size,
     mimeType: input.contentType,
+    kind: inferFileKind(input.contentType),
     storagePath,
     metadata: input.metadata,
     uploadedBy: input.uploadedBy,
     // Stubbed virus scan - auto-mark as clean
     virusScanStatus: "clean",
     virusScanCompletedAt: new Date(),
+    status: "temporary", // New files are temporary until attached
   });
 
   return file;
@@ -390,10 +435,43 @@ export function updateFileAccess(
 }
 
 /**
- * Cleanup expired uploads
+ * Cleanup expired uploads (pending file_uploads)
  */
 export function cleanupExpiredUploads(): Promise<number> {
   return filesRepository.deleteExpiredUploads();
+}
+
+/**
+ * Cleanup expired temporary files (status=temporary, older than 24h)
+ */
+export async function cleanupTemporaryFiles(): Promise<number> {
+  const storage = getStorage();
+  // Process in batches of 50 to avoid hogging resources
+  const expiredFiles = await filesRepository.findExpiredTemporaryFiles(50);
+  let deletedCount = 0;
+
+  for (const file of expiredFiles) {
+    try {
+      // 1. Delete from storage
+      try {
+        await storage.delete(file.storagePath);
+      } catch (err) {
+        // Ignore if file missing, proceed to DB delete
+        console.warn(
+          `Failed to delete file ${file.id} from storage during cleanup:`,
+          err
+        );
+      }
+
+      // 2. Hard delete from DB
+      await filesRepository.hardDeleteFile(file.orgId, file.id);
+      deletedCount++;
+    } catch (err) {
+      console.error(`Failed to cleanup temporary file ${file.id}:`, err);
+    }
+  }
+
+  return deletedCount;
 }
 
 /**

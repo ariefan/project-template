@@ -2,7 +2,6 @@
 
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
-import { ButtonGroup } from "@workspace/ui/components/button-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +32,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@workspace/ui/components/toggle-group";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -46,6 +49,7 @@ import {
   Filter,
   LayoutGrid,
   LayoutList,
+  RefreshCw,
   Search,
   Table2,
   X,
@@ -87,41 +91,55 @@ export function ViewToggle({ className, availableViews }: ViewToggleProps) {
 
   return (
     <>
-      {/* Desktop: ButtonGroup */}
-      <ButtonGroup className={cn(className, "hidden sm:flex")}>
+      {/* Desktop: ToggleGroup */}
+      <ToggleGroup
+        className={cn(className, "hidden sm:flex")}
+        onValueChange={(v) => {
+          if (v) {
+            setView(v as ViewMode);
+          }
+        }}
+        type="single"
+        value={view}
+        variant="outline"
+      >
         {views.map((v) => (
           <TooltipProvider key={v}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <ToggleGroupItem
                   aria-label={`Switch to ${viewLabels[v]} view`}
-                  aria-pressed={view === v}
-                  onClick={() => setView(v)}
                   size="sm"
-                  variant={view === v ? "secondary" : "outline"}
+                  value={v}
                 >
                   {viewIcons[v]}
-                </Button>
+                </ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>{viewLabels[v]} view</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ))}
-      </ButtonGroup>
+      </ToggleGroup>
 
-      {/* Mobile: Dropdown with current view icon */}
+      {/* Mobile: Icon-only dropdown (consistent with SortButton/FilterButton) */}
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            aria-label="Change view"
-            className={cn(className, "sm:hidden")}
-            size="sm"
-            variant="outline"
-          >
-            {viewIcons[view]}
-            <ChevronDown className="ml-1 size-3 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label="Change view"
+                  className={cn(className, "sm:hidden")}
+                  size="icon"
+                  variant="ghost"
+                >
+                  {viewIcons[view]}
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Change view</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>View</DropdownMenuLabel>
           <DropdownMenuSeparator />
@@ -851,5 +869,46 @@ export function ActiveFilters({ className }: ActiveFiltersProps) {
         Clear all
       </Button>
     </div>
+  );
+}
+
+// ============================================================================
+// Refresh Button
+// ============================================================================
+
+interface RefreshButtonProps {
+  className?: string;
+  /** Callback to refresh data */
+  onRefresh?: () => void;
+  /** Whether data is currently loading/refreshing */
+  loading?: boolean;
+}
+
+export function RefreshButton({
+  className,
+  onRefresh,
+  loading = false,
+}: RefreshButtonProps) {
+  const { loading: contextLoading } = useDataView();
+  const isLoading = loading || contextLoading;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            className={className}
+            disabled={isLoading}
+            onClick={onRefresh}
+            size="icon"
+            variant="ghost"
+          >
+            <RefreshCw className={cn("size-4", isLoading && "animate-spin")} />
+            <span className="sr-only">Refresh</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Refresh data</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

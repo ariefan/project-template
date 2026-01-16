@@ -1,23 +1,36 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExamplePost } from "@workspace/contracts";
 import { examplePostsListOptions } from "@workspace/contracts/query";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
+import { Checkbox } from "@workspace/ui/components/checkbox";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "@workspace/ui/components/item";
 import {
   type BulkAction,
   type ColumnDef,
   ColumnsButton,
+  DataViewActionMenu,
   DataView as DataViewComponent,
   ExportButton,
   FilterButton,
+  filterVisibleActions,
+  RefreshButton,
   type RowAction,
   SearchInput,
   SortButton,
   type ViewMode,
   ViewToggle,
 } from "@workspace/ui/composed/data-view";
+import { cn } from "@workspace/ui/lib/utils";
 import { Edit, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
@@ -27,13 +40,24 @@ import { PostFormDialog } from "./components/post-form-dialog";
 import { StatsCards } from "./components/stats-cards";
 import { usePostMutations, usePostsData } from "./hooks/use-posts-data";
 
-const MODE_THRESHOLD = 1000; // Switch to server mode above this count
+const CLIENT_MODE_LIMIT = 500; // Max rows for client-side mode
 
 export default function CrudPage() {
   const { data: orgData, isPending: orgLoading } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
   const { deletePost, restorePost } = usePostMutations();
   const { fetchPosts } = usePostsData();
+  const queryClient = useQueryClient();
+
+  // Refresh callback for DataView
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({
+      predicate: (query) => {
+        const key = query.queryKey[0] as { _id?: string } | undefined;
+        return key?._id === "examplePostsList";
+      },
+    });
+  };
 
   // Step 1: Get total count to determine which mode to use
   const { data: countData } = useQuery({
@@ -50,14 +74,14 @@ export default function CrudPage() {
       ?.totalCount ?? 0;
 
   // Step 2: Determine mode based on count
-  const useServerMode = totalCount > MODE_THRESHOLD;
+  const useServerMode = totalCount > CLIENT_MODE_LIMIT;
 
   // Step 3: Fetch data for client mode (only if needed)
-  const { data: clientData, isLoading: clientLoading } = useQuery({
+  const { data: clientData, isFetching: clientFetching } = useQuery({
     ...examplePostsListOptions({
       client: apiClient,
       path: { orgId },
-      query: { page: 1, pageSize: Math.max(totalCount, 100) }, // Fetch all records
+      query: { page: 1, pageSize: Math.min(totalCount, CLIENT_MODE_LIMIT) },
     }),
     enabled: Boolean(orgId) && !useServerMode,
   });
@@ -208,6 +232,83 @@ export default function CrudPage() {
     },
   ];
 
+  const renderListItem = ({
+    row,
+    selected,
+    onSelect,
+  }: {
+    row: ExamplePost;
+    selected: boolean;
+    onSelect: () => void;
+  }) => {
+    const statusVariants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
+      draft: "secondary",
+      published: "default",
+      archived: "outline",
+    };
+
+    const visibleActions = filterVisibleActions(rowActions, row);
+    const inlineActions = visibleActions.filter((a) => a.inline);
+    const menuActions = visibleActions.filter((a) => !a.inline);
+
+    return (
+      <Item className={cn("hover:bg-primary/5", selected && "bg-primary/10")}>
+        <ItemMedia>
+          <Checkbox
+            aria-label="Select row"
+            checked={selected}
+            onCheckedChange={onSelect}
+          />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle className="flex items-center gap-2">
+            <span className="font-semibold">{row.title}</span>
+            <Badge
+              className="capitalize"
+              variant={statusVariants[row.status] ?? "outline"}
+            >
+              {row.status}
+            </Badge>
+          </ItemTitle>
+          <ItemDescription className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <span className="flex items-center gap-1">
+              <span className="text-muted-foreground">Author:</span>
+              <span className="font-medium text-foreground">
+                {row.authorId}
+              </span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="text-muted-foreground">Created:</span>
+              <span className="font-medium text-foreground">
+                {new Date(row.createdAt).toLocaleDateString()}
+              </span>
+            </span>
+          </ItemDescription>
+        </ItemContent>
+        <ItemActions>
+          <div className="flex items-center gap-1">
+            {inlineActions.map((action) => (
+              <Button
+                className="size-8"
+                key={action.id}
+                onClick={() => action.onAction(row)}
+                size="icon"
+                title={action.label}
+                variant="ghost"
+              >
+                {action.icon && <action.icon className="size-4" />}
+              </Button>
+            ))}
+            <DataViewActionMenu actions={menuActions} row={row} />
+          </div>
+        </ItemActions>
+      </Item>
+    );
+  };
+
   function handleCreateNew() {
     setEditingPost(undefined);
     setDialogOpen(true);
@@ -241,15 +342,12 @@ export default function CrudPage() {
       filterable: true,
       getRowId: (row: ExamplePost) => row.id,
       hoverable: true,
-      loading: orgLoading || clientLoading,
+      listItemRenderer: renderListItem,
+      loading: orgLoading || clientFetching,
       loadingMessage: "Loading posts...",
       multiSelect: true,
       pageSizeOptions: [10, 25, 50, 100],
       paginated: true,
-      responsiveBreakpoints: {
-        list: 1024,
-        grid: 640,
-      },
       rowActions,
       searchable: true,
       selectable: true,
@@ -257,6 +355,7 @@ export default function CrudPage() {
       toolbarLeft: <SearchInput showFieldSelector />,
       toolbarRight: (
         <>
+          <RefreshButton onRefresh={handleRefresh} />
           <ViewToggle />
           <ColumnsButton />
           <FilterButton />

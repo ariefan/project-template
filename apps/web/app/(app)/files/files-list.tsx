@@ -1,7 +1,12 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { FileAccess, File as FileRecord } from "@workspace/contracts";
+import type {
+  FileAccess,
+  FileKind,
+  File as FileRecord,
+  FileStatus,
+} from "@workspace/contracts";
 import {
   filesDeleteMutation,
   filesListOptions,
@@ -61,6 +66,7 @@ import {
 } from "@workspace/ui/components/table";
 import { format } from "date-fns";
 import {
+  Archive,
   Download,
   File as FileIcon,
   FileImage,
@@ -71,6 +77,7 @@ import {
   Loader2,
   Lock,
   MoreHorizontal,
+  Music,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -88,17 +95,21 @@ function formatFileSize(bytes: number): string {
   return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 }
 
-function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) {
-    return <FileImage className="h-5 w-5 text-blue-500" />;
+function getFileIcon(kind: FileKind) {
+  switch (kind) {
+    case "image":
+      return <FileImage className="h-5 w-5 text-blue-500" />;
+    case "video":
+      return <FileVideo className="h-5 w-5 text-purple-500" />;
+    case "audio":
+      return <Music className="h-5 w-5 text-pink-500" />;
+    case "document":
+      return <FileText className="h-5 w-5 text-orange-500" />;
+    case "archive":
+      return <Archive className="h-5 w-5 text-yellow-500" />;
+    default:
+      return <FileIcon className="h-5 w-5 text-gray-500" />;
   }
-  if (mimeType.startsWith("video/")) {
-    return <FileVideo className="h-5 w-5 text-purple-500" />;
-  }
-  if (mimeType.includes("pdf") || mimeType.includes("text")) {
-    return <FileText className="h-5 w-5 text-red-500" />;
-  }
-  return <FileIcon className="h-5 w-5 text-gray-500" />;
 }
 
 function getScanStatusVariant(status: string) {
@@ -111,6 +122,10 @@ function getScanStatusVariant(status: string) {
   return "secondary";
 }
 
+function getStatusVariant(status: FileStatus) {
+  return status === "persistent" ? "outline" : "secondary";
+}
+
 export function FilesList() {
   const queryClient = useQueryClient();
   const { data: orgData } = useActiveOrganization();
@@ -119,6 +134,7 @@ export function FilesList() {
 
   const [page, setPage] = useState(1);
   const [accessFilter, setAccessFilter] = useState<FileAccess | "all">("all");
+  const [kindFilter, setKindFilter] = useState<FileKind | "all">("all");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -132,6 +148,7 @@ export function FilesList() {
         page,
         pageSize: 20,
         access: accessFilter === "all" ? undefined : accessFilter,
+        kind: kindFilter === "all" ? undefined : kindFilter,
       },
     }),
     enabled: Boolean(orgId),
@@ -264,6 +281,8 @@ export function FilesList() {
             <TableRow>
               <TableHead>File</TableHead>
               <TableHead>Size</TableHead>
+              <TableHead>Kind</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Access</TableHead>
               <TableHead>Scan Status</TableHead>
               <TableHead>Uploaded</TableHead>
@@ -275,7 +294,7 @@ export function FilesList() {
               <TableRow key={file.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    {getFileIcon(file.mimeType)}
+                    {getFileIcon(file.kind)}
                     <div>
                       <p className="font-medium">{file.filename}</p>
                       <p className="text-muted-foreground text-xs">
@@ -286,6 +305,16 @@ export function FilesList() {
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {formatFileSize(file.size)}
+                </TableCell>
+                <TableCell>
+                  <Badge className="capitalize" variant="outline">
+                    {file.kind}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={getStatusVariant(file.status)}>
+                    {file.status}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -455,9 +484,30 @@ export function FilesList() {
                 <SelectValue placeholder="Filter by access" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Files</SelectItem>
+                <SelectItem value="all">All Access</SelectItem>
                 <SelectItem value="private">Private</SelectItem>
                 <SelectItem value="public">Public</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              onValueChange={(value) => {
+                setKindFilter(value as FileKind | "all");
+                setPage(1);
+              }}
+              value={kindFilter}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Filter by kind" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Kinds</SelectItem>
+                <SelectItem value="image">Image</SelectItem>
+                <SelectItem value="video">Video</SelectItem>
+                <SelectItem value="audio">Audio</SelectItem>
+                <SelectItem value="document">Document</SelectItem>
+                <SelectItem value="archive">Archive</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -22,6 +22,8 @@ const sampleFile: FileRow = {
   isDeleted: false,
   deletedAt: null,
   deletedBy: null,
+  kind: "document",
+  status: "persistent",
 };
 
 const sampleUpload: FileUploadRow = {

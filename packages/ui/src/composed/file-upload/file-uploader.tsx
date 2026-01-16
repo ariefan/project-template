@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import type * as React from "react";
 import { Button } from "../../components/button";
 import { cn } from "../../lib/utils";
@@ -8,6 +9,7 @@ import { FileUploadDropzone } from "./file-upload-dropzone";
 import { FileUploadList } from "./file-upload-list";
 import { FileUploadTrigger } from "./file-upload-trigger";
 import type { FileUploadOptions, UploadFile } from "./types";
+import { formatBytes } from "./utils";
 
 interface FileUploaderContentProps {
   className?: string;
@@ -21,6 +23,7 @@ interface FileUploaderContentProps {
   onClear?: () => void;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Component configuration logic
 function FileUploaderContent({
   className,
   dropzoneClassName,
@@ -50,10 +53,16 @@ function FileUploaderContent({
     <div className={cn("space-y-4", className)}>
       {!hasFiles || options.multiple ? (
         <FileUploadDropzone
-          className={dropzoneClassName}
-          description={dropzoneDescription}
-          icon={dropzoneIcon}
-          label={dropzoneLabel}
+          className={cn(hasFiles ? "min-h-0 py-2" : dropzoneClassName)}
+          compact={hasFiles}
+          description={hasFiles ? null : dropzoneDescription}
+          icon={hasFiles ? <Plus className="h-4 w-4" /> : dropzoneIcon}
+          label={
+            hasFiles
+              ? `Add more files${options.maxSize ? ` (${formatBytes(options.maxSize)})` : ""}`
+              : (dropzoneLabel ?? "Drop files here")
+          }
+          labelClassName={hasFiles ? "text-sm" : "text-lg font-medium"}
         />
       ) : null}
 

@@ -1,6 +1,7 @@
 import { db } from "@workspace/db";
 import {
   type FileAccess,
+  type FileKind,
   type FileRow,
   type FileUploadRow,
   files,
@@ -15,6 +16,7 @@ export interface ListFilesOptions {
   page?: number;
   pageSize?: number;
   mimeType?: string;
+  kind?: FileKind; // Filter by file kind
   access?: FileAccess;
   includeDeleted?: boolean;
 }
@@ -76,6 +78,7 @@ export async function listFiles(
     page = 1,
     pageSize = 50,
     mimeType,
+    kind,
     access,
     includeDeleted = false,
   } = options;
@@ -86,8 +89,12 @@ export async function listFiles(
   if (!includeDeleted) {
     conditions.push(eq(files.isDeleted, false));
   }
+
   if (mimeType) {
     conditions.push(eq(files.mimeType, mimeType));
+  }
+  if (kind) {
+    conditions.push(eq(files.kind, kind)); // Filter by file kind
   }
   if (access) {
     conditions.push(eq(files.access, access));
@@ -263,6 +270,26 @@ export async function deleteExpiredUploads(): Promise<number> {
     .returning();
 
   return deleted.length;
+}
+
+/**
+ * Find expired temporary files (older than 24 hours)
+ */
+export async function findExpiredTemporaryFiles(
+  limit = 100
+): Promise<FileRow[]> {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  return await db
+    .select()
+    .from(files)
+    .where(
+      and(
+        eq(files.status, "temporary"),
+        lt(files.uploadedAt, twentyFourHoursAgo)
+      )
+    )
+    .limit(limit);
 }
 
 /**

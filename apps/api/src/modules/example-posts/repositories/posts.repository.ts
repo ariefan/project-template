@@ -1,6 +1,11 @@
 import type { ExamplePost } from "@workspace/contracts";
 import { db } from "@workspace/db";
-import { examplePosts, type NewExamplePostRow } from "@workspace/db/schema";
+import {
+  examplePostFiles,
+  examplePosts,
+  type NewExamplePostFileRow,
+  type NewExamplePostRow,
+} from "@workspace/db/schema";
 import {
   and,
   asc,
@@ -101,7 +106,13 @@ function buildSelectClause(fields: AllowedField[] | null) {
 /**
  * Transform full database row to ExamplePost (all fields present).
  */
-function toExamplePost(row: typeof examplePosts.$inferSelect): ExamplePost {
+/**
+ * Transform full database row to ExamplePost (all fields present).
+ */
+function toExamplePost(
+  row: typeof examplePosts.$inferSelect,
+  relations?: { galleryImageIds: string[]; documentFileIds: string[] }
+): ExamplePost {
   return {
     id: row.id,
     orgId: row.orgId,
@@ -110,6 +121,17 @@ function toExamplePost(row: typeof examplePosts.$inferSelect): ExamplePost {
     authorId: row.authorId,
     status: row.status,
     publishedAt: row.publishedAt?.toISOString(),
+    // New fields
+    category: row.category ?? undefined,
+    tags: (row.tags as string[]) ?? [],
+    isFeatured: row.isFeatured,
+    publishDate: row.publishDate?.toISOString(),
+    coverImageId: row.coverImageId ?? undefined,
+    attachmentFileId: row.attachmentFileId ?? undefined,
+    // Relations
+    galleryImageIds: relations?.galleryImageIds ?? [],
+    documentFileIds: relations?.documentFileIds ?? [],
+    // System fields
     isDeleted: row.isDeleted,
     deletedAt: row.deletedAt?.toISOString(),
     deletedBy: row.deletedBy ?? undefined,
@@ -121,6 +143,7 @@ function toExamplePost(row: typeof examplePosts.$inferSelect): ExamplePost {
 /**
  * Transform partial database row to partial ExamplePost (field selection).
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Many fields
 function toPartialExamplePost(
   row: Partial<typeof examplePosts.$inferSelect>
 ): Partial<ExamplePost> {
@@ -162,6 +185,28 @@ function toPartialExamplePost(
   if (row.updatedAt !== undefined) {
     result.updatedAt = row.updatedAt.toISOString();
   }
+  // New partial mappings
+  if (row.category !== undefined) {
+    result.category = row.category ?? undefined;
+  }
+  if (row.tags !== undefined) {
+    result.tags = (row.tags as string[]) ?? [];
+  }
+  if (row.isFeatured !== undefined) {
+    result.isFeatured = row.isFeatured;
+  }
+  if (row.publishDate !== undefined) {
+    result.publishDate = row.publishDate?.toISOString();
+  }
+  if (row.coverImageId !== undefined) {
+    result.coverImageId = row.coverImageId ?? undefined;
+  }
+  if (row.attachmentFileId !== undefined) {
+    result.attachmentFileId = row.attachmentFileId ?? undefined;
+  }
+  // These fields are required arrays per the contract, always default to empty
+  result.galleryImageIds = [];
+  result.documentFileIds = [];
 
   return result;
 }
@@ -318,6 +363,9 @@ function getOrderByColumn(fieldName: string) {
     publishedAt: examplePosts.publishedAt,
     updatedAt: examplePosts.updatedAt,
     createdAt: examplePosts.createdAt,
+    category: examplePosts.category,
+    isFeatured: examplePosts.isFeatured,
+    publishDate: examplePosts.publishDate,
   } as const;
 
   return columns[fieldName as keyof typeof columns] ?? examplePosts.createdAt;
@@ -347,7 +395,27 @@ export async function findExamplePostById(
     .limit(1);
 
   const row = rows[0];
-  return row ? toExamplePost(row) : null;
+  if (!row) {
+    return null;
+  }
+
+  // Fetch relations
+  const files = await db
+    .select()
+    .from(examplePostFiles)
+    .where(eq(examplePostFiles.postId, id));
+
+  const galleryImageIds = files
+    .filter((f) => f.field === "gallery")
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((f) => f.fileId);
+
+  const documentFileIds = files
+    .filter((f) => f.field === "document")
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((f) => f.fileId);
+
+  return toExamplePost(row, { galleryImageIds, documentFileIds });
 }
 
 export async function findExamplePostByIdAndOrg(
@@ -361,38 +429,180 @@ export async function findExamplePostByIdAndOrg(
     .limit(1);
 
   const row = rows[0];
-  return row ? toExamplePost(row) : null;
+  if (!row) {
+    return null;
+  }
+
+  // Fetch relations
+  const files = await db
+    .select()
+    .from(examplePostFiles)
+    .where(eq(examplePostFiles.postId, id));
+
+  const galleryImageIds = files
+    .filter((f) => f.field === "gallery")
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((f) => f.fileId);
+
+  const documentFileIds = files
+    .filter((f) => f.field === "document")
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    .map((f) => f.fileId);
+
+  return toExamplePost(row, { galleryImageIds, documentFileIds });
 }
 
 export async function createExamplePost(
-  data: NewExamplePostRow
+  data: NewExamplePostRow,
+  relations?: { galleryImageIds?: string[]; documentFileIds?: string[] }
 ): Promise<ExamplePost> {
-  const rows = await db.insert(examplePosts).values(data).returning();
+  return await db.transaction(async (tx) => {
+    // 1. Create Post
+    const rows = await tx.insert(examplePosts).values(data).returning();
+    const row = rows[0];
+    if (!row) {
+      throw new Error("Failed to create example post");
+    }
 
-  const row = rows[0];
-  if (!row) {
-    throw new Error("Failed to create example post");
-  }
+    // 2. Insert Relations (if any)
+    const galleryIds = relations?.galleryImageIds ?? [];
+    const documentIds = relations?.documentFileIds ?? [];
+    const fileInserts: NewExamplePostFileRow[] = [];
 
-  return toExamplePost(row);
+    galleryIds.forEach((fileId, idx) => {
+      fileInserts.push({
+        id: `pf_${Math.random().toString(36).substring(2, 10)}`, // Simple ID gen
+        postId: row.id,
+        fileId,
+        field: "gallery",
+        sortOrder: idx,
+      });
+    });
+
+    documentIds.forEach((fileId, idx) => {
+      fileInserts.push({
+        id: `pf_${Math.random().toString(36).substring(2, 10)}`,
+        postId: row.id,
+        fileId,
+        field: "document",
+        sortOrder: idx,
+      });
+    });
+
+    if (fileInserts.length > 0) {
+      await tx.insert(examplePostFiles).values(fileInserts);
+    }
+
+    return toExamplePost(row, {
+      galleryImageIds: galleryIds,
+      documentFileIds: documentIds,
+    });
+  });
 }
 
 export async function updateExamplePost(
   id: string,
   orgId: string,
-  data: Partial<Pick<NewExamplePostRow, "title" | "content" | "status">>
+  data: Partial<Omit<NewExamplePostRow, "id" | "orgId" | "createdAt">>,
+  relations?: { galleryImageIds?: string[]; documentFileIds?: string[] }
 ): Promise<ExamplePost | null> {
-  const rows = await db
-    .update(examplePosts)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(examplePosts.id, id), eq(examplePosts.orgId, orgId)))
-    .returning();
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Transaction complexity
+  return await db.transaction(async (tx) => {
+    // 1. Update Post
+    const rows = await tx
+      .update(examplePosts)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(examplePosts.id, id), eq(examplePosts.orgId, orgId)))
+      .returning();
 
-  const row = rows[0];
-  return row ? toExamplePost(row) : null;
+    const row = rows[0];
+    if (!row) {
+      return null;
+    }
+
+    // 2. Update Relations (Full replace for simplicity)
+    const galleryIds = relations?.galleryImageIds;
+    const documentIds = relations?.documentFileIds;
+
+    const hasGalleryUpdate = galleryIds !== undefined;
+    const hasDocUpdate = documentIds !== undefined;
+
+    if (hasGalleryUpdate || hasDocUpdate) {
+      // Delete existing for fields being updated
+      const conditions: SQL[] = [];
+      if (hasGalleryUpdate) {
+        conditions.push(eq(examplePostFiles.field, "gallery"));
+      }
+      if (hasDocUpdate) {
+        conditions.push(eq(examplePostFiles.field, "document"));
+      }
+
+      if (conditions.length > 0) {
+        await tx
+          .delete(examplePostFiles)
+          .where(and(eq(examplePostFiles.postId, id), or(...conditions)));
+      }
+
+      // Insert new
+      const fileInserts: NewExamplePostFileRow[] = [];
+
+      if (hasGalleryUpdate && galleryIds) {
+        galleryIds.forEach((fileId, idx) => {
+          fileInserts.push({
+            id: `pf_${Math.random().toString(36).substring(2, 10)}`,
+            postId: id,
+            fileId,
+            field: "gallery",
+            sortOrder: idx,
+          });
+        });
+      }
+
+      if (hasDocUpdate && documentIds) {
+        documentIds.forEach((fileId, idx) => {
+          fileInserts.push({
+            id: `pf_${Math.random().toString(36).substring(2, 10)}`,
+            postId: id,
+            fileId,
+            field: "document",
+            sortOrder: idx,
+          });
+        });
+      }
+
+      if (fileInserts.length > 0) {
+        await tx.insert(examplePostFiles).values(fileInserts);
+      }
+    }
+
+    // 3. Fetch latest relations to return complete object
+    // Optimization: Use what we just inserted if updated, else fetch?
+    // For safety, let's fetch everything again or reconstruct.
+
+    // Helper to fetch relations
+    const allFiles = await tx
+      .select()
+      .from(examplePostFiles)
+      .where(eq(examplePostFiles.postId, id));
+
+    const finalGalleryIds = allFiles
+      .filter((f) => f.field === "gallery")
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((f) => f.fileId);
+
+    const finalDocIds = allFiles
+      .filter((f) => f.field === "document")
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((f) => f.fileId);
+
+    return toExamplePost(row, {
+      galleryImageIds: finalGalleryIds,
+      documentFileIds: finalDocIds,
+    });
+  });
 }
 
 export async function softDeleteExamplePost(
@@ -465,7 +675,7 @@ export async function createExamplePostsBatch(
     return [];
   }
   const rows = await db.insert(examplePosts).values(data).returning();
-  return rows.map(toExamplePost);
+  return rows.map((row) => toExamplePost(row));
 }
 
 /**
@@ -499,7 +709,7 @@ export async function listDeletedExamplePosts(
   ]);
 
   return {
-    posts: rows.map(toExamplePost) as ExamplePost[],
+    posts: rows.map((row) => toExamplePost(row)),
     totalCount: countResult[0]?.count ?? 0,
   };
 }
@@ -533,7 +743,7 @@ export async function batchRestoreExamplePosts(
     )
     .returning();
 
-  return rows.map(toExamplePost);
+  return rows.map((row) => toExamplePost(row));
 }
 
 /**
@@ -626,7 +836,7 @@ export async function listExamplePostsCursor(
   const previousCursor = cursor || null;
 
   return {
-    posts: data.map(toExamplePost),
+    posts: data.map((row) => toExamplePost(row)),
     hasNext,
     nextCursor,
     previousCursor,

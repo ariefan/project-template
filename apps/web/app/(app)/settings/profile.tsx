@@ -27,7 +27,7 @@ import {
 import { Label } from "@workspace/ui/components/label";
 import {
   type CompressedFileWithPreview,
-  ImageCompressor,
+  ImageUploader,
 } from "@workspace/ui/composed/file-upload";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import {
@@ -307,13 +307,13 @@ export function ProfileTab() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4">
-                    <ImageCompressor
+                    <ImageUploader
                       defaultOptions={{
                         maxSizeMB: 0.5,
                         maxWidthOrHeight: 400,
                       }}
                       isUploading={isUploadingImage}
-                      onUpload={uploadAvatar}
+                      onConfirm={uploadAvatar}
                     />
                   </div>
                 </DialogContent>

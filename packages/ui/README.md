@@ -225,7 +225,7 @@ Higher-level components built from primitives, located in `src/composed/`:
 ```typescript
 import { ConfirmDialog } from "@workspace/ui/composed/confirm-dialog";
 import { FileUploadWithProgress } from "@workspace/ui/composed/file-upload-with-progress";
-import { ImageCompressor } from "@workspace/ui/composed/image-compressor";
+import { ImageUploader } from "@workspace/ui/composed/image-uploader";
 import { MarkdownEditor } from "@workspace/ui/composed/markdown-editor";
 import { MarkdownRenderer } from "@workspace/ui/composed/markdown-renderer";
 import { ThemeCustomizer } from "@workspace/ui/composed/theme-customizer";
@@ -242,7 +242,7 @@ import { DataView } from "@workspace/ui/composed/data-view";
 
 ### Media & Files
 - `FileUploadWithProgress` - Upload files with progress indicator
-- `ImageCompressor` - Client-side image compression before upload
+- `ImageUploader` - Client-side image compression and upload confirmation
 
 ### Content
 - `MarkdownEditor` - MDX-based markdown editor

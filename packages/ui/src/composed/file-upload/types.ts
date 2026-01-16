@@ -38,7 +38,7 @@ export interface FileUploadOptions {
   onUpload?: (
     file: UploadFile,
     onProgress: (progress: number, speed?: number, eta?: number) => void
-  ) => Promise<string | void>; // Returns uploaded URL optionally
+  ) => Promise<string | undefined>; // Returns uploaded URL optionally
   onDelete?: (file: UploadFile) => void;
   autoUpload?: boolean;
   disabled?: boolean;

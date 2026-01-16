@@ -98,18 +98,30 @@ export async function createExamplePost(
   const now = new Date();
   const status = data.status ?? "draft";
 
-  const post = await postsRepo.createExamplePost({
-    id: generateId("post"),
-    orgId,
-    title: data.title,
-    content: data.content,
-    authorId: data.authorId,
-    status,
-    publishedAt: status === "published" ? now : null,
-    isDeleted: false,
-    createdAt: now,
-    updatedAt: now,
-  });
+  const post = await postsRepo.createExamplePost(
+    {
+      id: generateId("post"),
+      orgId,
+      title: data.title,
+      content: data.content,
+      authorId: data.authorId,
+      category: data.category,
+      tags: data.tags ?? [],
+      isFeatured: data.isFeatured ?? false,
+      publishDate: data.publishDate ? new Date(data.publishDate) : null,
+      coverImageId: data.coverImageId,
+      attachmentFileId: data.attachmentFileId,
+      status,
+      publishedAt: status === "published" ? now : null,
+      isDeleted: false,
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      galleryImageIds: data.galleryImageIds,
+      documentFileIds: data.documentFileIds,
+    }
+  );
 
   return post;
 }
@@ -124,11 +136,25 @@ export async function updateExamplePost(
     throw new NotFoundError("ExamplePost", id);
   }
 
-  const updated = await postsRepo.updateExamplePost(id, orgId, {
-    title: data.title,
-    content: data.content,
-    status: data.status,
-  });
+  const updated = await postsRepo.updateExamplePost(
+    id,
+    orgId,
+    {
+      title: data.title,
+      content: data.content,
+      status: data.status,
+      category: data.category,
+      tags: data.tags,
+      isFeatured: data.isFeatured,
+      publishDate: data.publishDate ? new Date(data.publishDate) : undefined,
+      coverImageId: data.coverImageId,
+      attachmentFileId: data.attachmentFileId,
+    },
+    {
+      galleryImageIds: data.galleryImageIds,
+      documentFileIds: data.documentFileIds,
+    }
+  );
 
   if (!updated) {
     throw new NotFoundError("ExamplePost", id);

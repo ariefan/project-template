@@ -57,8 +57,9 @@ export function useSSE<T = unknown>(
           }
         };
 
-        eventSource.onerror = (error) => {
-          console.error("[SSE] Connection error:", error);
+        eventSource.onerror = (_error) => {
+          // Don't log the specific error object as it's usually just a generic Event ({})
+          // which confuses users. The reconnection log below is sufficient.
 
           // Close the connection
           eventSource?.close();

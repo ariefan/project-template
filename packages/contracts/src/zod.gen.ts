@@ -520,6 +520,14 @@ export const zCreateExamplePostRequest = z.object({
     title: z.string(),
     content: z.string(),
     authorId: z.string(),
+    category: z.optional(z.string()),
+    tags: z.optional(z.array(z.string())),
+    isFeatured: z.optional(z.boolean()),
+    publishDate: z.optional(z.iso.datetime()),
+    coverImageId: z.optional(z.string()),
+    attachmentFileId: z.optional(z.string()),
+    galleryImageIds: z.optional(z.array(z.string())),
+    documentFileIds: z.optional(z.array(z.string())),
     status: z.optional(zExamplePostStatus)
 });
 
@@ -537,6 +545,14 @@ export const zExamplePost = z.object({
     title: z.string(),
     content: z.string(),
     authorId: z.string(),
+    category: z.optional(z.string()),
+    tags: z.array(z.string()),
+    isFeatured: z.boolean(),
+    publishDate: z.optional(z.iso.datetime()),
+    coverImageId: z.optional(z.string()),
+    attachmentFileId: z.optional(z.string()),
+    galleryImageIds: z.array(z.string()),
+    documentFileIds: z.array(z.string()),
     status: zExamplePostStatus,
     publishedAt: z.optional(z.iso.datetime()),
     isDeleted: z.boolean(),
@@ -561,6 +577,23 @@ export const zExportAcceptancesRequest = z.object({
  * File access level
  */
 export const zFileAccess = z.enum(['private', 'public']);
+
+/**
+ * File kind
+ */
+export const zFileKind = z.enum([
+    'image',
+    'video',
+    'audio',
+    'document',
+    'archive',
+    'other'
+]);
+
+/**
+ * File status
+ */
+export const zFileStatus = z.enum(['temporary', 'persistent']);
 
 /**
  * Request to initiate a presigned URL upload
@@ -2039,6 +2072,14 @@ export const zUpdateExampleCommentRequest = z.object({
 export const zUpdateExamplePostRequest = z.object({
     title: z.optional(z.string()),
     content: z.optional(z.string()),
+    category: z.optional(z.string()),
+    tags: z.optional(z.array(z.string())),
+    isFeatured: z.optional(z.boolean()),
+    publishDate: z.optional(z.iso.datetime()),
+    coverImageId: z.optional(z.string()),
+    attachmentFileId: z.optional(z.string()),
+    galleryImageIds: z.optional(z.array(z.string())),
+    documentFileIds: z.optional(z.array(z.string())),
     status: z.optional(zExamplePostStatus)
 });
 
@@ -2290,6 +2331,7 @@ export const zFile = z.object({
     filename: z.string(),
     size: z.coerce.bigint(),
     mimeType: z.string(),
+    kind: zFileKind,
     storagePath: z.string(),
     url: z.optional(z.string()),
     metadata: z.optional(z.record(z.string(), z.string())),
@@ -2298,6 +2340,7 @@ export const zFile = z.object({
     virusScanStatus: zVirusScanStatus,
     virusScanCompletedAt: z.optional(z.iso.datetime()),
     access: zFileAccess,
+    status: zFileStatus,
     isDeleted: z.boolean(),
     deletedAt: z.optional(z.iso.datetime()),
     deletedBy: z.optional(z.string())
@@ -4058,6 +4101,7 @@ export const zFilesListData = z.object({
         orderBy: z.optional(z.string()),
         fields: z.optional(z.string()),
         mimeType: z.optional(z.string()),
+        kind: z.optional(zFileKind),
         virusScanStatus: z.optional(zVirusScanStatus),
         access: z.optional(zFileAccess),
         uploadedAfter: z.optional(z.iso.datetime()),

@@ -637,6 +637,7 @@ async function seedFilesAndJobs(ctx: SeedContext) {
       uploadedBy: "user_admin",
       virusScanStatus: "clean" as const,
       access: "public" as const,
+      kind: "image" as const,
     },
     {
       id: "file_report",
@@ -648,6 +649,7 @@ async function seedFilesAndJobs(ctx: SeedContext) {
       uploadedBy: "user_admin",
       virusScanStatus: "clean" as const,
       access: "private" as const,
+      kind: "document" as const,
     },
     {
       id: "file_data",
@@ -659,6 +661,7 @@ async function seedFilesAndJobs(ctx: SeedContext) {
       uploadedBy: "user_member",
       virusScanStatus: "pending" as const,
       access: "private" as const,
+      kind: "document" as const,
     },
   ];
 

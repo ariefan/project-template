@@ -67,6 +67,9 @@ interface Files {
     /** Filter by MIME type */
     @query mimeType?: string,
 
+    /** Filter by file kind */
+    @query kind?: FileKind,
+
     /** Filter by virus scan status */
     @query virusScanStatus?: VirusScanStatus,
 

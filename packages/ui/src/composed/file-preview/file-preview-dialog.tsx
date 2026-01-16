@@ -1,13 +1,14 @@
-"use client";
-
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@workspace/ui/components/button";
 import {
   Dialog,
-  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { cn } from "@workspace/ui/lib/utils";
-import { RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
+import { Download, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export interface FilePreviewDialogProps {
@@ -37,6 +38,13 @@ export interface FilePreviewDialogProps {
  *   fileType="application/pdf"
  * />
  */
+import {
+  AudioPreview,
+  ImagePreview,
+  PdfPreview,
+  VideoPreview,
+} from "./file-preview-renderers";
+
 export function FilePreviewDialog({
   open,
   onOpenChange,
@@ -48,9 +56,16 @@ export function FilePreviewDialog({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  // State defaults to initial values.
-  // We rely on the parent checking `key={fileUrl}` to remount the component
-  // and reset state when the file URL changes.
+  // Reset state when dialog opens or URL changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset on fileUrl change
+  useEffect(() => {
+    if (open) {
+      // Reset zoom and error state when dialog opens or file changes
+      setZoom(1);
+      setIsLoading(true);
+      setHasError(false);
+    }
+  }, [open, fileUrl]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -59,7 +74,6 @@ export function FilePreviewDialog({
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is typing in an input
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
@@ -83,7 +97,6 @@ export function FilePreviewDialog({
           setZoom(1);
           break;
         default:
-          // No action for other keys
           break;
       }
     };
@@ -94,165 +107,140 @@ export function FilePreviewDialog({
 
   const isImage =
     (fileType === "image" || fileType?.startsWith("image/")) ?? true;
-
   const isPdf = fileType === "pdf" || fileType === "application/pdf";
+  const isVideo = fileType?.startsWith("video/");
+  const isAudio = fileType?.startsWith("audio/");
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent
-        className={cn(
-          "fixed inset-0 top-0 left-0 translate-x-0 translate-y-0",
-          "h-screen w-screen gap-0 rounded-none bg-background/95 p-0",
-          "flex flex-col overflow-hidden border-0 shadow-none"
-        )}
-        showCloseButton={false}
-      >
-        {/* Visually hidden title for screen readers */}
-        <DialogTitle className="sr-only">
-          {fileName ?? "File Preview"}
-        </DialogTitle>
-
-        {/* Header with title and controls */}
-        <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
-          <h2 className="truncate font-medium text-sm">
-            {fileName ?? "Preview"}
-          </h2>
-          <div className="flex items-center gap-2">
-            {isImage && (
-              <>
-                <Button
-                  disabled={zoom <= 0.5}
-                  onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
-                  size="icon-sm"
-                  title="Zoom out (-)"
-                  variant="ghost"
-                >
-                  <ZoomOut className="size-4" />
-                </Button>
-                <span className="w-12 text-center text-muted-foreground text-xs">
-                  {Math.round(zoom * 100)}%
-                </span>
-                <Button
-                  disabled={zoom >= 3}
-                  onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
-                  size="icon-sm"
-                  title="Zoom in (+)"
-                  variant="ghost"
-                >
-                  <ZoomIn className="size-4" />
-                </Button>
-                <Button
-                  onClick={() => setZoom(1)}
-                  size="icon-sm"
-                  title="Reset zoom (0)"
-                  variant="ghost"
-                >
-                  <RotateCcw className="size-4" />
-                </Button>
-              </>
-            )}
-            <Button
-              onClick={() => onOpenChange(false)}
-              size="icon-sm"
-              title="Close (Escape)"
-              variant="ghost"
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Content area */}
-        <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-4">
-          {(() => {
-            if (isImage) {
-              return (
-                <div className="relative flex size-full items-center justify-center">
-                  {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    </div>
-                  )}
-                  {hasError ? (
-                    <div className="flex flex-col items-center gap-2 text-center">
-                      <p className="text-muted-foreground text-sm">
-                        Failed to load preview
-                      </p>
-                      <Button
-                        onClick={() => {
-                          setIsLoading(true);
-                          setHasError(false);
-                        }}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  ) : (
-                    // biome-ignore lint/correctness/useImageSize: Dynamic content
-                    // biome-ignore lint/performance/noImgElement: Framework-agnostic
-                    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: Image click handled for zoom
-                    <img
-                      alt={fileName ?? "Preview"}
-                      className={cn(
-                        "max-h-full max-w-full object-contain transition-transform duration-200",
-                        isLoading && "opacity-0"
-                      )}
-                      onError={() => {
-                        setIsLoading(false);
-                        setHasError(true);
-                      }}
-                      onLoad={() => setIsLoading(false)}
-                      src={fileUrl}
-                      style={{ transform: `scale(${zoom})` }}
-                    />
-                  )}
-                </div>
-              );
+      <DialogPortal>
+        <DialogOverlay className="bg-transparent backdrop-blur-none" />
+        <DialogPrimitive.Content
+          className={cn(
+            "fixed inset-0 z-50 flex flex-col overflow-hidden p-0",
+            "h-screen w-screen bg-black/5 text-foreground backdrop-blur-sm dark:bg-black/40",
+            "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in"
+          )}
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (
+              target === e.currentTarget ||
+              target.dataset.filePreviewBackdrop
+            ) {
+              onOpenChange(false);
             }
+          }}
+        >
+          <DialogTitle className="sr-only">
+            {fileName ?? "File Preview"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Preview of {fileName ?? "the selected file"}
+          </DialogDescription>
 
-            if (isPdf) {
-              return (
-                <div className="size-full">
-                  <object
-                    className="size-full rounded-md border"
-                    data={fileUrl}
-                    type="application/pdf"
+          {/* Header */}
+          <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
+            <h2 className="truncate font-medium text-sm">
+              {fileName ?? "Preview"}
+            </h2>
+            <div className="flex items-center gap-2">
+              <Button asChild size="icon-sm" title="Download" variant="ghost">
+                <a download href={fileUrl} rel="noreferrer" target="_blank">
+                  <Download className="size-4" />
+                </a>
+              </Button>
+              {isImage && (
+                <>
+                  <Button
+                    disabled={zoom <= 0.5}
+                    onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
+                    size="icon-sm"
+                    title="Zoom out (-)"
+                    variant="ghost"
                   >
-                    <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-                      <p className="text-muted-foreground">
-                        Unable to display PDF directly.
-                      </p>
-                      <Button asChild variant="outline">
-                        <a href={fileUrl} rel="noreferrer" target="_blank">
-                          Download PDF
-                        </a>
-                      </Button>
-                    </div>
-                  </object>
+                    <ZoomOut className="size-4" />
+                  </Button>
+                  <span className="w-12 text-center text-muted-foreground text-xs">
+                    {Math.round(zoom * 100)}%
+                  </span>
+                  <Button
+                    disabled={zoom >= 3}
+                    onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
+                    size="icon-sm"
+                    title="Zoom in (+)"
+                    variant="ghost"
+                  >
+                    <ZoomIn className="size-4" />
+                  </Button>
+                  <Button
+                    onClick={() => setZoom(1)}
+                    size="icon-sm"
+                    title="Reset zoom (0)"
+                    variant="ghost"
+                  >
+                    <RotateCcw className="size-4" />
+                  </Button>
+                </>
+              )}
+              <Button
+                onClick={() => onOpenChange(false)}
+                size="icon-sm"
+                title="Close (Escape)"
+                variant="ghost"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div
+            className="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-4"
+            data-file-preview-backdrop
+          >
+            {(() => {
+              if (isImage) {
+                return (
+                  <ImagePreview
+                    fileName={fileName}
+                    fileUrl={fileUrl}
+                    hasError={hasError}
+                    isLoading={isLoading}
+                    setHasError={setHasError}
+                    setIsLoading={setIsLoading}
+                    setZoom={setZoom}
+                    zoom={zoom}
+                  />
+                );
+              }
+              if (isVideo) {
+                return <VideoPreview fileUrl={fileUrl} />;
+              }
+              if (isAudio) {
+                return <AudioPreview fileUrl={fileUrl} />;
+              }
+              if (isPdf) {
+                return <PdfPreview fileUrl={fileUrl} />;
+              }
+              return (
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <p className="text-muted-foreground text-sm">
+                    Preview not available for this file type
+                  </p>
+                  {fileType && (
+                    <p className="text-muted-foreground text-xs">{fileType}</p>
+                  )}
+                  <Button asChild variant="outline">
+                    <a href={fileUrl} rel="noreferrer" target="_blank">
+                      Download File
+                    </a>
+                  </Button>
                 </div>
               );
-            }
-
-            return (
-              <div className="flex flex-col items-center gap-3 text-center">
-                <p className="text-muted-foreground text-sm">
-                  Preview not available for this file type
-                </p>
-                {fileType && (
-                  <p className="text-muted-foreground text-xs">{fileType}</p>
-                )}
-                <Button asChild variant="outline">
-                  <a href={fileUrl} rel="noreferrer" target="_blank">
-                    Download File
-                  </a>
-                </Button>
-              </div>
-            );
-          })()}
-        </div>
-      </DialogContent>
+            })()}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPortal>
     </Dialog>
   );
 }

@@ -33,14 +33,17 @@ export interface ImageCropDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCropComplete: (result: CropResult) => void;
+  queue?: File[];
+  onSelectFile?: (file: File) => void;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Image cropping is complex
 export function ImageCropDialog({
   imageFile,
   open,
   onOpenChange,
   onCropComplete,
+  queue = [],
+  onSelectFile,
 }: ImageCropDialogProps) {
   const [imageSrc, setImageSrc] = React.useState<string | null>(null);
   const [crop, setCrop] = React.useState<Point>({ x: 0, y: 0 });
@@ -223,10 +226,12 @@ export function ImageCropDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {/* Thumbnails moved to bottom */}
+
         <div className="relative h-[300px] w-full overflow-hidden rounded-lg bg-black/5">
           {imageSrc && (
             <Cropper
-              aspect={aspect}
+              aspect={aspect === 0 ? undefined : aspect} // 0 is handled as undefined (free) if passed explicitly
               crop={crop}
               image={imageSrc}
               onCropChange={onCropChange}
@@ -255,7 +260,9 @@ export function ImageCropDialog({
               max={3}
               min={1}
               onValueChange={([value]: number[]) => {
-                if (value !== undefined) setZoom(value);
+                if (value !== undefined) {
+                  setZoom(value);
+                }
               }}
               step={0.1}
               value={[zoom]}
@@ -267,7 +274,9 @@ export function ImageCropDialog({
               max={360}
               min={0}
               onValueChange={([value]: number[]) => {
-                if (value !== undefined) setRotation(value);
+                if (value !== undefined) {
+                  setRotation(value);
+                }
               }}
               step={1}
               value={[rotation]}
@@ -330,13 +339,36 @@ export function ImageCropDialog({
           </div>
         </div>
 
+        {/* Thumbnail Queue (Bottom) */}
+        {queue.length > 0 && (
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
+            {queue.map((file, i) => {
+              const isSelected = file.name === imageFile?.name;
+              return (
+                <button
+                  className={`relative h-14 w-14 flex-shrink-0 cursor-pointer overflow-hidden rounded-md border-2 transition-all ${
+                    isSelected
+                      ? "border-primary ring-2 ring-primary ring-offset-1"
+                      : "border-transparent opacity-60 hover:opacity-100"
+                  }`}
+                  key={`${file.name}-${i}`}
+                  onClick={() => onSelectFile?.(file)}
+                  type="button"
+                >
+                  <QueueThumbnail file={file} />
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
             onClick={() => onOpenChange(false)}
             type="button"
             variant="ghost"
           >
-            Skip/Cancel
+            Cancel
           </Button>
           <Button disabled={isProcessing} onClick={createCroppedImage}>
             {isProcessing ? (
@@ -344,10 +376,29 @@ export function ImageCropDialog({
             ) : (
               <Check className="mr-2 h-4 w-4" />
             )}
-            Apply Crop
+            Apply
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
+}
+
+function QueueThumbnail({ file }: { file: File }) {
+  const [preview, setPreview] = React.useState<string>("");
+
+  React.useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  if (!preview) {
+    return <div className="h-full w-full bg-muted" />;
+  }
+
+  // biome-ignore lint/a11y/useAltText: Thumbnail
+  // biome-ignore lint/performance/noImgElement: Thumbnail
+  // biome-ignore lint/correctness/useImageSize: Thumbnail
+  return <img className="h-full w-full object-cover" src={preview} />;
 }

@@ -10,6 +10,16 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog";
 import { Button } from "@workspace/ui/components/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer";
+import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { cn } from "@workspace/ui/lib/utils";
 import {
   AlertTriangle,
@@ -39,12 +49,12 @@ const variantStyles: Record<
   warning: {
     icon: "text-yellow-600 bg-yellow-500/10 dark:text-yellow-500 dark:bg-yellow-500/10",
     container:
-      "border-yellow-200/50 bg-yellow-50/50 dark:border-yellow-900/50 dark:bg-yellow-900/10",
+      "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:!bg-background dark:bg-gradient-to-b dark:from-yellow-500/10 dark:to-yellow-500/10",
   },
   destructive: {
     icon: "text-destructive bg-destructive/10",
     container:
-      "border-destructive/50 bg-destructive/5 dark:border-destructive/50 dark:bg-destructive/10",
+      "border-red-200 bg-red-50 dark:border-red-900 dark:!bg-background dark:bg-gradient-to-b dark:from-destructive/10 dark:to-destructive/10",
   },
 };
 
@@ -87,42 +97,7 @@ export interface ConfirmDialogProps {
 
 /**
  * A flexible confirmation dialog with icon support.
- *
- * @example
- * // Delete confirmation
- * <ConfirmDialog
- *   open={showDelete}
- *   onOpenChange={setShowDelete}
- *   title="Delete this item?"
- *   description="This action cannot be undone."
- *   onConfirm={handleDelete}
- *   variant="destructive"
- * />
- *
- * @example
- * // Save warning with custom icon
- * <ConfirmDialog
- *   open={showWarning}
- *   onOpenChange={setShowWarning}
- *   title="Unsaved changes"
- *   description="You have unsaved changes. Do you want to save them?"
- *   onConfirm={handleSave}
- *   confirmLabel="Save"
- *   icon={Save}
- * />
- *
- * @example
- * // Alert mode (single action)
- * <ConfirmDialog
- *   open={showAlert}
- *   onOpenChange={setShowAlert}
- *   title="Success!"
- *   description="Your changes have been saved."
- *   onConfirm={() => setShowAlert(false)}
- *   confirmLabel="OK"
- *   showCancel={false}
- *   icon={CheckCircle}
- * />
+ * Automatically adapts to Drawer on mobile devices.
  */
 export function ConfirmDialog({
   open,
@@ -143,6 +118,7 @@ export function ConfirmDialog({
   children,
   className,
 }: ConfirmDialogProps) {
+  const isMobile = useIsMobile();
   const styles = variantStyles[variant];
   const Icon = IconProp ?? variantIcons[variant];
 
@@ -172,6 +148,63 @@ export function ConfirmDialog({
     return "default";
   };
 
+  if (isMobile) {
+    return (
+      <Drawer dismissible={false} onOpenChange={onOpenChange} open={open}>
+        <DrawerContent className={cn(styles.container, className)}>
+          <DrawerHeader className="text-left">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                {Icon && (
+                  <div
+                    className={cn(
+                      "flex size-10 shrink-0 items-center justify-center rounded-full",
+                      styles.icon,
+                      iconClassName
+                    )}
+                  >
+                    <Icon className="size-5" />
+                  </div>
+                )}
+                <DrawerTitle>{title}</DrawerTitle>
+              </div>
+              {description && (
+                <DrawerDescription>{description}</DrawerDescription>
+              )}
+            </div>
+          </DrawerHeader>
+
+          {children && <div className="px-4 py-2">{children}</div>}
+
+          <DrawerFooter className="pt-2">
+            <Button
+              className="w-full"
+              disabled={confirmDisabled || isLoading}
+              onClick={handleConfirm}
+              variant={getConfirmVariant()}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  {confirmLabel}
+                </>
+              ) : (
+                confirmLabel
+              )}
+            </Button>
+            {showCancel && (
+              <DrawerClose asChild>
+                <Button onClick={handleCancel} variant="outline">
+                  {cancelLabel}
+                </Button>
+              </DrawerClose>
+            )}
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <AlertDialog onOpenChange={onOpenChange} open={open}>
       <AlertDialogContent className={cn(styles.container, className)}>
@@ -180,12 +213,12 @@ export function ConfirmDialog({
             {Icon && (
               <div
                 className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-full",
+                  "flex size-12 shrink-0 items-center justify-center rounded-full",
                   styles.icon,
                   iconClassName
                 )}
               >
-                <Icon className="size-5" />
+                <Icon className="size-6" />
               </div>
             )}
             <div className="flex flex-col gap-1 text-center sm:text-left">

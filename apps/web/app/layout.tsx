@@ -34,6 +34,7 @@ export default async function RootLayout({
       </head>
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
+        suppressHydrationWarning
       >
         <Providers>{children}</Providers>
       </body>

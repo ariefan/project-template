@@ -50,6 +50,29 @@ enum FileAccess {
   public: "public",
 }
 
+/**
+ * File kind
+ */
+enum FileKind {
+  image: "image",
+  video: "video",
+  audio: "audio",
+  document: "document",
+  archive: "archive",
+  other: "other",
+}
+
+/**
+ * File status
+ */
+enum FileStatus {
+  /** Uploaded but not confirmed/attached (cleanup candidate) */
+  temporary: "temporary",
+
+  /** Permanently attached or confirmed */
+  persistent: "persistent",
+}
+
 // ============================================================================
 // MAIN MODEL
 // ============================================================================
@@ -75,6 +98,9 @@ model File {
   /** MIME type (verified via magic bytes, not client-provided) */
   @example("application/pdf")
   mimeType: string;
+
+  /** Inferred file kind */
+  kind: FileKind;
 
   /** Storage path (internal, not exposed to clients in production) */
   @example("orgs/org_abc123/files/file_abc123.pdf")
@@ -102,6 +128,9 @@ model File {
 
   /** Access level */
   access: FileAccess;
+
+  /** File lifecycle status */
+  status: FileStatus;
 
   /** Whether the file is soft deleted */
   isDeleted: boolean;

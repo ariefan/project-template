@@ -9,6 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import { Label } from "@workspace/ui/components/label";
+import { Switch } from "@workspace/ui/components/switch";
 import {
   Table,
   TableBody,
@@ -24,12 +26,10 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
 import {
-  FileUploader,
-  type UploadFile,
-} from "@workspace/ui/composed/file-upload";
-import {
   type CompressedFileWithPreview,
-  ImageCompressor,
+  FileUploader,
+  ImageUploader,
+  type UploadFile,
 } from "@workspace/ui/composed/file-upload";
 import { Code, Crop, Download, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -66,6 +66,14 @@ export function StorageTester() {
   const [isClient, setIsClient] = useState(false);
   // FileUploader options
   const [isMultiple, setIsMultiple] = useState(true);
+  const [isAutoUpload, setIsAutoUpload] = useState(true);
+  const [showCompressionOptions, setShowCompressionOptions] = useState(true);
+  const [enableCropping, setEnableCropping] = useState(true);
+  const [autoImageUpload, setAutoImageUpload] = useState(false);
+  const [fileUploaderKey, setFileUploaderKey] = useState(0);
+  const [imageUploaderKey, setImageUploaderKey] = useState(0);
+  const [exampleFiles, setExampleFiles] = useState<UploadFile[]>([]);
+  const [exampleImages, setExampleImages] = useState<File[]>([]);
 
   const [isUploadingCompressed, setIsUploadingCompressed] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -113,10 +121,10 @@ export function StorageTester() {
 
   // Upload with progress tracking using XMLHttpRequest
   // Note: Updated to match FileUploader interface
-  const uploadFile = async (
+  const uploadFile = (
     fileState: UploadFile,
     onProgress: (progress: number) => void
-  ): Promise<string | void> => {
+  ): Promise<string | undefined> => {
     if (!organization?.id) {
       throw new Error("No organization selected");
     }
@@ -136,7 +144,7 @@ export function StorageTester() {
 
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
+          resolve(undefined);
         } else {
           try {
             const error = JSON.parse(xhr.responseText);
@@ -201,8 +209,79 @@ export function StorageTester() {
     }
   };
 
+  // Generate example data
+  const loadExampleFiles = () => {
+    const textFile = new File(
+      ["This is a test text file content."],
+      "document.txt",
+      {
+        type: "text/plain",
+        lastModified: Date.now(),
+      }
+    );
+
+    // Create a dummy PDF file (empty)
+    const pdfFile = new File(["%PDF-1.4\n..."], "report.pdf", {
+      type: "application/pdf",
+      lastModified: Date.now(),
+    });
+
+    const newFiles: UploadFile[] = [
+      {
+        id: "example-1",
+        file: Object.assign(textFile, { preview: undefined }),
+        progress: 0,
+        status: "idle",
+      },
+      {
+        id: "example-2",
+        file: Object.assign(pdfFile, { preview: undefined }),
+        progress: 0,
+        status: "idle",
+      },
+    ];
+
+    setExampleFiles(newFiles);
+    setFileUploaderKey((prev) => prev + 1);
+    toast.success("Loaded example files");
+  };
+
+  const loadExampleImages = async () => {
+    const toastId = toast.loading("Fetching example images...");
+
+    try {
+      // Fetch random images from local demo folder (public/demo/image-01.jpg to image-15.jpg)
+      // Pick a random number of images between 1 and 15
+      const totalImages = 15;
+      const count = Math.floor(Math.random() * totalImages) + 1;
+      const indices = Array.from({ length: totalImages }, (_, i) => i + 1)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, count);
+
+      const fetchPromises = indices.map(async (index) => {
+        const paddedIndex = index.toString().padStart(2, "0");
+        const filename = `image-${paddedIndex}.jpg`;
+        const response = await fetch(`/demo/${filename}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${filename}`);
+        }
+        const blob = await response.blob();
+        return new File([blob], filename, { type: "image/jpeg" });
+      });
+
+      const images = await Promise.all(fetchPromises);
+
+      setExampleImages(images);
+      setImageUploaderKey((prev) => prev + 1);
+      toast.success("Loaded example images", { id: toastId });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load example images", { id: toastId });
+    }
+  };
+
   return (
-    <div className="container mx-auto max-w-5xl space-y-6 py-6">
+    <div className="container mx-auto max-w-7xl px-4 py-6">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -227,7 +306,7 @@ export function StorageTester() {
       </div>
 
       {/* Organization Info */}
-      {organization && (
+      {isClient && organization && (
         <div className="rounded-lg border bg-muted/50 px-4 py-3 text-sm">
           <span className="text-muted-foreground">Organization: </span>
           <span className="font-medium">{organization.name}</span>
@@ -287,8 +366,8 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
         {...(isClient && { value: activeTab })}
       >
         <TabsList className="grid w-full grid-cols-3 lg:w-[450px]">
-          <TabsTrigger value="upload">Upload</TabsTrigger>
-          <TabsTrigger value="compression">Compression</TabsTrigger>
+          <TabsTrigger value="upload">File Upload</TabsTrigger>
+          <TabsTrigger value="compression">Image Upload</TabsTrigger>
           <TabsTrigger value="manager">
             Files
             {filesQuery.data && filesQuery.data.length > 0 && (
@@ -307,22 +386,41 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
                 <div>
                   <CardTitle>File Upload</CardTitle>
                   <CardDescription>
-                    Upload files to your organization storage with progress tracking
+                    Upload files to your organization storage with progress
+                    tracking
                   </CardDescription>
                 </div>
-                <div className="flex gap-2">
-                    <Button
-                        onClick={() => setIsMultiple(!isMultiple)}
-                        size="sm"
-                        variant="outline"
-                    >
-                        {isMultiple ? "Multi-File" : "Single File"} Mode
-                    </Button>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={isAutoUpload}
+                      id="auto-upload"
+                      onCheckedChange={setIsAutoUpload}
+                    />
+                    <Label htmlFor="auto-upload">Auto Upload</Label>
+                  </div>
+                  <Button
+                    onClick={loadExampleFiles}
+                    size="sm"
+                    variant="secondary"
+                  >
+                    Load Example Data
+                  </Button>
+                  <Button
+                    onClick={() => setIsMultiple(!isMultiple)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {isMultiple ? "Multi-File" : "Single File"}
+                  </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <FileUploader
+                autoUpload={isAutoUpload}
+                initialFiles={exampleFiles}
+                key={fileUploaderKey}
                 maxSize={MAX_FILE_SIZE}
                 multiple={isMultiple}
                 onUpload={uploadFile}
@@ -337,29 +435,68 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Crop className="h-5 w-5 text-primary" />
-                <CardTitle>Image Compression & Cropping</CardTitle>
+                <CardTitle>Image Upload & Compression</CardTitle>
               </div>
               <CardDescription>
-                Compress images client-side before uploading. Enable cropping to
-                rotate, flip, and crop images with preset aspect ratios (square,
-                4:3, 16:9) before compression.
+                Compress images client-side before uploading. Includes cropping,
+                preview, and metadata.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ImageCompressor
+              <div className="mb-4 flex items-center space-x-2">
+                <Switch
+                  checked={showCompressionOptions}
+                  id="show-options"
+                  onCheckedChange={setShowCompressionOptions}
+                />
+                <Label htmlFor="show-options">Show Compression Options</Label>
+              </div>
+              <div className="mb-4 flex items-center space-x-2">
+                <Switch
+                  checked={enableCropping}
+                  id="enable-cropping"
+                  onCheckedChange={setEnableCropping}
+                />
+                <Label htmlFor="enable-cropping">
+                  Enable Cropping (Default)
+                </Label>
+              </div>
+              <div className="mb-4 flex items-center space-x-2">
+                <Switch
+                  checked={autoImageUpload}
+                  id="auto-upload"
+                  onCheckedChange={setAutoImageUpload}
+                />
+                <Label htmlFor="auto-upload">Auto Upload</Label>
+              </div>
+              <div className="mb-4">
+                <Button
+                  onClick={loadExampleImages}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Load Example Data
+                </Button>
+              </div>
+              <ImageUploader
+                autoUpload={autoImageUpload}
                 defaultOptions={{
                   alwaysKeepResolution: false,
                   maxSizeMB: 1,
                   maxWidthOrHeight: 1920,
                   useWebWorker: true,
                 }}
+                enableCropping={enableCropping}
+                initialImages={exampleImages}
                 isUploading={isUploadingCompressed}
+                key={imageUploaderKey}
                 onCompressed={() => {
                   // Refresh files list after compression
                   queryClient.invalidateQueries({ queryKey: ["files"] });
                 }}
-                onUpload={handleCompressedUpload}
-                showUploadButton
+                onConfirm={handleCompressedUpload}
+                showCompressionOptions={showCompressionOptions}
+                showConfirmButton
               />
             </CardContent>
           </Card>

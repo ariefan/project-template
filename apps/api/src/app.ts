@@ -333,6 +333,7 @@ export async function buildApp(config: AppConfig) {
       createJobQueue,
       registerReportHandler,
       registerTestHandler,
+      registerStorageCleanupHandler,
       jobsService,
     } = await import("./modules/jobs");
 
@@ -340,6 +341,11 @@ export async function buildApp(config: AppConfig) {
     registerReportHandler();
     registerTestHandler();
     registerSubscriptionHandlers();
+
+    // Register storage cleanup handler only if using external storage (not local dev default)
+    if (env.STORAGE_PROVIDER !== "local") {
+      registerStorageCleanupHandler();
+    }
 
     const jobQueue = createJobQueue({
       connectionString: env.DATABASE_URL,
@@ -351,6 +357,11 @@ export async function buildApp(config: AppConfig) {
 
     // Schedule recurring maintenance jobs
     await jobQueue.schedule("subscription:monitor", "0 * * * *");
+
+    // Schedule storage cleanup if using external storage
+    if (env.STORAGE_PROVIDER !== "local") {
+      await jobQueue.schedule("storage:cleanup", "0 * * * *");
+    }
 
     // Initialize and start the scheduled job worker
     // This polls for due schedules and automatically creates jobs

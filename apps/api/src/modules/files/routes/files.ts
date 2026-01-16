@@ -6,7 +6,7 @@ import {
   zInitiateUploadRequest,
   zUpdateFileRequest,
 } from "@workspace/contracts/zod";
-import type { FileAccess } from "@workspace/db/schema";
+import type { FileAccess, FileKind } from "@workspace/db/schema";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { validateBody } from "../../../lib/validation";
 import { requireAuth } from "../../auth/middleware";
@@ -26,6 +26,7 @@ interface ListFilesQuery {
   page?: number;
   pageSize?: number;
   mimeType?: string;
+  kind?: FileKind;
   access?: FileAccess;
 }
 
@@ -42,12 +43,13 @@ export function filesRoutes(app: FastifyInstance) {
     Querystring: ListFilesQuery;
   }>("/:orgId/files", { preHandler: [requireAuth] }, async (request, reply) => {
     const { orgId } = request.params;
-    const { page, pageSize, mimeType, access } = request.query;
+    const { page, pageSize, mimeType, kind, access } = request.query;
 
     const result = await filesService.listFiles(orgId, {
       page: page ? Number(page) : undefined,
       pageSize: pageSize ? Number(pageSize) : undefined,
       mimeType,
+      kind,
       access,
     });
 
@@ -386,6 +388,7 @@ function formatFileResponse(file: {
   filename: string;
   size: number;
   mimeType: string;
+  kind: string;
   storagePath: string;
   metadata: Record<string, unknown> | null;
   uploadedBy: string;
@@ -393,6 +396,7 @@ function formatFileResponse(file: {
   virusScanStatus: string | null;
   virusScanCompletedAt: Date | null;
   access: string | null;
+  status: string;
   isDeleted: boolean;
   deletedAt: Date | null;
   deletedBy: string | null;
@@ -402,6 +406,7 @@ function formatFileResponse(file: {
     filename: file.filename,
     size: file.size,
     mimeType: file.mimeType,
+    kind: file.kind, // Inferred kind
     storagePath: file.storagePath,
     metadata: file.metadata ?? undefined,
     uploadedBy: file.uploadedBy,
@@ -409,6 +414,7 @@ function formatFileResponse(file: {
     virusScanStatus: file.virusScanStatus ?? "pending",
     virusScanCompletedAt: file.virusScanCompletedAt?.toISOString(),
     access: file.access ?? "private",
+    status: file.status, // Lifecycle status
     isDeleted: file.isDeleted,
     deletedAt: file.deletedAt?.toISOString(),
     deletedBy: file.deletedBy ?? undefined,

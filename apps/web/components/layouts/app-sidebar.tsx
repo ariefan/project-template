@@ -115,8 +115,16 @@ const navDeveloper = [
         url: "/developer/storage",
       },
       {
+        title: "Dialog",
+        url: "/developer/dialog",
+      },
+      {
+        title: "File Preview",
+        url: "/developer/file-preview",
+      },
+      {
         title: "CRUD Example",
-        url: "/pages/crud",
+        url: "/developer/crud",
       },
     ],
   },

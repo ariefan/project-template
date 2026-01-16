@@ -461,6 +461,7 @@ export function useFileManager({ apiBaseUrl }: UseFileManagerProps) {
         }
       });
       await loadFiles();
+      return undefined;
     },
     [currentPath, loadFiles, api]
   );

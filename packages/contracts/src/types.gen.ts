@@ -1065,6 +1065,38 @@ export type CreateExamplePostRequest = {
      */
     authorId: string;
     /**
+     * Post category
+     */
+    category?: string;
+    /**
+     * Post tags
+     */
+    tags?: Array<string>;
+    /**
+     * Whether the post is featured
+     */
+    isFeatured?: boolean;
+    /**
+     * Scheduled publish date
+     */
+    publishDate?: string;
+    /**
+     * Cover image file ID
+     */
+    coverImageId?: string;
+    /**
+     * Attachment file ID
+     */
+    attachmentFileId?: string;
+    /**
+     * Gallery images (file IDs)
+     */
+    galleryImageIds?: Array<string>;
+    /**
+     * Attached documents (file IDs)
+     */
+    documentFileIds?: Array<string>;
+    /**
      * Post status (default: draft)
      */
     status?: ExamplePostStatus;
@@ -1720,6 +1752,38 @@ export type ExamplePost = {
      */
     authorId: string;
     /**
+     * Post category
+     */
+    category?: string;
+    /**
+     * Post tags
+     */
+    tags: Array<string>;
+    /**
+     * Whether the post is featured
+     */
+    isFeatured: boolean;
+    /**
+     * Scheduled publish date
+     */
+    publishDate?: string;
+    /**
+     * Cover image file ID
+     */
+    coverImageId?: string;
+    /**
+     * Attachment file ID
+     */
+    attachmentFileId?: string;
+    /**
+     * Gallery images (file IDs)
+     */
+    galleryImageIds: Array<string>;
+    /**
+     * Attached documents (file IDs)
+     */
+    documentFileIds: Array<string>;
+    /**
      * Post status
      */
     status: ExamplePostStatus;
@@ -1884,6 +1948,10 @@ export type File = {
      */
     mimeType: string;
     /**
+     * Inferred file kind
+     */
+    kind: FileKind;
+    /**
      * Storage path (internal, not exposed to clients in production)
      */
     storagePath: string;
@@ -1917,6 +1985,10 @@ export type File = {
      * Access level
      */
     access: FileAccess;
+    /**
+     * File lifecycle status
+     */
+    status: FileStatus;
     /**
      * Whether the file is soft deleted
      */
@@ -1958,6 +2030,11 @@ export type FileDeleteResponse = {
 };
 
 /**
+ * File kind
+ */
+export type FileKind = 'image' | 'video' | 'audio' | 'document' | 'archive' | 'other';
+
+/**
  * File list response with pagination
  */
 export type FileListResponse = {
@@ -1973,6 +2050,11 @@ export type FileResponse = {
     data: File;
     meta: ResponseMeta;
 };
+
+/**
+ * File status
+ */
+export type FileStatus = 'temporary' | 'persistent';
 
 /**
  * Request to initiate a presigned URL upload
@@ -4266,6 +4348,38 @@ export type UpdateExamplePostRequest = {
      * Post content (optional)
      */
     content?: string;
+    /**
+     * Post category
+     */
+    category?: string;
+    /**
+     * Post tags
+     */
+    tags?: Array<string>;
+    /**
+     * Whether the post is featured
+     */
+    isFeatured?: boolean;
+    /**
+     * Scheduled publish date
+     */
+    publishDate?: string;
+    /**
+     * Cover image file ID
+     */
+    coverImageId?: string;
+    /**
+     * Attachment file ID
+     */
+    attachmentFileId?: string;
+    /**
+     * Gallery images (file IDs)
+     */
+    galleryImageIds?: Array<string>;
+    /**
+     * Attached documents (file IDs)
+     */
+    documentFileIds?: Array<string>;
     /**
      * Post status (optional)
      */
@@ -7627,6 +7741,10 @@ export type FilesListData = {
          * Filter by MIME type
          */
         mimeType?: string;
+        /**
+         * Filter by file kind
+         */
+        kind?: FileKind;
         /**
          * Filter by virus scan status
          */

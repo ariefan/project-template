@@ -25,14 +25,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@workspace/ui/components/carousel";
 import { Separator } from "@workspace/ui/components/separator";
 import { format } from "date-fns";
-import { ArrowLeft, Edit, Loader2, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Edit,
+  FileText,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 interface PostDetailProps {
   id: string;
@@ -120,11 +135,36 @@ export function PostDetail({ id }: PostDetailProps) {
                   >
                     {post.status}
                   </Badge>
+                  {post.isFeatured && (
+                    <Badge
+                      className="bg-amber-500 hover:bg-amber-600"
+                      variant="default"
+                    >
+                      Featured
+                    </Badge>
+                  )}
                 </div>
-                <CardDescription className="mt-1">
-                  Created on {format(new Date(post.createdAt), "MMMM d, yyyy")}
-                  {post.publishedAt &&
-                    ` | Published on ${format(new Date(post.publishedAt), "MMMM d, yyyy")}`}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {post.category && (
+                    <Badge variant="outline">{post.category}</Badge>
+                  )}
+                  {post.tags?.map((tag) => (
+                    <Badge className="text-xs" key={tag} variant="secondary">
+                      #{tag}
+                    </Badge>
+                  ))}
+                </div>
+                <CardDescription className="mt-2 flex items-center gap-4">
+                  <span>
+                    Created {format(new Date(post.createdAt), "MMMM d, yyyy")}
+                  </span>
+                  {post.publishDate && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      Publish:{" "}
+                      {format(new Date(post.publishDate), "MMMM d, yyyy")}
+                    </span>
+                  )}
                 </CardDescription>
               </div>
             </div>
@@ -152,8 +192,103 @@ export function PostDetail({ id }: PostDetailProps) {
         </CardHeader>
         <Separator />
         <CardContent className="pt-6">
-          <div className="prose dark:prose-invert max-w-none">
-            <div className="whitespace-pre-wrap">{post.content}</div>
+          <div className="space-y-6">
+            {/* Cover Image */}
+            {post.coverImageId && (
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                {/* biome-ignore lint/a11y/useAltText: Demo */}
+                {/* biome-ignore lint/correctness/useImageSize: Dynamic content */}
+                {/* biome-ignore lint/performance/noImgElement: External URL */}
+                <img
+                  className="h-full w-full object-cover"
+                  src={`${env.NEXT_PUBLIC_API_URL}/v1/orgs/${orgId}/files/${post.coverImageId}/download`}
+                />
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="prose dark:prose-invert max-w-none">
+              <div className="whitespace-pre-wrap">{post.content}</div>
+            </div>
+
+            {/* Gallery */}
+            {post.galleryImageIds && post.galleryImageIds.length > 0 && (
+              <div>
+                <h3 className="mb-4 font-semibold text-lg">Gallery</h3>
+                <Carousel className="mx-auto w-full max-w-2xl">
+                  <CarouselContent>
+                    {post.galleryImageIds.map((id) => (
+                      <CarouselItem key={id}>
+                        <div className="aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                          {/* biome-ignore lint/a11y/useAltText: Demo */}
+                          {/* biome-ignore lint/correctness/useImageSize: Dynamic content */}
+                          {/* biome-ignore lint/performance/noImgElement: External URL */}
+                          <img
+                            className="h-full w-full object-contain"
+                            src={`${env.NEXT_PUBLIC_API_URL}/v1/orgs/${orgId}/files/${id}/download`}
+                          />
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              </div>
+            )}
+
+            {/* Attachments */}
+            {(post.attachmentFileId ||
+              (post.documentFileIds && post.documentFileIds.length > 0)) && (
+              <div>
+                <h3 className="mb-4 font-semibold text-lg">Attachments</h3>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {post.attachmentFileId && (
+                    <Button
+                      asChild
+                      className="h-auto justify-start py-4"
+                      variant="outline"
+                    >
+                      <a
+                        href={`${env.NEXT_PUBLIC_API_URL}/v1/orgs/${orgId}/files/${post.attachmentFileId}/download`}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        <div className="text-left">
+                          <div className="font-medium">Main Attachment</div>
+                          <div className="text-muted-foreground text-xs">
+                            Download
+                          </div>
+                        </div>
+                      </a>
+                    </Button>
+                  )}
+                  {post.documentFileIds?.map((id, idx) => (
+                    <Button
+                      asChild
+                      className="h-auto justify-start py-4"
+                      key={id}
+                      variant="outline"
+                    >
+                      <a
+                        href={`${env.NEXT_PUBLIC_API_URL}/v1/orgs/${orgId}/files/${id}/download`}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        <div className="text-left">
+                          <div className="font-medium">Document {idx + 1}</div>
+                          <div className="text-muted-foreground text-xs">
+                            Download
+                          </div>
+                        </div>
+                      </a>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -36,7 +36,7 @@ interface FileDialogsProps {
   onSingleUpload: (
     fileState: { file: File; id: string },
     onProgress: (progress: number) => void
-  ) => Promise<string | void>;
+  ) => Promise<string | undefined>;
 
   // New folder dialog
   showNewFolderDialog: boolean;

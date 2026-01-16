@@ -182,88 +182,71 @@ export function DataView<T>({
   );
 
   const { withCard: _withCard, ..._otherConfig } = config;
-  // If withCard is true, we wrap the main content in a Card + CardContent
-  // and we automatically apply the negative margin to the inner content to make it bleed
 
-  const RootComp = config.withCard ? Card : "div";
-  const rootProps = config.withCard
-    ? { className: cn("space-y-4 py-4", className) } // Reduce default Card py-6 to py-4
-    : { className: cn("space-y-4", className) };
+  // Custom layout logic for Grid View:
+  // If view is "grid" and withCard is true, we split the layout:
+  // 1. Toolbar & Filters -> Inside a Card (Panel)
+  // 2. Content (Grid) -> Outside Card (Directly on background)
+  // 3. Pagination -> outside
+  const isSplitLayout = view === "grid" && config.withCard;
 
-  return (
-    <DataViewProvider
-      config={config}
-      data={data}
-      filters={controlledFilters}
-      loading={loading}
-      onFetchData={onFetchData}
-      onFiltersChange={onFiltersChange}
-      onPaginationChange={onPaginationChange}
-      onSearchChange={onSearchChange}
-      onSelectionChange={onSelectionChange}
-      onSortChange={onSortChange}
-      onViewChange={setView}
-      pagination={controlledPagination}
-      search={controlledSearch}
-      selectedIds={controlledSelectedIds}
-      sort={controlledSort}
-      totalCount={totalCount}
-      view={view}
-    >
-      <RootComp {...rootProps}>
-        {config.withCard ? (
-          <CardContent className="px-4">
-            <div className="space-y-4">
-              {/* Toolbar Top */}
-              {toolbarTop}
+  const useCardRoot = !isSplitLayout && config.withCard;
+  const RootComp = useCardRoot ? Card : "div";
+  const rootProps = {
+    className: cn("space-y-4", useCardRoot && "py-4", className),
+  };
 
-              {/* Toolbar */}
-              <DataViewToolbar
-                className={toolbarClassName}
-                leftContent={toolbarLeft}
-                primaryAction={primaryAction}
-                rightContent={toolbarRight}
-              >
-                {selectable && <InlineBulkActions />}
-              </DataViewToolbar>
-
-              {/* Active Filters */}
-              <ActiveFilters />
-
-              {/* Content */}
-              <div
-                className={cn(
-                  bordered && "rounded-lg border",
-                  // If withCard is true, we force full-bleed unless contentClassName overrides it
-                  config.withCard && "-mx-4",
-                  contentClassName
-                )}
-              >
-                <DataViewContentRenderer
-                  data={data}
-                  emptyState={emptyState}
-                  loading={loading}
-                  loadingState={loadingState}
-                  view={view}
-                />
+  const renderContent = () => {
+    if (isSplitLayout) {
+      return (
+        <>
+          {/* Toolbar Panel (Card) */}
+          <Card className="py-4">
+            <CardContent className="px-4">
+              <div className="space-y-4">
+                {toolbarTop}
+                <DataViewToolbar
+                  className={toolbarClassName}
+                  leftContent={toolbarLeft}
+                  primaryAction={primaryAction}
+                  rightContent={toolbarRight}
+                >
+                  {selectable && <InlineBulkActions />}
+                </DataViewToolbar>
+                <ActiveFilters />
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Pagination */}
-              {paginated && (
-                <>
-                  {/* Desktop pagination */}
-                  <div className="my-0 hidden sm:block">
-                    <DataViewPagination />
-                  </div>
-                  {/* Mobile pagination */}
-                  <div className="my-0 sm:hidden">
-                    <SimplePagination />
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        ) : (
+          {/* Content (Grid) - Outside Card */}
+          <div className={contentClassName}>
+            <DataViewContentRenderer
+              data={data}
+              emptyState={emptyState}
+              loading={loading}
+              loadingState={loadingState}
+              view={view}
+            />
+          </div>
+
+          {/* Pagination */}
+          {paginated && (
+            <>
+              <div className="my-0 hidden sm:block">
+                <DataViewPagination />
+              </div>
+              <div className="my-0 sm:hidden">
+                <SimplePagination />
+              </div>
+            </>
+          )}
+        </>
+      );
+    }
+
+    if (config.withCard) {
+      return (
+        <CardContent className="px-4">
           <div className="space-y-4">
             {/* Toolbar Top */}
             {toolbarTop}
@@ -283,7 +266,12 @@ export function DataView<T>({
 
             {/* Content */}
             <div
-              className={cn(bordered && "rounded-lg border", contentClassName)}
+              className={cn(
+                bordered && "rounded-lg border",
+                // If withCard is true, we force full-bleed unless contentClassName overrides it
+                config.withCard && "-mx-4",
+                contentClassName
+              )}
             >
               <DataViewContentRenderer
                 data={data}
@@ -308,8 +296,77 @@ export function DataView<T>({
               </>
             )}
           </div>
+        </CardContent>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* Toolbar Top */}
+        {toolbarTop}
+
+        {/* Toolbar */}
+        <DataViewToolbar
+          className={toolbarClassName}
+          leftContent={toolbarLeft}
+          primaryAction={primaryAction}
+          rightContent={toolbarRight}
+        >
+          {selectable && <InlineBulkActions />}
+        </DataViewToolbar>
+
+        {/* Active Filters */}
+        <ActiveFilters />
+
+        {/* Content */}
+        <div className={cn(bordered && "rounded-lg border", contentClassName)}>
+          <DataViewContentRenderer
+            data={data}
+            emptyState={emptyState}
+            loading={loading}
+            loadingState={loadingState}
+            view={view}
+          />
+        </div>
+
+        {/* Pagination */}
+        {paginated && (
+          <>
+            {/* Desktop pagination */}
+            <div className="my-0 hidden sm:block">
+              <DataViewPagination />
+            </div>
+            {/* Mobile pagination */}
+            <div className="my-0 sm:hidden">
+              <SimplePagination />
+            </div>
+          </>
         )}
-      </RootComp>
+      </div>
+    );
+  };
+
+  return (
+    <DataViewProvider
+      config={config}
+      data={data}
+      filters={controlledFilters}
+      loading={loading}
+      onFetchData={onFetchData}
+      onFiltersChange={onFiltersChange}
+      onPaginationChange={onPaginationChange}
+      onSearchChange={onSearchChange}
+      onSelectionChange={onSelectionChange}
+      onSortChange={onSortChange}
+      onViewChange={setView}
+      pagination={controlledPagination}
+      search={controlledSearch}
+      selectedIds={controlledSelectedIds}
+      sort={controlledSort}
+      totalCount={totalCount}
+      view={view}
+    >
+      <RootComp {...rootProps}>{renderContent()}</RootComp>
     </DataViewProvider>
   );
 }
@@ -504,11 +561,24 @@ function DataViewContentRenderer<T>({
   emptyState,
   view,
 }: DataViewContentRendererProps<T>) {
-  if (loading) {
+  // Get the actual display data from context (handles server mode correctly)
+  const {
+    paginatedData,
+    isServerSide,
+    loading: contextLoading,
+  } = useDataView<T>();
+
+  // Use context loading for server mode, prop loading for client mode
+  const isLoading = isServerSide ? contextLoading : loading;
+
+  if (isLoading) {
     return <>{loadingState ?? <DefaultLoadingState view={view} />}</>;
   }
 
-  if (data.length === 0 && !loading) {
+  // In server mode, check paginatedData from context; in client mode, check prop data
+  const displayData = isServerSide ? paginatedData : data;
+
+  if (displayData.length === 0 && !isLoading) {
     return <>{emptyState ?? <DefaultEmptyState />}</>;
   }
 
