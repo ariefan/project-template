@@ -106,7 +106,7 @@ export function SettingsPanel() {
       <div className="flex items-center gap-3 px-4 md:px-0">
         <Settings className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="font-bold text-2xl">Settings</h1>
+          <h1 className="font-bold text-2xl">Account Settings</h1>
           <p className="text-muted-foreground">
             Manage your account settings and preferences
           </p>

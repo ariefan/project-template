@@ -41,8 +41,14 @@ export function DataViewGrid<T>({
   cardRenderer: overrideCardRenderer,
   columns = 3,
 }: DataViewGridProps<T>) {
-  const { config, paginatedData, loading, selectedIds, toggleRowSelection } =
-    useDataView<T>();
+  const {
+    config,
+    paginatedData,
+    loading,
+    selectedIds,
+    toggleRowSelection,
+    columnVisibility,
+  } = useDataView<T>();
 
   // Derive fields from columns if not provided
   const fields: FieldDef<T>[] = React.useMemo(() => {
@@ -62,7 +68,19 @@ export function DataViewGrid<T>({
     overrideRowActions ?? (config.rowActions as RowAction<T>[] | undefined);
   const cardRenderer = overrideCardRenderer ?? config.gridCardRenderer;
 
-  const visibleFields = fields.filter((field) => !field.hideInGrid);
+  const visibleFields = React.useMemo(() => {
+    return fields.filter((field) => {
+      // If configured to hide in grid specifically, always hide
+      if (field.hideInGrid) return false;
+
+      // Check column visibility state
+      if (columnVisibility[field.id] !== undefined) {
+        return columnVisibility[field.id];
+      }
+
+      return true;
+    });
+  }, [fields, columnVisibility]);
 
   const gridCols = {
     1: "grid-cols-1",

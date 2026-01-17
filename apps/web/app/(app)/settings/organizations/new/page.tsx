@@ -89,7 +89,7 @@ export default function CreateOrganizationPage() {
   }
 
   return (
-    <div className="container flex h-[calc(100vh-4rem)] max-w-2xl flex-col items-center justify-center py-6">
+    <div className="container mx-auto max-w-7xl px-4 py-6">
       <div className="mb-8 text-center">
         <h1 className="font-bold text-3xl">Create Organization</h1>
         <p className="mt-2 text-muted-foreground">

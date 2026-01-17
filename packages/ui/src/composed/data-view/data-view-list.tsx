@@ -72,8 +72,14 @@ export function DataViewList<T>({
   rowActions: overrideRowActions,
   itemRenderer: overrideItemRenderer,
 }: DataViewListProps<T>) {
-  const { config, paginatedData, loading, selectedIds, toggleRowSelection } =
-    useDataView<T>();
+  const {
+    config,
+    paginatedData,
+    loading,
+    selectedIds,
+    toggleRowSelection,
+    columnVisibility,
+  } = useDataView<T>();
 
   const fields: FieldDef<T>[] = React.useMemo(() => {
     if (overrideFields) {
@@ -97,7 +103,21 @@ export function DataViewList<T>({
   const rowActions =
     overrideRowActions ?? (config.rowActions as RowAction<T>[] | undefined);
   const itemRenderer = overrideItemRenderer ?? config.listItemRenderer;
-  const visibleFields = fields.filter((field) => !field.hideInList);
+
+  // Filter fields based on visibility settings
+  const visibleFields = React.useMemo(() => {
+    return fields.filter((field) => {
+      // If configured to hide in list specifically, always hide
+      if (field.hideInList) return false;
+
+      // Check column visibility state (if undefined, default to true unless hidden by default)
+      if (columnVisibility[field.id] !== undefined) {
+        return columnVisibility[field.id];
+      }
+
+      return true;
+    });
+  }, [fields, columnVisibility]);
 
   if (loading || paginatedData.length === 0) {
     return (
@@ -134,7 +154,9 @@ export function DataViewList<T>({
         return (
           <React.Fragment key={rowId}>
             <SmartListItem
-              columns={config.columns as ColumnDef<T>[]}
+              columns={config.columns.filter((col) =>
+                visibleFields.some((f) => f.id === col.id)
+              )}
               dense={config.dense}
               hoverable={config.hoverable}
               onSelect={() => toggleRowSelection(rowId)}

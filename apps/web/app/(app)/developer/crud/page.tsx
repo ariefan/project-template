@@ -380,10 +380,12 @@ export default function CrudPage() {
     row,
     selected,
     onSelect,
+    fields,
   }: {
     row: ExamplePost;
     selected: boolean;
     onSelect: () => void;
+    fields: { id: string }[];
   }) => {
     const statusVariants: Record<
       string,
@@ -393,6 +395,8 @@ export default function CrudPage() {
       published: "default",
       archived: "outline",
     };
+
+    const isVisible = (id: string) => fields.some((f) => f.id === id);
 
     const visibleActions = filterVisibleActions(rowActions, row);
     const inlineActions = visibleActions.filter((a) => a.inline);
@@ -408,6 +412,10 @@ export default function CrudPage() {
               className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-background/50 backdrop-blur-[1px]"
               onCheckedChange={onSelect}
             />
+            {/* We assume image is essentially the identity/preview of the item, usually kept visible or bundled with Title, 
+                but technically it's not a column in definitions. 
+                However, if we wanted to toggle it, we'd need a column ID for it. 
+                For now keeping it always visible as it's part of the layout. */}
             <div className="ml-8 size-10 overflow-hidden rounded border bg-muted">
               <PostImage
                 className="size-full"
@@ -419,29 +427,37 @@ export default function CrudPage() {
         </ItemMedia>
         <ItemContent>
           <ItemTitle className="flex items-center gap-2">
-            <span className="font-semibold">{row.title}</span>
-            <Badge
-              className="capitalize"
-              variant={statusVariants[row.status] ?? "outline"}
-            >
-              {row.status}
-            </Badge>
+            {isVisible("title") && (
+              <span className="font-semibold">{row.title}</span>
+            )}
+            {isVisible("status") && (
+              <Badge
+                className="capitalize"
+                variant={statusVariants[row.status] ?? "outline"}
+              >
+                {row.status}
+              </Badge>
+            )}
           </ItemTitle>
           <ItemDescription className="flex flex-col gap-2">
             <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-              <span className="flex items-center gap-1">
-                <span className="text-muted-foreground">Author:</span>
-                <span className="font-medium text-foreground">
-                  {row.authorId}
+              {isVisible("authorId") && (
+                <span className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Author:</span>
+                  <span className="font-medium text-foreground">
+                    {row.authorId}
+                  </span>
                 </span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="text-muted-foreground">Created:</span>
-                <span className="font-medium text-foreground">
-                  {new Date(row.createdAt).toLocaleDateString()}
+              )}
+              {isVisible("createdAt") && (
+                <span className="flex items-center gap-1">
+                  <span className="text-muted-foreground">Created:</span>
+                  <span className="font-medium text-foreground">
+                    {new Date(row.createdAt).toLocaleDateString()}
+                  </span>
                 </span>
-              </span>
-              {row.category && (
+              )}
+              {isVisible("category") && row.category && (
                 <span className="flex items-center gap-1">
                   <span className="text-muted-foreground">Category:</span>
                   <Badge className="h-5 px-1 text-[10px]" variant="outline">
@@ -449,30 +465,24 @@ export default function CrudPage() {
                   </Badge>
                 </span>
               )}
-            </span>
-            {row.tags && row.tags.length > 0 && (
-              <span className="flex flex-wrap gap-1">
-                {row.tags.map((tag) => (
-                  <Badge
-                    className="h-5 px-1 text-[10px]"
-                    key={tag}
-                    variant="secondary"
-                  >
-                    <Tag className="mr-1 size-3" />
-                    {tag}
-                  </Badge>
-                ))}
-              </span>
-            )}
-            {row.isFeatured && (
-              <span className="flex">
+              {isVisible("isFeatured") && row.isFeatured && (
                 <Badge
                   className="h-5 bg-yellow-500/15 px-1 text-[10px] text-yellow-700 hover:bg-yellow-500/25 dark:text-yellow-400"
                   variant="default"
                 >
                   <Star className="mr-1 size-3 fill-current" /> Featured
                 </Badge>
-              </span>
+              )}
+            </span>
+            {isVisible("tags") && row.tags && row.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {row.tags.map((tag) => (
+                  <Badge className="text-[10px]" key={tag} variant="secondary">
+                    <Tag className="mr-1 size-3 opacity-50" />
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
             )}
           </ItemDescription>
         </ItemContent>
@@ -481,6 +491,8 @@ export default function CrudPage() {
             {inlineActions.map((action) => (
               <Button
                 className="size-8"
+                // @ts-expect-error
+                disabled={action.disabled?.(row)}
                 key={action.id}
                 onClick={() => action.onAction(row)}
                 size="icon"
@@ -488,9 +500,12 @@ export default function CrudPage() {
                 variant="ghost"
               >
                 {action.icon && <action.icon className="size-4" />}
+                <span className="sr-only">{action.label}</span>
               </Button>
             ))}
-            <DataViewActionMenu actions={menuActions} row={row} />
+            {menuActions.length > 0 && (
+              <DataViewActionMenu actions={menuActions} row={row} />
+            )}
           </div>
         </ItemActions>
       </Item>
@@ -502,10 +517,12 @@ export default function CrudPage() {
     row,
     selected,
     onSelect,
+    fields,
   }: {
     row: ExamplePost;
     selected: boolean;
     onSelect: () => void;
+    fields: { id: string }[];
   }) => {
     const statusVariants: Record<
       string,
@@ -515,6 +532,8 @@ export default function CrudPage() {
       published: "default",
       archived: "outline",
     };
+
+    const isVisible = (id: string) => fields.some((f) => f.id === id);
 
     return (
       <div
@@ -536,7 +555,7 @@ export default function CrudPage() {
               onCheckedChange={onSelect}
             />
           </div>
-          {row.isFeatured && (
+          {isVisible("isFeatured") && row.isFeatured && (
             <div className="absolute top-2 right-2">
               <Badge
                 className="bg-yellow-500/90 text-yellow-950 shadow-sm hover:bg-yellow-500 dark:text-yellow-100"
@@ -551,34 +570,44 @@ export default function CrudPage() {
         <div className="flex flex-col gap-2 p-4 pt-2">
           <div className="flex items-start justify-between gap-2">
             <div className="flex w-full flex-col gap-1">
-              <span className="line-clamp-1 font-semibold text-sm">
-                {row.title}
-              </span>
+              {isVisible("title") && (
+                <span className="line-clamp-1 font-semibold text-sm">
+                  {row.title}
+                </span>
+              )}
               <div className="flex items-center gap-2">
-                <Badge
-                  className="h-5 px-1 text-[10px] capitalize"
-                  variant={statusVariants[row.status] ?? "outline"}
-                >
-                  {row.status}
-                </Badge>
+                {isVisible("status") && (
+                  <Badge
+                    className="h-5 px-1 text-[10px] capitalize"
+                    variant={statusVariants[row.status] ?? "outline"}
+                  >
+                    {row.status}
+                  </Badge>
+                )}
               </div>
             </div>
             <DataViewActionMenu actions={rowActions} row={row} />
           </div>
 
           <div className="flex flex-col gap-2 text-muted-foreground text-xs">
+            {/* Content isn't a column but let's keep it visible or optional? 
+                It wasn't in list view. Let's assume it's part of the card layout.
+                But if we want to be strict, we could check 'content' visibility if we had a column for it. 
+                There is no 'content' column in columns def. So keeping it. */}
             <span className="line-clamp-2 min-h-[2.5em]">{row.content}</span>
             <div className="flex flex-wrap items-center gap-2">
-              {row.category && (
+              {isVisible("category") && row.category && (
                 <Badge className="h-5 px-1 text-[10px]" variant="outline">
                   {row.category}
                 </Badge>
               )}
-              <span className="ml-auto flex items-center gap-1">
-                By {row.authorId}
-              </span>
+              {isVisible("authorId") && (
+                <span className="ml-auto flex items-center gap-1">
+                  By {row.authorId}
+                </span>
+              )}
             </div>
-            {row.tags && row.tags.length > 0 && (
+            {isVisible("tags") && row.tags && row.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 border-t pt-2">
                 {row.tags.slice(0, 3).map((tag) => (
                   <Badge
@@ -591,6 +620,22 @@ export default function CrudPage() {
                 ))}
                 {row.tags.length > 3 && (
                   <span className="text-[9px]">+{row.tags.length - 3}</span>
+                )}
+              </div>
+            )}
+            {/* Created At / Updated At are available columns but were not in the original grid layout.
+                We can add them if visible. */}
+            {(isVisible("createdAt") || isVisible("updatedAt")) && (
+              <div className="flex flex-wrap gap-2 text-[10px]">
+                {isVisible("createdAt") && (
+                  <span>
+                    Created: {new Date(row.createdAt).toLocaleDateString()}
+                  </span>
+                )}
+                {isVisible("updatedAt") && (
+                  <span>
+                    Updated: {new Date(row.updatedAt).toLocaleDateString()}
+                  </span>
                 )}
               </div>
             )}
