@@ -44,7 +44,6 @@ export function useSSE<T = unknown>(
         });
 
         eventSource.onopen = () => {
-          console.log("[SSE] Connection established");
           reconnectAttempts = 0;
         };
 

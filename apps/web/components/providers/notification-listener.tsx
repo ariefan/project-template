@@ -149,13 +149,11 @@ export function NotificationListener() {
       }
 
       case "sse:connected": {
-        console.log("[NotificationListener] SSE connected", event.data);
         break;
       }
 
       default: {
-        // Log unknown event types for debugging
-        console.log("[NotificationListener] Unknown event type:", event.type);
+        // Ignore unknown event types
       }
     }
   }, true);

@@ -1,5 +1,0 @@
-
-> api@0.0.1 lint C:\dev\project-template\apps\api
-> biome lint .
-
-Checked 131 files in 113ms. No fixes applied.
