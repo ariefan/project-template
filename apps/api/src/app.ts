@@ -214,15 +214,6 @@ export async function buildApp(config: AppConfig) {
     await app.register(cachingPlugin);
   }
 
-  // Deprecation Headers (Sunset, version warnings)
-  // As documented in docs/api-guide/08-governance/04-deprecation.md
-  if (env.DEPRECATION_ENABLED) {
-    const { default: deprecationPlugin } = await import(
-      "./plugins/deprecation"
-    );
-    await app.register(deprecationPlugin);
-  }
-
   // Initialize storage provider for file uploads
   const storageProvider = createStorageProvider(buildStorageConfig());
   filesService.initFilesService(storageProvider);
