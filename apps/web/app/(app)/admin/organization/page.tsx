@@ -21,9 +21,9 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Separator } from "@workspace/ui/components/separator";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { useForm } from "@workspace/ui/composed/form";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient, useActiveOrganization } from "@/lib/auth";

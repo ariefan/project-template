@@ -57,6 +57,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
+import { useForm } from "@workspace/ui/composed/form";
 import { format } from "date-fns";
 import {
   Building2,
@@ -69,7 +70,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient, useSession } from "@/lib/auth";

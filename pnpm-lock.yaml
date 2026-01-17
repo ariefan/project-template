@@ -627,6 +627,9 @@ importers:
       better-call:
         specifier: ^1.1.5
         version: 1.1.7(zod@4.2.1)
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
     devDependencies:
       '@types/bcrypt':
         specifier: ^6.0.0
@@ -634,9 +637,6 @@ importers:
       '@workspace/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      drizzle-orm:
-        specifier: ^0.45.1
-        version: 0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(kysely@0.28.9)(pg@8.16.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 import { Switch } from "@workspace/ui/components/switch";
+import { useForm } from "@workspace/ui/composed/form";
 import {
   Bell,
   Clock,
@@ -36,7 +37,6 @@ import {
   Smartphone,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
 import { SettingsNotificationsSkeleton } from "./skeletons";

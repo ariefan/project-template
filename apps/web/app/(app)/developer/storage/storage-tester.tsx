@@ -28,12 +28,10 @@ import {
 import {
   type CompressedFileWithPreview,
   FileUploader,
-  type UploadFile,
-} from "@workspace/ui/composed/file-upload";
-import {
   ImageUploader,
   type ImageUploaderRef,
-} from "@workspace/ui/composed/file-upload/image-uploader";
+  type UploadFile,
+} from "@workspace/ui/composed/file-upload";
 import { Code, Crop, Download, RefreshCw, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
