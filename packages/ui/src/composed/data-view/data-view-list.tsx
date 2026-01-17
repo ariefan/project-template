@@ -108,7 +108,9 @@ export function DataViewList<T>({
   const visibleFields = React.useMemo(() => {
     return fields.filter((field) => {
       // If configured to hide in list specifically, always hide
-      if (field.hideInList) return false;
+      if (field.hideInList) {
+        return false;
+      }
 
       // Check column visibility state (if undefined, default to true unless hidden by default)
       if (columnVisibility[field.id] !== undefined) {

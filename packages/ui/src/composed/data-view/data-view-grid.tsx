@@ -71,7 +71,9 @@ export function DataViewGrid<T>({
   const visibleFields = React.useMemo(() => {
     return fields.filter((field) => {
       // If configured to hide in grid specifically, always hide
-      if (field.hideInGrid) return false;
+      if (field.hideInGrid) {
+        return false;
+      }
 
       // Check column visibility state
       if (columnVisibility[field.id] !== undefined) {
