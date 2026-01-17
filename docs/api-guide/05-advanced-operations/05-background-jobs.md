@@ -126,3 +126,24 @@ The `storage:cleanup` job is a prime example of a System Job.
 2.  **Logic**: Cleans up expired uploads and temporary files.
 3.  **Schedule**: Scheduled in `app.ts` to run hourly.
 4.  **Execution**: `pg-boss` triggers the job -> `job-queue.ts` detects missing `jobId` -> calls `processSystemJob` -> executes handler with mock context.
+
+---
+
+## Architecture & Support
+
+### Storage Providers
+The job system (specifically file-related jobs like `storage:cleanup`) is designed to be **provider-agnostic**.
+*   **Local Storage**: Fully supported (uses `unlink`).
+*   **S3 / R2 / MinIO**: Fully supported (uses `DeleteObject`).
+The `filesService` abstracts the underlying storage provider, ensuring jobs work consistently across all environments (local dev vs production).
+
+### API & Contracts
+The Jobs API follows the project's contract-first design:
+*   **Definition**: API is defined in `packages/contracts/spec/routes/jobs.tsp`.
+*   **Server**: `apps/api` implements these endpoints using generated types (`CreateJobRequest`, `JobResponse`) to ensure type safety.
+*   **Client**: `apps/web` consumes the API using the generated type-safe SDK (`packages/contracts/client`).
+
+### Job Definitions
+*   **Handlers**: Logic is always **defined in code** (`apps/api/src/modules/jobs/handlers/`).
+*   **System Schedules**: Recurring maintenance tasks are **defined in code** (`apps/api/src/app.ts`).
+*   **User Schedules**: Dynamic user-created schedules are **defined in the database** (`scheduled_jobs` table).
