@@ -122,6 +122,48 @@ async function processJob(jobId: string): Promise<void> {
 }
 
 /**
+ * Process a system job (not backed by database record)
+ */
+async function processSystemJob(type: string, job: Job): Promise<void> {
+  const handler = jobHandlerRegistry.get(type);
+  if (!handler) {
+    console.error(`No handler registered for system job type: ${type}`);
+    return;
+  }
+
+  const helpers: JobHelpers = {
+    updateProgress: (p, m) => {
+      console.log(`[SystemJob:${type}] Progress ${p}%: ${m ?? ""}`);
+      return Promise.resolve();
+    },
+    updateProcessedItems: (p, t) => {
+      console.log(`[SystemJob:${type}] Processed ${p}/${t ?? "?"}`);
+      return Promise.resolve();
+    },
+    log: (m) => {
+      console.log(`[SystemJob:${type}] ${m}`);
+      return Promise.resolve();
+    },
+  };
+
+  const context: JobContext = {
+    jobId: `system_${job.id}`,
+    orgId: "system",
+    type,
+    input: (job.data as Record<string, unknown>) ?? {},
+    metadata: {},
+    helpers,
+  };
+
+  try {
+    await handler.handler(context);
+    console.log(`[SystemJob:${type}] Completed successfully`);
+  } catch (error) {
+    console.error(`[SystemJob:${type}] Failed:`, error);
+  }
+}
+
+/**
  * Create a job queue instance
  */
 export function createJobQueue(config: JobQueueConfig): JobQueue {
@@ -149,12 +191,16 @@ export function createJobQueue(config: JobQueueConfig): JobQueue {
         await boss.createQueue(queueName);
 
         // Register worker
-        await boss.work<{ jobId: string }>(
+        await boss.work<{ jobId?: string }>(
           queueName,
           { batchSize: concurrency },
-          async (jobs: Job<{ jobId: string }>[]) => {
+          async (jobs: Job<{ jobId?: string }>[]) => {
             for (const job of jobs) {
-              await processJob(job.data.jobId);
+              if (job.data?.jobId) {
+                await processJob(job.data.jobId);
+              } else {
+                await processSystemJob(type, job);
+              }
             }
           }
         );
