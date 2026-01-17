@@ -142,6 +142,21 @@ export const ThemeCustomizer = React.forwardRef<
     modeRef.current = mode;
   }, [mode]);
 
+  // Track system preference explicitly
+  const [systemIsDark, setSystemIsDark] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    setSystemIsDark(media.matches);
+
+    const listener = (e: MediaQueryListEvent) => setSystemIsDark(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, []);
+
   // Initialize state
   React.useEffect(() => {
     setMounted(true);
@@ -153,8 +168,13 @@ export const ThemeCustomizer = React.forwardRef<
     committedThemeRef.current = startTheme;
 
     // Init custom colors if present
-    const colors =
-      mode === "dark" ? startTheme.darkColors : startTheme.lightColors;
+    // We can't rely on 'mode' here being accurate for 'system' without systemIsDark,
+    // but systemIsDark initializes to false.
+    // However, initialization usually happens once.
+    // Ideally we rely on the useEffect above to sync custom colors once mounted.
+    // But for initial render, we can try best effort.
+    const isDarkInit = modeRef.current === "dark";
+    const colors = isDarkInit ? startTheme.darkColors : startTheme.lightColors;
     if (colors?.primary) {
       setCustomPrimary(colors.primary);
     }
@@ -174,13 +194,30 @@ export const ThemeCustomizer = React.forwardRef<
 
       const stateToRestore = committedThemeRef.current;
       if (Object.keys(stateToRestore).length > 0) {
-        applyThemeToDOM(stateToRestore, modeRef.current === "dark");
+        // We need to know what "current" mode is to restore correctly.
+        // modeRef might be stale for system detection if we only store 'system'.
+        // But for cleanup, we just do best effort or use the ref's current value.
+        // We can't access systemIsDark state easily in cleanup if it's stale,
+        // but it's captured in closure? No, systemIsDark is state.
+        // Let's rely on modeRef checking.
+        const currentMode = modeRef.current;
+        const isDarkRestore =
+          currentMode === "dark" ||
+          (currentMode === "system" &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+        applyThemeToDOM(stateToRestore, isDarkRestore);
       }
     };
-  }, [config?.defaultPreset, initialTheme, mode]); // Run once on mount/unmount
+  }, [config?.defaultPreset, initialTheme]); // Run once on mount/unmount
   // Update custom color inputs when theme changes externally or via preset
   React.useEffect(() => {
-    const colors = mode === "dark" ? theme.darkColors : theme.lightColors;
+    const isDark =
+      mode === "dark" ||
+      resolvedTheme === "dark" ||
+      (mode === "system" && systemIsDark);
+    const colors = isDark ? theme.darkColors : theme.lightColors;
+
     if (!colors) {
       return;
     }
@@ -190,7 +227,14 @@ export const ThemeCustomizer = React.forwardRef<
     if (colors["primary-foreground"] !== customPrimaryForeground) {
       setCustomPrimaryForeground(colors["primary-foreground"] || "");
     }
-  }, [theme, mode, customPrimary, customPrimaryForeground]);
+  }, [
+    theme,
+    mode,
+    resolvedTheme,
+    systemIsDark,
+    customPrimary,
+    customPrimaryForeground,
+  ]);
 
   // Expose methods
   React.useImperativeHandle(ref, () => ({
@@ -202,7 +246,11 @@ export const ThemeCustomizer = React.forwardRef<
       resetAllCssVariables();
       document.documentElement.style.removeProperty("font-size");
       if (Object.keys(restoredSettings).length > 0) {
-        applyThemeToDOM(restoredSettings, mode === "dark");
+        const isDark =
+          mode === "dark" ||
+          resolvedTheme === "dark" ||
+          (mode === "system" && systemIsDark);
+        applyThemeToDOM(restoredSettings, isDark);
       }
 
       // Update React state
@@ -249,11 +297,12 @@ export const ThemeCustomizer = React.forwardRef<
       // 4. IMPORTANT: Apply the default preset colors to DOM immediately
       // This ensures "Live Preview" works and matches "Selecting Zinc" behavior
       if (presetConfig) {
-        const colors = mode === "dark" ? presetConfig.dark : presetConfig.light;
-        applyThemeToDOM(
-          { ...colors, radius: DEFAULT_THEME.radius },
-          mode === "dark"
-        );
+        const isDark =
+          mode === "dark" ||
+          resolvedTheme === "dark" ||
+          (mode === "system" && systemIsDark);
+        const colors = isDark ? presetConfig.dark : presetConfig.light;
+        applyThemeToDOM({ ...colors, radius: DEFAULT_THEME.radius }, isDark);
       }
 
       // 5. Clear Local Storage (or save defaults? User asked for "same behavior as selecting",
@@ -291,9 +340,15 @@ export const ThemeCustomizer = React.forwardRef<
       // If we want to ensure the *initial* font size is applied/maintained, we could pass it here,
       // but applyThemeToDOM only applies what's passed.
       // If we omit fontSize, it leaves the current document style alone (which matches initial).
-      applyThemeToDOM(rest, mode === "dark");
+
+      const isDark =
+        mode === "dark" ||
+        resolvedTheme === "dark" ||
+        (mode === "system" && systemIsDark);
+
+      applyThemeToDOM(rest, isDark);
     }
-  }, [theme, mode, mounted]);
+  }, [theme, mode, resolvedTheme, systemIsDark, mounted]);
 
   const handleColorChange = (preset: ColorPreset) => {
     setActivePreset(preset);
@@ -319,7 +374,10 @@ export const ThemeCustomizer = React.forwardRef<
     setActivePreset("custom");
     setCustomPrimary(value);
 
-    const isDark = mode === "dark" || resolvedTheme === "dark";
+    const isDark =
+      mode === "dark" ||
+      resolvedTheme === "dark" ||
+      (mode === "system" && systemIsDark);
     const variants = generateColorVariants(value, isDark ? "dark" : "light");
 
     if (variants) {
@@ -448,7 +506,10 @@ export const ThemeCustomizer = React.forwardRef<
             <div className="flex flex-wrap gap-3">
               {Object.entries(COLOR_PRESETS).map(([key, value]) => {
                 const isActive = activePreset === key;
-                const isDark = resolvedTheme === "dark" || mode === "dark";
+                const isDark =
+                  mode === "dark" ||
+                  resolvedTheme === "dark" ||
+                  (mode === "system" && systemIsDark);
                 return (
                   <TooltipProvider key={key}>
                     <Tooltip>

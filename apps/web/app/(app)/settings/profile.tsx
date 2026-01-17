@@ -43,6 +43,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient, useActiveOrganization, useSession } from "@/lib/auth";
 import { env } from "@/lib/env";
+import { SettingsProfileSkeleton } from "./skeletons";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Component requires multiple state handlers
 export function ProfileTab() {
@@ -82,13 +83,11 @@ export function ProfileTab() {
     }
   }, [user]);
 
+  // ... inside component ...
+
   // Prevent flash or redirect if session is loading
   if (sessionLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <SettingsProfileSkeleton />;
   }
 
   // Save basic profile (name, image)

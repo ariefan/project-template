@@ -39,6 +39,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
+import { SettingsNotificationsSkeleton } from "./skeletons";
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Notifications component is complex
 export function NotificationsTab() {
@@ -192,15 +193,11 @@ export function NotificationsTab() {
     });
   };
 
+  // ...
+
   // Only show loading state after component is mounted on client
   if (mounted && preferencesLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <SettingsNotificationsSkeleton />;
   }
 
   if (!(mounted && preferences)) {

@@ -1,0 +1,48 @@
+packages\ui\src\composed\theme-customizer\index.tsx:118:1 suppressions/unused ━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Suppression comment has no effect. Remove the suppression or make sure you are suppressing the correct rule.
+  
+    116 │ }
+    117 │ 
+  > 118 │ // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Theme customizer is complex by nature
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    119 │ export const ThemeCustomizer = React.forwardRef<
+    120 │   ThemeCustomizerHandle,
+  
+
+packages\ui\src\composed\theme-customizer\index.tsx:162:9 lint/correctness/useExhaustiveDependencies  FIXABLE  ━━━━━━━━━━
+
+  × This hook does not specify its dependency on mode.
+  
+    161 │   // Initialize state
+  > 162 │   React.useEffect(() => {
+        │         ^^^^^^^^^
+    163 │     setMounted(true);
+    164 │     const saved = loadThemeFromStorage();
+  
+  i This dependency is being used here, but is not specified in the hook dependency list.
+  
+    175 │     // Ideally we rely on the useEffect above to sync custom colors once mounted.
+    176 │     // But for initial render, we can try best effort.
+  > 177 │     const isDarkInit = mode === "dark";
+        │                        ^^^^
+    178 │     const colors = isDarkInit ? startTheme.darkColors : startTheme.lightColors;
+    179 │     if (colors?.primary) {
+  
+  i React relies on hook dependencies to determine when to re-compute Effects.
+    Failing to specify dependencies can result in Effects not updating correctly when state changes.
+    These "stale closures" are a common source of surprising bugs.
+  
+  i Unsafe fix: Add the missing dependency to the list.
+  
+    213 │ ··},·[config?.defaultPreset,·initialTheme,·mode]);·//·Run·once·on·mount/unmount
+        │                                          ++++++                                
+
+Checked 1 file in 65ms. No fixes applied.
+Found 1 error.
+Found 1 warning.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

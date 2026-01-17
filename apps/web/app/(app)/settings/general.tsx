@@ -20,6 +20,7 @@ import { Globe, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient, useSession } from "@/lib/auth";
+import { SettingsGeneralSkeleton } from "./skeletons";
 
 // Available timezones
 const TIMEZONES = [
@@ -103,14 +104,10 @@ export function GeneralTab() {
     }
   }
 
+  // ...
+
   if (sessionLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <SettingsGeneralSkeleton />;
   }
 
   return (

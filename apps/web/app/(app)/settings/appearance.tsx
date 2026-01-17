@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
-import { Card, CardContent } from "@workspace/ui/components/card";
 import { Separator } from "@workspace/ui/components/separator";
 import type { ThemeCustomizerHandle } from "@workspace/ui/composed/theme-customizer";
 import { ThemeCustomizer } from "@workspace/ui/composed/theme-customizer";
@@ -11,6 +10,7 @@ import { useTheme } from "next-themes";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { authClient, useSession } from "@/lib/auth";
+import { SettingsAppearanceSkeleton } from "./skeletons";
 
 // Theme mode values
 type ThemeValue = "light" | "dark" | "system";
@@ -70,14 +70,10 @@ export function AppearanceTab() {
     }
   }
 
+  // ...
+
   if (sessionLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
-    );
+    return <SettingsAppearanceSkeleton />;
   }
 
   return (
