@@ -59,4 +59,14 @@ export interface JobHandlerConfig {
   retryLimit?: number;
   /** Job expiration in seconds (default: 3600) */
   expireInSeconds?: number;
+
+  // UI metadata for dynamic job type discovery
+  /** Human-readable label for the job type */
+  label?: string;
+  /** Description of what this job does */
+  description?: string;
+  /** Schema description for the config/input object */
+  configSchema?: string;
+  /** Example configuration for the frontend */
+  exampleConfig?: Record<string, unknown>;
 }

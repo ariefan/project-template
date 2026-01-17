@@ -144,3 +144,24 @@ interface Jobs {
     @path jobId: string
   ): bytes | ErrorResponse;
 }
+
+/**
+ * Job Types API
+ *
+ * List available job types with their metadata for building
+ * schedule configuration forms.
+ */
+@route("/v1/job-types")
+@tag("Jobs")
+interface JobTypes {
+  /**
+   * List available job types
+   *
+   * Returns all registered job handlers with their metadata
+   * for building schedule configuration forms.
+   */
+  @get
+  @summary("List job types")
+  list(): JobTypesListResponse | ErrorResponse;
+}
+

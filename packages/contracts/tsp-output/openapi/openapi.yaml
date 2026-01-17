@@ -995,6 +995,27 @@ paths:
                   - $ref: '#/components/schemas/ErrorResponse'
       tags:
         - Subscriptions
+  /v1/job-types:
+    get:
+      operationId: JobTypes_list
+      summary: List job types
+      description: |-
+        List available job types
+
+        Returns all registered job handlers with their metadata
+        for building schedule configuration forms.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/JobTypesListResponse'
+                  - $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Jobs
   /v1/legal:
     get:
       operationId: LegalDocumentsPublic_listActive
@@ -8862,6 +8883,51 @@ components:
         - failed
         - cancelled
       description: Job status
+    JobTypeInfo:
+      type: object
+      required:
+        - type
+        - label
+        - description
+      properties:
+        type:
+          type: string
+          description: Job type identifier
+          example: report
+        label:
+          type: string
+          description: Human-readable label
+          example: Report Generation
+        description:
+          type: string
+          description: Description of what the job does
+          example: Generate reports from templates
+        configSchema:
+          type: string
+          description: JSON schema description for configuration
+          example: "{ templateId: string, format?: 'xlsx'|'csv'|'pdf' }"
+        exampleConfig:
+          type: object
+          additionalProperties: {}
+          description: Example configuration
+      description: |-
+        Job type information for UI
+
+        Describes a registered job handler's metadata for building
+        schedule configuration forms.
+    JobTypesListResponse:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobTypeInfo'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      description: Job types list response
     LegalDocument:
       type: object
       required:
