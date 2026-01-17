@@ -20,8 +20,8 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Textarea } from "@workspace/ui/components/textarea";
+import { useForm } from "@workspace/ui/composed/form";
 import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 export const organizationFormSchema = z.object({
