@@ -11,7 +11,7 @@
  */
 
 import { hash } from "bcrypt";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -542,6 +542,10 @@ async function seedContent(ctx: SeedContext) {
     publishedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    coverImageId?: string;
+    category?: string;
+    tags?: string[];
+    isFeatured?: boolean;
   }> = [];
 
   for (let i = 0; i < POST_COUNT; i++) {
@@ -559,6 +563,17 @@ async function seedContent(ctx: SeedContext) {
       publishedAt: status === "published" ? createdAt : null,
       createdAt,
       updatedAt: createdAt,
+      // Assign random cover image from the 50 seeded picsum files
+      coverImageId: `file_picsum_${(i % 50) + 1}`,
+      category: rand([
+        "Technology",
+        "Lifestyle",
+        "Business",
+        "Health",
+        "Science",
+      ]),
+      tags: [rand(["react", "typescript", "nodejs", "database", "ui", "ux"])],
+      isFeatured: Math.random() > 0.8,
     });
   }
 
@@ -566,7 +581,19 @@ async function seedContent(ctx: SeedContext) {
   const BATCH_SIZE = 50;
   for (let i = 0; i < posts.length; i += BATCH_SIZE) {
     const batch = posts.slice(i, i + BATCH_SIZE);
-    await db.insert(schema.examplePosts).values(batch).onConflictDoNothing();
+    await db
+      .insert(schema.examplePosts)
+      .values(batch)
+      .onConflictDoUpdate({
+        target: schema.examplePosts.id,
+        set: {
+          coverImageId: sql`excluded.cover_image_id`,
+          category: sql`excluded.category`,
+          tags: sql`excluded.tags`,
+          isFeatured: sql`excluded.is_featured`,
+          updatedAt: sql`excluded.updated_at`,
+        },
+      });
   }
   console.log(`   ✓ Created ${posts.length} example posts`);
 
@@ -626,19 +653,30 @@ async function seedFilesAndJobs(ctx: SeedContext) {
   const { db, now } = ctx;
 
   console.log("\n📁 Creating sample files...");
-  const files = [
-    {
-      id: "file_logo",
-      orgId: "org_acme",
-      filename: "company-logo.png",
-      size: 45_678,
-      mimeType: "image/png",
-      storagePath: "org_acme/files/company-logo.png",
+  const files: (typeof schema.files.$inferInsert)[] = []; // Using typed array instead of any
+
+  // Create 50 random picsum images
+  for (let i = 0; i < 50; i++) {
+    const width = 800 + Math.floor(Math.random() * 200);
+    const height = 600 + Math.floor(Math.random() * 200);
+    const id = i + 1;
+
+    files.push({
+      id: `file_picsum_${id}`,
+      orgId: i < 25 ? "org_acme" : "org_demo",
+      filename: `image-${id}.jpg`,
+      size: 1024 * 1024 + Math.floor(Math.random() * 5 * 1024 * 1024), // 1-6MB
+      mimeType: "image/jpeg",
+      storagePath: `https://picsum.photos/id/${id}/${width}/${height}`,
       uploadedBy: "user_admin",
       virusScanStatus: "clean" as const,
       access: "public" as const,
       kind: "image" as const,
-    },
+    });
+  }
+
+  // Add some specific document files
+  files.push(
     {
       id: "file_report",
       orgId: "org_acme",
@@ -662,8 +700,8 @@ async function seedFilesAndJobs(ctx: SeedContext) {
       virusScanStatus: "pending" as const,
       access: "private" as const,
       kind: "document" as const,
-    },
-  ];
+    }
+  );
 
   for (const file of files) {
     await db

@@ -53,6 +53,12 @@ const ALLOWED_FIELDS = [
   "deletedBy",
   "createdAt",
   "updatedAt",
+  "category",
+  "tags",
+  "isFeatured",
+  "publishDate",
+  "coverImageId",
+  "attachmentFileId",
 ] as const;
 
 type AllowedField = (typeof ALLOWED_FIELDS)[number];

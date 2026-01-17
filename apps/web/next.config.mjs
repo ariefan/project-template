@@ -20,6 +20,14 @@ const nextConfig = {
     BUILD_COMMIT: git("git rev-parse --short HEAD"),
     BUILD_TIME: git("git log -1 --format=%cI"),
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
