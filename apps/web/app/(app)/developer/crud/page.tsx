@@ -34,6 +34,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import {
   Database,
   Edit,
+  Eye,
   Plus,
   RotateCcw,
   Star,
@@ -41,13 +42,14 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient, filesGet } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
-import { PostFormDialog } from "./components/post-form-dialog";
-import { StatsCards } from "./components/stats-cards";
-import { usePostMutations, usePostsData } from "./hooks/use-posts-data";
+import { StatsCards } from "./_components/stats-cards";
+import { usePostMutations, usePostsData } from "./_hooks/use-posts-data";
 
 const CLIENT_MODE_LIMIT = 500; // Max rows for client-side mode
 
@@ -167,12 +169,11 @@ export default function CrudPage() {
   const posts = (clientData as { data?: ExamplePost[] })?.data ?? [];
 
   const [mounted, setMounted] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
   }, []);
-  const [editingPost, setEditingPost] = useState<ExamplePost | undefined>();
 
   // Column definitions
   const columns: ColumnDef<ExamplePost>[] = [
@@ -318,12 +319,19 @@ export default function CrudPage() {
   // Row actions
   const rowActions: RowAction<ExamplePost>[] = [
     {
+      id: "view",
+      label: "View",
+      icon: Eye,
+      onAction: (row) => {
+        router.push(`/developer/crud/${row.id}`);
+      },
+    },
+    {
       id: "edit",
       label: "Edit",
       icon: Edit,
       onAction: (row) => {
-        setEditingPost(row);
-        setDialogOpen(true);
+        router.push(`/developer/crud/${row.id}/edit`);
       },
       hidden: (row) => row.isDeleted,
     },
@@ -645,11 +653,6 @@ export default function CrudPage() {
     );
   };
 
-  function handleCreateNew() {
-    setEditingPost(undefined);
-    setDialogOpen(true);
-  }
-
   const commonProps = {
     availableViews: ["table", "list", "grid"] as ViewMode[],
     bulkActions,
@@ -724,9 +727,11 @@ export default function CrudPage() {
       <PageHeader
         actions={
           mounted && orgId ? (
-            <Button onClick={handleCreateNew}>
-              <Plus className="size-4" />
-              <span className="hidden sm:inline">New Post</span>
+            <Button asChild>
+              <Link href="/developer/crud/new">
+                <Plus className="size-4" />
+                <span className="hidden sm:inline">New Post</span>
+              </Link>
             </Button>
           ) : null
         }
@@ -737,19 +742,6 @@ export default function CrudPage() {
 
       {/* DataView - only render when orgId is available */}
       {renderContent()}
-
-      {/* Form Dialog */}
-      <PostFormDialog
-        mode={editingPost ? "edit" : "create"}
-        onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) {
-            setEditingPost(undefined);
-          }
-        }}
-        open={dialogOpen}
-        post={editingPost}
-      />
     </div>
   );
 }

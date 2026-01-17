@@ -229,13 +229,15 @@ export function NotificationsList() {
             <span className="hidden sm:inline">Mark all as read</span>
           </Button>
         }
-        badge={
-          unreadCount > 0 ? (
-            <Badge variant="default">{unreadCount} unread</Badge>
-          ) : null
-        }
         description="View and manage your notifications. Stay updated on important events and activities."
-        title="Notifications"
+        title={
+          <>
+            Notifications
+            {unreadCount > 0 && (
+              <Badge variant="default">{unreadCount} unread</Badge>
+            )}
+          </>
+        }
       />
 
       <DataViewComponent<Notification>

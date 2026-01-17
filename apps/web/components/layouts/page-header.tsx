@@ -1,11 +1,13 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
+import { Skeleton } from "@workspace/ui/components/skeleton";
+import { cn } from "@workspace/ui/lib/utils";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface PageHeaderProps {
-  title: string;
+  title: React.ReactNode;
   description?: string;
 
   // Navigation
@@ -19,13 +21,17 @@ interface PageHeaderProps {
   // Stats section (below title/description)
   stats?: React.ReactNode;
 
-  // Optional badge next to title
-  badge?: React.ReactNode;
-
   // Optional icon
   icon?: React.ReactNode;
+
+  // Variant for contextual sizing
+  variant?: "default" | "compact";
+
+  // Loading state shows skeleton
+  loading?: boolean;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Header has flexible layout options
 export function PageHeader({
   title,
   description,
@@ -34,8 +40,9 @@ export function PageHeader({
   onBack,
   actions,
   stats,
-  badge,
   icon,
+  variant = "default",
+  loading = false,
 }: PageHeaderProps) {
   const router = useRouter();
 
@@ -50,9 +57,32 @@ export function PageHeader({
   };
 
   const showBack = Boolean(backHref || onBack);
+  const isCompact = variant === "compact";
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div className={cn("space-y-4", isCompact ? "mb-4" : "mb-6")}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 space-y-2">
+            {showBack && <Skeleton className="h-8 w-28" />}
+            <div className="flex items-center gap-4">
+              {icon && <Skeleton className="size-8 rounded-full" />}
+              <div className="space-y-2">
+                <Skeleton className={cn("w-48", isCompact ? "h-6" : "h-8")} />
+                {description !== undefined && <Skeleton className="h-4 w-72" />}
+              </div>
+            </div>
+          </div>
+          {actions && <Skeleton className="h-9 w-24" />}
+        </div>
+        {stats && <Skeleton className="h-20 w-full" />}
+      </div>
+    );
+  }
 
   return (
-    <div className="mb-6 space-y-6">
+    <div className={cn("space-y-4", isCompact ? "mb-4" : "mb-6")}>
       {/* Header section */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
@@ -76,12 +106,23 @@ export function PageHeader({
 
             {/* Text Section (Right) */}
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-bold text-2xl">{title}</h1>
-                {badge}
-              </div>
+              <h1
+                className={cn(
+                  "flex items-center gap-2 font-bold",
+                  isCompact ? "text-xl" : "text-2xl"
+                )}
+              >
+                {title}
+              </h1>
               {description && (
-                <p className="mt-1 text-muted-foreground">{description}</p>
+                <p
+                  className={cn(
+                    "mt-1 text-muted-foreground",
+                    isCompact && "text-sm"
+                  )}
+                >
+                  {description}
+                </p>
               )}
             </div>
           </div>

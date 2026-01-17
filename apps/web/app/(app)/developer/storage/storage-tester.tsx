@@ -28,11 +28,14 @@ import {
 import {
   type CompressedFileWithPreview,
   FileUploader,
-  ImageUploader,
   type UploadFile,
 } from "@workspace/ui/composed/file-upload";
+import {
+  ImageUploader,
+  type ImageUploaderRef,
+} from "@workspace/ui/composed/file-upload/image-uploader";
 import { Code, Crop, Download, RefreshCw, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useActiveOrganization } from "@/lib/auth";
 import { env } from "@/lib/env";
@@ -71,9 +74,8 @@ export function StorageTester() {
   const [enableCropping, setEnableCropping] = useState(true);
   const [autoImageUpload, setAutoImageUpload] = useState(false);
   const [fileUploaderKey, setFileUploaderKey] = useState(0);
-  const [imageUploaderKey, setImageUploaderKey] = useState(0);
+  const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
   const [exampleFiles, setExampleFiles] = useState<UploadFile[]>([]);
-  const [exampleImages, setExampleImages] = useState<File[]>([]);
 
   const [isUploadingCompressed, setIsUploadingCompressed] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -250,30 +252,34 @@ export function StorageTester() {
     const toastId = toast.loading("Fetching example images...");
 
     try {
-      // Fetch random images from local demo folder (public/demo/image-01.jpg to image-15.jpg)
-      // Pick a random number of images between 1 and 15
-      const totalImages = 15;
-      const count = Math.floor(Math.random() * totalImages) + 1;
-      const indices = Array.from({ length: totalImages }, (_, i) => i + 1)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, count);
+      const exampleImageUrls = [
+        "/demo/image-01.jpg",
+        "/demo/image-02.jpg",
+        "/demo/image-03.jpg",
+        "/demo/image-04.jpg",
+        "/demo/image-05.jpg",
+      ];
 
-      const fetchPromises = indices.map(async (index) => {
-        const paddedIndex = index.toString().padStart(2, "0");
-        const filename = `image-${paddedIndex}.jpg`;
-        const response = await fetch(`/demo/${filename}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch ${filename}`);
-        }
-        const blob = await response.blob();
-        return new File([blob], filename, { type: "image/jpeg" });
-      });
+      const files = await Promise.all(
+        exampleImageUrls.map(async (url, i) => {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          return new File([blob], `example-${i + 1}.jpg`, {
+            type: "image/jpeg",
+          });
+        })
+      );
 
-      const images = await Promise.all(fetchPromises);
+      // Reset uploader to clear previous files if we want fresh start,
+      // or just append. Let's append to demonstrate adding files.
+      // If we want fresh start, we can call clearFiles() first.
+      imageUploaderRef.current?.clearFiles();
+      // Small delay to ensure state update if clearing
+      setTimeout(() => {
+        imageUploaderRef.current?.addFiles(files);
+      }, 0);
 
-      setExampleImages(images);
-      setImageUploaderKey((prev) => prev + 1);
-      toast.success("Loaded example images", { id: toastId });
+      toast.success("Example images loaded", { id: toastId });
     } catch (error) {
       console.error(error);
       toast.error("Failed to load example images", { id: toastId });
@@ -359,12 +365,7 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
         </Card>
       )}
 
-      <Tabs
-        className="w-full"
-        defaultValue="upload"
-        onValueChange={setActiveTab}
-        {...(isClient && { value: activeTab })}
-      >
+      <Tabs className="w-full" onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="grid w-full grid-cols-3 lg:w-[450px]">
           <TabsTrigger value="upload">File Upload</TabsTrigger>
           <TabsTrigger value="compression">Image Upload</TabsTrigger>
@@ -487,14 +488,13 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
                   useWebWorker: true,
                 }}
                 enableCropping={enableCropping}
-                initialImages={exampleImages}
                 isUploading={isUploadingCompressed}
-                key={imageUploaderKey}
                 onCompressed={() => {
                   // Refresh files list after compression
                   queryClient.invalidateQueries({ queryKey: ["files"] });
                 }}
                 onConfirm={handleCompressedUpload}
+                ref={imageUploaderRef}
                 showCompressionOptions={showCompressionOptions}
                 showConfirmButton
               />
