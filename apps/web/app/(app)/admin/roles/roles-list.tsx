@@ -6,16 +6,6 @@ import {
   tenantRolesDeleteMutation,
   tenantRolesListOptions,
 } from "@workspace/contracts/query";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -34,6 +24,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
+import { ConfirmDialog } from "@workspace/ui/composed/confirm-dialog";
 import { format } from "date-fns";
 import { Edit, Loader2, Plus, Shield, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -169,32 +160,16 @@ export function RolesList() {
         </CardContent>
       </Card>
 
-      <AlertDialog
+      <ConfirmDialog
+        confirmLabel="Delete"
+        description={`Are you sure you want to delete the role "${deleteTarget?.name}"? This action cannot be undone.`}
+        isLoading={deleteMutation.isPending}
+        onConfirm={handleDeleteConfirm}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         open={Boolean(deleteTarget)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Role</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the role "{deleteTarget?.name}"?
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={deleteMutation.isPending}
-              onClick={handleDeleteConfirm}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="Delete Role"
+        variant="destructive"
+      />
     </>
   );
 }

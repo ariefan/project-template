@@ -6,16 +6,6 @@ import {
   examplePostsDeleteMutation,
   examplePostsGetOptions,
 } from "@workspace/contracts/query";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Card, CardContent } from "@workspace/ui/components/card";
@@ -24,6 +14,7 @@ import {
   FieldLegend,
   FieldSet,
 } from "@workspace/ui/components/field";
+import { ConfirmDialog } from "@workspace/ui/composed/confirm-dialog";
 import { format } from "date-fns";
 import {
   Edit,
@@ -380,29 +371,15 @@ export function CrudDetail({ id }: CrudDetailProps) {
         )}
       </div>
 
-      <AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Post</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this post? This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={deleteMutation.isPending}
-              onClick={handleDeleteConfirm}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        isLoading={deleteMutation.isPending}
+        onConfirm={handleDeleteConfirm}
+        onOpenChange={setShowDeleteDialog}
+        open={showDeleteDialog}
+        title="Delete Post"
+        variant="destructive"
+      />
     </div>
   );
 }

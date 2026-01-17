@@ -2,17 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SystemOrganization } from "@workspace/contracts";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog";
-import { Spinner } from "@workspace/ui/components/spinner";
+import { ConfirmDialog } from "@workspace/ui/composed/confirm-dialog";
 import { toast } from "sonner";
 import { deleteSystemOrganization } from "@/actions/system-organizations";
 
@@ -52,33 +42,15 @@ export function DeleteOrganizationDialog({
   });
 
   return (
-    <AlertDialog onOpenChange={onOpenChange} open={open}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Organization</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete{" "}
-            <strong>{organization?.name}</strong>? This action handles a
-            soft-delete, marking the organization as inactive.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={mutation.isPending}>
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            disabled={mutation.isPending}
-            onClick={(e) => {
-              e.preventDefault();
-              mutation.mutate();
-            }}
-          >
-            {mutation.isPending && <Spinner className="mr-2" />}
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      confirmLabel="Delete"
+      description={`Are you sure you want to delete ${organization?.name}? This action handles a soft-delete, marking the organization as inactive.`}
+      isLoading={mutation.isPending}
+      onConfirm={() => mutation.mutate()}
+      onOpenChange={onOpenChange}
+      open={open}
+      title="Delete Organization"
+      variant="destructive"
+    />
   );
 }

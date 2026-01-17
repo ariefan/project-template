@@ -8,16 +8,6 @@ import {
   userTenantRolesListOptions,
   userTenantRolesRemoveMutation,
 } from "@workspace/contracts/query";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog";
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -52,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table";
+import { ConfirmDialog } from "@workspace/ui/composed/confirm-dialog";
 import { format } from "date-fns";
 import { Plus, Shield, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -292,31 +283,16 @@ export function UserRolesCard({ userId, orgId, userName }: UserRolesCardProps) {
       </Card>
 
       {/* Remove RBAC Role Confirmation */}
-      <AlertDialog
+      <ConfirmDialog
+        confirmLabel="Remove"
+        description={`Are you sure you want to remove the "${removeTarget?.roleName}" role from this user?`}
+        isLoading={removeMutation.isPending}
+        onConfirm={handleRemoveConfirm}
         onOpenChange={(open) => !open && setRemoveTarget(null)}
         open={Boolean(removeTarget)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Role</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove the &quot;{removeTarget?.roleName}
-              &quot; role from this user?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={removeMutation.isPending}
-              onClick={handleRemoveConfirm}
-            >
-              {removeMutation.isPending && <Spinner className="mr-2" />}
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="Remove Role"
+        variant="destructive"
+      />
     </>
   );
 }

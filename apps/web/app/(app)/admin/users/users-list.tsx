@@ -2,16 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@workspace/ui/components/alert-dialog";
-import {
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -43,6 +33,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
+import { ConfirmDialog } from "@workspace/ui/composed/confirm-dialog";
 import {
   type ColumnDef,
   DataView as DataTable,
@@ -557,62 +548,29 @@ export function UsersList() {
       </Tabs>
 
       {/* Remove Member Confirmation */}
-      <AlertDialog
+      <ConfirmDialog
+        confirmLabel="Remove"
+        description={`Are you sure you want to remove ${removeTarget?.user.name || removeTarget?.user.email} from this organization? This action cannot be undone.`}
+        isLoading={removeMutation.isPending}
+        onConfirm={handleRemoveConfirm}
         onOpenChange={(open) => !open && setRemoveTarget(null)}
         open={Boolean(removeTarget)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Member</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove{" "}
-              <strong>
-                {removeTarget?.user.name || removeTarget?.user.email}
-              </strong>{" "}
-              from this organization? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={removeMutation.isPending}
-              onClick={handleRemoveConfirm}
-            >
-              {removeMutation.isPending && <Spinner className="mr-2" />}
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="Remove Member"
+        variant="destructive"
+      />
 
       {/* Cancel Invitation Confirmation */}
-      <AlertDialog
+      <ConfirmDialog
+        cancelLabel="Keep Invitation"
+        confirmLabel="Cancel Invitation"
+        description={`Are you sure you want to cancel the invitation to ${cancelTarget?.email}?`}
+        isLoading={cancelInvitationMutation.isPending}
+        onConfirm={handleCancelInvitation}
         onOpenChange={(open) => !open && setCancelTarget(null)}
         open={Boolean(cancelTarget)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to cancel the invitation to{" "}
-              <strong>{cancelTarget?.email}</strong>?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep Invitation</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={cancelInvitationMutation.isPending}
-              onClick={handleCancelInvitation}
-            >
-              {cancelInvitationMutation.isPending && (
-                <Spinner className="mr-2" />
-              )}
-              Cancel Invitation
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="Cancel Invitation"
+        variant="destructive"
+      />
     </div>
   );
 }
