@@ -3,6 +3,7 @@ export * from "./applications";
 export * from "./auth";
 export * from "./auth-types";
 export * from "./authorization-audit";
+export * from "./backups";
 export * from "./casbin-rules";
 export * from "./common";
 export * from "./example-comments";

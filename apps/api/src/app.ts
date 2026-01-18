@@ -21,6 +21,7 @@ import {
   contextRoutes,
   globalRoleRoutes,
 } from "./modules/authorization";
+import { backupsModule } from "./modules/backups";
 import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
@@ -439,6 +440,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(organizationsModule, { prefix: "/v1/orgs" });
   await app.register(reportsModule, { prefix: "/v1/orgs" });
   await app.register(schedulesModule, { prefix: "/v1/orgs" });
+  await app.register(backupsModule, { prefix: "/v1/orgs" });
   await app.register(subscriptionsModule, { prefix: "/v1" });
   await app.register(legalDocumentsModule, { prefix: "/v1" });
   await app.register(jobTypesRoutes, { prefix: "/v1" });
