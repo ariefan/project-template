@@ -3,7 +3,7 @@
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { cn } from "@workspace/ui/lib/utils";
-import { Bell, Palette, Settings, Shield, User } from "lucide-react";
+import { Archive, Bell, Palette, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -40,6 +40,12 @@ const navItems = [
     label: "Security",
     href: "/settings/security",
     icon: Shield,
+  },
+  {
+    id: "backups",
+    label: "Backups",
+    href: "/settings/backups",
+    icon: Archive,
   },
 ] as const;
 

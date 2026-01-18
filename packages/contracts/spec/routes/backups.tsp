@@ -20,9 +20,16 @@ import "../models/backup.tsp";
 
 using TypeSpec.Http;
 
+namespace ProjectAPI;
+
+/**
+ * Backups API endpoints
+ *
+ * Organization-scoped backup management.
+ */
 @route("/v1/orgs/{orgId}/backups")
 @tag("Backups")
-namespace Backups {
+interface Backups {
   /**
    * Create a new backup
    *
@@ -31,7 +38,7 @@ namespace Backups {
    */
   @post
   @summary("Create backup")
-  op create(
+  create(
     @path orgId: string,
     @body body: CreateBackupRequest,
   ): {
@@ -46,7 +53,7 @@ namespace Backups {
    */
   @get
   @summary("List backups")
-  op list(
+  list(
     @path orgId: string,
     @query page?: int32 = 1,
     @query pageSize?: int32 = 20,
@@ -56,10 +63,10 @@ namespace Backups {
   /**
    * Get backup details
    */
-  @get
   @route("/{id}")
+  @get
   @summary("Get backup")
-  op get(
+  get(
     @path orgId: string,
     @path id: string,
   ): BackupResponse | ErrorResponse;
@@ -67,10 +74,10 @@ namespace Backups {
   /**
    * Delete a backup
    */
-  @delete
   @route("/{id}")
+  @delete
   @summary("Delete backup")
-  op delete(
+  delete(
     @path orgId: string,
     @path id: string,
   ): {
@@ -82,10 +89,10 @@ namespace Backups {
    *
    * Initiates an async restore job from the specified backup.
    */
-  @post
   @route("/{id}/restore")
+  @post
   @summary("Restore backup")
-  op restore(
+  restore(
     @path orgId: string,
     @path id: string,
   ): {
@@ -96,15 +103,14 @@ namespace Backups {
   /**
    * Download backup file
    */
-  @get
   @route("/{id}/download")
+  @get
   @summary("Download backup")
-  op download(
+  download(
     @path orgId: string,
     @path id: string,
   ): {
-    @statusCode statusCode: 200;
-    @header contentType: "application/octet-stream";
-    @body body: bytes;
-  } | ErrorResponse;
+      @statusCode statusCode: 302;
+      @header location: string;
+    } | ErrorResponse;
 }

@@ -59,6 +59,14 @@ export const backups = pgTable(
       filesSize?: number;
       duration?: number;
       error?: string;
+      // Encryption metadata
+      isEncrypted?: boolean;
+      iv?: string;
+      authTag?: string;
+      includesFiles?: boolean;
+      // Progress tracking
+      progress?: number;
+      status?: string;
     }>(),
 
     // Lifecycle

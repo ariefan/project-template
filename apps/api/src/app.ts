@@ -307,6 +307,15 @@ export async function buildApp(config: AppConfig) {
       heartbeatInterval: env.REALTIME_HEARTBEAT_INTERVAL,
     });
 
+    // Initialize broadcasters for services that need to emit events
+    const { jobsService } = await import("./modules/jobs");
+    jobsService.initBroadcaster(eventBroadcaster);
+
+    const systemBackupService = await import(
+      "./modules/backups/services/system-backup.service"
+    );
+    systemBackupService.initBroadcaster(eventBroadcaster);
+
     app.log.info("Real-time notifications enabled (WebSocket + SSE)");
   }
 
@@ -317,10 +326,21 @@ export async function buildApp(config: AppConfig) {
     registerStorageCleanupHandler,
   } = await import("./modules/jobs");
 
+  // Import backup handler registration
+  const { registerBackupHandlers } = await import(
+    "./modules/backups/handlers/backup.handler"
+  );
+  const { registerSystemBackupHandlers } = await import(
+    "./modules/backups/handlers/system-backup.handler"
+  );
+
   registerReportHandler();
   registerTestHandler();
   registerSubscriptionHandlers();
   registerStorageCleanupHandler();
+
+  registerBackupHandlers();
+  registerSystemBackupHandlers();
 
   // Initialize webhook delivery queue (uses same QUEUE_ENABLED setting)
   if (env.QUEUE_ENABLED) {
@@ -447,6 +467,12 @@ export async function buildApp(config: AppConfig) {
   await app.register(systemOrganizationsRoutes, {
     prefix: "/v1/system-organizations",
   });
+
+  // Dynamic import or static if at top
+  const { systemBackupRoutes } = await import(
+    "./modules/backups/routes/system-backup.routes"
+  );
+  await app.register(systemBackupRoutes, { prefix: "/v1/admin/backups" });
 
   return app;
 }

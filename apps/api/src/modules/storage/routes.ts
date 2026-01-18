@@ -599,4 +599,50 @@ export function storageRoutes(app: FastifyInstance) {
       });
     }
   });
+
+  // Serve files via presigned URLs (for local storage provider)
+  // Token format: base64url({ path, expires })
+  app.get<WildcardParams>("/uploads/*", async (request, reply) => {
+    try {
+      const token = (request.query as { token?: string }).token;
+
+      if (!token) {
+        reply.status(401).send({ error: "Missing token" });
+        return;
+      }
+
+      // Decode and validate token
+      let tokenData: { path: string; expires: number };
+      try {
+        tokenData = JSON.parse(Buffer.from(token, "base64url").toString());
+      } catch {
+        reply.status(401).send({ error: "Invalid token" });
+        return;
+      }
+
+      if (Date.now() > tokenData.expires) {
+        reply.status(401).send({ error: "Token expired" });
+        return;
+      }
+
+      const filePath = tokenData.path;
+
+      const metadata = await storageProvider.getMetadata(filePath);
+      if (!metadata) {
+        reply.status(404).send({ error: "File not found" });
+        return;
+      }
+
+      const filename = filePath.split("/").pop() || filePath;
+      reply.header("Content-Disposition", `attachment; filename="${filename}"`);
+      reply.header("Content-Type", "application/octet-stream");
+
+      const buffer = await storageProvider.download(filePath);
+      reply.send(buffer);
+    } catch (error) {
+      reply.status(500).send({
+        error: error instanceof Error ? error.message : "Download failed",
+      });
+    }
+  });
 }

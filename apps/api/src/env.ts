@@ -100,6 +100,10 @@ const envSchema = z
     // File Upload Limits
     FILE_MAX_SIZE: z.coerce.number().default(52_428_800), // 50 MB default
 
+    // Backup limits
+    BACKUP_MAX_COUNT: z.coerce.number().default(5),
+    BACKUP_RETENTION_DAYS: z.coerce.number().default(30),
+
     // Metrics
     METRICS_ENABLED: z.coerce.boolean().default(true),
     METRICS_PREFIX: z.string().default(""),

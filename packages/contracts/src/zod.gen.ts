@@ -191,6 +191,59 @@ export const zAuditLog = z.object({
 });
 
 /**
+ * Backup format
+ */
+export const zBackupFormat = z.enum(['json', 'pg_dump']);
+
+/**
+ * Backup metadata
+ */
+export const zBackupMetadata = z.object({
+    rowCounts: z.optional(z.record(z.string(), z.int())),
+    filesCount: z.optional(z.int()),
+    filesSize: z.optional(z.coerce.bigint()),
+    duration: z.optional(z.coerce.bigint()),
+    error: z.optional(z.string())
+});
+
+/**
+ * Backup status
+ */
+export const zBackupStatus = z.enum([
+    'pending',
+    'in_progress',
+    'completed',
+    'failed'
+]);
+
+/**
+ * Backup type
+ */
+export const zBackupType = z.enum(['organization', 'system']);
+
+/**
+ * Backup resource
+ *
+ * Represents a point-in-time snapshot of organization or system data.
+ */
+export const zBackup = z.object({
+    id: z.string(),
+    organizationId: z.optional(z.string()),
+    type: zBackupType,
+    format: zBackupFormat,
+    status: zBackupStatus,
+    filePath: z.optional(z.string()),
+    fileSize: z.optional(z.coerce.bigint()),
+    checksum: z.optional(z.string()),
+    includedTables: z.optional(z.array(z.string())),
+    metadata: z.optional(zBackupMetadata),
+    expiresAt: z.optional(z.iso.datetime()),
+    createdBy: z.string(),
+    createdAt: z.iso.datetime(),
+    completedAt: z.optional(z.iso.datetime())
+});
+
+/**
  * Batch delete result (soft delete)
  */
 export const zBatchDeleteResult = z.object({
@@ -319,6 +372,16 @@ export const zCreateAnnouncementRequest = z.object({
     publishAt: z.optional(z.iso.datetime()),
     expiresAt: z.optional(z.iso.datetime()),
     isActive: z.optional(z.boolean())
+});
+
+/**
+ * Create backup request
+ */
+export const zCreateBackupRequest = z.object({
+    description: z.optional(z.string()),
+    includeFiles: z.optional(z.boolean()),
+    encrypt: z.optional(z.boolean()),
+    password: z.optional(z.string())
 });
 
 /**
@@ -1417,6 +1480,23 @@ export const zAuditLogListResponse = z.object({
  */
 export const zAuditLogResponse = z.object({
     data: zAuditLog,
+    meta: zResponseMeta
+});
+
+/**
+ * Backup list response
+ */
+export const zBackupListResponse = z.object({
+    data: z.array(zBackup),
+    pagination: zPagination,
+    meta: zResponseMeta
+});
+
+/**
+ * Single backup response
+ */
+export const zBackupResponse = z.object({
+    data: zBackup,
     meta: zResponseMeta
 });
 
@@ -3641,6 +3721,98 @@ export const zAuditLogsGetData = z.object({
 export const zAuditLogsGetResponse = z.union([
     zAuditLogResponse,
     zErrorResponse
+]);
+
+export const zBackupsListData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.object({
+        page: z.optional(z.int()).default(1),
+        pageSize: z.optional(z.int()).default(20),
+        status: z.optional(zBackupStatus)
+    }))
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zBackupsListResponse = z.union([
+    zBackupListResponse,
+    zErrorResponse
+]);
+
+export const zBackupsCreateData = z.object({
+    body: zCreateBackupRequest,
+    path: z.object({
+        orgId: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zBackupsCreateResponse = z.union([
+    zErrorResponse,
+    zBackupResponse
+]);
+
+export const zBackupsDeleteData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zBackupsDeleteResponse = z.union([
+    zErrorResponse,
+    z.void()
+]);
+
+export const zBackupsGetData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zBackupsGetResponse = z.union([
+    zBackupResponse,
+    zErrorResponse
+]);
+
+export const zBackupsDownloadData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+/**
+ * The request has succeeded.
+ */
+export const zBackupsDownloadResponse = zErrorResponse;
+
+export const zBackupsRestoreData = z.object({
+    body: z.optional(z.never()),
+    path: z.object({
+        orgId: z.string(),
+        id: z.string()
+    }),
+    query: z.optional(z.never())
+});
+
+export const zBackupsRestoreResponse = z.union([
+    zErrorResponse,
+    zBackupResponse
 ]);
 
 export const zExamplePostsListData = z.object({

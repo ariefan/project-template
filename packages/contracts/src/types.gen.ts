@@ -697,6 +697,130 @@ export type AuditResource = {
 };
 
 /**
+ * Backup resource
+ *
+ * Represents a point-in-time snapshot of organization or system data.
+ */
+export type Backup = {
+    /**
+     * Unique backup identifier
+     */
+    id: string;
+    /**
+     * Organization ID (null for system backups)
+     */
+    organizationId?: string;
+    /**
+     * Backup type
+     */
+    type: BackupType;
+    /**
+     * Backup format
+     */
+    format: BackupFormat;
+    /**
+     * Current status
+     */
+    status: BackupStatus;
+    /**
+     * Path in storage
+     */
+    filePath?: string;
+    /**
+     * File size in bytes
+     */
+    fileSize?: number;
+    /**
+     * SHA-256 checksum
+     */
+    checksum?: string;
+    /**
+     * Tables included in backup
+     */
+    includedTables?: Array<string>;
+    /**
+     * Backup metadata
+     */
+    metadata?: BackupMetadata;
+    /**
+     * When backup expires (for auto-cleanup)
+     */
+    expiresAt?: string;
+    /**
+     * Who created the backup
+     */
+    createdBy: string;
+    /**
+     * When the backup was created
+     */
+    createdAt: string;
+    /**
+     * When the backup completed
+     */
+    completedAt?: string;
+};
+
+/**
+ * Backup format
+ */
+export type BackupFormat = 'json' | 'pg_dump';
+
+/**
+ * Backup list response
+ */
+export type BackupListResponse = {
+    data: Array<Backup>;
+    pagination: Pagination;
+    meta: ResponseMeta;
+};
+
+/**
+ * Backup metadata
+ */
+export type BackupMetadata = {
+    /**
+     * Row counts per table
+     */
+    rowCounts?: {
+        [key: string]: number;
+    };
+    /**
+     * Number of files included
+     */
+    filesCount?: number;
+    /**
+     * Total size of files
+     */
+    filesSize?: number;
+    /**
+     * Duration in milliseconds
+     */
+    duration?: number;
+    /**
+     * Error message (if failed)
+     */
+    error?: string;
+};
+
+/**
+ * Single backup response
+ */
+export type BackupResponse = {
+    data: Backup;
+    meta: ResponseMeta;
+};
+
+/**
+ * Backup status
+ */
+export type BackupStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
+
+/**
+ * Backup type
+ */
+export type BackupType = 'organization' | 'system';
+
+/**
  * Batch delete response envelope
  */
 export type BatchDeleteResponse = {
@@ -978,6 +1102,16 @@ export type CreateAnnouncementRequest = {
      * Whether announcement is active (default: true)
      */
     isActive?: boolean;
+};
+
+/**
+ * Create backup request
+ */
+export type CreateBackupRequest = {
+    /**
+     * Optional description
+     */
+    description?: string;
 };
 
 /**
@@ -6823,6 +6957,134 @@ export type AuditLogsGetResponses = {
 };
 
 export type AuditLogsGetResponse = AuditLogsGetResponses[keyof AuditLogsGetResponses];
+
+export type BackupsListData = {
+    body?: never;
+    path: {
+        orgId: string;
+    };
+    query?: {
+        page?: number;
+        pageSize?: number;
+        status?: BackupStatus;
+    };
+    url: '/v1/orgs/{orgId}/backups';
+};
+
+export type BackupsListResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: BackupListResponse | ErrorResponse;
+};
+
+export type BackupsListResponse = BackupsListResponses[keyof BackupsListResponses];
+
+export type BackupsCreateData = {
+    body: CreateBackupRequest;
+    path: {
+        orgId: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/backups';
+};
+
+export type BackupsCreateResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has been accepted for processing, but processing has not yet completed.
+     */
+    202: BackupResponse;
+};
+
+export type BackupsCreateResponse = BackupsCreateResponses[keyof BackupsCreateResponses];
+
+export type BackupsDeleteData = {
+    body?: never;
+    path: {
+        orgId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/backups/{id}';
+};
+
+export type BackupsDeleteResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * There is no content to send for this request, but the headers may be useful.
+     */
+    204: void;
+};
+
+export type BackupsDeleteResponse = BackupsDeleteResponses[keyof BackupsDeleteResponses];
+
+export type BackupsGetData = {
+    body?: never;
+    path: {
+        orgId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/backups/{id}';
+};
+
+export type BackupsGetResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: BackupResponse | ErrorResponse;
+};
+
+export type BackupsGetResponse = BackupsGetResponses[keyof BackupsGetResponses];
+
+export type BackupsDownloadData = {
+    body?: never;
+    path: {
+        orgId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/backups/{id}/download';
+};
+
+export type BackupsDownloadResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+};
+
+export type BackupsDownloadResponse = BackupsDownloadResponses[keyof BackupsDownloadResponses];
+
+export type BackupsRestoreData = {
+    body?: never;
+    path: {
+        orgId: string;
+        id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{orgId}/backups/{id}/restore';
+};
+
+export type BackupsRestoreResponses = {
+    /**
+     * The request has succeeded.
+     */
+    200: ErrorResponse;
+    /**
+     * The request has been accepted for processing, but processing has not yet completed.
+     */
+    202: BackupResponse;
+};
+
+export type BackupsRestoreResponse = BackupsRestoreResponses[keyof BackupsRestoreResponses];
 
 export type ExamplePostsListData = {
     body?: never;

@@ -1,48 +1,90 @@
+import type { FileRow } from "@workspace/db/schema";
 import { jobHandlerRegistry } from "../../jobs/handlers/registry";
 import type { JobContext, JobResult } from "../../jobs/handlers/types";
+import { storageProvider } from "../../storage/storage";
 import * as backupsRepo from "../repositories/backups.repository";
 import * as backupService from "../services/backup.service";
+import { createBackupArchive } from "../services/backup-archiver";
 
 /**
  * Handler for org backup creation jobs
  */
 async function handleOrgBackupCreate(context: JobContext): Promise<JobResult> {
   const { input, helpers } = context;
-  const { backupId, organizationId } = input as {
-    backupId: string;
-    organizationId: string;
-  };
+  const { backupId, organizationId, includeFiles, encrypt, password } =
+    input as {
+      backupId: string;
+      organizationId: string;
+      includeFiles?: boolean;
+      encrypt?: boolean;
+      password?: string;
+    };
+
+  const startTime = Date.now();
 
   try {
-    await helpers.updateProgress(0, "Starting backup");
+    const updateProgress = async (progress: number, message: string) => {
+      await helpers.updateProgress(progress, message);
+      await backupsRepo.updateBackupStatus(backupId, "in_progress", {
+        metadata: {
+          progress,
+          status: message,
+          includesFiles: includeFiles !== false,
+          isEncrypted: encrypt === true,
+        },
+      });
+    };
 
-    // Update status to in_progress
-    await backupsRepo.updateBackupStatus(backupId, "in_progress");
+    await updateProgress(0, "Starting backup");
 
-    await helpers.updateProgress(10, "Exporting organization data");
+    await updateProgress(10, "Exporting organization data");
 
     // Export org data
-    const { data, rowCounts } = backupService.exportOrgData(organizationId);
+    const { data, rowCounts } =
+      await backupService.exportOrgData(organizationId);
 
-    await helpers.updateProgress(50, "Creating backup archive");
+    const message = encrypt
+      ? "Creating and encrypting archive"
+      : "Creating backup archive";
+    await updateProgress(50, message);
 
-    // TODO: Create zip archive with JSON data and files
-    // For now, just update metadata
-    const totalRows = Object.values(rowCounts).reduce((a, b) => a + b, 0);
+    // Filter files if includeFiles is false (default true)
+    const filesToBackup =
+      includeFiles !== false ? ((data.files || []) as FileRow[]) : [];
 
-    await helpers.updateProgress(90, "Finalizing backup");
+    // Create zip archive
+    const { buffer, size, checksum } = await createBackupArchive(
+      organizationId,
+      data,
+      filesToBackup,
+      encrypt ? password : undefined
+    );
+
+    await updateProgress(80, "Uploading backup archive");
+
+    // Upload to storage
+    const fileName = `backup-${backupId}.zip`;
+    const storagePath = `backups/${organizationId}/${fileName}`;
+
+    await storageProvider.upload(storagePath, buffer, "application/zip");
+
+    await updateProgress(90, "Finalizing backup");
 
     // Mark as completed
     await backupsRepo.updateBackupStatus(backupId, "completed", {
       completedAt: new Date(),
-      metadata: { rowCounts, duration: Date.now() },
+      filePath: storagePath,
+      fileSize: size,
+      checksum,
+      metadata: { rowCounts, duration: Date.now() - startTime },
     });
 
     return {
       output: {
         backupId,
-        totalRows,
+        totalRows: Object.values(rowCounts).reduce((a, b) => a + b, 0),
         tables: Object.keys(data).length,
+        fileSize: size,
       },
     };
   } catch (error) {

@@ -5,12 +5,23 @@ import * as jobsRepository from "../repositories/jobs.repository";
 
 // Module-level queue reference
 let jobQueue: JobQueue | null = null;
+let eventBroadcaster: import("@workspace/realtime").EventBroadcaster | null =
+  null;
 
 /**
  * Initialize the job queue reference
  */
 export function initQueue(queue: JobQueue): void {
   jobQueue = queue;
+}
+
+/**
+ * Initialize the event broadcaster reference
+ */
+export function initBroadcaster(
+  broadcaster: import("@workspace/realtime").EventBroadcaster
+): void {
+  eventBroadcaster = broadcaster;
 }
 
 /**
@@ -141,32 +152,77 @@ export function startJob(jobId: string): Promise<JobRow | null> {
 /**
  * Update job progress
  */
-export function updateProgress(
+export async function updateProgress(
   jobId: string,
   progress: number,
   message?: string
 ): Promise<JobRow | null> {
-  return jobsRepository.updateJobProgress(jobId, progress, message);
+  const job = await jobsRepository.updateJobProgress(jobId, progress, message);
+
+  if (job && eventBroadcaster) {
+    await eventBroadcaster.broadcastToUser(job.createdBy, {
+      type: "job:progress",
+      data: {
+        id: job.id,
+        type: job.type,
+        orgId: job.orgId,
+        progress,
+        message,
+      },
+      id: `job_progress_${job.id}_${progress}`,
+    });
+  }
+
+  return job;
 }
 
 /**
  * Complete a job successfully
  */
-export function completeJob(
+export async function completeJob(
   jobId: string,
   output: Record<string, unknown>
 ): Promise<JobRow | null> {
-  return jobsRepository.completeJob(jobId, output);
+  const job = await jobsRepository.completeJob(jobId, output);
+
+  if (job && eventBroadcaster) {
+    await eventBroadcaster.broadcastToUser(job.createdBy, {
+      type: "job:completed",
+      data: {
+        id: job.id,
+        type: job.type,
+        orgId: job.orgId,
+      },
+      id: `job_completed_${job.id}`,
+    });
+  }
+
+  return job;
 }
 
 /**
  * Fail a job with error
  */
-export function failJob(
+export async function failJob(
   jobId: string,
   error: { code: string; message: string; retryable?: boolean }
 ): Promise<JobRow | null> {
-  return jobsRepository.failJob(jobId, error);
+  const job = await jobsRepository.failJob(jobId, error);
+
+  if (job && eventBroadcaster) {
+    await eventBroadcaster.broadcastToUser(job.createdBy, {
+      type: "job:failed",
+      data: {
+        id: job.id,
+        type: job.type,
+        orgId: job.orgId,
+        error: error.message,
+      },
+      id: `job_failed_${job.id}`,
+    });
+  }
+
+  return job;
 }
 
 /**

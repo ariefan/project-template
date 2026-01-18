@@ -244,3 +244,47 @@ export function SettingsGeneralSkeleton() {
     </div>
   );
 }
+
+export function SettingsBackupsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1.5">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton list is static
+                className="flex items-center justify-between rounded-lg border p-4"
+                key={i}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-48" />
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-9 w-24" />
+                  <Skeleton className="size-9 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+        <CardFooter className="flex items-center justify-between border-t py-4">
+          <Skeleton className="h-4 w-64" />
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}

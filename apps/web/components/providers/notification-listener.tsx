@@ -108,6 +108,49 @@ export function NotificationListener() {
               const id = (key as { _id: string })._id;
               return id.startsWith("jobs");
             }
+            // Invalidate system backups if applicable
+            if (data.type === "system-backup" && key === "system-backups") {
+              return true;
+            }
+            if (data.type === "backup:org-create" && key === "backups") {
+              return true;
+            }
+            return false;
+          },
+        });
+        break;
+      }
+
+      case "job:progress": {
+        const data = event.data as { id: string; type: string };
+        // Don't toast for every progress update (too spammy)
+
+        // Invalidate queries to refresh progress bars
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            if (typeof key === "object" && key !== null && "_id" in key) {
+              const id = (key as { _id: string })._id;
+              return id.startsWith("jobs");
+            }
+            // Invalidate system backups if applicable
+            if (
+              data.type === "system:backup-create" &&
+              key === "system-backups"
+            ) {
+              return true;
+            }
+            if (data.type === "system-backup" && key === "system-backups") {
+              return true;
+            }
+            // Invalidate org backups if applicable
+            if (data.type === "backup:org-create") {
+              // Verify the query key structure: ["backups", orgId]
+              if (key === "backups") {
+                // If we had orgId available in the query, we could check it, but generic "backups" invalidation is safer/easier
+                return true;
+              }
+            }
             return false;
           },
         });
@@ -125,6 +168,13 @@ export function NotificationListener() {
             if (typeof key === "object" && key !== null && "_id" in key) {
               const id = (key as { _id: string })._id;
               return id.startsWith("jobs");
+            }
+            // Invalidate system backups if applicable
+            if (data.type === "system-backup" && key === "system-backups") {
+              return true;
+            }
+            if (data.type === "backup:org-create" && key === "backups") {
+              return true;
             }
             return false;
           },

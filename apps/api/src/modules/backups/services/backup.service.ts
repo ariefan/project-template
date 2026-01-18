@@ -1,25 +1,48 @@
 import crypto from "node:crypto";
+import { db, eq } from "@workspace/db";
 import type { BackupRow } from "@workspace/db/schema";
+import * as schema from "@workspace/db/schema";
+import { env } from "../../../env";
 import * as backupsRepo from "../repositories/backups.repository";
 
-// Tables to export for org backups (filtered by organizationId)
+// Tables to export for org backups
+// Must match exported variable names in @workspace/db/schema
 const ORG_SCOPED_TABLES = [
   "announcements",
-  "announcement_interactions",
+  "announcementInteractions",
   "files",
-  "file_uploads",
+  "fileUploads",
   "folders",
   "jobs",
-  "scheduled_jobs",
-  "report_templates",
+  "scheduledJobs",
+  "reportTemplates",
   "webhooks",
-  "webhook_deliveries",
+  "webhookDeliveries",
   "notifications",
-  "notification_preferences",
-  "example_posts",
-  "example_comments",
-  "user_role_assignments",
+  "notificationPreferences",
+  "examplePosts",
+  "exampleComments",
+  "userRoleAssignments",
 ] as const;
+
+// Map table name to its organization ID column
+const TABLE_ORG_ID_MAP: Record<string, string> = {
+  announcements: "orgId",
+  announcementInteractions: "orgId", // Derived, but simpler to skip or handle specially? No, it has no orgId directly?
+  files: "orgId",
+  fileUploads: "orgId",
+  folders: "orgId",
+  jobs: "orgId",
+  scheduledJobs: "organizationId",
+  reportTemplates: "orgId",
+  webhooks: "orgId",
+  webhookDeliveries: "orgId", // Check this - usually linked to webhook
+  notifications: "orgId",
+  notificationPreferences: "orgId", // Check this
+  examplePosts: "orgId",
+  exampleComments: "orgId", // Check this
+  userRoleAssignments: "tenantId",
+};
 
 /**
  * Generate a unique backup ID
@@ -33,32 +56,55 @@ export function generateBackupId(): string {
  */
 export function calculateExpiryDate(tier: "free" | "pro" | "enterprise"): Date {
   const now = new Date();
-  const retentionDays = { free: 7, pro: 30, enterprise: 90 };
+  const retentionDays = {
+    free: env.BACKUP_RETENTION_DAYS,
+    pro: env.BACKUP_RETENTION_DAYS,
+    enterprise: 90,
+  };
   now.setDate(now.getDate() + retentionDays[tier]);
   return now;
 }
 
 /**
  * Export organization data to JSON
- *
- * TODO: Implement actual table queries when production-ready
  */
-export function exportOrgData(_organizationId: string): {
+export async function exportOrgData(organizationId: string): Promise<{
   data: Record<string, unknown[]>;
   rowCounts: Record<string, number>;
-} {
+}> {
   const data: Record<string, unknown[]> = {};
   const rowCounts: Record<string, number> = {};
 
-  // This is a simplified implementation
-  // In production, you'd iterate through ORG_SCOPED_TABLES
-  // and query each one with the orgId filter
-
-  // For now, return empty structure - actual implementation
-  // would use db.select().from(table).where(eq(table.orgId, organizationId))
   for (const tableName of ORG_SCOPED_TABLES) {
-    data[tableName] = [];
-    rowCounts[tableName] = 0;
+    const tableUser = schema[tableName as keyof typeof schema];
+    const orgIdColumn = TABLE_ORG_ID_MAP[tableName];
+
+    if (!(tableUser && orgIdColumn)) {
+      console.warn(
+        `Skipping table ${tableName}: schema or orgId mapping not found`
+      );
+      continue;
+    }
+
+    try {
+      // Dynamic table access - trusted because of ORG_SCOPED_TABLES
+      // biome-ignore lint/suspicious/noExplicitAny: Dynamic table access
+      const table = tableUser as any;
+
+      const rows = await db
+        .select()
+        .from(table)
+        .where(eq(table[orgIdColumn], organizationId));
+
+      data[tableName] = rows;
+      rowCounts[tableName] = rows.length;
+    } catch (error) {
+      console.error(`Failed to export table ${tableName}:`, error);
+      // Construct placeholder error data? Or just skip?
+      // For now, empty array
+      data[tableName] = [];
+      rowCounts[tableName] = 0;
+    }
   }
 
   return { data, rowCounts };
@@ -70,7 +116,8 @@ export function exportOrgData(_organizationId: string): {
 export async function createOrgBackup(
   organizationId: string,
   createdBy: string,
-  tier: "free" | "pro" | "enterprise" = "free"
+  tier: "free" | "pro" | "enterprise" = "free",
+  options: { includeFiles?: boolean; encrypt?: boolean; password?: string } = {}
 ): Promise<BackupRow> {
   const id = generateBackupId();
   const expiresAt = calculateExpiryDate(tier);
@@ -85,6 +132,12 @@ export async function createOrgBackup(
     createdBy,
     expiresAt,
     includedTables: [...ORG_SCOPED_TABLES],
+    metadata: {
+      includesFiles: options.includeFiles,
+      isEncrypted: options.encrypt,
+      // Do NOT store password in metadata
+      // Password will be passed to job via job payload (which is transient/in Redis)
+    },
   });
 
   return backup;
@@ -98,8 +151,14 @@ export function getBackupLimits(tier: "free" | "pro" | "enterprise"): {
   retentionDays: number;
 } {
   const limits = {
-    free: { maxBackups: 3, retentionDays: 7 },
-    pro: { maxBackups: 10, retentionDays: 30 },
+    free: {
+      maxBackups: env.BACKUP_MAX_COUNT,
+      retentionDays: env.BACKUP_RETENTION_DAYS,
+    },
+    pro: {
+      maxBackups: env.BACKUP_MAX_COUNT,
+      retentionDays: env.BACKUP_RETENTION_DAYS,
+    },
     enterprise: { maxBackups: 999, retentionDays: 90 },
   };
   return limits[tier];

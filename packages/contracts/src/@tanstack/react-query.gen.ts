@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { allUserRolesList, announcementsAcknowledge, announcementsCreate, announcementsDelete, announcementsDismiss, announcementsGet, announcementsGetStats, announcementsGetUnreadCount, announcementsList, announcementsMarkRead, announcementsMarkViewed, announcementsUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, contextSwitchSwitch, couponsAdminCreate, couponsAdminDelete, couponsAdminGet, couponsAdminList, couponsAdminUpdate, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsCreate, jobsDownload, jobsGet, jobsList, jobsRetry, jobTypesList, legalDocumentsAdminCreate, legalDocumentsAdminCreateVersion, legalDocumentsAdminDelete, legalDocumentsAdminExportAcceptances, legalDocumentsAdminGet, legalDocumentsAdminGetAuditLog, legalDocumentsAdminGetVersion, legalDocumentsAdminList, legalDocumentsAdminListAcceptances, legalDocumentsAdminListVersions, legalDocumentsAdminPreviewVersion, legalDocumentsAdminPublishVersion, legalDocumentsAdminUnpublishVersion, legalDocumentsAdminUpdate, legalDocumentsAdminUpdateVersion, legalDocumentsPublicAccept, legalDocumentsPublicCheckPending, legalDocumentsPublicGetActive, legalDocumentsPublicGetMyAcceptances, legalDocumentsPublicListActive, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, paymentWebhooksHandleMidtrans, paymentWebhooksHandleXendit, publicPricingListPublicPlans, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesUpdate, scheduledJobsCreate, scheduledJobsDelete, scheduledJobsGet, scheduledJobsGetHistory, scheduledJobsList, scheduledJobsPause, scheduledJobsResume, scheduledJobsRunNow, scheduledJobsUpdate, subscriptionPlansAdminCreate, subscriptionPlansAdminDelete, subscriptionPlansAdminGet, subscriptionPlansAdminList, subscriptionPlansAdminUpdate, subscriptionsApplyCoupon, subscriptionsCancel, subscriptionsCreate, subscriptionsGetCurrent, subscriptionsResume, subscriptionsUpdate, subscriptionsValidateCoupon, systemOrganizationsDelete, systemOrganizationsList, systemOrganizationsUpdate, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
-import type { AllUserRolesListData, AllUserRolesListResponse, AnnouncementsAcknowledgeData, AnnouncementsAcknowledgeResponse, AnnouncementsCreateData, AnnouncementsCreateResponse, AnnouncementsDeleteData, AnnouncementsDeleteResponse, AnnouncementsDismissData, AnnouncementsDismissResponse, AnnouncementsGetData, AnnouncementsGetResponse, AnnouncementsGetStatsData, AnnouncementsGetStatsResponse, AnnouncementsGetUnreadCountData, AnnouncementsGetUnreadCountResponse, AnnouncementsListData, AnnouncementsListResponse, AnnouncementsMarkReadData, AnnouncementsMarkReadResponse, AnnouncementsMarkViewedData, AnnouncementsMarkViewedResponse, AnnouncementsUpdateData, AnnouncementsUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CouponsAdminCreateData, CouponsAdminCreateResponse, CouponsAdminDeleteData, CouponsAdminDeleteResponse, CouponsAdminGetData, CouponsAdminGetResponse, CouponsAdminListData, CouponsAdminListResponse, CouponsAdminUpdateData, CouponsAdminUpdateResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsCreateData, JobsCreateResponse, JobsDownloadData, JobsDownloadResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, JobsRetryData, JobsRetryResponse, JobTypesListData, JobTypesListResponse2, LegalDocumentsAdminCreateData, LegalDocumentsAdminCreateResponse, LegalDocumentsAdminCreateVersionData, LegalDocumentsAdminCreateVersionResponse, LegalDocumentsAdminDeleteData, LegalDocumentsAdminDeleteResponse, LegalDocumentsAdminExportAcceptancesData, LegalDocumentsAdminExportAcceptancesResponse, LegalDocumentsAdminGetAuditLogData, LegalDocumentsAdminGetAuditLogResponse, LegalDocumentsAdminGetData, LegalDocumentsAdminGetResponse, LegalDocumentsAdminGetVersionData, LegalDocumentsAdminGetVersionResponse, LegalDocumentsAdminListAcceptancesData, LegalDocumentsAdminListAcceptancesResponse, LegalDocumentsAdminListData, LegalDocumentsAdminListResponse, LegalDocumentsAdminListVersionsData, LegalDocumentsAdminListVersionsResponse, LegalDocumentsAdminPreviewVersionData, LegalDocumentsAdminPreviewVersionResponse, LegalDocumentsAdminPublishVersionData, LegalDocumentsAdminPublishVersionResponse, LegalDocumentsAdminUnpublishVersionData, LegalDocumentsAdminUnpublishVersionResponse, LegalDocumentsAdminUpdateData, LegalDocumentsAdminUpdateResponse, LegalDocumentsAdminUpdateVersionData, LegalDocumentsAdminUpdateVersionResponse, LegalDocumentsPublicAcceptData, LegalDocumentsPublicAcceptResponse, LegalDocumentsPublicCheckPendingData, LegalDocumentsPublicCheckPendingResponse, LegalDocumentsPublicGetActiveData, LegalDocumentsPublicGetActiveResponse, LegalDocumentsPublicGetMyAcceptancesData, LegalDocumentsPublicGetMyAcceptancesResponse, LegalDocumentsPublicListActiveData, LegalDocumentsPublicListActiveResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, PaymentWebhooksHandleMidtransData, PaymentWebhooksHandleMidtransResponse, PaymentWebhooksHandleXenditData, PaymentWebhooksHandleXenditResponse, PublicPricingListPublicPlansData, PublicPricingListPublicPlansResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledJobsCreateData, ScheduledJobsCreateResponse, ScheduledJobsDeleteData, ScheduledJobsDeleteResponse, ScheduledJobsGetData, ScheduledJobsGetHistoryData, ScheduledJobsGetHistoryResponse, ScheduledJobsGetResponse, ScheduledJobsListData, ScheduledJobsListResponse, ScheduledJobsPauseData, ScheduledJobsPauseResponse, ScheduledJobsResumeData, ScheduledJobsResumeResponse, ScheduledJobsRunNowData, ScheduledJobsRunNowResponse, ScheduledJobsUpdateData, ScheduledJobsUpdateResponse, SubscriptionPlansAdminCreateData, SubscriptionPlansAdminCreateResponse, SubscriptionPlansAdminDeleteData, SubscriptionPlansAdminDeleteResponse, SubscriptionPlansAdminGetData, SubscriptionPlansAdminGetResponse, SubscriptionPlansAdminListData, SubscriptionPlansAdminListResponse, SubscriptionPlansAdminUpdateData, SubscriptionPlansAdminUpdateResponse, SubscriptionsApplyCouponData, SubscriptionsApplyCouponResponse, SubscriptionsCancelData, SubscriptionsCancelResponse, SubscriptionsCreateData, SubscriptionsCreateResponse, SubscriptionsGetCurrentData, SubscriptionsGetCurrentResponse, SubscriptionsResumeData, SubscriptionsResumeResponse, SubscriptionsUpdateData, SubscriptionsUpdateResponse, SubscriptionsValidateCouponData, SubscriptionsValidateCouponResponse, SystemOrganizationsDeleteData, SystemOrganizationsDeleteResponse, SystemOrganizationsListData, SystemOrganizationsListResponse, SystemOrganizationsUpdateData, SystemOrganizationsUpdateResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
+import { allUserRolesList, announcementsAcknowledge, announcementsCreate, announcementsDelete, announcementsDismiss, announcementsGet, announcementsGetStats, announcementsGetUnreadCount, announcementsList, announcementsMarkRead, announcementsMarkViewed, announcementsUpdate, auditLogsExport, auditLogsGet, auditLogsList, availableContextsList, backupsCreate, backupsDelete, backupsDownload, backupsGet, backupsList, backupsRestore, contextSwitchSwitch, couponsAdminCreate, couponsAdminDelete, couponsAdminGet, couponsAdminList, couponsAdminUpdate, currentUserContextGet, exampleCommentsBatchCreate, exampleCommentsBatchSoftDelete, exampleCommentsCreate, exampleCommentsDelete, exampleCommentsDeletePermanent, exampleCommentsGet, exampleCommentsList, exampleCommentsRestore, exampleCommentsUpdate, examplePostsBatchCreate, examplePostsBatchRestore, examplePostsBatchSoftDelete, examplePostsBatchUpdate, examplePostsCreate, examplePostsDelete, examplePostsDeletePermanent, examplePostsGet, examplePostsList, examplePostsListCursor, examplePostsListDeleted, examplePostsRestore, examplePostsUpdate, filesConfirmUpload, filesDelete, filesDeletePermanent, filesDirectUpload, filesDownload, filesGet, filesInitiateUpload, filesList, filesUpdate, globalRolesCreate, globalRolesDelete, globalRolesGet, globalRolesList, globalRolesUpdate, healthCheck, jobsCancel, jobsCreate, jobsDownload, jobsGet, jobsList, jobsRetry, jobTypesList, legalDocumentsAdminCreate, legalDocumentsAdminCreateVersion, legalDocumentsAdminDelete, legalDocumentsAdminExportAcceptances, legalDocumentsAdminGet, legalDocumentsAdminGetAuditLog, legalDocumentsAdminGetVersion, legalDocumentsAdminList, legalDocumentsAdminListAcceptances, legalDocumentsAdminListVersions, legalDocumentsAdminPreviewVersion, legalDocumentsAdminPublishVersion, legalDocumentsAdminUnpublishVersion, legalDocumentsAdminUpdate, legalDocumentsAdminUpdateVersion, legalDocumentsPublicAccept, legalDocumentsPublicCheckPending, legalDocumentsPublicGetActive, legalDocumentsPublicGetMyAcceptances, legalDocumentsPublicListActive, migrationGetStatus, notificationPreferencesRoutesGetPreferences, notificationPreferencesRoutesUpdatePreferences, notificationsDelete, notificationsGet, notificationsGetUnreadCount, notificationsList, notificationsMarkAllRead, notificationsMarkRead, notificationsMarkUnread, notificationsPreviewEmail, notificationsRestore, notificationsSend, type Options, paymentWebhooksHandleMidtrans, paymentWebhooksHandleXendit, publicPricingListPublicPlans, reportExportsExport, reportExportsPreviewExport, reportExportsStreamExport, reportTemplatesClone, reportTemplatesCreate, reportTemplatesDelete, reportTemplatesGet, reportTemplatesList, reportTemplatesUpdate, scheduledJobsCreate, scheduledJobsDelete, scheduledJobsGet, scheduledJobsGetHistory, scheduledJobsList, scheduledJobsPause, scheduledJobsResume, scheduledJobsRunNow, scheduledJobsUpdate, subscriptionPlansAdminCreate, subscriptionPlansAdminDelete, subscriptionPlansAdminGet, subscriptionPlansAdminList, subscriptionPlansAdminUpdate, subscriptionsApplyCoupon, subscriptionsCancel, subscriptionsCreate, subscriptionsGetCurrent, subscriptionsResume, subscriptionsUpdate, subscriptionsValidateCoupon, systemOrganizationsDelete, systemOrganizationsList, systemOrganizationsUpdate, tenantRolesCreate, tenantRolesDelete, tenantRolesGet, tenantRolesList, tenantRolesUpdate, userPermissionsGet, userTenantRolesAssign, userTenantRolesList, userTenantRolesRemove, webhooksCreate, webhooksDelete, webhooksGet, webhooksGetDelivery, webhooksList, webhooksListDeliveries, webhooksListEventTypes, webhooksRetryDelivery, webhooksRotateSecret, webhooksTest, webhooksUpdate } from '../sdk.gen';
+import type { AllUserRolesListData, AllUserRolesListResponse, AnnouncementsAcknowledgeData, AnnouncementsAcknowledgeResponse, AnnouncementsCreateData, AnnouncementsCreateResponse, AnnouncementsDeleteData, AnnouncementsDeleteResponse, AnnouncementsDismissData, AnnouncementsDismissResponse, AnnouncementsGetData, AnnouncementsGetResponse, AnnouncementsGetStatsData, AnnouncementsGetStatsResponse, AnnouncementsGetUnreadCountData, AnnouncementsGetUnreadCountResponse, AnnouncementsListData, AnnouncementsListResponse, AnnouncementsMarkReadData, AnnouncementsMarkReadResponse, AnnouncementsMarkViewedData, AnnouncementsMarkViewedResponse, AnnouncementsUpdateData, AnnouncementsUpdateResponse, AuditLogsExportData, AuditLogsExportResponse, AuditLogsGetData, AuditLogsGetResponse, AuditLogsListData, AuditLogsListResponse, AvailableContextsListData, AvailableContextsListResponse, BackupsCreateData, BackupsCreateResponse, BackupsDeleteData, BackupsDeleteResponse, BackupsDownloadData, BackupsDownloadResponse, BackupsGetData, BackupsGetResponse, BackupsListData, BackupsListResponse, BackupsRestoreData, BackupsRestoreResponse, ContextSwitchSwitchData, ContextSwitchSwitchResponse, CouponsAdminCreateData, CouponsAdminCreateResponse, CouponsAdminDeleteData, CouponsAdminDeleteResponse, CouponsAdminGetData, CouponsAdminGetResponse, CouponsAdminListData, CouponsAdminListResponse, CouponsAdminUpdateData, CouponsAdminUpdateResponse, CurrentUserContextGetData, CurrentUserContextGetResponse, ExampleCommentsBatchCreateData, ExampleCommentsBatchCreateResponse, ExampleCommentsBatchSoftDeleteData, ExampleCommentsBatchSoftDeleteResponse, ExampleCommentsCreateData, ExampleCommentsCreateResponse, ExampleCommentsDeleteData, ExampleCommentsDeletePermanentData, ExampleCommentsDeletePermanentResponse, ExampleCommentsDeleteResponse, ExampleCommentsGetData, ExampleCommentsGetResponse, ExampleCommentsListData, ExampleCommentsListResponse, ExampleCommentsRestoreData, ExampleCommentsRestoreResponse, ExampleCommentsUpdateData, ExampleCommentsUpdateResponse, ExamplePostsBatchCreateData, ExamplePostsBatchCreateResponse, ExamplePostsBatchRestoreData, ExamplePostsBatchRestoreResponse, ExamplePostsBatchSoftDeleteData, ExamplePostsBatchSoftDeleteResponse, ExamplePostsBatchUpdateData, ExamplePostsBatchUpdateResponse, ExamplePostsCreateData, ExamplePostsCreateResponse, ExamplePostsDeleteData, ExamplePostsDeletePermanentData, ExamplePostsDeletePermanentResponse, ExamplePostsDeleteResponse, ExamplePostsGetData, ExamplePostsGetResponse, ExamplePostsListCursorData, ExamplePostsListCursorResponse, ExamplePostsListData, ExamplePostsListDeletedData, ExamplePostsListDeletedResponse, ExamplePostsListResponse, ExamplePostsRestoreData, ExamplePostsRestoreResponse, ExamplePostsUpdateData, ExamplePostsUpdateResponse, FilesConfirmUploadData, FilesConfirmUploadResponse, FilesDeleteData, FilesDeletePermanentData, FilesDeletePermanentResponse, FilesDeleteResponse, FilesDirectUploadData, FilesDirectUploadResponse, FilesDownloadData, FilesDownloadResponse, FilesGetData, FilesGetResponse, FilesInitiateUploadData, FilesInitiateUploadResponse, FilesListData, FilesListResponse, FilesUpdateData, FilesUpdateResponse, GlobalRolesCreateData, GlobalRolesCreateResponse, GlobalRolesDeleteData, GlobalRolesDeleteResponse, GlobalRolesGetData, GlobalRolesGetResponse, GlobalRolesListData, GlobalRolesListResponse, GlobalRolesUpdateData, GlobalRolesUpdateResponse, HealthCheckData, HealthCheckResponse, JobsCancelData, JobsCancelResponse, JobsCreateData, JobsCreateResponse, JobsDownloadData, JobsDownloadResponse, JobsGetData, JobsGetResponse, JobsListData, JobsListResponse, JobsRetryData, JobsRetryResponse, JobTypesListData, JobTypesListResponse2, LegalDocumentsAdminCreateData, LegalDocumentsAdminCreateResponse, LegalDocumentsAdminCreateVersionData, LegalDocumentsAdminCreateVersionResponse, LegalDocumentsAdminDeleteData, LegalDocumentsAdminDeleteResponse, LegalDocumentsAdminExportAcceptancesData, LegalDocumentsAdminExportAcceptancesResponse, LegalDocumentsAdminGetAuditLogData, LegalDocumentsAdminGetAuditLogResponse, LegalDocumentsAdminGetData, LegalDocumentsAdminGetResponse, LegalDocumentsAdminGetVersionData, LegalDocumentsAdminGetVersionResponse, LegalDocumentsAdminListAcceptancesData, LegalDocumentsAdminListAcceptancesResponse, LegalDocumentsAdminListData, LegalDocumentsAdminListResponse, LegalDocumentsAdminListVersionsData, LegalDocumentsAdminListVersionsResponse, LegalDocumentsAdminPreviewVersionData, LegalDocumentsAdminPreviewVersionResponse, LegalDocumentsAdminPublishVersionData, LegalDocumentsAdminPublishVersionResponse, LegalDocumentsAdminUnpublishVersionData, LegalDocumentsAdminUnpublishVersionResponse, LegalDocumentsAdminUpdateData, LegalDocumentsAdminUpdateResponse, LegalDocumentsAdminUpdateVersionData, LegalDocumentsAdminUpdateVersionResponse, LegalDocumentsPublicAcceptData, LegalDocumentsPublicAcceptResponse, LegalDocumentsPublicCheckPendingData, LegalDocumentsPublicCheckPendingResponse, LegalDocumentsPublicGetActiveData, LegalDocumentsPublicGetActiveResponse, LegalDocumentsPublicGetMyAcceptancesData, LegalDocumentsPublicGetMyAcceptancesResponse, LegalDocumentsPublicListActiveData, LegalDocumentsPublicListActiveResponse, MigrationGetStatusData, MigrationGetStatusResponse, NotificationPreferencesRoutesGetPreferencesData, NotificationPreferencesRoutesGetPreferencesResponse, NotificationPreferencesRoutesUpdatePreferencesData, NotificationPreferencesRoutesUpdatePreferencesResponse, NotificationsDeleteData, NotificationsDeleteResponse, NotificationsGetData, NotificationsGetResponse, NotificationsGetUnreadCountData, NotificationsGetUnreadCountResponse, NotificationsListData, NotificationsListResponse, NotificationsMarkAllReadData, NotificationsMarkAllReadResponse, NotificationsMarkReadData, NotificationsMarkReadResponse, NotificationsMarkUnreadData, NotificationsMarkUnreadResponse, NotificationsPreviewEmailData, NotificationsPreviewEmailResponse, NotificationsRestoreData, NotificationsRestoreResponse, NotificationsSendData, NotificationsSendResponse, PaymentWebhooksHandleMidtransData, PaymentWebhooksHandleMidtransResponse, PaymentWebhooksHandleXenditData, PaymentWebhooksHandleXenditResponse, PublicPricingListPublicPlansData, PublicPricingListPublicPlansResponse, ReportExportsExportData, ReportExportsExportResponse, ReportExportsPreviewExportData, ReportExportsPreviewExportResponse, ReportExportsStreamExportData, ReportExportsStreamExportResponse, ReportTemplatesCloneData, ReportTemplatesCloneResponse, ReportTemplatesCreateData, ReportTemplatesCreateResponse, ReportTemplatesDeleteData, ReportTemplatesDeleteResponse, ReportTemplatesGetData, ReportTemplatesGetResponse, ReportTemplatesListData, ReportTemplatesListResponse, ReportTemplatesUpdateData, ReportTemplatesUpdateResponse, ScheduledJobsCreateData, ScheduledJobsCreateResponse, ScheduledJobsDeleteData, ScheduledJobsDeleteResponse, ScheduledJobsGetData, ScheduledJobsGetHistoryData, ScheduledJobsGetHistoryResponse, ScheduledJobsGetResponse, ScheduledJobsListData, ScheduledJobsListResponse, ScheduledJobsPauseData, ScheduledJobsPauseResponse, ScheduledJobsResumeData, ScheduledJobsResumeResponse, ScheduledJobsRunNowData, ScheduledJobsRunNowResponse, ScheduledJobsUpdateData, ScheduledJobsUpdateResponse, SubscriptionPlansAdminCreateData, SubscriptionPlansAdminCreateResponse, SubscriptionPlansAdminDeleteData, SubscriptionPlansAdminDeleteResponse, SubscriptionPlansAdminGetData, SubscriptionPlansAdminGetResponse, SubscriptionPlansAdminListData, SubscriptionPlansAdminListResponse, SubscriptionPlansAdminUpdateData, SubscriptionPlansAdminUpdateResponse, SubscriptionsApplyCouponData, SubscriptionsApplyCouponResponse, SubscriptionsCancelData, SubscriptionsCancelResponse, SubscriptionsCreateData, SubscriptionsCreateResponse, SubscriptionsGetCurrentData, SubscriptionsGetCurrentResponse, SubscriptionsResumeData, SubscriptionsResumeResponse, SubscriptionsUpdateData, SubscriptionsUpdateResponse, SubscriptionsValidateCouponData, SubscriptionsValidateCouponResponse, SystemOrganizationsDeleteData, SystemOrganizationsDeleteResponse, SystemOrganizationsListData, SystemOrganizationsListResponse, SystemOrganizationsUpdateData, SystemOrganizationsUpdateResponse, TenantRolesCreateData, TenantRolesCreateResponse, TenantRolesDeleteData, TenantRolesDeleteResponse, TenantRolesGetData, TenantRolesGetResponse, TenantRolesListData, TenantRolesListResponse, TenantRolesUpdateData, TenantRolesUpdateResponse, UserPermissionsGetData, UserPermissionsGetResponse, UserTenantRolesAssignData, UserTenantRolesAssignResponse, UserTenantRolesListData, UserTenantRolesListResponse, UserTenantRolesRemoveData, UserTenantRolesRemoveResponse, WebhooksCreateData, WebhooksCreateResponse, WebhooksDeleteData, WebhooksDeleteResponse, WebhooksGetData, WebhooksGetDeliveryData, WebhooksGetDeliveryResponse, WebhooksGetResponse, WebhooksListData, WebhooksListDeliveriesData, WebhooksListDeliveriesResponse, WebhooksListEventTypesData, WebhooksListEventTypesResponse, WebhooksListResponse, WebhooksRetryDeliveryData, WebhooksRetryDeliveryResponse, WebhooksRotateSecretData, WebhooksRotateSecretResponse, WebhooksTestData, WebhooksTestResponse, WebhooksUpdateData, WebhooksUpdateResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1512,6 +1512,161 @@ export const auditLogsGetOptions = (options: Options<AuditLogsGetData>) => query
     },
     queryKey: auditLogsGetQueryKey(options)
 });
+
+export const backupsListQueryKey = (options: Options<BackupsListData>) => createQueryKey('backupsList', options);
+
+/**
+ * List backups
+ *
+ * List backups
+ *
+ * Returns paginated list of backups for the organization.
+ */
+export const backupsListOptions = (options: Options<BackupsListData>) => queryOptions<BackupsListResponse, DefaultError, BackupsListResponse, ReturnType<typeof backupsListQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await backupsList({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: backupsListQueryKey(options)
+});
+
+export const backupsListInfiniteQueryKey = (options: Options<BackupsListData>): QueryKey<Options<BackupsListData>> => createQueryKey('backupsList', options, true);
+
+/**
+ * List backups
+ *
+ * List backups
+ *
+ * Returns paginated list of backups for the organization.
+ */
+export const backupsListInfiniteOptions = (options: Options<BackupsListData>) => infiniteQueryOptions<BackupsListResponse, DefaultError, InfiniteData<BackupsListResponse>, QueryKey<Options<BackupsListData>>, number | Pick<QueryKey<Options<BackupsListData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<BackupsListData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                page: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await backupsList({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: backupsListInfiniteQueryKey(options)
+});
+
+/**
+ * Create backup
+ *
+ * Create a new backup
+ *
+ * Initiates an async backup job for the organization.
+ * Returns 202 Accepted with the backup record.
+ */
+export const backupsCreateMutation = (options?: Partial<Options<BackupsCreateData>>): UseMutationOptions<BackupsCreateResponse, DefaultError, Options<BackupsCreateData>> => {
+    const mutationOptions: UseMutationOptions<BackupsCreateResponse, DefaultError, Options<BackupsCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await backupsCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Delete backup
+ *
+ * Delete a backup
+ */
+export const backupsDeleteMutation = (options?: Partial<Options<BackupsDeleteData>>): UseMutationOptions<BackupsDeleteResponse, DefaultError, Options<BackupsDeleteData>> => {
+    const mutationOptions: UseMutationOptions<BackupsDeleteResponse, DefaultError, Options<BackupsDeleteData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await backupsDelete({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const backupsGetQueryKey = (options: Options<BackupsGetData>) => createQueryKey('backupsGet', options);
+
+/**
+ * Get backup
+ *
+ * Get backup details
+ */
+export const backupsGetOptions = (options: Options<BackupsGetData>) => queryOptions<BackupsGetResponse, DefaultError, BackupsGetResponse, ReturnType<typeof backupsGetQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await backupsGet({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: backupsGetQueryKey(options)
+});
+
+export const backupsDownloadQueryKey = (options: Options<BackupsDownloadData>) => createQueryKey('backupsDownload', options);
+
+/**
+ * Download backup
+ *
+ * Download backup file
+ */
+export const backupsDownloadOptions = (options: Options<BackupsDownloadData>) => queryOptions<BackupsDownloadResponse, DefaultError, BackupsDownloadResponse, ReturnType<typeof backupsDownloadQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await backupsDownload({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: backupsDownloadQueryKey(options)
+});
+
+/**
+ * Restore backup
+ *
+ * Restore from backup
+ *
+ * Initiates an async restore job from the specified backup.
+ */
+export const backupsRestoreMutation = (options?: Partial<Options<BackupsRestoreData>>): UseMutationOptions<BackupsRestoreResponse, DefaultError, Options<BackupsRestoreData>> => {
+    const mutationOptions: UseMutationOptions<BackupsRestoreResponse, DefaultError, Options<BackupsRestoreData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await backupsRestore({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const examplePostsListQueryKey = (options: Options<ExamplePostsListData>) => createQueryKey('examplePostsList', options);
 

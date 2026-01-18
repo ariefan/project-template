@@ -15,6 +15,7 @@ import {
   CalendarClock,
   Code,
   CreditCard,
+  DatabaseBackup,
   FileSpreadsheet,
   FileText,
   FolderOpen,
@@ -180,6 +181,11 @@ const navAdmin = [
     title: "Subscription Plans",
     url: "/admin/subscriptions/plans",
     icon: Package,
+  },
+  {
+    title: "System Backups",
+    url: "/admin/backups",
+    icon: DatabaseBackup,
   },
 ];
 
