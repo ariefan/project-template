@@ -178,3 +178,42 @@ model JobListResponse {
   pagination: Pagination;
   meta: ResponseMeta;
 }
+
+// ============================================================================
+// JOB TYPES (for schedule form)
+// ============================================================================
+
+/**
+ * Job type information for UI
+ *
+ * Describes a registered job handler's metadata for building
+ * schedule configuration forms.
+ */
+model JobTypeInfo {
+  /** Job type identifier */
+  @example("report")
+  type: string;
+
+  /** Human-readable label */
+  @example("Report Generation")
+  label: string;
+
+  /** Description of what the job does */
+  @example("Generate reports from templates")
+  description: string;
+
+  /** JSON schema description for configuration */
+  @example("{ templateId: string, format?: 'xlsx'|'csv'|'pdf' }")
+  configSchema?: string;
+
+  /** Example configuration */
+  exampleConfig?: Record<unknown>;
+}
+
+/**
+ * Job types list response
+ */
+model JobTypesListResponse {
+  data: JobTypeInfo[];
+  meta: ResponseMeta;
+}

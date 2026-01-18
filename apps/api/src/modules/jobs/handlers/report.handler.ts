@@ -233,10 +233,16 @@ async function handleReportJob(context: JobContext): Promise<JobResult> {
  */
 export function registerReportHandler(): void {
   jobHandlerRegistry.register({
-    type: "report",
+    type: "report:generate",
     handler: handleReportJob,
     concurrency: 3,
     retryLimit: 3,
     expireInSeconds: 3600, // 1 hour
+    // UI metadata
+    label: "Report Generation",
+    description: "Generate a report from a template with data",
+    configSchema:
+      '{ templateId: string, format?: "xlsx"|"csv"|"pdf", parameters?: Record<string,unknown> }',
+    exampleConfig: { templateId: "tpl_example", format: "xlsx" },
   });
 }

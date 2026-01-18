@@ -2,7 +2,7 @@ import { filesService } from "../../files";
 import { jobHandlerRegistry } from "./registry";
 import type { JobContext, JobResult } from "./types";
 
-const JOB_TYPE = "storage:cleanup";
+const JOB_TYPE = "system:storage-cleanup";
 
 /**
  * Handler for cleaning up expired file uploads

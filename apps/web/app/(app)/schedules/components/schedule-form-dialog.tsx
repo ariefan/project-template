@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import type {
   JobDeliveryMethod,
   ScheduledJob,
@@ -35,7 +36,7 @@ import { Check, ChevronDown, Copy, HelpCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getErrorMessage } from "@/lib/api-client";
 import { useScheduleMutations } from "../hooks/use-schedules-data";
-import { getJobTemplate, getJobTypeOptions } from "../lib/job-templates";
+import { fetchJobTypes } from "../lib/job-templates";
 
 interface ScheduleFormDialogProps {
   open: boolean;
@@ -59,8 +60,7 @@ const DELIVERY_OPTIONS: { value: JobDeliveryMethod; label: string }[] = [
   { value: "storage", label: "Cloud Storage" },
 ];
 
-// Get job type options from templates (allows for extensibility)
-const JOB_TYPE_OPTIONS = getJobTypeOptions();
+// Remove static JOB_TYPE_OPTIONS as we'll fetch them dynamically
 
 const DAY_OF_WEEK_OPTIONS = [
   { value: "monday", label: "Monday" },
@@ -149,7 +149,7 @@ export function ScheduleFormDialog({
       } else {
         setName("");
         setDescription("");
-        setJobType("report");
+        setJobType(""); // Start empty and let user select
         setJobConfig({});
         setJobConfigString("{}");
         setFrequency("daily");
@@ -171,8 +171,12 @@ export function ScheduleFormDialog({
 
   const isLoading = isCreating || isUpdating;
 
-  // Get current job template
-  const currentTemplate = getJobTemplate(jobType);
+  const { data: jobTypes = [], isLoading: isLoadingJobTypes } = useQuery({
+    queryKey: ["job-types"],
+    queryFn: fetchJobTypes,
+  });
+
+  const currentTemplate = jobTypes.find((t) => t.type === jobType);
 
   // Handle job config JSON validation
   function handleJobConfigChange(value: string) {
@@ -337,26 +341,32 @@ export function ScheduleFormDialog({
               <FieldLabel htmlFor="jobType">Job Type</FieldLabel>
               <div className="flex gap-2">
                 <Select
-                  disabled={isLoading}
+                  disabled={isLoading || isLoadingJobTypes}
                   onValueChange={(value) => {
                     setJobType(value);
-                    // Auto-load template when switching to a known template type
-                    const template = getJobTemplate(value);
+                    const template = jobTypes.find((t) => t.type === value);
                     if (template) {
+                      setJobConfig(template.exampleConfig);
                       setJobConfigString(
                         JSON.stringify(template.exampleConfig, null, 2)
                       );
-                      setJobConfig(template.exampleConfig);
+                      setConfigError("");
                     }
                   }}
                   value={jobType}
                 >
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select job type" />
+                    <SelectValue
+                      placeholder={
+                        isLoadingJobTypes
+                          ? "Loading job types..."
+                          : "Select job type"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {JOB_TYPE_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                    {jobTypes.map((option) => (
+                      <SelectItem key={option.type} value={option.type}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -366,7 +376,7 @@ export function ScheduleFormDialog({
                   <PopoverTrigger asChild>
                     <Button
                       className="shrink-0"
-                      disabled={isLoading}
+                      disabled={isLoading || isLoadingJobTypes}
                       type="button"
                       variant="outline"
                     >
@@ -379,33 +389,36 @@ export function ScheduleFormDialog({
                       <p className="text-muted-foreground text-xs">
                         Select a template to load example configuration
                       </p>
-                      {JOB_TYPE_OPTIONS.map((option) => (
+                      {jobTypes.map((option) => (
                         <button
                           className="w-full rounded-md p-2 text-left text-sm transition-colors hover:bg-accent"
-                          key={option.value}
+                          key={option.type}
                           onClick={() => {
-                            const template = getJobTemplate(option.value);
-                            if (template) {
-                              setJobType(option.value);
-                              setJobConfigString(
-                                JSON.stringify(template.exampleConfig, null, 2)
-                              );
-                              setJobConfig(template.exampleConfig);
-                            }
+                            setJobType(option.type);
+                            setJobConfigString(
+                              JSON.stringify(option.exampleConfig, null, 2)
+                            );
+                            setJobConfig(option.exampleConfig);
+                            setConfigError("");
                           }}
                           type="button"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{option.label}</span>
-                            {jobType === option.value && (
+                            {jobType === option.type && (
                               <Check className="size-3 text-green-500" />
                             )}
                           </div>
                           <div className="mt-0.5 text-muted-foreground text-xs">
-                            {getJobTemplate(option.value)?.description}
+                            {option.description}
                           </div>
                         </button>
                       ))}
+                      {jobTypes.length === 0 && !isLoadingJobTypes && (
+                        <p className="py-2 text-center text-muted-foreground text-xs">
+                          No templates available
+                        </p>
+                      )}
                     </div>
                   </PopoverContent>
                 </Popover>

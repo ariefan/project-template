@@ -183,10 +183,16 @@ async function handleTestJob(context: JobContext): Promise<JobResult> {
  */
 export function registerTestHandler(): void {
   jobHandlerRegistry.register({
-    type: "test",
+    type: "dev:test-pokeapi",
     handler: handleTestJob,
     concurrency: 5,
     retryLimit: 2,
     expireInSeconds: 600, // 10 minutes
+    // UI metadata
+    label: "Test Job (PokéAPI)",
+    description: "Fetch data from PokéAPI for testing the job queue system",
+    configSchema:
+      '{ pages?: number, pageSize?: number, source?: "pokemon"|"ability"|"move"|"type"|"berry", failAtPage?: number }',
+    exampleConfig: { pages: 3, pageSize: 20, source: "pokemon" },
   });
 }

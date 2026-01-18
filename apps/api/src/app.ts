@@ -24,7 +24,7 @@ import {
 import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
-import { jobsModule } from "./modules/jobs";
+import { jobsModule, jobTypesRoutes } from "./modules/jobs";
 import { legalDocumentsModule } from "./modules/legal-documents";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
@@ -300,6 +300,18 @@ export async function buildApp(config: AppConfig) {
     app.log.info("Real-time notifications enabled (WebSocket + SSE)");
   }
 
+  // Register generic job handlers for discovery and processing
+  const {
+    registerReportHandler,
+    registerTestHandler,
+    registerStorageCleanupHandler,
+  } = await import("./modules/jobs");
+
+  registerReportHandler();
+  registerTestHandler();
+  registerSubscriptionHandlers();
+  registerStorageCleanupHandler();
+
   // Initialize webhook delivery queue (uses same QUEUE_ENABLED setting)
   if (env.QUEUE_ENABLED) {
     const { createWebhookQueue } = await import("./modules/webhooks");
@@ -320,21 +332,7 @@ export async function buildApp(config: AppConfig) {
     });
 
     // Initialize generic job queue with handlers
-    const {
-      createJobQueue,
-      registerReportHandler,
-      registerTestHandler,
-      registerStorageCleanupHandler,
-      jobsService,
-    } = await import("./modules/jobs");
-
-    // Register job handlers before starting queue
-    registerReportHandler();
-    registerTestHandler();
-    registerSubscriptionHandlers();
-
-    // Register storage cleanup handler (runs for all storage providers)
-    registerStorageCleanupHandler();
+    const { createJobQueue, jobsService } = await import("./modules/jobs");
 
     const jobQueue = createJobQueue({
       connectionString: env.DATABASE_URL,
@@ -345,10 +343,10 @@ export async function buildApp(config: AppConfig) {
     await jobQueue.start();
 
     // Schedule recurring maintenance jobs
-    await jobQueue.schedule("subscription:monitor", "0 * * * *");
+    await jobQueue.schedule("system:subscription-monitor", "0 * * * *");
 
     // Schedule storage cleanup
-    await jobQueue.schedule("storage:cleanup", "0 * * * *");
+    await jobQueue.schedule("system:storage-cleanup", "0 * * * *");
 
     // Initialize and start the scheduled job worker
     // This polls for due schedules and automatically creates jobs
@@ -434,6 +432,7 @@ export async function buildApp(config: AppConfig) {
   await app.register(schedulesModule, { prefix: "/v1/orgs" });
   await app.register(subscriptionsModule, { prefix: "/v1" });
   await app.register(legalDocumentsModule, { prefix: "/v1" });
+  await app.register(jobTypesRoutes, { prefix: "/v1" });
   await app.register(systemOrganizationsRoutes, {
     prefix: "/v1/system-organizations",
   });

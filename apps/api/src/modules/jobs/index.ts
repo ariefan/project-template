@@ -20,12 +20,13 @@ export {
   registerStorageCleanupHandler,
   registerTestHandler,
 } from "./handlers";
-
 // Re-export queue for initialization
 export {
   createJobQueue,
   type JobQueue,
   type JobQueueConfig,
 } from "./queue/job-queue";
+// Export jobTypesRoutes separately (registered at /v1, not /v1/orgs)
+export { jobTypesRoutes } from "./routes/job-types.routes";
 // Re-export service for use by other modules
 export * as jobsService from "./services/jobs.service";
