@@ -30,7 +30,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient, filesGet } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
@@ -129,7 +128,6 @@ export function CrudDetail({ id }: CrudDetailProps) {
   const queryClient = useQueryClient();
   const { data: orgData } = useActiveOrganization();
   const orgId = orgData?.id ?? "";
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const { data, isLoading, error } = useQuery(
     examplePostsGetOptions({
@@ -150,10 +148,6 @@ export function CrudDetail({ id }: CrudDetailProps) {
       router.push("/developer/crud");
     },
   });
-
-  function handleDeleteConfirm() {
-    deleteMutation.mutate({ path: { orgId, id } });
-  }
 
   if (isLoading) {
     return (
@@ -206,19 +200,28 @@ export function CrudDetail({ id }: CrudDetailProps) {
           Edit
         </Link>
       </Button>
-      <Button
-        disabled={deleteMutation.isPending}
-        onClick={() => setShowDeleteDialog(true)}
-        size="sm"
+      <ConfirmDialog
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        onConfirm={async () => {
+          await deleteMutation.mutateAsync({ path: { orgId, id } });
+        }}
+        title="Delete Post"
+        trigger={
+          <Button
+            disabled={deleteMutation.isPending}
+            size="sm"
+            variant="destructive"
+          >
+            {deleteMutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Trash2 className="size-4" />
+            )}
+            Delete
+          </Button>
+        }
         variant="destructive"
-      >
-        {deleteMutation.isPending ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <Trash2 className="size-4" />
-        )}
-        Delete
-      </Button>
+      />
     </>
   );
 
@@ -370,16 +373,6 @@ export function CrudDetail({ id }: CrudDetailProps) {
           </Card>
         )}
       </div>
-
-      <ConfirmDialog
-        description="Are you sure you want to delete this post? This action cannot be undone."
-        isLoading={deleteMutation.isPending}
-        onConfirm={handleDeleteConfirm}
-        onOpenChange={setShowDeleteDialog}
-        open={showDeleteDialog}
-        title="Delete Post"
-        variant="destructive"
-      />
     </div>
   );
 }

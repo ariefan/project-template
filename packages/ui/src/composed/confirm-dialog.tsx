@@ -8,6 +8,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@workspace/ui/components/alert-dialog";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -18,6 +19,7 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
+  DrawerTrigger,
 } from "@workspace/ui/components/drawer";
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile";
 import { cn } from "@workspace/ui/lib/utils";
@@ -28,7 +30,7 @@ import {
   type LucideIcon,
   XCircle,
 } from "lucide-react";
-import type * as React from "react";
+import * as React from "react";
 
 export type ConfirmDialogVariant = "default" | "warning" | "destructive";
 
@@ -59,17 +61,19 @@ const variantStyles: Record<
 };
 
 export interface ConfirmDialogProps {
-  /** Whether the dialog is open */
-  open: boolean;
+  /** Whether the dialog is open (controlled) */
+  open?: boolean;
   /** Called when dialog should close */
-  onOpenChange: (open: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
+  /** Trigger element for uncontrolled mode */
+  trigger?: React.ReactNode;
   /** Dialog title */
   title: string;
   /** Dialog description */
   description?: string;
   /** Called when confirm button is clicked */
   onConfirm: () => void | Promise<void>;
-  /** Called when cancel button is clicked (optional, defaults to closing dialog) */
+  /** Called when cancel button is clicked */
   onCancel?: () => void;
   /** Confirm button label */
   confirmLabel?: string;
@@ -83,7 +87,7 @@ export interface ConfirmDialogProps {
   iconClassName?: string;
   /** Confirm button variant */
   confirmVariant?: React.ComponentProps<typeof Button>["variant"];
-  /** Loading state */
+  /** Loading state (controlled) */
   isLoading?: boolean;
   /** Disable confirm button */
   confirmDisabled?: boolean;
@@ -98,10 +102,12 @@ export interface ConfirmDialogProps {
 /**
  * A flexible confirmation dialog with icon support.
  * Automatically adapts to Drawer on mobile devices.
+ * Supports both controlled (open/onOpenChange) and uncontrolled (trigger) modes.
  */
 export function ConfirmDialog({
-  open,
-  onOpenChange,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
+  trigger,
   title,
   description,
   onConfirm,
@@ -112,101 +118,216 @@ export function ConfirmDialog({
   icon: IconProp,
   iconClassName,
   confirmVariant,
-  isLoading = false,
+  isLoading: isLoadingProp,
   confirmDisabled = false,
   showCancel = true,
   children,
   className,
 }: ConfirmDialogProps) {
   const isMobile = useIsMobile();
-  const styles = variantStyles[variant];
-  const Icon = IconProp ?? variantIcons[variant];
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const [internalLoading, setInternalLoading] = React.useState(false);
+
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = isControlled ? onOpenChangeProp || noop : setInternalOpen;
+
+  const isLoading =
+    isLoadingProp !== undefined ? isLoadingProp : internalLoading;
 
   const handleConfirm = async () => {
-    await onConfirm();
-    // Note: We don't auto-close here - caller should control that
+    if (!isControlled) {
+      setInternalLoading(true);
+    }
+    try {
+      await onConfirm();
+      if (!isControlled) {
+        setOpen(false);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      if (!isControlled) {
+        setInternalLoading(false);
+      }
+    }
   };
 
   const handleCancel = () => {
     onCancel?.();
-    onOpenChange(false);
+    setOpen(false);
   };
 
-  // Determine confirm button variant
-  const getConfirmVariant = (): React.ComponentProps<
-    typeof Button
-  >["variant"] => {
-    if (confirmVariant) {
-      return confirmVariant;
-    }
-    if (variant === "destructive") {
-      return "destructive";
-    }
-    if (variant === "warning") {
-      return "default";
-    }
-    return "default";
+  const commonProps = {
+    open: Boolean(open),
+    onOpenChange: setOpen,
+    trigger,
+    title,
+    description,
+    confirmLabel,
+    cancelLabel,
+    variant,
+    icon: IconProp,
+    iconClassName,
+    confirmVariant,
+    isLoading: Boolean(isLoading),
+    confirmDisabled,
+    showCancel,
+    children,
+    className,
+    onConfirm: handleConfirm,
+    onCancel: handleCancel,
   };
 
   if (isMobile) {
-    return (
-      <Drawer dismissible={false} onOpenChange={onOpenChange} open={open}>
-        <DrawerContent className={cn(styles.container, className)}>
-          <DrawerHeader className="text-left">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                {Icon && (
-                  <div
-                    className={cn(
-                      "flex size-10 shrink-0 items-center justify-center rounded-full",
-                      styles.icon,
-                      iconClassName
-                    )}
-                  >
-                    <Icon className="size-5" />
-                  </div>
-                )}
-                <DrawerTitle>{title}</DrawerTitle>
-              </div>
-              {description && (
-                <DrawerDescription>{description}</DrawerDescription>
+    return <MobileConfirmDialog {...commonProps} />;
+  }
+
+  return <DesktopConfirmDialog {...commonProps} />;
+}
+
+// Helper to avoid empty block lint error
+const noop = () => {
+  // noop
+};
+
+interface InnerConfirmDialogProps
+  extends Omit<ConfirmDialogProps, "open" | "onOpenChange" | "isLoading"> {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  isLoading: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function MobileConfirmDialog(props: InnerConfirmDialogProps) {
+  const {
+    open,
+    onOpenChange,
+    trigger,
+    title,
+    description,
+    confirmLabel,
+    cancelLabel,
+    variant = "default",
+    icon: IconProp,
+    iconClassName,
+    confirmVariant,
+    isLoading,
+    confirmDisabled,
+    showCancel,
+    children,
+    className,
+    onConfirm,
+    onCancel,
+  } = props;
+
+  const styles = variantStyles[variant];
+  const Icon = IconProp ?? variantIcons[variant];
+
+  let finalConfirmVariant = confirmVariant;
+  if (!finalConfirmVariant) {
+    if (variant === "destructive") {
+      finalConfirmVariant = "destructive";
+    } else {
+      finalConfirmVariant = "default";
+    }
+  }
+
+  return (
+    <Drawer dismissible={false} onOpenChange={onOpenChange} open={open}>
+      {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
+      <DrawerContent className={cn(styles.container, className)}>
+        <DrawerHeader className="text-left">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              {Icon && (
+                <div
+                  className={cn(
+                    "flex size-10 shrink-0 items-center justify-center rounded-full",
+                    styles.icon,
+                    iconClassName
+                  )}
+                >
+                  <Icon className="size-5" />
+                </div>
               )}
+              <DrawerTitle>{title}</DrawerTitle>
             </div>
-          </DrawerHeader>
-
-          {children && <div className="px-4 py-2">{children}</div>}
-
-          <DrawerFooter className="pt-2">
-            <Button
-              className="w-full"
-              disabled={confirmDisabled || isLoading}
-              onClick={handleConfirm}
-              variant={getConfirmVariant()}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  {confirmLabel}
-                </>
-              ) : (
-                confirmLabel
-              )}
-            </Button>
-            {showCancel && (
-              <DrawerClose asChild>
-                <Button onClick={handleCancel} variant="outline">
-                  {cancelLabel}
-                </Button>
-              </DrawerClose>
+            {description && (
+              <DrawerDescription>{description}</DrawerDescription>
             )}
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-    );
+          </div>
+        </DrawerHeader>
+
+        {children && <div className="px-4 py-2">{children}</div>}
+
+        <DrawerFooter className="pt-2">
+          <Button
+            className="w-full"
+            disabled={confirmDisabled || isLoading}
+            onClick={onConfirm}
+            variant={finalConfirmVariant}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                {confirmLabel}
+              </>
+            ) : (
+              confirmLabel
+            )}
+          </Button>
+          {showCancel && (
+            <DrawerClose asChild>
+              <Button onClick={onCancel} variant="outline">
+                {cancelLabel}
+              </Button>
+            </DrawerClose>
+          )}
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function DesktopConfirmDialog(props: InnerConfirmDialogProps) {
+  const {
+    open,
+    onOpenChange,
+    trigger,
+    title,
+    description,
+    confirmLabel,
+    cancelLabel,
+    variant = "default",
+    icon: IconProp,
+    iconClassName,
+    confirmVariant,
+    isLoading,
+    confirmDisabled,
+    showCancel,
+    children,
+    className,
+    onConfirm,
+    onCancel,
+  } = props;
+
+  const styles = variantStyles[variant];
+  const Icon = IconProp ?? variantIcons[variant];
+
+  let finalConfirmVariant = confirmVariant;
+  if (!finalConfirmVariant) {
+    if (variant === "destructive") {
+      finalConfirmVariant = "destructive";
+    } else {
+      finalConfirmVariant = "default";
+    }
   }
 
   return (
     <AlertDialog onOpenChange={onOpenChange} open={open}>
+      {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent className={cn(styles.container, className)}>
         <AlertDialogHeader>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-6">
@@ -234,14 +355,14 @@ export function ConfirmDialog({
 
         <AlertDialogFooter>
           {showCancel && (
-            <AlertDialogCancel disabled={isLoading} onClick={handleCancel}>
+            <AlertDialogCancel disabled={isLoading} onClick={onCancel}>
               {cancelLabel}
             </AlertDialogCancel>
           )}
           <Button
             disabled={confirmDisabled || isLoading}
-            onClick={handleConfirm}
-            variant={getConfirmVariant()}
+            onClick={onConfirm}
+            variant={finalConfirmVariant}
           >
             {isLoading ? (
               <>

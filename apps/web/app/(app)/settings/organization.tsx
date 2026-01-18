@@ -60,7 +60,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient, useSession } from "@/lib/auth";
@@ -412,120 +411,91 @@ export function OrganizationDangerZone({
   organization: SystemOrganization;
 }) {
   const router = useRouter();
-  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLeave = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await client.organization.leave({
-        organizationId: organization.id,
-      });
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Left organization");
-        router.push("/dashboard");
-        window.location.reload();
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await client.organization.delete({
-        organizationId: organization.id,
-      });
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Organization deleted");
-        router.push("/dashboard");
-        window.location.reload();
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
-    <>
-      <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription>
-            Irreversible actions for your organization.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-md border p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Leave Organization</p>
-                <p className="text-muted-foreground text-sm">
-                  Revoke your access to this organization.
-                </p>
-              </div>
-              <Button
-                className="text-destructive hover:bg-destructive/10"
-                disabled={isLoading}
-                onClick={() => setShowLeaveDialog(true)}
-                variant="outline"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Leave
-              </Button>
+    <Card className="border-destructive/50">
+      <CardHeader>
+        <CardTitle className="text-destructive">Danger Zone</CardTitle>
+        <CardDescription>
+          Irreversible actions for your organization.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-md border p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">Leave Organization</p>
+              <p className="text-muted-foreground text-sm">
+                Revoke your access to this organization.
+              </p>
             </div>
+            <ConfirmDialog
+              confirmLabel="Leave"
+              description={`Are you sure you want to leave ${organization.name}? You will lose access to all resources.`}
+              onConfirm={async () => {
+                const { error } = await client.organization.leave({
+                  organizationId: organization.id,
+                });
+                if (error) {
+                  toast.error(error.message);
+                } else {
+                  toast.success("Left organization");
+                  router.push("/dashboard");
+                  window.location.reload();
+                }
+              }}
+              title="Leave Organization?"
+              trigger={
+                <Button
+                  className="text-destructive hover:bg-destructive/10"
+                  variant="outline"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Leave
+                </Button>
+              }
+              variant="destructive"
+            />
           </div>
+        </div>
 
-          <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-destructive">
-                  Delete Organization
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  Permanently delete this organization and all its data.
-                </p>
-              </div>
-              <Button
-                disabled={isLoading}
-                onClick={() => setShowDeleteDialog(true)}
-                variant="destructive"
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
+        <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-destructive">
+                Delete Organization
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Permanently delete this organization and all its data.
+              </p>
             </div>
+            <ConfirmDialog
+              confirmLabel="Delete"
+              description={`This action cannot be undone. This will permanently delete ${organization.name} and remove all data.`}
+              onConfirm={async () => {
+                const { error } = await client.organization.delete({
+                  organizationId: organization.id,
+                });
+                if (error) {
+                  toast.error(error.message);
+                } else {
+                  toast.success("Organization deleted");
+                  router.push("/dashboard");
+                  window.location.reload();
+                }
+              }}
+              title="Delete Organization?"
+              trigger={
+                <Button variant="destructive">
+                  <Trash className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              }
+              variant="destructive"
+            />
           </div>
-        </CardContent>
-      </Card>
-
-      <ConfirmDialog
-        confirmLabel="Leave"
-        description={`Are you sure you want to leave ${organization.name}? You will lose access to all resources.`}
-        isLoading={isLoading}
-        onConfirm={handleLeave}
-        onOpenChange={setShowLeaveDialog}
-        open={showLeaveDialog}
-        title="Leave Organization?"
-        variant="destructive"
-      />
-
-      <ConfirmDialog
-        confirmLabel="Delete"
-        description={`This action cannot be undone. This will permanently delete ${organization.name} and remove all data.`}
-        isLoading={isLoading}
-        onConfirm={handleDelete}
-        onOpenChange={setShowDeleteDialog}
-        open={showDeleteDialog}
-        title="Delete Organization?"
-        variant="destructive"
-      />
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
