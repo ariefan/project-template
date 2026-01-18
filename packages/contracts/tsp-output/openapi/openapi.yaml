@@ -7808,6 +7808,15 @@ components:
         description:
           type: string
           description: Optional description
+        includeFiles:
+          type: boolean
+          description: Include storage files in backup
+        encrypt:
+          type: boolean
+          description: Encrypt the backup
+        password:
+          type: string
+          description: Password for encryption (required if encrypt is true)
       description: Create backup request
     CreateCouponRequest:
       type: object

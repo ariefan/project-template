@@ -1,6 +1,5 @@
-import type { zCreateBackupRequest } from "@workspace/contracts";
+import type { CreateBackupRequest } from "@workspace/contracts";
 import type { FastifyInstance } from "fastify";
-import type { z } from "zod";
 import * as jobsService from "../../jobs/services/jobs.service";
 import * as backupsRepo from "../repositories/backups.repository";
 import * as backupService from "../services/backup.service";
@@ -46,10 +45,10 @@ export function backupsRoutes(app: FastifyInstance) {
    */
   app.post<{
     Params: { orgId: string };
-    Body: z.infer<typeof zCreateBackupRequest>;
+    Body: CreateBackupRequest;
   }>("/:orgId/backups", async (request, reply) => {
     const { orgId } = request.params;
-    const { includeFiles, encrypt, password } = request.body;
+    const { includeFiles, encrypt, password } = request.body ?? {};
     const userId = (request as { userId?: string }).userId ?? "system";
 
     try {

@@ -44,6 +44,25 @@ const TABLE_ORG_ID_MAP: Record<string, string> = {
   userRoleAssignments: "tenantId",
 };
 
+// Map table name to its schema definition
+const TABLE_SCHEMA_MAP = {
+  announcements: schema.announcements,
+  announcementInteractions: schema.announcementInteractions,
+  files: schema.files,
+  fileUploads: schema.fileUploads,
+  folders: schema.folders,
+  jobs: schema.jobs,
+  scheduledJobs: schema.scheduledJobs,
+  reportTemplates: schema.reportTemplates,
+  webhooks: schema.webhooks,
+  webhookDeliveries: schema.webhookDeliveries,
+  notifications: schema.notifications,
+  notificationPreferences: schema.notificationPreferences,
+  examplePosts: schema.examplePosts,
+  exampleComments: schema.exampleComments,
+  userRoleAssignments: schema.userRoleAssignments,
+} as const;
+
 /**
  * Generate a unique backup ID
  */
@@ -76,7 +95,7 @@ export async function exportOrgData(organizationId: string): Promise<{
   const rowCounts: Record<string, number> = {};
 
   for (const tableName of ORG_SCOPED_TABLES) {
-    const tableUser = schema[tableName as keyof typeof schema];
+    const tableUser = TABLE_SCHEMA_MAP[tableName];
     const orgIdColumn = TABLE_ORG_ID_MAP[tableName];
 
     if (!(tableUser && orgIdColumn)) {

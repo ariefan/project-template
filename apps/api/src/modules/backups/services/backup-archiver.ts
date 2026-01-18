@@ -7,7 +7,7 @@ import { encryptBuffer } from "./backup-crypto";
 /**
  * Create a zip archive of organization data and files
  */
-export async function createBackupArchive(
+export function createBackupArchive(
   _organizationId: string,
   data: Record<string, unknown[]>,
   files: FileRow[],
@@ -23,7 +23,7 @@ export async function createBackupArchive(
 
       archive.on("data", (chunk) => chunks.push(chunk));
       archive.on("error", (err) => reject(err));
-      archive.on("end", async () => {
+      archive.on("end", () => {
         let buffer = Buffer.concat(chunks);
 
         // Encrypt if password provided
@@ -53,7 +53,9 @@ export async function createBackupArchive(
 
       for (const file of files) {
         try {
-          if (!file.storagePath) continue;
+          if (!file.storagePath) {
+            continue;
+          }
 
           // ...
           const fileBuffer = await storage.download(file.storagePath);

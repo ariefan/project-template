@@ -62,20 +62,51 @@ function formatBytes(bytes: number | null | undefined): string {
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
-function getStatusBadgeVariant(
-  status: string
-): "default" | "secondary" | "destructive" | "outline" {
-  switch (status) {
-    case "completed":
-      return "default";
-    case "in_progress":
-    case "pending":
-      return "secondary";
-    case "failed":
-      return "destructive";
-    default:
-      return "outline";
+function renderBackupsContent(
+  isLoading: boolean,
+  backups: Backup[],
+  deleteMutation: { isPending: boolean; mutate: (id: string) => void },
+  restoreMutation: { isPending: boolean },
+  handleDownload: (backup: Backup) => void,
+  setRestoreBackup: (backup: Backup) => void
+) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
   }
+
+  if (backups.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <Archive className="mb-2 h-10 w-10 text-muted-foreground" />
+        <p className="text-muted-foreground">No system backups found</p>
+        <p className="text-muted-foreground text-sm">
+          Create a scheduled job or run a manual backup
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <ItemGroup>
+      {backups.map((backup, index) => (
+        <React.Fragment key={backup.id}>
+          <BackupItem
+            backup={backup}
+            isDeleting={deleteMutation.isPending}
+            isRestoring={restoreMutation.isPending}
+            onDelete={(id) => deleteMutation.mutate(id)}
+            onDownload={handleDownload}
+            onRestore={setRestoreBackup}
+          />
+          {index !== backups.length - 1 && <ItemSeparator />}
+        </React.Fragment>
+      ))}
+    </ItemGroup>
+  );
 }
 
 // Helper to safely access metadata fields
@@ -238,7 +269,9 @@ export default function SystemBackupsPage() {
           credentials: "include",
         }
       );
-      if (!response.ok) throw new Error("Failed to fetch backups");
+      if (!response.ok) {
+        throw new Error("Failed to fetch backups");
+      }
       return response.json() as Promise<{ data: Backup[] }>;
     },
   });
@@ -283,7 +316,9 @@ export default function SystemBackupsPage() {
           credentials: "include",
         }
       );
-      if (!response.ok) throw new Error("Failed to delete backup");
+      if (!response.ok) {
+        throw new Error("Failed to delete backup");
+      }
     },
     onSuccess: () => {
       toast.success("Backup deleted");
@@ -399,34 +434,13 @@ export default function SystemBackupsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : backups.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <Archive className="mb-2 h-10 w-10 text-muted-foreground" />
-              <p className="text-muted-foreground">No system backups found</p>
-              <p className="text-muted-foreground text-sm">
-                Create a scheduled job or run a manual backup
-              </p>
-            </div>
-          ) : (
-            <ItemGroup>
-              {backups.map((backup, index) => (
-                <React.Fragment key={backup.id}>
-                  <BackupItem
-                    backup={backup}
-                    isDeleting={deleteMutation.isPending}
-                    isRestoring={restoreMutation.isPending}
-                    onDelete={(id) => deleteMutation.mutate(id)}
-                    onDownload={handleDownload}
-                    onRestore={setRestoreBackup}
-                  />
-                  {index !== backups.length - 1 && <ItemSeparator />}
-                </React.Fragment>
-              ))}
-            </ItemGroup>
+          {renderBackupsContent(
+            isLoading,
+            backups,
+            deleteMutation,
+            restoreMutation,
+            handleDownload,
+            setRestoreBackup
           )}
         </CardContent>
       </Card>

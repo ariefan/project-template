@@ -1,8 +1,68 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { type Query, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSSE } from "@/hooks/use-sse";
+
+interface QueryKeyWithId {
+  _id: string;
+}
+
+function isQueryKeyWithId(key: unknown): key is QueryKeyWithId {
+  return typeof key === "object" && key !== null && "_id" in key;
+}
+
+function getQueryKeyId(query: Query): string | null {
+  const key = query.queryKey[0];
+  if (isQueryKeyWithId(key)) {
+    return key._id;
+  }
+  return null;
+}
+
+function matchesQueryIds(query: Query, ...ids: string[]): boolean {
+  const id = getQueryKeyId(query);
+  if (id === null) {
+    return false;
+  }
+  return ids.some((targetId) => id === targetId || id.startsWith(targetId));
+}
+
+function shouldInvalidateForJobEvent(query: Query, dataType: string): boolean {
+  const queryKeyId = getQueryKeyId(query);
+  if (queryKeyId?.startsWith("jobs")) {
+    return true;
+  }
+  const key = query.queryKey[0];
+  if (dataType === "system-backup" && key === "system-backups") {
+    return true;
+  }
+  if (dataType === "backup:org-create" && key === "backups") {
+    return true;
+  }
+  return false;
+}
+
+function shouldInvalidateForProgressEvent(
+  query: Query,
+  dataType: string
+): boolean {
+  const queryKeyId = getQueryKeyId(query);
+  if (queryKeyId?.startsWith("jobs")) {
+    return true;
+  }
+  const key = query.queryKey[0];
+  if (dataType === "system:backup-create" && key === "system-backups") {
+    return true;
+  }
+  if (dataType === "system-backup" && key === "system-backups") {
+    return true;
+  }
+  if (dataType === "backup:org-create" && key === "backups") {
+    return true;
+  }
+  return false;
+}
 
 export function NotificationListener() {
   const queryClient = useQueryClient();
@@ -28,14 +88,7 @@ export function NotificationListener() {
 
         // Invalidate notifications list query
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return id === "notificationsList";
-            }
-            return false;
-          },
+          predicate: (query) => matchesQueryIds(query, "notificationsList"),
         });
         break;
       }
@@ -45,17 +98,12 @@ export function NotificationListener() {
       case "notification:deleted": {
         // Invalidate both notifications list and unread count
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return (
-                id === "notificationsList" ||
-                id === "notificationsGetUnreadCount"
-              );
-            }
-            return false;
-          },
+          predicate: (query) =>
+            matchesQueryIds(
+              query,
+              "notificationsList",
+              "notificationsGetUnreadCount"
+            ),
         });
         break;
       }
@@ -63,14 +111,8 @@ export function NotificationListener() {
       case "notification:unread_count": {
         // Invalidate unread count query
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return id === "notificationsGetUnreadCount";
-            }
-            return false;
-          },
+          predicate: (query) =>
+            matchesQueryIds(query, "notificationsGetUnreadCount"),
         });
         break;
       }
@@ -81,17 +123,12 @@ export function NotificationListener() {
 
         // Invalidate both notifications list and unread count
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return (
-                id === "notificationsList" ||
-                id === "notificationsGetUnreadCount"
-              );
-            }
-            return false;
-          },
+          predicate: (query) =>
+            matchesQueryIds(
+              query,
+              "notificationsList",
+              "notificationsGetUnreadCount"
+            ),
         });
         break;
       }
@@ -102,21 +139,7 @@ export function NotificationListener() {
 
         // Invalidate jobs queries
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return id.startsWith("jobs");
-            }
-            // Invalidate system backups if applicable
-            if (data.type === "system-backup" && key === "system-backups") {
-              return true;
-            }
-            if (data.type === "backup:org-create" && key === "backups") {
-              return true;
-            }
-            return false;
-          },
+          predicate: (query) => shouldInvalidateForJobEvent(query, data.type),
         });
         break;
       }
@@ -127,32 +150,8 @@ export function NotificationListener() {
 
         // Invalidate queries to refresh progress bars
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return id.startsWith("jobs");
-            }
-            // Invalidate system backups if applicable
-            if (
-              data.type === "system:backup-create" &&
-              key === "system-backups"
-            ) {
-              return true;
-            }
-            if (data.type === "system-backup" && key === "system-backups") {
-              return true;
-            }
-            // Invalidate org backups if applicable
-            if (data.type === "backup:org-create") {
-              // Verify the query key structure: ["backups", orgId]
-              if (key === "backups") {
-                // If we had orgId available in the query, we could check it, but generic "backups" invalidation is safer/easier
-                return true;
-              }
-            }
-            return false;
-          },
+          predicate: (query) =>
+            shouldInvalidateForProgressEvent(query, data.type),
         });
         break;
       }
@@ -163,21 +162,7 @@ export function NotificationListener() {
 
         // Invalidate jobs queries
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return id.startsWith("jobs");
-            }
-            // Invalidate system backups if applicable
-            if (data.type === "system-backup" && key === "system-backups") {
-              return true;
-            }
-            if (data.type === "backup:org-create" && key === "backups") {
-              return true;
-            }
-            return false;
-          },
+          predicate: (query) => shouldInvalidateForJobEvent(query, data.type),
         });
         break;
       }
@@ -186,14 +171,7 @@ export function NotificationListener() {
       case "webhook:failed": {
         // Invalidate webhook queries
         queryClient.invalidateQueries({
-          predicate: (query) => {
-            const key = query.queryKey[0];
-            if (typeof key === "object" && key !== null && "_id" in key) {
-              const id = (key as { _id: string })._id;
-              return id.startsWith("webhooks");
-            }
-            return false;
-          },
+          predicate: (query) => matchesQueryIds(query, "webhooks"),
         });
         break;
       }

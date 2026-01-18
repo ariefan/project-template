@@ -76,27 +76,63 @@ import { env } from "@/lib/env";
 import { SettingsBackupsSkeleton } from "./skeletons";
 
 function formatBytes(bytes: number | null | undefined): string {
-  if (bytes == null || bytes === 0) return "0 B";
+  if (bytes == null || bytes === 0) {
+    return "0 B";
+  }
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
-function getStatusBadgeVariant(
-  status: string
-): "default" | "secondary" | "destructive" | "outline" {
-  switch (status) {
-    case "completed":
-      return "default";
-    case "in_progress":
-    case "pending":
-      return "secondary";
-    case "failed":
-      return "destructive";
-    default:
-      return "outline";
+interface BackupError {
+  message?: string;
+  error?: {
+    message?: string;
+  };
+}
+
+function renderBackupsListContent(
+  isLoading: boolean,
+  backups: Backup[],
+  deleteMutation: { isPending: boolean; mutate: (id: string) => void },
+  restoreMutation: { isPending: boolean },
+  handleDownload: (backup: Backup) => void,
+  setRestoreBackup: (backup: Backup) => void
+) {
+  if (isLoading) {
+    return <SettingsBackupsSkeleton />;
   }
+
+  if (backups.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <Archive className="mb-2 h-10 w-10 text-muted-foreground" />
+        <p className="text-muted-foreground">No backups yet</p>
+        <p className="text-muted-foreground text-sm">
+          Create your first backup to protect your data
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <ItemGroup>
+      {backups.map((backup, index) => (
+        <React.Fragment key={backup.id}>
+          <BackupItem
+            backup={backup}
+            isDeleting={deleteMutation.isPending}
+            isRestoring={restoreMutation.isPending}
+            onDelete={(id) => deleteMutation.mutate(id)}
+            onDownload={handleDownload}
+            onRestore={setRestoreBackup}
+          />
+          {index !== backups.length - 1 && <ItemSeparator />}
+        </React.Fragment>
+      ))}
+    </ItemGroup>
+  );
 }
 
 interface BackupItemProps {
@@ -217,7 +253,9 @@ export function BackupsTab() {
   const { data: backupsData, isLoading } = useQuery({
     queryKey: ["backups", orgId],
     queryFn: async () => {
-      if (!orgId) return { data: [] };
+      if (!orgId) {
+        return { data: [] };
+      }
       const response = await backupsList({
         client: apiClient,
         path: { orgId },
@@ -239,16 +277,19 @@ export function BackupsTab() {
   // Create backup mutation
   const createMutation = useMutation({
     mutationFn: async (options?: CreateBackupOptions) => {
-      if (!orgId) throw new Error("No organization selected");
+      if (!orgId) {
+        throw new Error("No organization selected");
+      }
       const { error } = await backupsCreate({
         client: apiClient,
         path: { orgId },
-        body: (options || {}) as any,
+        body: options ?? {},
       });
       if (error) {
+        const typedError = error as BackupError;
         const msg =
-          (error as any).message ||
-          (error as any).error?.message ||
+          typedError.message ||
+          typedError.error?.message ||
           "Failed to create backup";
         throw new Error(msg);
       }
@@ -266,12 +307,16 @@ export function BackupsTab() {
   // Delete backup mutation
   const deleteMutation = useMutation({
     mutationFn: async (backupId: string) => {
-      if (!orgId) throw new Error("No organization selected");
+      if (!orgId) {
+        throw new Error("No organization selected");
+      }
       const { error } = await backupsDelete({
         client: apiClient,
         path: { orgId, id: backupId },
       });
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
     },
     onSuccess: () => {
       toast.success("Backup deleted");
@@ -289,7 +334,9 @@ export function BackupsTab() {
       backupId: string;
       strategy: "skip" | "overwrite" | "wipe_and_replace";
     }) => {
-      if (!orgId) throw new Error("No organization selected");
+      if (!orgId) {
+        throw new Error("No organization selected");
+      }
       const response = await fetch(
         `${env.NEXT_PUBLIC_API_URL}/v1/orgs/${orgId}/backups/${backupId}/restore`,
         {
@@ -325,7 +372,9 @@ export function BackupsTab() {
   }
 
   function handleDownload(backup: Backup) {
-    if (!orgId) return;
+    if (!orgId) {
+      return;
+    }
     window.open(
       `${env.NEXT_PUBLIC_API_URL}/v1/orgs/${orgId}/backups/${backup.id}/download`,
       "_blank"
@@ -333,7 +382,9 @@ export function BackupsTab() {
   }
 
   function handleRestore() {
-    if (!restoreBackup) return;
+    if (!restoreBackup) {
+      return;
+    }
     restoreMutation.mutate({
       backupId: restoreBackup.id,
       strategy: restoreStrategy,
@@ -384,32 +435,13 @@ export function BackupsTab() {
           <CardTitle>Backup History</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <SettingsBackupsSkeleton />
-          ) : backups.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <Archive className="mb-2 h-10 w-10 text-muted-foreground" />
-              <p className="text-muted-foreground">No backups yet</p>
-              <p className="text-muted-foreground text-sm">
-                Create your first backup to protect your data
-              </p>
-            </div>
-          ) : (
-            <ItemGroup>
-              {backups.map((backup, index) => (
-                <React.Fragment key={backup.id}>
-                  <BackupItem
-                    backup={backup}
-                    isDeleting={deleteMutation.isPending}
-                    isRestoring={restoreMutation.isPending}
-                    onDelete={(id) => deleteMutation.mutate(id)}
-                    onDownload={handleDownload}
-                    onRestore={setRestoreBackup}
-                  />
-                  {index !== backups.length - 1 && <ItemSeparator />}
-                </React.Fragment>
-              ))}
-            </ItemGroup>
+          {renderBackupsListContent(
+            isLoading,
+            backups,
+            deleteMutation,
+            restoreMutation,
+            handleDownload,
+            setRestoreBackup
           )}
         </CardContent>
       </Card>

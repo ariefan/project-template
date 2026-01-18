@@ -65,6 +65,25 @@ const TABLE_ORG_ID_MAP: Record<string, string> = {
   userRoleAssignments: "tenantId",
 };
 
+// Map table name to its schema definition
+const TABLE_SCHEMA_MAP = {
+  announcements: schema.announcements,
+  announcementInteractions: schema.announcementInteractions,
+  files: schema.files,
+  fileUploads: schema.fileUploads,
+  folders: schema.folders,
+  jobs: schema.jobs,
+  scheduledJobs: schema.scheduledJobs,
+  reportTemplates: schema.reportTemplates,
+  webhooks: schema.webhooks,
+  webhookDeliveries: schema.webhookDeliveries,
+  notifications: schema.notifications,
+  notificationPreferences: schema.notificationPreferences,
+  examplePosts: schema.examplePosts,
+  exampleComments: schema.exampleComments,
+  userRoleAssignments: schema.userRoleAssignments,
+} as const;
+
 export type RestoreStrategy = "skip" | "overwrite" | "wipe_and_replace";
 
 export interface RestoreOptions {
@@ -129,37 +148,10 @@ export async function restoreFromBackup(
     }
 
     // Restore each table
-    for (const tableName of ORG_SCOPED_TABLES) {
-      const rows = backupData[tableName];
-      if (!rows || rows.length === 0) continue;
-
-      try {
-        const restored = await restoreTable(tableName, rows, options.strategy);
-        result.tablesRestored++;
-        result.rowsRestored += restored.inserted;
-        result.rowsSkipped += restored.skipped;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        result.errors.push(`Table ${tableName}: ${msg}`);
-      }
-    }
+    await restoreTables(backupData, options.strategy, result);
 
     // Restore files
-    for (const [path, content] of Object.entries(files)) {
-      if (path.startsWith("files/") && content) {
-        const storagePath = path.replace("files/", "");
-        try {
-          await storageProvider.upload(
-            storagePath,
-            Buffer.from(content),
-            "application/octet-stream"
-          );
-          result.filesRestored++;
-        } catch {
-          result.errors.push(`Failed to restore file: ${storagePath}`);
-        }
-      }
-    }
+    await restoreFiles(files, result);
 
     result.success = result.errors.length === 0;
     return result;
@@ -171,15 +163,66 @@ export async function restoreFromBackup(
 }
 
 /**
+ * Helper: Restore all tables
+ */
+async function restoreTables(
+  backupData: Record<string, unknown[]>,
+  strategy: RestoreStrategy,
+  result: RestoreResult
+) {
+  for (const tableName of ORG_SCOPED_TABLES) {
+    const rows = backupData[tableName];
+    if (!rows || rows.length === 0) {
+      continue;
+    }
+
+    try {
+      const restored = await restoreTable(tableName, rows, strategy);
+      result.tablesRestored++;
+      result.rowsRestored += restored.inserted;
+      result.rowsSkipped += restored.skipped;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      result.errors.push(`Table ${tableName}: ${msg}`);
+    }
+  }
+}
+
+/**
+ * Helper: Restore all files
+ */
+async function restoreFiles(
+  files: Record<string, Uint8Array>,
+  result: RestoreResult
+) {
+  for (const [path, content] of Object.entries(files)) {
+    if (path.startsWith("files/") && content) {
+      const storagePath = path.replace("files/", "");
+      try {
+        await storageProvider.upload(
+          storagePath,
+          Buffer.from(content),
+          "application/octet-stream"
+        );
+        result.filesRestored++;
+      } catch {
+        result.errors.push(`Failed to restore file: ${storagePath}`);
+      }
+    }
+  }
+}
+
+/**
  * Unzip buffer using fflate
  */
-async function unzipBuffer(
-  buffer: Buffer
-): Promise<Record<string, Uint8Array>> {
+function unzipBuffer(buffer: Buffer): Promise<Record<string, Uint8Array>> {
   return new Promise((resolve, reject) => {
     unzip(new Uint8Array(buffer), (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
     });
   });
 }
@@ -190,7 +233,7 @@ async function unzipBuffer(
  */
 async function wipeOrgData(organizationId: string): Promise<void> {
   for (const tableName of ORG_SCOPED_TABLES_REVERSE) {
-    const tableSchema = schema[tableName as keyof typeof schema];
+    const tableSchema = TABLE_SCHEMA_MAP[tableName];
     const orgIdColumn = TABLE_ORG_ID_MAP[tableName];
 
     if (!(tableSchema && orgIdColumn)) {
@@ -219,7 +262,9 @@ async function restoreTable(
   rows: unknown[],
   strategy: RestoreStrategy
 ): Promise<{ inserted: number; skipped: number }> {
-  const tableSchema = schema[tableName as keyof typeof schema];
+  // Safe access using map
+  const tableSchema =
+    TABLE_SCHEMA_MAP[tableName as keyof typeof TABLE_SCHEMA_MAP];
   const pkColumn = TABLE_PK_MAP[tableName];
 
   if (!(tableSchema && pkColumn)) {

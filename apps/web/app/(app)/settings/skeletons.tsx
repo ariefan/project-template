@@ -262,8 +262,8 @@ export function SettingsBackupsSkeleton() {
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
-                // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton list is static
                 className="flex items-center justify-between rounded-lg border p-4"
+                // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton list is static
                 key={i}
               >
                 <div className="space-y-1">

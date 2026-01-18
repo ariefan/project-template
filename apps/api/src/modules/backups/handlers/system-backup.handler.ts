@@ -44,7 +44,6 @@ export async function handleCreateSystemBackup(
   reply: FastifyReply
 ) {
   const userId = request.user?.id;
-  // biome-ignore lint/style/noNonNullAssertion: guaranteed by requireAuth
   if (!userId) {
     return reply
       .status(401)
@@ -186,7 +185,6 @@ export async function handleDownloadSystemBackup(
       }
 
       // Download, decrypt, and stream
-      // biome-ignore lint/style/noNonNullAssertion: guaranteed by check above
       const { storageProvider } = await import("../../storage/storage");
       const { decryptBuffer } = await import("../services/backup-crypto");
 

@@ -1112,6 +1112,18 @@ export type CreateBackupRequest = {
      * Optional description
      */
     description?: string;
+    /**
+     * Include storage files in backup
+     */
+    includeFiles?: boolean;
+    /**
+     * Encrypt the backup
+     */
+    encrypt?: boolean;
+    /**
+     * Password for encryption (required if encrypt is true)
+     */
+    password?: string;
 };
 
 /**
