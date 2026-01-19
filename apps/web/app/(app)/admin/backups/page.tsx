@@ -65,64 +65,9 @@ function formatBytes(bytes: number | null | undefined): string {
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
-function renderBackupsContent(
-  isLoading: boolean,
-  backups: Backup[],
-  deleteMutation: { isPending: boolean; mutate: (id: string) => void },
-  restoreMutation: { isPending: boolean },
-  handleDownload: (backup: Backup) => void,
-  setRestoreBackup: (backup: Backup) => void
-) {
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
-  }
 
-  if (backups.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <Archive className="mb-2 h-10 w-10 text-muted-foreground" />
-        <p className="text-muted-foreground">No system backups found</p>
-        <p className="text-muted-foreground text-sm">
-          Create a scheduled job or run a manual backup
-        </p>
-      </div>
-    );
-  }
 
-  return (
-    <ItemGroup>
-      {backups.map((backup, index) => (
-        <React.Fragment key={backup.id}>
-          <BackupItem
-            backup={backup}
-            isDeleting={deleteMutation.isPending}
-            isRestoring={restoreMutation.isPending}
-            onDelete={(id) => deleteMutation.mutate(id)}
-            onDownload={handleDownload}
-            onRestore={setRestoreBackup}
-          />
-          {index !== backups.length - 1 && <ItemSeparator />}
-        </React.Fragment>
-      ))}
-    </ItemGroup>
-  );
-}
 
-// Helper to safely access metadata fields
-function getBackupMeta(backup: Backup | null) {
-  if (!backup) {
-    return { isEncrypted: false, includesFiles: false };
-  }
-  const meta = backup.metadata as Record<string, unknown> | null | undefined;
-  return {
-    isEncrypted: meta?.isEncrypted === true,
-    includesFiles: meta?.includesFiles === true,
-  };
-}
 
 interface BackupItemProps {
   backup: Backup;
@@ -141,7 +86,10 @@ function BackupItem({
   isDeleting,
   isRestoring,
 }: BackupItemProps) {
-  const meta = getBackupMeta(backup);
+  const meta = {
+    isEncrypted: (backup.metadata as any)?.isEncrypted === true,
+    includesFiles: (backup.metadata as any)?.includesFiles === true,
+  };
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
   return (
@@ -365,7 +313,7 @@ export default function SystemBackupsPage() {
   });
 
   function handleDownload(backup: Backup) {
-    const { isEncrypted } = getBackupMeta(backup);
+    const isEncrypted = (backup.metadata as any)?.isEncrypted === true;
 
     if (isEncrypted) {
       setDownloadingBackupId(backup.id);
@@ -396,7 +344,7 @@ export default function SystemBackupsPage() {
       toast.error("You must type 'RESTORE' to confirm");
       return;
     }
-    const { isEncrypted } = getBackupMeta(restoreBackup);
+    const isEncrypted = (restoreBackup.metadata as any)?.isEncrypted === true;
     if (isEncrypted && !restorePassword) {
       toast.error("Password is required for encrypted backups");
       return;
@@ -431,13 +379,34 @@ export default function SystemBackupsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {renderBackupsContent(
-            isLoading,
-            backups,
-            deleteMutation,
-            restoreMutation,
-            handleDownload,
-            setRestoreBackup
+          {isLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : backups.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <Archive className="mb-2 h-10 w-10 text-muted-foreground" />
+              <p className="text-muted-foreground">No system backups found</p>
+              <p className="text-muted-foreground text-sm">
+                Create a scheduled job or run a manual backup
+              </p>
+            </div>
+          ) : (
+            <ItemGroup>
+              {backups.map((backup, index) => (
+                <React.Fragment key={backup.id}>
+                  <BackupItem
+                    backup={backup}
+                    isDeleting={deleteMutation.isPending}
+                    isRestoring={restoreMutation.isPending}
+                    onDelete={(id) => deleteMutation.mutate(id)}
+                    onDownload={handleDownload}
+                    onRestore={setRestoreBackup}
+                  />
+                  {index !== backups.length - 1 && <ItemSeparator />}
+                </React.Fragment>
+              ))}
+            </ItemGroup>
           )}
         </CardContent>
       </Card>
@@ -513,7 +482,7 @@ export default function SystemBackupsPage() {
               <li>Potentially cause downtime</li>
             </ul>
           </div>
-          {getBackupMeta(restoreBackup).isEncrypted && (
+          {(restoreBackup?.metadata as any)?.isEncrypted === true && (
             <div className="space-y-2">
               <Label htmlFor="restorePassword">Decryption Password</Label>
               <Input

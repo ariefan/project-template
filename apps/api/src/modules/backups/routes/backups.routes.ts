@@ -1,4 +1,5 @@
 import type { CreateBackupRequest } from "@workspace/contracts";
+import { stripNulls } from "@workspace/utils";
 import type { FastifyInstance } from "fastify";
 import * as jobsService from "../../jobs/services/jobs.service";
 import { storageProvider } from "../../storage/storage";
@@ -6,20 +7,7 @@ import * as backupsRepo from "../repositories/backups.repository";
 import * as backupService from "../services/backup.service";
 import * as restoreService from "../services/restore.service";
 
-/**
- * Strip null values from object (convert to undefined for Zod compatibility)
- */
-function stripNulls<T extends Record<string, unknown>>(
-  obj: T
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value !== null) {
-      result[key] = value;
-    }
-  }
-  return result;
-}
+
 
 /**
  * Create standard response meta
