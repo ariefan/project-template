@@ -1,11 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import * as systemBackupHandlers from "../handlers/system-backup.handler";
-
-interface CreateBackupBody {
-  includeFiles?: boolean;
-  encrypt?: boolean;
-  password?: string;
-}
+import type { SystemBackupOptions } from "../services/system-backup.service";
 
 /**
  * System Backup Routes (Admin Only)
@@ -20,7 +15,7 @@ export function systemBackupRoutes(app: FastifyInstance) {
   /**
    * POST /admin/backups - Create system backup
    */
-  app.post<{ Body: CreateBackupBody }>(
+  app.post<{ Body: SystemBackupOptions }>(
     "/",
     systemBackupHandlers.handleCreateSystemBackup
   );

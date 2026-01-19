@@ -194,7 +194,16 @@ export function backupsRoutes(app: FastifyInstance) {
         });
       }
 
-      // TODO: Delete file from storage
+      // Delete file from storage first
+      if (backup.filePath) {
+        const { storageProvider } = await import("../../storage/storage");
+        try {
+          await storageProvider.delete(backup.filePath);
+        } catch (e) {
+          request.log.warn(e, "Failed to delete backup file from storage");
+        }
+      }
+
       await backupsRepo.deleteBackup(id);
 
       return reply.status(204).send();
@@ -235,28 +244,21 @@ export function backupsRoutes(app: FastifyInstance) {
         });
       }
 
-      // If backup has a file path (Phase 5+), redirect to storage download
-      if (backup.filePath) {
-        // Import storageProvider dynamically to avoid circular dependencies if any
-        // or just ensure it's imported at top level
-        const { storageProvider } = await import("../../storage/storage");
-
-        const downloadUrl = await storageProvider.getPresignedDownloadUrl(
-          backup.filePath
-        );
-
-        return reply.redirect(downloadUrl);
+      if (!backup.filePath) {
+        return reply.status(400).send({
+          error: {
+            code: "BACKUP_FILE_MISSING",
+            message: "Backup file is missing",
+          },
+        });
       }
 
-      // Fallback: Generate JSON on the fly (Phase 4 legacy behavior)
-      const { data } = await backupService.exportOrgData(orgId);
-
-      reply.header("Content-Type", "application/json");
-      reply.header(
-        "Content-Disposition",
-        `attachment; filename="backup-${backup.id}.json"`
+      const { storageProvider } = await import("../../storage/storage");
+      const downloadUrl = await storageProvider.getPresignedDownloadUrl(
+        backup.filePath
       );
-      return reply.send(data);
+
+      return reply.redirect(downloadUrl);
     } catch (error) {
       request.log.error(error, "Failed to download backup");
       return reply.status(500).send({

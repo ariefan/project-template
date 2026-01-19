@@ -50,7 +50,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layouts/page-header";
 import { env } from "@/lib/env";
-import { BackupCreateDialog } from "../../../../components/backups/backup-create-dialog";
+import {
+  BackupCreateDialog,
+  type CreateBackupOptions,
+} from "../../../../components/backups/backup-create-dialog";
 
 function formatBytes(bytes: number | null | undefined): string {
   if (bytes == null || bytes === 0) {
@@ -119,12 +122,6 @@ function getBackupMeta(backup: Backup | null) {
     isEncrypted: meta?.isEncrypted === true,
     includesFiles: meta?.includesFiles === true,
   };
-}
-
-interface CreateBackupOptions {
-  includeFiles?: boolean;
-  encrypt?: boolean;
-  password?: string;
 }
 
 interface BackupItemProps {

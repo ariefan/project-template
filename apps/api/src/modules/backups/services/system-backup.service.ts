@@ -195,18 +195,6 @@ function runPgDump(): Promise<Buffer> {
 }
 
 /**
- * Deprecated: Legacy method, use createSystemBackupRecord + processSystemBackup via job queue
- */
-export async function createSystemBackup(
-  createdBy: string,
-  options: SystemBackupOptions = {}
-): Promise<string> {
-  const id = await createSystemBackupRecord(createdBy);
-  processSystemBackup(id, createdBy, options).catch(console.error);
-  return id;
-}
-
-/**
  * Create a ZIP archive containing pg_dump output and all storage files
  */
 function createZipWithFiles(dumpBuffer: Buffer): Promise<Buffer> {

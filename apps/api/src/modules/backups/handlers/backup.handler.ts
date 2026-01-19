@@ -117,7 +117,14 @@ async function handleBackupCleanup(context: JobContext): Promise<JobResult> {
     let deletedCount = 0;
 
     for (const backup of expiredBackups) {
-      // TODO: Delete file from storage
+      // Delete file from storage first
+      if (backup.filePath) {
+        try {
+          await storageProvider.delete(backup.filePath);
+        } catch {
+          // Log but continue - don't fail cleanup for storage issues
+        }
+      }
       await backupsRepo.deleteBackup(backup.id);
       deletedCount++;
     }

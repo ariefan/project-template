@@ -2,13 +2,8 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { jobHandlerRegistry } from "../../jobs/handlers/registry";
 import type { JobContext, JobResult } from "../../jobs/handlers/types";
 import * as backupsRepo from "../repositories/backups.repository";
+import type { SystemBackupOptions } from "../services/system-backup.service";
 import * as systemBackupService from "../services/system-backup.service";
-
-interface CreateBackupBody {
-  includeFiles?: boolean;
-  encrypt?: boolean;
-  password?: string;
-}
 
 interface ListBackupsQuery {
   page?: number;
@@ -40,7 +35,7 @@ interface RestoreBackupBody {
  * Handle creating a system backup
  */
 export async function handleCreateSystemBackup(
-  request: FastifyRequest<{ Body: CreateBackupBody }>,
+  request: FastifyRequest<{ Body: SystemBackupOptions }>,
   reply: FastifyReply
 ) {
   const userId = request.user?.id;
@@ -50,7 +45,8 @@ export async function handleCreateSystemBackup(
       .send({ error: { code: "UNAUTHORIZED", message: "User not found" } });
   }
 
-  const { includeFiles, encrypt, password } = request.body ?? {};
+  const { includeFiles, encrypt, password } =
+    request.body ?? ({} as SystemBackupOptions);
 
   if (encrypt && !password) {
     return reply.status(400).send({
