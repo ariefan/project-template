@@ -1,7 +1,10 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { jobHandlerRegistry } from "../../jobs/handlers/registry";
 import type { JobContext, JobResult } from "../../jobs/handlers/types";
+import { createAndEnqueueJob } from "../../jobs/services/jobs.service";
+import { storageProvider } from "../../storage/storage";
 import * as backupsRepo from "../repositories/backups.repository";
+import { decryptBuffer } from "../services/backup-crypto";
 import type { SystemBackupOptions } from "../services/system-backup.service";
 import * as systemBackupService from "../services/system-backup.service";
 
@@ -62,9 +65,6 @@ export async function handleCreateSystemBackup(
     const backupId = await systemBackupService.createSystemBackupRecord(userId);
 
     // 2. Enqueue the background job
-    const { createAndEnqueueJob } = await import(
-      "../../jobs/services/jobs.service"
-    );
     await createAndEnqueueJob({
       orgId: "system",
       type: "system:backup-create",

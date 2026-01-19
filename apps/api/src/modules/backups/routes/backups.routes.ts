@@ -1,6 +1,7 @@
 import type { CreateBackupRequest } from "@workspace/contracts";
 import type { FastifyInstance } from "fastify";
 import * as jobsService from "../../jobs/services/jobs.service";
+import { storageProvider } from "../../storage/storage";
 import * as backupsRepo from "../repositories/backups.repository";
 import * as backupService from "../services/backup.service";
 import * as restoreService from "../services/restore.service";
@@ -49,7 +50,7 @@ export function backupsRoutes(app: FastifyInstance) {
   }>("/:orgId/backups", async (request, reply) => {
     const { orgId } = request.params;
     const { includeFiles, encrypt, password } = request.body ?? {};
-    const userId = (request as { userId?: string }).userId ?? "system";
+    const userId = request.user?.id ?? "system";
 
     try {
       // Check backup limits
@@ -196,7 +197,6 @@ export function backupsRoutes(app: FastifyInstance) {
 
       // Delete file from storage first
       if (backup.filePath) {
-        const { storageProvider } = await import("../../storage/storage");
         try {
           await storageProvider.delete(backup.filePath);
         } catch (e) {
@@ -253,7 +253,6 @@ export function backupsRoutes(app: FastifyInstance) {
         });
       }
 
-      const { storageProvider } = await import("../../storage/storage");
       const downloadUrl = await storageProvider.getPresignedDownloadUrl(
         backup.filePath
       );
