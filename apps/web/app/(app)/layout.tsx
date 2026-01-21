@@ -1,6 +1,6 @@
 import {
-  SidebarInset,
-  SidebarProvider,
+	SidebarInset,
+	SidebarProvider,
 } from "@workspace/ui/components/sidebar";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -9,30 +9,35 @@ import { AnnouncementBanner } from "@/app/(app)/announcements/announcement-banne
 import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { AppHeader } from "@/components/layouts/header/app-header";
 import { ImpersonationBanner } from "@/components/layouts/impersonation-banner";
-import { getSession } from "@/lib/auth.server";
+import { getOrganizations, getSession } from "@/lib/auth.server";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
-  // Check authentication - redirect to login if not authenticated
-  const session = await getSession();
+	// Check authentication - redirect to login if not authenticated
+	const session = await getSession();
 
-  if (!session?.data?.user) {
-    redirect("/login");
-  }
+	if (!session?.data?.user) {
+		redirect("/login");
+	}
 
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+	const orgs = await getOrganizations();
+	if (!orgs?.data?.length) {
+		redirect("/onboarding");
+	}
 
-  return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar />
-      <SidebarInset>
-        <AppHeader />
-        <div className="px-4">
-          <ImpersonationBanner />
-          <AnnouncementBanner />
-        </div>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+	const cookieStore = await cookies();
+	const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+
+	return (
+		<SidebarProvider defaultOpen={defaultOpen}>
+			<AppSidebar />
+			<SidebarInset>
+				<AppHeader />
+				<div className="px-4">
+					<ImpersonationBanner />
+					<AnnouncementBanner />
+				</div>
+				<div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+			</SidebarInset>
+		</SidebarProvider>
+	);
 }

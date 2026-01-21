@@ -1,0 +1,83 @@
+app\(app)\developer\database\page.tsx:44:34 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Template literals are preferred over string concatenation.
+  
+    42 │                 (data.output || "No output captured") +·
+    43 │                 "\n" +·
+  > 44 │                 (data.warnings ? "Warnings:\n" + data.warnings : "")
+       │                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    45 │             );
+    46 │             if (mode === "dev") {
+  
+  i Unsafe fix: Use a template literal.
+  
+     42  42 │                   (data.output || "No output captured") +·␍
+     43  43 │                   "\n" +·␍
+     44     │ - ················(data.warnings·?·"Warnings:\n"·+·data.warnings·:·"")␍
+         44 │ + ················(data.warnings·?·`Warnings:\n${data.warnings}`·:·"")␍
+     45  45 │               );␍
+     46  46 │               if (mode === "dev") {␍
+  
+
+app\(app)\developer\database\page.tsx:58:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    57 │             setConfirmMode(null);
+  > 58 │         } catch (e: any) {
+       │                     ^^^
+    59 │             setOutput(prev => `${prev}\n❌ Error: ${e.message}`);
+    60 │             toast.error(e.message || "Failed to seed database");
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\settings\organization.tsx:291:68 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    289 │     (m) => m.userId === session?.user.id
+    290 │   )?.role;
+  > 291 │   const isOwner = currentUserRole === "owner" || (session?.user as any)?.role === "super_user";
+        │                                                                    ^^^
+    292 │ 
+    293 │   const updateRole = async (memberId: string, role: string) => {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+components\organizations\create-organization-form.tsx:104:37 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    102 │            if (logoUrl) {
+    103 │                // 3. Update Organization with Logo URL
+  > 104 │                await (authClient as any).organization.update({
+        │                                     ^^^
+    105 │                    id: orgId,
+    106 │                    data: { logo: logoUrl }
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+lib\auth.server.ts:37:25 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    35 │ export async function getOrganizations() {
+    36 │   const headersList = await headers();
+  > 37 │   return (authClient as any).organization.list({
+       │                         ^^^
+    38 │     fetchOptions: {
+    39 │       headers: {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+Checked 207 files in 556ms. No fixes applied.
+Found 5 errors.
+lint ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

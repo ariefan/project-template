@@ -22,12 +22,24 @@ import { authClient } from "./auth";
  * ```
  */
 export async function getSession() {
-  const headersList = await headers();
-  return authClient.getSession({
-    fetchOptions: {
-      headers: {
-        cookie: headersList.get("cookie") ?? "",
-      },
-    },
-  });
+	const headersList = await headers();
+	return authClient.getSession({
+		fetchOptions: {
+			headers: {
+				cookie: headersList.get("cookie") ?? "",
+			},
+		},
+	});
+}
+
+export async function getOrganizations() {
+	const headersList = await headers();
+	// biome-ignore lint/suspicious/noExplicitAny: complex union type issue
+	return (authClient as any).organization.list({
+		fetchOptions: {
+			headers: {
+				cookie: headersList.get("cookie") ?? "",
+			},
+		},
+	});
 }
