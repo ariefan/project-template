@@ -12,46 +12,46 @@ import { requireAuth } from "./middleware";
  * @returns Fastify preHandler middleware function
  */
 export function requirePermission(
-	resource: string,
-	action: string,
-	orgIdParam = "orgId",
+  resource: string,
+  action: string,
+  orgIdParam = "orgId"
 ) {
-	return async (
-		request: FastifyRequest,
-		reply: FastifyReply,
-	): Promise<void> => {
-		// Ensure user is authenticated
-		await requireAuth(request, reply);
-		if (reply.sent) {
-			return;
-		}
+  return async (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> => {
+    // Ensure user is authenticated
+    await requireAuth(request, reply);
+    if (reply.sent) {
+      return;
+    }
 
-		// Get organization ID from route params
-		const orgId = (request.params as Record<string, string>)[orgIdParam];
-		if (!orgId) {
-			throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
-		}
+    // Get organization ID from route params
+    const orgId = (request.params as Record<string, string>)[orgIdParam];
+    if (!orgId) {
+      throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
+    }
 
-		// Check permission
-		const currentUser = request.user;
-		if (!currentUser) {
-			throw new Error("User not authenticated");
-		}
+    // Check permission
+    const currentUser = request.user;
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
 
-		const userId = currentUser.id;
-		const allowed = await request.server.authorize(
-			userId,
-			orgId,
-			resource,
-			action,
-		);
+    const userId = currentUser.id;
+    const allowed = await request.server.authorize(
+      userId,
+      orgId,
+      resource,
+      action
+    );
 
-		if (!allowed) {
-			throw new ForbiddenError(
-				`You don't have permission to ${action} ${resource}`,
-			);
-		}
-	};
+    if (!allowed) {
+      throw new ForbiddenError(
+        `You don't have permission to ${action} ${resource}`
+      );
+    }
+  };
 }
 
 /**
@@ -68,52 +68,52 @@ export function requirePermission(
  * @returns Fastify preHandler middleware function
  */
 export function requireOwnershipOrPermission(
-	resource: string,
-	action: string,
-	getOwnerId: (
-		request: FastifyRequest,
-	) => string | undefined | Promise<string | undefined>,
-	orgIdParam = "orgId",
+  resource: string,
+  action: string,
+  getOwnerId: (
+    request: FastifyRequest
+  ) => string | undefined | Promise<string | undefined>,
+  orgIdParam = "orgId"
 ) {
-	return async (
-		request: FastifyRequest,
-		reply: FastifyReply,
-	): Promise<void> => {
-		// Ensure user is authenticated
-		await requireAuth(request, reply);
-		if (reply.sent) {
-			return;
-		}
+  return async (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> => {
+    // Ensure user is authenticated
+    await requireAuth(request, reply);
+    if (reply.sent) {
+      return;
+    }
 
-		const currentUser = request.user;
-		if (!currentUser) {
-			throw new Error("User not authenticated");
-		}
+    const currentUser = request.user;
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
 
-		const userId = currentUser.id;
-		const orgId = (request.params as Record<string, string>)[orgIdParam];
-		if (!orgId) {
-			throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
-		}
+    const userId = currentUser.id;
+    const orgId = (request.params as Record<string, string>)[orgIdParam];
+    if (!orgId) {
+      throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
+    }
 
-		// Get resource owner ID for Casbin's owner condition
-		const resourceOwnerId = await getOwnerId(request);
+    // Get resource owner ID for Casbin's owner condition
+    const resourceOwnerId = await getOwnerId(request);
 
-		// Single authorization check — Casbin evaluates owner condition if policy requires it
-		const allowed = await request.server.authorize(
-			userId,
-			orgId,
-			resource,
-			action,
-			resourceOwnerId ?? "",
-		);
+    // Single authorization check — Casbin evaluates owner condition if policy requires it
+    const allowed = await request.server.authorize(
+      userId,
+      orgId,
+      resource,
+      action,
+      resourceOwnerId ?? ""
+    );
 
-		if (!allowed) {
-			throw new ForbiddenError(
-				`You don't have permission to ${action} this ${resource}`,
-			);
-		}
-	};
+    if (!allowed) {
+      throw new ForbiddenError(
+        `You don't have permission to ${action} this ${resource}`
+      );
+    }
+  };
 }
 
 /**
@@ -125,22 +125,22 @@ export function requireOwnershipOrPermission(
  * @returns Fastify preHandler middleware function
  */
 export function requireFeature(featureKey: string, orgIdParam = "orgId") {
-	return async (
-		request: FastifyRequest,
-		_reply: FastifyReply,
-	): Promise<void> => {
-		// Get organization ID from route params
-		const orgId = (request.params as Record<string, string>)[orgIdParam];
-		if (!orgId) {
-			throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
-		}
+  return async (
+    request: FastifyRequest,
+    _reply: FastifyReply
+  ): Promise<void> => {
+    // Get organization ID from route params
+    const orgId = (request.params as Record<string, string>)[orgIdParam];
+    if (!orgId) {
+      throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
+    }
 
-		const hasFeature = await request.server.checkFeature(orgId, featureKey);
+    const hasFeature = await request.server.checkFeature(orgId, featureKey);
 
-		if (!hasFeature) {
-			throw new ForbiddenError(
-				`Your current subscription plan does not include the "${featureKey}" feature. Please upgrade your plan.`,
-			);
-		}
-	};
+    if (!hasFeature) {
+      throw new ForbiddenError(
+        `Your current subscription plan does not include the "${featureKey}" feature. Please upgrade your plan.`
+      );
+    }
+  };
 }
