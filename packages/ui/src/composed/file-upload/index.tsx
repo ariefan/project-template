@@ -1,3 +1,4 @@
+export * from "./avatar-uploader";
 export * from "./file-upload-context";
 export * from "./file-upload-dropzone";
 export * from "./file-upload-item";
@@ -6,6 +7,5 @@ export * from "./file-upload-trigger";
 export * from "./file-uploader";
 export * from "./image-crop-dialog";
 export * from "./image-uploader";
-export * from "./avatar-uploader";
 export * from "./types";
 export * from "./utils";

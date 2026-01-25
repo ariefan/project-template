@@ -102,7 +102,7 @@ export function ImageCropDialog({
     return () => {
       // Cleanup?
     };
-  }, [imageFile]);
+  }, [imageFile, aspectRatio]);
 
   const onCropChange = (newCrop: Point) => {
     setCrop(newCrop);
@@ -297,7 +297,7 @@ export function ImageCropDialog({
               value={[rotation]}
             />
           </div>
-          {!lockAspectRatio && !circularCrop && (
+          {!(lockAspectRatio || circularCrop) && (
             <div className="flex items-center gap-2">
               <span className="w-16 shrink-0 text-muted-foreground text-sm">
                 Ratio

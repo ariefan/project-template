@@ -9,7 +9,6 @@ import type {
   CompressionOptions,
   ImageUploaderProps,
   ImageUploaderRef,
-  InitialUrl,
 } from "./types";
 
 function useDragDrop(
@@ -187,8 +186,7 @@ export function useImageUploaderController(
           if (file.size > props.maxSize) {
             toast.error(
               `File ${file.name} is too large. Max size is ${(
-                props.maxSize /
-                (1024 * 1024)
+                props.maxSize / (1024 * 1024)
               ).toFixed(1)}MB`
             );
           } else {
@@ -198,7 +196,9 @@ export function useImageUploaderController(
         newFiles = validFiles;
       }
 
-      if (newFiles.length === 0) return;
+      if (newFiles.length === 0) {
+        return;
+      }
 
       // Max files validation / replacement behavior
       const isSingleMode = props.maxFiles === 1;
@@ -207,50 +207,56 @@ export function useImageUploaderController(
         // In single mode, we replace everything
         // Clear previous state first if needed, but easier to just set state to new file
         // However, we need to handle this carefully with queueing.
-        
+
         // If cropping is enabled, we clear queue and set this new file
         if (enableCropping && !skipCrop) {
-           setCropQueue(newFiles.slice(0, 1)); // Take only first
-           setProcessedCrops([]); // Clear previous processed
-           setCompressedFiles([]); // Clear previous compressed
-           // We'll effectively reset everything below
+          setCropQueue(newFiles.slice(0, 1)); // Take only first
+          setProcessedCrops([]); // Clear previous processed
+          setCompressedFiles([]); // Clear previous compressed
+          // We'll effectively reset everything below
         }
-        
+
         newFiles = newFiles.slice(0, 1);
       } else if (props.maxFiles) {
-         const currentCount = compressedFiles.length + cropQueue.length + processedCrops.length + (initialUrls?.length || 0);
-         const availableSlots = props.maxFiles - currentCount;
+        const currentCount =
+          compressedFiles.length +
+          cropQueue.length +
+          processedCrops.length +
+          (initialUrls?.length || 0);
+        const availableSlots = props.maxFiles - currentCount;
 
-         if (availableSlots <= 0) {
-           toast.error(`Maximum allowed files is ${props.maxFiles}`);
-           return;
-         }
+        if (availableSlots <= 0) {
+          toast.error(`Maximum allowed files is ${props.maxFiles}`);
+          return;
+        }
 
-         if (newFiles.length > availableSlots) {
-            toast.error(`You can only add ${availableSlots} more file(s)`);
-            newFiles = newFiles.slice(0, availableSlots);
-         }
+        if (newFiles.length > availableSlots) {
+          toast.error(`You can only add ${availableSlots} more file(s)`);
+          newFiles = newFiles.slice(0, availableSlots);
+        }
       }
 
       if (enableCropping && !skipCrop) {
         // Add to queue for cropping
         setCropQueue((prev) => {
-          if (isSingleMode) return newFiles; // Replace
-          
+          if (isSingleMode) {
+            return newFiles; // Replace
+          }
+
           const existing = prev.map((f) => f.name);
           const filtered = newFiles.filter((f) => !existing.includes(f.name));
           return [...prev, ...filtered];
         });
-        
+
         // In single mode, clear previous results
         if (isSingleMode) {
-             setProcessedCrops([]);
-             setCompressedFiles([]);
-             // initialUrls should also be seemingly cleared or ignored? 
-             // We can't clear props, but we can "hide" them if we only render combinedItems based on logic.
-             // But simpler to just rely on user callback to clear initialUrls if they want.
-             // For local state:
-             setSourceFiles(newFiles);
+          setProcessedCrops([]);
+          setCompressedFiles([]);
+          // initialUrls should also be seemingly cleared or ignored?
+          // We can't clear props, but we can "hide" them if we only render combinedItems based on logic.
+          // But simpler to just rely on user callback to clear initialUrls if they want.
+          // For local state:
+          setSourceFiles(newFiles);
         }
 
         // Start cropping if dialog is closed
@@ -261,14 +267,16 @@ export function useImageUploaderController(
       } else {
         // Auto-compress immediately
         setSourceFiles((prev) => {
-          if (isSingleMode) return newFiles;
+          if (isSingleMode) {
+            return newFiles;
+          }
           const existing = prev.map((f) => f.name);
           const filtered = newFiles.filter((f) => !existing.includes(f.name));
           return [...prev, ...filtered];
         });
-        
+
         if (isSingleMode) {
-             setCompressedFiles([]); // Clear previous
+          setCompressedFiles([]); // Clear previous
         }
 
         if (newFiles.length > 0) {
@@ -280,8 +288,10 @@ export function useImageUploaderController(
                 const newCompressed = compressed.filter(
                   (f) => !existingNames.includes(f.name)
                 );
-                
-                if (isSingleMode) return newCompressed;
+
+                if (isSingleMode) {
+                  return newCompressed;
+                }
 
                 const nextFiles = [...prev, ...newCompressed];
                 return nextFiles;
@@ -334,7 +344,7 @@ export function useImageUploaderController(
       compressedFiles,
       cropQueue,
       processedCrops,
-      initialUrls
+      initialUrls,
     ]
   );
 

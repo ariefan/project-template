@@ -1,0 +1,276 @@
+
+> project-template@0.0.1 check C:\dev\project-template
+> turbo typecheck && biome check --write
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/ui:typecheck: cache miss, executing f2cd0ff602d64982
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/cache:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/cache:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/metrics:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/utils:typecheck: cache hit, replaying logs d08a50456b4647a9
+@workspace/utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/ui-mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/db:typecheck: cache hit, replaying logs 0bf26ead42c5aa66
+@workspace/db:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: ]0;C:\WINDOWS\system32\cmd.exe[?25h
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 
+mobile:typecheck: [7;35H types do not work in monorepo works
+mobile:typecheck: [7;35Hspaces (see tsconfig.json for detail
+mobile:typecheck: [7;35Hls)'
+mobile:typecheck: [?9001l[?1004l
+@workspace/auth:typecheck: cache hit, replaying logs 1ac6969cc4f0f2cc
+@workspace/auth:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/authorization:typecheck: cache hit, replaying logs 6bbdf09a125078a3
+@workspace/authorization:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/test-utils:typecheck: cache hit, replaying logs e46fa987b7742b7e
+@workspace/test-utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/reports:typecheck: cache hit, replaying logs e65cc5e0415a57c5
+@workspace/reports:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/notifications:typecheck: cache hit, replaying logs 68b056210d97b7cc
+@workspace/notifications:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+api:typecheck: cache hit, replaying logs f08ab367fd5bb084
+api:typecheck: 
+api:typecheck: > api@0.0.1 typecheck C:\dev\project-template\apps\api
+api:typecheck: > tsc --noEmit
+api:typecheck: 
+@workspace/ui:typecheck: 
+@workspace/ui:typecheck: > @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit
+@workspace/ui:typecheck: 
+@workspace/feature-files:typecheck: cache miss, executing 92c9892ada36da14
+@workspace/feature-files:typecheck: 
+@workspace/feature-files:typecheck: > @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit
+@workspace/feature-files:typecheck: 
+web:typecheck: cache miss, executing 5eab490490de05d6
+drive:typecheck: cache miss, executing 8932571d1edd20b4
+web:typecheck: 
+web:typecheck: > web@0.0.1 typecheck C:\dev\project-template\apps\web
+web:typecheck: > tsc --noEmit
+web:typecheck: 
+drive:typecheck: 
+drive:typecheck: > drive@0.0.1 typecheck C:\dev\project-template\apps\drive
+drive:typecheck: > tsc --noEmit
+drive:typecheck: 
+
+ Tasks:    17 successful, 17 total
+Cached:    13 cached, 17 total
+  Time:    32.382s 
+
+apps\web\app\(app)\developer\storage\storage-tester.tsx:74:27 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━
+
+  × This variable setAutoImageUpload is unused.
+  
+    72 │   const [showCompressionOptions, setShowCompressionOptions] = useState(true);
+    73 │   const [enableCropping, setEnableCropping] = useState(true);
+  > 74 │   const [autoImageUpload, setAutoImageUpload] = useState(true);
+       │                           ^^^^^^^^^^^^^^^^^^
+    75 │   const [fileUploaderKey, setFileUploaderKey] = useState(0);
+    76 │   const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend setAutoImageUpload with an underscore.
+  
+     72  72 │     const [showCompressionOptions, setShowCompressionOptions] = useState(true);
+     73  73 │     const [enableCropping, setEnableCropping] = useState(true);
+     74     │ - ··const·[autoImageUpload,·setAutoImageUpload]·=·useState(true);
+         74 │ + ··const·[autoImageUpload,·_setAutoImageUpload]·=·useState(true);
+     75  75 │     const [fileUploaderKey, setFileUploaderKey] = useState(0);
+     76  76 │     const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
+  
+
+packages\ui\src\composed\file-upload\avatar-uploader.tsx:23:16 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 20 detected (max: 15).
+  
+    21 │   ImageUploaderRef,
+    22 │   AvatarUploaderProps
+  > 23 │ >((props, ref) => {
+       │                ^^^
+    24 │   const {
+    25 │     className,
+  
+  i Please refactor this function to reduce its complexity score from 20 to the max allowed complexity 15.
+  
+
+packages\ui\src\composed\file-upload\avatar-uploader.tsx:90:11 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    88 │         disabled={hasImage || controller.isCompressing}
+    89 │         onClick={() => {
+  > 90 │           if (!hasImage) controller.fileInputRef.current?.click();
+       │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    91 │         }}
+    92 │         onDragLeave={controller.handleDragLeave}
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    90 │ ··········if·(!hasImage)·{·controller.fileInputRef.current?.click();·}
+       │                          ++                                         ++
+
+packages\ui\src\composed\file-upload\avatar-uploader.tsx:204:11 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    202 │         onCropComplete={controller.handleCropComplete}
+    203 │         onOpenChange={(open) => {
+  > 204 │           if (open) controller.setCropDialogOpen(open);
+        │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 205 │           else controller.handleSkipCrop();
+        │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    206 │         }}
+    207 │         onSelectFile={controller.setFileToCrop}
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    204 │ ··········if·(open)·{·controller.setCropDialogOpen(open);·}
+        │                     ++                                   ++
+
+packages\ui\src\composed\file-upload\avatar-uploader.tsx:205:11 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    203 │         onOpenChange={(open) => {
+    204 │           if (open) controller.setCropDialogOpen(open);
+  > 205 │           else controller.handleSkipCrop();
+        │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    206 │         }}
+    207 │         onSelectFile={controller.setFileToCrop}
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    205 │ ··········else·{·controller.handleSkipCrop();·}
+        │                ++                            ++
+
+packages\ui\src\composed\file-upload\image-crop-dialog.tsx:81:9 lint/correctness/useExhaustiveDependencies  FIXABLE  ━━━━━━━━━━
+
+  × This hook does not specify its dependency on aspectRatio.
+  
+    80 │   // Load image when file changes
+  > 81 │   React.useEffect(() => {
+       │         ^^^^^^^^^
+    82 │     if (!imageFile) {
+    83 │       setImageSrc(null);
+  
+  i This dependency is being used here, but is not specified in the hook dependency list.
+  
+     98 │     setCrop({ x: 0, y: 0 });
+     99 │     // Keep aspect ratio if it was passed via props, otherwise reset to Free (undefined)
+  > 100 │     setAspect(aspectRatio);
+        │               ^^^^^^^^^^^
+    101 │ 
+    102 │     return () => {
+  
+  i React relies on hook dependencies to determine when to re-compute Effects.
+    Failing to specify dependencies can result in Effects not updating correctly when state changes.
+    These "stale closures" are a common source of surprising bugs.
+  
+  i Unsafe fix: Add the missing dependency to the list.
+  
+    105 │ ··},·[imageFile,·aspectRatio]);
+        │                +++++++++++++   
+
+packages\ui\src\composed\file-upload\use-image-uploader.ts:199:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    197 │       }
+    198 │ 
+  > 199 │       if (newFiles.length === 0) return;
+        │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    200 │ 
+    201 │       // Max files validation / replacement behavior
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    199 │ ······if·(newFiles.length·===·0)·{·return;·}
+        │                                  ++       ++
+
+packages\ui\src\composed\file-upload\use-image-uploader.ts:240:11 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    238 │         // Add to queue for cropping
+    239 │         setCropQueue((prev) => {
+  > 240 │           if (isSingleMode) return newFiles; // Replace
+        │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    241 │ 
+    242 │           const existing = prev.map((f) => f.name);
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    238 238 │           // Add to queue for cropping
+    239 239 │           setCropQueue((prev) => {
+    240     │ - ··········if·(isSingleMode)·return·newFiles;·//·Replace
+        240 │ + ··········if·(isSingleMode)·{·return·newFiles;·//·Replace
+        241 │ + }
+    241 242 │   
+    242 243 │             const existing = prev.map((f) => f.name);
+  
+
+packages\ui\src\composed\file-upload\use-image-uploader.ts:266:11 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    264 │         // Auto-compress immediately
+    265 │         setSourceFiles((prev) => {
+  > 266 │           if (isSingleMode) return newFiles;
+        │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    267 │           const existing = prev.map((f) => f.name);
+    268 │           const filtered = newFiles.filter((f) => !existing.includes(f.name));
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    266 │ ··········if·(isSingleMode)·{·return·newFiles;·}
+        │                             ++                ++
+
+packages\ui\src\composed\file-upload\use-image-uploader.ts:286:17 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    284 │                 );
+    285 │ 
+  > 286 │                 if (isSingleMode) return newCompressed;
+        │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    287 │ 
+    288 │                 const nextFiles = [...prev, ...newCompressed];
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    286 │ ················if·(isSingleMode)·{·return·newCompressed;·}
+        │                                   ++                     ++
+
+Skipped 9 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
+
+Checked 847 files in 1147ms. No fixes applied.
+Found 10 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while applying fixes.
+  
+
+ ELIFECYCLE  Command failed with exit code 1.

@@ -33,7 +33,7 @@ import {
   type ImageUploaderRef,
   type UploadFile,
 } from "@workspace/ui/composed/file-upload";
-import { Code, Crop, Download, RefreshCw, Trash2 } from "lucide-react";
+import { Code, Download, RefreshCw, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useActiveOrganization } from "@/lib/auth";
@@ -71,7 +71,7 @@ export function StorageTester() {
   const [isAutoUpload, setIsAutoUpload] = useState(true);
   const [showCompressionOptions, setShowCompressionOptions] = useState(true);
   const [enableCropping, setEnableCropping] = useState(true);
-  const [autoImageUpload, setAutoImageUpload] = useState(true);
+  const [autoImageUpload, _setAutoImageUpload] = useState(true);
   const [fileUploaderKey, setFileUploaderKey] = useState(0);
   const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
   const [exampleFiles, setExampleFiles] = useState<UploadFile[]>([]);
@@ -431,7 +431,7 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
 
         {/* Image Upload Tab */}
         <TabsContent value="compression">
-          <Tabs defaultValue="general" className="w-full">
+          <Tabs className="w-full" defaultValue="general">
             <TabsList className="mb-4">
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="avatar">Avatar</TabsTrigger>
@@ -445,7 +445,8 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
                 <CardHeader>
                   <CardTitle>General Image Upload</CardTitle>
                   <CardDescription>
-                    Standard uploader with all features enabled (cropping, defaults).
+                    Standard uploader with all features enabled (cropping,
+                    defaults).
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -458,9 +459,17 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
                       Load Example Images
                     </Button>
                     <div className="flex items-center gap-2">
-                         <Label>Options:</Label>
-                         <Switch checked={enableCropping} onCheckedChange={setEnableCropping} /> <span className="text-sm">Cropping</span>
-                         <Switch checked={showCompressionOptions} onCheckedChange={setShowCompressionOptions} /> <span className="text-sm">Compression UI</span>
+                      <Label>Options:</Label>
+                      <Switch
+                        checked={enableCropping}
+                        onCheckedChange={setEnableCropping}
+                      />{" "}
+                      <span className="text-sm">Cropping</span>
+                      <Switch
+                        checked={showCompressionOptions}
+                        onCheckedChange={setShowCompressionOptions}
+                      />{" "}
+                      <span className="text-sm">Compression UI</span>
                     </div>
                   </div>
                   <ImageUploader
@@ -468,9 +477,9 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
                     enableCropping={enableCropping}
                     isUploading={isUploadingCompressed}
                     onConfirm={handleCompressedUpload}
+                    ref={imageUploaderRef}
                     showCompressionOptions={showCompressionOptions}
                     showConfirmButton
-                    ref={imageUploaderRef}
                   />
                 </CardContent>
               </Card>
@@ -504,31 +513,31 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
             {/* Cover Image Example */}
             <TabsContent value="cover">
               <Card>
-                 <CardHeader>
+                <CardHeader>
                   <CardTitle>Cover Image Upload</CardTitle>
                   <CardDescription>
                     Fixed 16:9 aspect ratio, single file.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <ImageUploader
-                      autoUpload={false}
-                      aspectRatio={16/9}
-                      lockAspectRatio
-                      enableCropping
-                      maxFiles={1}
-                      onConfirm={handleCompressedUpload}
-                      showCompressionOptions
-                      showConfirmButton
-                    />
+                  <ImageUploader
+                    aspectRatio={16 / 9}
+                    autoUpload={false}
+                    enableCropping
+                    lockAspectRatio
+                    maxFiles={1}
+                    onConfirm={handleCompressedUpload}
+                    showCompressionOptions
+                    showConfirmButton
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
 
             {/* Small Input Example */}
             <TabsContent value="small">
-               <Card>
-                 <CardHeader>
+              <Card>
+                <CardHeader>
                   <CardTitle>Small Input</CardTitle>
                   <CardDescription>
                     Compact variant for tight spaces.
@@ -541,24 +550,23 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
                       autoUpload={false}
                       maxFiles={1}
                       onConfirm={handleCompressedUpload}
-                      size="sm"
                       showConfirmButton={false}
+                      size="sm"
                     />
                   </div>
-                   <div className="space-y-2">
+                  <div className="space-y-2">
                     <Label>Cover Photo (Max 2)</Label>
                     <ImageUploader
                       autoUpload={false}
                       maxFiles={2}
                       onConfirm={handleCompressedUpload}
-                      size="sm"
                       showConfirmButton={false}
+                      size="sm"
                     />
                   </div>
                 </CardContent>
-               </Card>
+              </Card>
             </TabsContent>
-
           </Tabs>
         </TabsContent>
 
