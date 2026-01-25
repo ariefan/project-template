@@ -29,6 +29,7 @@
     "./client": "./src/client/index.ts",
     "./zod": "./src/zod.gen.ts",
     "./sdk": "./src/sdk.gen.ts",
+    "./jobs": "./src/jobs/index.ts",
     "./query": "./src/@tanstack/react-query.gen.ts",
     "./openapi": "./tsp-output/openapi/openapi.yaml",
     "./openapi.json": "./tsp-output/openapi/openapi.json"

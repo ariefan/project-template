@@ -5,7 +5,7 @@ import {
   jobs,
   type NewJobRow,
 } from "@workspace/db/schema";
-import { and, desc, eq, gte } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export interface ListJobsOptions {
   page?: number;
@@ -14,6 +14,7 @@ export interface ListJobsOptions {
   type?: string;
   format?: string;
   templateId?: string;
+  scheduleId?: string;
   createdAfter?: Date;
   createdBefore?: Date;
 }
@@ -82,9 +83,12 @@ export async function listJobs(
     type,
     format,
     templateId,
+    scheduleId,
     createdAfter,
     createdBefore,
   } = options;
+
+  const { sql, and, eq, gte, lte, desc, count } = await import("drizzle-orm");
 
   // Build where conditions
   // biome-ignore lint/suspicious/noExplicitAny: complex SQL conditions
@@ -104,24 +108,28 @@ export async function listJobs(
     conditions.push(gte(jobs.createdAt, createdAfter));
   }
   if (createdBefore) {
-    const { lte } = await import("drizzle-orm");
     conditions.push(lte(jobs.createdAt, createdBefore));
   }
+
   // Filter by metadata fields using JSONB operators
   if (format) {
-    const { sql } = await import("drizzle-orm");
     conditions.push(sql`${jobs.metadata}->>'format' = ${format}`);
   }
   if (templateId) {
-    const { sql } = await import("drizzle-orm");
     conditions.push(sql`${jobs.metadata}->>'templateId' = ${templateId}`);
+  }
+  if (scheduleId) {
+    conditions.push(sql`${jobs.metadata}->>'scheduleId' = ${scheduleId}`);
   }
 
   const whereClause = and(...conditions);
 
   // Get total count
-  const allJobs = await db.select().from(jobs).where(whereClause);
-  const totalCount = allJobs.length;
+  const [countResult] = await db
+    .select({ count: count() })
+    .from(jobs)
+    .where(whereClause);
+  const totalCount = Number(countResult?.count ?? 0);
 
   // Get paginated results
   const offset = (page - 1) * pageSize;

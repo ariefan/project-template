@@ -16,6 +16,7 @@ export {
   type JobHandlerConfig,
   type JobResult,
   jobHandlerRegistry,
+  registerAnnouncementHandler,
   registerReportHandler,
   registerStorageCleanupHandler,
   registerTestHandler,

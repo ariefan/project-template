@@ -1,7 +1,6 @@
 import type {
   ErrorResponse,
   JobListResponse,
-  JobStatus,
   JobsListData,
 } from "@workspace/contracts";
 import { SystemRoles } from "@workspace/db/schema";
@@ -10,33 +9,8 @@ import { handleError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
 import { requireAuth } from "../../auth/middleware";
 import * as schedulesService from "../../schedules/services/schedules.service";
+import { formatJobResponse } from "../lib/formatters";
 import * as jobsService from "../services/jobs.service";
-
-/**
- * Format job for API response
- */
-function formatJobResponse(job: import("@workspace/db/schema").JobRow) {
-  return {
-    jobId: job.id,
-    tenantId: job.orgId,
-    type: job.type,
-    status: job.status as JobStatus,
-    progress: job.progress ?? undefined,
-    message: job.message ?? undefined,
-    totalItems: job.totalItems ?? undefined,
-    processedItems: job.processedItems ?? undefined,
-    input: (job.input as Record<string, unknown>) ?? undefined,
-    output: (job.output as Record<string, unknown>) ?? undefined,
-    metadata: (job.metadata as Record<string, unknown>) ?? undefined,
-    // biome-ignore lint/suspicious/noExplicitAny: error object is complex
-    error: (job.error as any) ?? undefined,
-    createdBy: job.createdBy,
-    createdAt: job.createdAt.toISOString(),
-    startedAt: job.startedAt?.toISOString(),
-    completedAt: job.completedAt?.toISOString(),
-    estimatedCompletion: job.estimatedCompletion?.toISOString(),
-  };
-}
 
 /**
  * Administrative Jobs Routes

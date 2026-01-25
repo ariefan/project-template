@@ -2,8 +2,6 @@ import { filesService } from "../../files";
 import { jobHandlerRegistry } from "./registry";
 import type { JobContext, JobResult } from "./types";
 
-const JOB_TYPE = "storage:cleanup";
-
 /**
  * Handler for cleaning up expired file uploads
  */
@@ -40,13 +38,16 @@ async function storageCleanupHandler(context: JobContext): Promise<JobResult> {
   }
 }
 
+import { JobInputSchemas, JobType } from "@workspace/contracts/jobs";
+
 /**
  * Register the storage cleanup handler
  */
 export function registerStorageCleanupHandler() {
   jobHandlerRegistry.register({
-    type: JOB_TYPE,
+    type: JobType.STORAGE_CLEANUP,
     handler: storageCleanupHandler,
+    validationSchema: JobInputSchemas[JobType.STORAGE_CLEANUP],
     concurrency: 1, // Run one at a time to avoid race conditions
     retryLimit: 3,
     // UI metadata

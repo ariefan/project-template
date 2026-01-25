@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import type { JobMetadata, JobRow, JobStatus } from "@workspace/db/schema";
+import { jobHandlerRegistry } from "../handlers/registry";
 import type { JobQueue } from "../queue/job-queue";
 import * as jobsRepository from "../repositories/jobs.repository";
 
@@ -64,6 +65,7 @@ export interface ListJobsInput {
   type?: string;
   format?: string;
   templateId?: string;
+  scheduleId?: string;
   createdAfter?: Date;
   createdBefore?: Date;
 }
@@ -72,6 +74,19 @@ export interface ListJobsInput {
  * Create a new job
  */
 export async function createJob(input: CreateJobInput): Promise<JobRow> {
+  // Validate input if a schema is registered for this job type
+  const handlerConfig = jobHandlerRegistry.get(input.type);
+  if (handlerConfig?.validationSchema && input.input) {
+    const result = handlerConfig.validationSchema.safeParse(input.input);
+    if (!result.success) {
+      throw new Error(
+        `Invalid job input for type "${input.type}": ${result.error.issues
+          .map((e) => e.message)
+          .join(", ")}`
+      );
+    }
+  }
+
   const job = await jobsRepository.createJob({
     id: generateJobId(),
     orgId: input.orgId,
@@ -99,13 +114,14 @@ export function getJob(orgId: string, jobId: string): Promise<JobRow | null> {
 export function listJobs(
   orgId: string | null | undefined,
   options: ListJobsInput = {}
-): Promise<jobsRepository.ListJobsResult> {
+): Promise<import("../repositories/jobs.repository").ListJobsResult> {
   // Cap page size at 100
   const pageSize = Math.min(options.pageSize ?? 50, 100);
 
   return jobsRepository.listJobs(orgId, {
     ...options,
     pageSize,
+    status: options.status as import("@workspace/db/schema").JobStatus,
   });
 }
 

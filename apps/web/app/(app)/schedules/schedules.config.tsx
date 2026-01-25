@@ -2,20 +2,28 @@ import type { ScheduledJob } from "@workspace/contracts";
 import { Badge } from "@workspace/ui/components/badge";
 import type { ColumnDef } from "@workspace/ui/composed/data-view";
 
-export const FREQUENCY_LABELS: Record<string, string> = {
-  once: "Once",
-  daily: "Daily",
-  weekly: "Weekly",
-  monthly: "Monthly",
-  custom: "Custom",
-};
+export const FREQUENCY_OPTIONS = [
+  { value: "once", label: "Once" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "custom", label: "Custom (Cron)" },
+] as const;
 
-export const DELIVERY_LABELS: Record<string, string> = {
-  email: "Email",
-  none: "None",
-  webhook: "Webhook",
-  storage: "Storage",
-};
+export const DELIVERY_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "email", label: "Email" },
+  { value: "webhook", label: "Webhook" },
+  { value: "storage", label: "Cloud Storage" },
+] as const;
+
+export const FREQUENCY_LABELS: Record<string, string> = Object.fromEntries(
+  FREQUENCY_OPTIONS.map((o) => [o.value, o.label])
+);
+
+export const DELIVERY_LABELS: Record<string, string> = Object.fromEntries(
+  DELIVERY_OPTIONS.map((o) => [o.value, o.label])
+);
 
 export const JOB_TYPE_LABELS: Record<string, string> = {
   "reports:generate": "Report Generation",
@@ -66,14 +74,10 @@ export const schedulesTableColumns: ColumnDef<ScheduledJob>[] = [
     accessorKey: "jobType",
     filterable: true,
     filterType: "select",
-    filterOptions: [
-      { value: "reports:generate", label: "Report Generation" },
-      { value: "storage:cleanup", label: "Storage Cleanup" },
-      { value: "backups:create", label: "Organization Backup" },
-      { value: "backups:cleanup", label: "Backup Cleanup" },
-      { value: "subscriptions:monitor", label: "Subscription Monitor" },
-      { value: "dev:pokeapi-test", label: "Test Job" },
-    ],
+    filterOptions: Object.entries(JOB_TYPE_LABELS).map(([value, label]) => ({
+      value,
+      label,
+    })),
     width: 120,
     cell: ({ value }: { value: unknown }) => (
       <Badge variant="secondary">{getJobTypeLabel(String(value))}</Badge>
@@ -86,13 +90,7 @@ export const schedulesTableColumns: ColumnDef<ScheduledJob>[] = [
     sortable: true,
     filterable: true,
     filterType: "select",
-    filterOptions: [
-      { value: "once", label: "Once" },
-      { value: "daily", label: "Daily" },
-      { value: "weekly", label: "Weekly" },
-      { value: "monthly", label: "Monthly" },
-      { value: "custom", label: "Custom" },
-    ],
+    filterOptions: [...FREQUENCY_OPTIONS],
     width: 120,
     cell: ({ value }: { value: unknown }) => (
       <Badge variant="secondary">
@@ -106,12 +104,7 @@ export const schedulesTableColumns: ColumnDef<ScheduledJob>[] = [
     accessorKey: "deliveryMethod",
     filterable: true,
     filterType: "select",
-    filterOptions: [
-      { value: "email", label: "Email" },
-      { value: "none", label: "None" },
-      { value: "webhook", label: "Webhook" },
-      { value: "storage", label: "Storage" },
-    ],
+    filterOptions: [...DELIVERY_OPTIONS],
     width: 100,
     cell: ({ value }: { value: unknown }) => (
       <Badge variant="outline">

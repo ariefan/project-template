@@ -178,13 +178,16 @@ async function handleTestJob(context: JobContext): Promise<JobResult> {
   };
 }
 
+import { JobInputSchemas, JobType } from "@workspace/contracts/jobs";
+
 /**
  * Register the test job handler
  */
 export function registerTestHandler(): void {
   jobHandlerRegistry.register({
-    type: "dev:pokeapi-test",
+    type: JobType.POKEAPI_TEST,
     handler: handleTestJob,
+    validationSchema: JobInputSchemas[JobType.POKEAPI_TEST],
     concurrency: 5,
     retryLimit: 2,
     expireInSeconds: 600, // 10 minutes

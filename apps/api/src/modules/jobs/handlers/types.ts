@@ -1,4 +1,6 @@
+import type { JobType } from "@workspace/contracts/jobs";
 import type { JobError, JobMetadata } from "@workspace/db/schema";
+import type { z } from "zod";
 
 /**
  * Helper functions available to job handlers
@@ -50,9 +52,11 @@ export type JobHandler = (context: JobContext) => Promise<JobResult>;
  */
 export interface JobHandlerConfig {
   /** Job type this handler processes */
-  type: string;
+  type: JobType | string;
   /** Handler function */
   handler: JobHandler;
+  /** Zod schema for input validation */
+  validationSchema?: z.ZodSchema;
   /** Number of concurrent jobs to process (default: 3) */
   concurrency?: number;
   /** Max retry attempts on failure (default: 3) */

@@ -366,7 +366,12 @@ async function registerGlobalJobHandlers() {
     registerReportHandler,
     registerTestHandler,
     registerStorageCleanupHandler,
+    registerAnnouncementHandler,
   } = await import("./modules/jobs");
+
+  const { initAnnouncementSubscribers } = await import(
+    "./modules/announcements/subscribers/announcement.subscribers"
+  );
 
   // Import backup handler registration
   const { registerBackupHandlers } = await import(
@@ -380,6 +385,9 @@ async function registerGlobalJobHandlers() {
   registerTestHandler();
   registerSubscriptionHandlers();
   registerStorageCleanupHandler();
+  registerAnnouncementHandler();
+
+  initAnnouncementSubscribers();
 
   registerBackupHandlers();
   registerSystemBackupHandlers();

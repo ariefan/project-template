@@ -8,19 +8,15 @@
  * - File storage
  */
 
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
 import {
   type ColumnConfig,
   createExporterRegistry,
   type ReportFormat,
 } from "@workspace/reports";
+import { filesService } from "../../files";
 import * as templatesService from "../../reports/services/templates.service";
 import { jobHandlerRegistry } from "./registry";
 import type { JobContext, JobResult } from "./types";
-
-// Storage path for generated reports
-const STORAGE_BASE_PATH = "./uploads";
 
 // ============ SAMPLE DATA GENERATION ============
 
@@ -130,6 +126,7 @@ export interface ReportJobInput {
  * Output structure for report jobs
  */
 export interface ReportJobOutput {
+  fileId?: string;
   filePath: string;
   fileSize: number;
   rowCount: number;
@@ -190,23 +187,33 @@ async function handleReportJob(context: JobContext): Promise<JobResult> {
 
     await helpers.updateProgress(75, "Saving file");
 
-    // Save file to storage
-    const reportsDir = path.join(STORAGE_BASE_PATH, "reports", jobId);
-    await fs.mkdir(reportsDir, { recursive: true });
-
     const extension = format === "excel" ? "xlsx" : format;
-    const filePath = path.join(reportsDir, `report.${extension}`);
-    await fs.writeFile(filePath, result.buffer);
+    const filename = `report_${new Date().toISOString().split("T")[0]}_${jobId.slice(0, 8)}.${extension}`;
+
+    // Upload using filesService (marked as temporary/clean by default)
+    const file = await filesService.directUpload({
+      orgId,
+      filename,
+      contentType: result.mimeType,
+      data: result.buffer,
+      metadata: {
+        jobId,
+        templateId,
+        ...metadata,
+      },
+      uploadedBy: "system", // Or context user if available
+    });
 
     await helpers.updateProcessedItems(totalRows, totalRows);
 
     console.log(
-      `Report job ${jobId} completed: ${filePath} (${result.size} bytes)`
+      `Report job ${jobId} completed. File created: ${file.id} (${result.size} bytes)`
     );
 
     return {
       output: {
-        filePath,
+        fileId: file.id,
+        filePath: file.storagePath,
         fileSize: result.size,
         rowCount: totalRows,
         mimeType: result.mimeType,
@@ -228,13 +235,16 @@ async function handleReportJob(context: JobContext): Promise<JobResult> {
 
 // ============ REGISTER HANDLER ============
 
+import { JobInputSchemas, JobType } from "@workspace/contracts/jobs";
+
 /**
  * Register the report job handler
  */
 export function registerReportHandler(): void {
   jobHandlerRegistry.register({
-    type: "reports:generate",
+    type: JobType.REPORTS_GENERATE,
     handler: handleReportJob,
+    validationSchema: JobInputSchemas[JobType.REPORTS_GENERATE],
     concurrency: 3,
     retryLimit: 3,
     expireInSeconds: 3600, // 1 hour

@@ -1,3 +1,4 @@
+import type { JobType } from "@workspace/contracts/jobs";
 import type { JobHandlerConfig } from "./types";
 
 /**
@@ -5,7 +6,7 @@ import type { JobHandlerConfig } from "./types";
  * Maps job types to their handler configurations
  */
 export class JobHandlerRegistry {
-  private readonly handlers = new Map<string, JobHandlerConfig>();
+  private readonly handlers = new Map<JobType | string, JobHandlerConfig>();
 
   /**
    * Register a job handler
@@ -22,21 +23,21 @@ export class JobHandlerRegistry {
   /**
    * Get handler configuration for a job type
    */
-  get(type: string): JobHandlerConfig | undefined {
+  get(type: JobType | string): JobHandlerConfig | undefined {
     return this.handlers.get(type);
   }
 
   /**
    * Check if a handler is registered for a job type
    */
-  has(type: string): boolean {
+  has(type: JobType | string): boolean {
     return this.handlers.has(type);
   }
 
   /**
    * Get all registered job types
    */
-  getTypes(): string[] {
+  getTypes(): (JobType | string)[] {
     return Array.from(this.handlers.keys());
   }
 

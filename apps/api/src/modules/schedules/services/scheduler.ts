@@ -8,6 +8,7 @@
  */
 
 import { and, db, eq, lte, scheduledJobs } from "@workspace/db";
+import { calculateNextRunAt } from "@workspace/utils";
 import { lt } from "drizzle-orm";
 
 export interface SchedulerConfig {
@@ -34,104 +35,6 @@ const MAX_FAILURE_COUNT = 5;
 const DEFAULT_INTERVAL_MS = 60_000; // 1 minute
 const DEFAULT_BATCH_SIZE = 50;
 
-type ScheduleFrequencyV2 = (typeof scheduledJobs.$inferInsert)["frequency"];
-
-function calculateNextDailyRun(now: Date, h: number, m: number): Date {
-  const next = new Date(now);
-  next.setHours(h, m, 0, 0);
-  if (next <= now) {
-    next.setDate(next.getDate() + 1);
-  }
-  return next;
-}
-
-function calculateNextWeeklyRun(
-  now: Date,
-  dayOfWeek: string | null,
-  h: number,
-  m: number
-): Date {
-  const dayMap: Record<string, number> = {
-    sunday: 0,
-    monday: 1,
-    tuesday: 2,
-    wednesday: 3,
-    thursday: 4,
-    friday: 5,
-    saturday: 6,
-  };
-  const targetDay = dayOfWeek
-    ? (dayMap[dayOfWeek] ?? now.getDay())
-    : now.getDay();
-  const next = new Date(now);
-  const currentDay = now.getDay();
-  let daysUntilTarget = (((targetDay - currentDay) % 7) + 7) % 7;
-  if (daysUntilTarget === 0) {
-    // Same day, check if time has passed
-    const targetTime = new Date(now);
-    targetTime.setHours(h, m, 0, 0);
-    if (targetTime <= now) {
-      daysUntilTarget = 7;
-    }
-  }
-  next.setDate(now.getDate() + daysUntilTarget);
-  next.setHours(h, m, 0, 0);
-  return next;
-}
-
-function calculateNextMonthlyRun(
-  now: Date,
-  dayOfMonth: number | null,
-  h: number,
-  m: number
-): Date {
-  const day = Math.min(dayOfMonth ?? 1, 28);
-  const next = new Date(now.getFullYear(), now.getMonth(), day, h, m, 0, 0);
-  if (next <= now) {
-    next.setMonth(next.getMonth() + 1);
-  }
-  return next;
-}
-
-/**
- * Calculate the next run time for a schedule
- */
-function calculateNextRunAt(
-  frequency: ScheduleFrequencyV2,
-  hour: number | null,
-  minute: number | null,
-  dayOfWeek: string | null,
-  dayOfMonth: number | null,
-  fromDate: Date = new Date()
-): Date | null {
-  const now = new Date(fromDate);
-  const h = hour ?? 0;
-  const m = minute ?? 0;
-
-  switch (frequency) {
-    case "once": {
-      // One-time schedules don't repeat
-      return null;
-    }
-    case "daily": {
-      return calculateNextDailyRun(now, h, m);
-    }
-    case "weekly": {
-      return calculateNextWeeklyRun(now, dayOfWeek, h, m);
-    }
-    case "monthly": {
-      return calculateNextMonthlyRun(now, dayOfMonth, h, m);
-    }
-    case "custom": {
-      // For custom/cron, we'd need a cron parser
-      // For now, skip and return null
-      return null;
-    }
-    default:
-      return null;
-  }
-}
-
 /**
  * Process a single schedule that is due
  */
@@ -154,14 +57,16 @@ async function processSchedule(
     });
 
     // Calculate next run time
-    const nextRunAt = calculateNextRunAt(
-      schedule.frequency,
-      schedule.hour,
-      schedule.minute,
-      schedule.dayOfWeek,
-      schedule.dayOfMonth,
-      new Date()
-    );
+    const nextRunAt = calculateNextRunAt({
+      frequency: schedule.frequency,
+      hour: schedule.hour,
+      minute: schedule.minute,
+      dayOfWeek: schedule.dayOfWeek,
+      dayOfMonth: schedule.dayOfMonth,
+      cronExpression: schedule.cronExpression,
+      timezone: schedule.timezone,
+      startDate: schedule.startDate,
+    });
 
     // Update the schedule
     await db

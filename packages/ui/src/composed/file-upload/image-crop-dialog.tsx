@@ -35,6 +35,9 @@ export interface ImageCropDialogProps {
   onCropComplete: (result: CropResult) => void;
   queue?: File[];
   onSelectFile?: (file: File) => void;
+  aspectRatio?: number;
+  lockAspectRatio?: boolean;
+  circularCrop?: boolean;
 }
 
 export function ImageCropDialog({
@@ -44,6 +47,9 @@ export function ImageCropDialog({
   onCropComplete,
   queue = [],
   onSelectFile,
+  aspectRatio,
+  lockAspectRatio = false,
+  circularCrop = false,
 }: ImageCropDialogProps) {
   const [imageSrc, setImageSrc] = React.useState<string | null>(null);
   const [crop, setCrop] = React.useState<Point>({ x: 0, y: 0 });
@@ -63,7 +69,13 @@ export function ImageCropDialog({
     { label: "4:3", value: 4 / 3 },
     { label: "16:9", value: 16 / 9 },
   ];
-  const [aspect, setAspect] = React.useState<number | undefined>(undefined);
+  const [aspect, setAspect] = React.useState<number | undefined>(aspectRatio);
+
+  React.useEffect(() => {
+    if (aspectRatio !== undefined) {
+      setAspect(aspectRatio);
+    }
+  }, [aspectRatio]);
 
   // Load image when file changes
   React.useEffect(() => {
@@ -84,7 +96,8 @@ export function ImageCropDialog({
     setFlipH(false);
     setFlipV(false);
     setCrop({ x: 0, y: 0 });
-    setAspect(undefined);
+    // Keep aspect ratio if it was passed via props, otherwise reset to Free (undefined)
+    setAspect(aspectRatio);
 
     return () => {
       // Cleanup?
@@ -233,12 +246,14 @@ export function ImageCropDialog({
             <Cropper
               aspect={aspect === 0 ? undefined : aspect} // 0 is handled as undefined (free) if passed explicitly
               crop={crop}
+              cropShape={circularCrop ? "round" : "rect"}
               image={imageSrc}
               onCropChange={onCropChange}
               onCropComplete={onCropCompleteHandler}
               onRotationChange={setRotation}
               onZoomChange={onZoomChange}
               rotation={rotation}
+              showGrid={!circularCrop}
               transform={[
                 `translate(${crop.x}px, ${crop.y}px)`,
                 `rotateZ(${rotation}deg)`,
@@ -282,24 +297,26 @@ export function ImageCropDialog({
               value={[rotation]}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-muted-foreground text-sm">
-              Ratio
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {ASPECTS.map((a) => (
-                <Button
-                  className="h-7 text-xs"
-                  key={a.label}
-                  onClick={() => setAspect(a.value)}
-                  size="sm"
-                  variant={aspect === a.value ? "default" : "outline"}
-                >
-                  {a.label}
-                </Button>
-              ))}
+          {!lockAspectRatio && !circularCrop && (
+            <div className="flex items-center gap-2">
+              <span className="w-16 shrink-0 text-muted-foreground text-sm">
+                Ratio
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {ASPECTS.map((a) => (
+                  <Button
+                    className="h-7 text-xs"
+                    key={a.label}
+                    onClick={() => setAspect(a.value)}
+                    size="sm"
+                    variant={aspect === a.value ? "default" : "outline"}
+                  >
+                    {a.label}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
           <div className="flex items-center gap-2">
             <span className="w-16 shrink-0 text-muted-foreground text-sm">
               Transform

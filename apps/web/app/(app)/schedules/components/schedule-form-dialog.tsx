@@ -37,6 +37,7 @@ import { useEffect, useState } from "react";
 import { getErrorMessage } from "@/lib/api-client";
 import { useScheduleMutations } from "../hooks/use-schedules-data";
 import { fetchJobTypes } from "../lib/job-templates";
+import { DELIVERY_OPTIONS, FREQUENCY_OPTIONS } from "../schedules.config";
 
 interface ScheduleFormDialogProps {
   open: boolean;
@@ -44,21 +45,6 @@ interface ScheduleFormDialogProps {
   schedule?: ScheduledJob;
   mode: "create" | "edit";
 }
-
-const FREQUENCY_OPTIONS: { value: ScheduleFrequency; label: string }[] = [
-  { value: "once", label: "Once" },
-  { value: "daily", label: "Daily" },
-  { value: "weekly", label: "Weekly" },
-  { value: "monthly", label: "Monthly" },
-  { value: "custom", label: "Custom (Cron)" },
-];
-
-const DELIVERY_OPTIONS: { value: JobDeliveryMethod; label: string }[] = [
-  { value: "none", label: "None" },
-  { value: "email", label: "Email" },
-  { value: "webhook", label: "Webhook" },
-  { value: "storage", label: "Cloud Storage" },
-];
 
 // Remove static JOB_TYPE_OPTIONS as we'll fetch them dynamically
 
@@ -199,12 +185,12 @@ export function ScheduleFormDialog({
   function loadTemplate() {
     if (currentTemplate) {
       const templateConfig = JSON.stringify(
-        currentTemplate.exampleConfig,
+        currentTemplate.exampleConfig ?? {},
         null,
         2
       );
       setJobConfigString(templateConfig);
-      setJobConfig(currentTemplate.exampleConfig);
+      setJobConfig(currentTemplate.exampleConfig ?? {});
       setConfigError("");
     }
   }
@@ -346,9 +332,9 @@ export function ScheduleFormDialog({
                     setJobType(value);
                     const template = jobTypes.find((t) => t.type === value);
                     if (template) {
-                      setJobConfig(template.exampleConfig);
+                      setJobConfig(template.exampleConfig ?? {});
                       setJobConfigString(
-                        JSON.stringify(template.exampleConfig, null, 2)
+                        JSON.stringify(template.exampleConfig ?? {}, null, 2)
                       );
                       setConfigError("");
                     }
@@ -396,9 +382,13 @@ export function ScheduleFormDialog({
                           onClick={() => {
                             setJobType(option.type);
                             setJobConfigString(
-                              JSON.stringify(option.exampleConfig, null, 2)
+                              JSON.stringify(
+                                option.exampleConfig ?? {},
+                                null,
+                                2
+                              )
                             );
-                            setJobConfig(option.exampleConfig);
+                            setJobConfig(option.exampleConfig ?? {});
                             setConfigError("");
                           }}
                           type="button"
@@ -556,7 +546,7 @@ export function ScheduleFormDialog({
                 <Input
                   disabled={isLoading}
                   id="dayOfMonth"
-                  max={28}
+                  max={31}
                   min={1}
                   onChange={(e) => setDayOfMonth(Number(e.target.value))}
                   type="number"

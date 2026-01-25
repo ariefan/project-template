@@ -1,5 +1,6 @@
 import type { NewAnnouncementRow } from "@workspace/db/schema";
 import { NotFoundError } from "../../../lib/errors";
+import { Events, eventBus } from "../../../lib/events";
 import * as repository from "../repositories/announcements.repository";
 
 // ============ TYPES ============
@@ -64,7 +65,12 @@ export async function createAnnouncement(input: CreateAnnouncementInput) {
     createdBy: input.createdBy,
   };
 
-  return await repository.createAnnouncement(data);
+  const announcement = await repository.createAnnouncement(data);
+
+  // Emit internal event for automation (decoupled)
+  eventBus.emitEvent(Events.ANN_CREATED, announcement);
+
+  return announcement;
 }
 
 /**

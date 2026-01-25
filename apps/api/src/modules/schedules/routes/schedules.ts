@@ -436,29 +436,24 @@ export function schedulesRoutes(app: FastifyInstance) {
     ): Promise<ScheduledJobHistoryResponse | ErrorResponse> => {
       try {
         const { orgId, scheduleId } = request.params;
-        const limit = Number(request.query.limit ?? 10);
+        const { limit = 50, page = 1 } = request.query as {
+          limit?: number;
+          page?: number;
+        };
 
-        // Get the schedule to check lastJobId
-        const schedule = await schedulesService.getSchedule(scheduleId, orgId);
-
-        // Get jobs for this schedule
-        const jobs = await jobsService.listJobs(orgId, {
-          pageSize: limit,
-          // Filter by metadata.scheduleId = scheduleId
-          // Note: This would require a JSON query on metadata
+        // Get jobs for this schedule directly from DB using JSONB filter
+        const result = await jobsService.listJobs(orgId, {
+          scheduleId,
+          page: Number(page),
+          pageSize: Number(limit),
         });
 
-        // For now, return the filtered jobs
-        const filteredJobs = jobs.data.filter(
-          (job) =>
-            (job.metadata as Record<string, unknown> | null)?.scheduleId ===
-              scheduleId || job.id === schedule.lastJobId
-        );
+        await import("../../jobs/lib/formatters");
 
         return {
           data: {
             scheduleId,
-            jobs: filteredJobs.map((job) => ({
+            jobs: result.data.map((job) => ({
               jobId: job.id,
               status: job.status,
               createdAt: job.createdAt.toISOString(),

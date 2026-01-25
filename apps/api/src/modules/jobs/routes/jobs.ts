@@ -3,7 +3,6 @@ import * as path from "node:path";
 import type {
   CreateJobRequest,
   ErrorResponse,
-  JobError,
   JobListResponse,
   JobResponse,
   JobStatus,
@@ -12,6 +11,7 @@ import type { FastifyInstance } from "fastify";
 import { handleError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
 import { requireAuth } from "../../auth/middleware";
+import { formatJobResponse } from "../lib/formatters";
 import * as jobsService from "../services/jobs.service";
 
 // MIME type mapping for file downloads
@@ -22,33 +22,6 @@ const MIME_TYPES: Record<string, string> = {
   thermal: "application/octet-stream",
   dotmatrix: "text/plain",
 };
-
-/**
- * Format job for API response
- */
-function formatJobResponse(
-  job: import("@workspace/db/schema").JobRow
-): JobResponse["data"] {
-  return {
-    jobId: job.id,
-    tenantId: job.orgId,
-    type: job.type,
-    status: job.status as JobStatus,
-    progress: job.progress ?? undefined,
-    message: job.message ?? undefined,
-    totalItems: job.totalItems ?? undefined,
-    processedItems: job.processedItems ?? undefined,
-    input: (job.input as Record<string, unknown>) ?? undefined,
-    output: (job.output as Record<string, unknown>) ?? undefined,
-    metadata: (job.metadata as Record<string, unknown>) ?? undefined,
-    error: (job.error as JobError) ?? undefined,
-    createdBy: job.createdBy,
-    createdAt: job.createdAt.toISOString(),
-    startedAt: job.startedAt?.toISOString(),
-    completedAt: job.completedAt?.toISOString(),
-    estimatedCompletion: job.estimatedCompletion?.toISOString(),
-  };
-}
 
 /**
  * Jobs routes

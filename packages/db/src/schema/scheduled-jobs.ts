@@ -3,24 +3,17 @@ import {
   index,
   integer,
   jsonb,
-  pgEnum,
   pgTable,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
 import { organizations, users } from "./auth";
 
-import { dayOfWeekEnum, scheduleFrequencyEnum } from "./common";
-
-// ============ ENUMS ============
-
-export const jobDeliveryMethodEnum = pgEnum("job_delivery_method", [
-  "email",
-  "download",
-  "webhook",
-  "storage",
-  "none",
-]);
+import {
+  dayOfWeekEnum,
+  jobDeliveryMethodEnum,
+  scheduleFrequencyEnum,
+} from "./common";
 
 // ============ NESTED TYPES ============
 
@@ -120,10 +113,5 @@ export const scheduledJobs = pgTable(
   ]
 );
 
-// ============ TYPE EXPORTS ============
-
 export type ScheduledJobRow = typeof scheduledJobs.$inferSelect;
 export type NewScheduledJobRow = typeof scheduledJobs.$inferInsert;
-
-export type JobDeliveryMethod =
-  (typeof jobDeliveryMethodEnum.enumValues)[number];

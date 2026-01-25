@@ -26,14 +26,13 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/tabs";
 import {
+  AvatarUploader,
   type CompressedFileWithPreview,
   FileUploader,
-  type UploadFile,
-} from "@workspace/ui/composed/file-upload";
-import {
   ImageUploader,
   type ImageUploaderRef,
-} from "@workspace/ui/composed/file-upload/image-uploader";
+  type UploadFile,
+} from "@workspace/ui/composed/file-upload";
 import { Code, Crop, Download, RefreshCw, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -72,7 +71,7 @@ export function StorageTester() {
   const [isAutoUpload, setIsAutoUpload] = useState(true);
   const [showCompressionOptions, setShowCompressionOptions] = useState(true);
   const [enableCropping, setEnableCropping] = useState(true);
-  const [autoImageUpload, setAutoImageUpload] = useState(false);
+  const [autoImageUpload, setAutoImageUpload] = useState(true);
   const [fileUploaderKey, setFileUploaderKey] = useState(0);
   const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
   const [exampleFiles, setExampleFiles] = useState<UploadFile[]>([]);
@@ -430,76 +429,137 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
           </Card>
         </TabsContent>
 
-        {/* Compression Tab */}
+        {/* Image Upload Tab */}
         <TabsContent value="compression">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Crop className="h-5 w-5 text-primary" />
-                <CardTitle>Image Upload & Compression</CardTitle>
-              </div>
-              <CardDescription>
-                Compress images client-side before uploading. Includes cropping,
-                preview, and metadata.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4 flex items-center space-x-2">
-                <Switch
-                  checked={showCompressionOptions}
-                  id="show-options"
-                  onCheckedChange={setShowCompressionOptions}
-                />
-                <Label htmlFor="show-options">Show Compression Options</Label>
-              </div>
-              <div className="mb-4 flex items-center space-x-2">
-                <Switch
-                  checked={enableCropping}
-                  id="enable-cropping"
-                  onCheckedChange={setEnableCropping}
-                />
-                <Label htmlFor="enable-cropping">
-                  Enable Cropping (Default)
-                </Label>
-              </div>
-              <div className="mb-4 flex items-center space-x-2">
-                <Switch
-                  checked={autoImageUpload}
-                  id="auto-upload"
-                  onCheckedChange={setAutoImageUpload}
-                />
-                <Label htmlFor="auto-upload">Auto Upload</Label>
-              </div>
-              <div className="mb-4">
-                <Button
-                  onClick={loadExampleImages}
-                  size="sm"
-                  variant="secondary"
-                >
-                  Load Example Data
-                </Button>
-              </div>
-              <ImageUploader
-                autoUpload={autoImageUpload}
-                defaultOptions={{
-                  alwaysKeepResolution: false,
-                  maxSizeMB: 1,
-                  maxWidthOrHeight: 1920,
-                  useWebWorker: true,
-                }}
-                enableCropping={enableCropping}
-                isUploading={isUploadingCompressed}
-                onCompressed={() => {
-                  // Refresh files list after compression
-                  queryClient.invalidateQueries({ queryKey: ["files"] });
-                }}
-                onConfirm={handleCompressedUpload}
-                ref={imageUploaderRef}
-                showCompressionOptions={showCompressionOptions}
-                showConfirmButton
-              />
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="avatar">Avatar</TabsTrigger>
+              <TabsTrigger value="cover">Cover Image</TabsTrigger>
+              <TabsTrigger value="small">Small Input</TabsTrigger>
+            </TabsList>
+
+            {/* General Example */}
+            <TabsContent value="general">
+              <Card>
+                <CardHeader>
+                  <CardTitle>General Image Upload</CardTitle>
+                  <CardDescription>
+                    Standard uploader with all features enabled (cropping, defaults).
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4 flex items-center gap-4">
+                    <Button
+                      onClick={loadExampleImages}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      Load Example Images
+                    </Button>
+                    <div className="flex items-center gap-2">
+                         <Label>Options:</Label>
+                         <Switch checked={enableCropping} onCheckedChange={setEnableCropping} /> <span className="text-sm">Cropping</span>
+                         <Switch checked={showCompressionOptions} onCheckedChange={setShowCompressionOptions} /> <span className="text-sm">Compression UI</span>
+                    </div>
+                  </div>
+                  <ImageUploader
+                    autoUpload={autoImageUpload}
+                    enableCropping={enableCropping}
+                    isUploading={isUploadingCompressed}
+                    onConfirm={handleCompressedUpload}
+                    showCompressionOptions={showCompressionOptions}
+                    showConfirmButton
+                    ref={imageUploaderRef}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Avatar Example */}
+            <TabsContent value="avatar">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Avatar Upload</CardTitle>
+                  <CardDescription>
+                    Circular crop, 1:1 aspect ratio, single file.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center gap-4">
+                    <AvatarUploader
+                      autoUpload={false}
+                      initials="JD"
+                      onConfirm={handleCompressedUpload}
+                      showConfirmButton
+                    />
+                    <p className="text-muted-foreground text-sm">
+                      Click to upload or drag & drop. Hover to edit.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Cover Image Example */}
+            <TabsContent value="cover">
+              <Card>
+                 <CardHeader>
+                  <CardTitle>Cover Image Upload</CardTitle>
+                  <CardDescription>
+                    Fixed 16:9 aspect ratio, single file.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <ImageUploader
+                      autoUpload={false}
+                      aspectRatio={16/9}
+                      lockAspectRatio
+                      enableCropping
+                      maxFiles={1}
+                      onConfirm={handleCompressedUpload}
+                      showCompressionOptions
+                      showConfirmButton
+                    />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Small Input Example */}
+            <TabsContent value="small">
+               <Card>
+                 <CardHeader>
+                  <CardTitle>Small Input</CardTitle>
+                  <CardDescription>
+                    Compact variant for tight spaces.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Profile Picture</Label>
+                    <ImageUploader
+                      autoUpload={false}
+                      maxFiles={1}
+                      onConfirm={handleCompressedUpload}
+                      size="sm"
+                      showConfirmButton={false}
+                    />
+                  </div>
+                   <div className="space-y-2">
+                    <Label>Cover Photo (Max 2)</Label>
+                    <ImageUploader
+                      autoUpload={false}
+                      maxFiles={2}
+                      onConfirm={handleCompressedUpload}
+                      size="sm"
+                      showConfirmButton={false}
+                    />
+                  </div>
+                </CardContent>
+               </Card>
+            </TabsContent>
+
+          </Tabs>
         </TabsContent>
 
         {/* File Manager Tab */}

@@ -5,6 +5,7 @@ import type {
   ScheduleFrequency,
   scheduledJobs,
 } from "@workspace/db/schema";
+import { calculateNextRunAt } from "@workspace/utils";
 import { NotFoundError } from "../../../lib/errors";
 import * as schedulesRepo from "../repositories/schedules.repository";
 
@@ -44,82 +45,6 @@ export interface UpdateScheduleInput {
   deliveryMethod?: JobDeliveryMethod;
   deliveryConfig?: Record<string, unknown>;
   isActive?: boolean;
-}
-
-/**
- * Calculate the next run time for a schedule
- */
-function calculateNextRunAt(
-  schedule: CreateScheduleInput | UpdateScheduleInput,
-  fromDate: Date = new Date()
-): Date | null {
-  const now = fromDate;
-  const hour = schedule.hour ?? 0;
-  const minute = schedule.minute ?? 0;
-
-  switch (schedule.frequency) {
-    case "once": {
-      // For one-time runs, use startDate
-      return schedule.startDate ?? null;
-    }
-    case "daily": {
-      // Next occurrence at the specified time
-      const next = new Date(now);
-      next.setHours(hour, minute, 0, 0);
-      if (next <= now) {
-        next.setDate(next.getDate() + 1);
-      }
-      return next;
-    }
-    case "weekly": {
-      // Next occurrence on the specified day
-      const dayMap: Record<string, number> = {
-        sunday: 0,
-        monday: 1,
-        tuesday: 2,
-        wednesday: 3,
-        thursday: 4,
-        friday: 5,
-        saturday: 6,
-      };
-      const targetDay = schedule.dayOfWeek
-        ? dayMap[schedule.dayOfWeek]
-        : now.getDay();
-      const next = new Date(now);
-      const daysUntilTarget =
-        ((targetDay ?? now.getDay()) - now.getDay() + 7) % 7 || 7;
-      next.setDate(now.getDate() + daysUntilTarget);
-      next.setHours(hour, minute, 0, 0);
-      if (next <= now) {
-        next.setDate(next.getDate() + 7);
-      }
-      return next;
-    }
-    case "monthly": {
-      // Next occurrence on the specified day of month
-      const day = Math.min(schedule.dayOfMonth ?? 1, 28); // Max 28 to avoid issues
-      const next = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        day,
-        hour,
-        minute,
-        0,
-        0
-      );
-      if (next <= now) {
-        next.setMonth(next.getMonth() + 1);
-      }
-      return next;
-    }
-    case "custom": {
-      // For custom, we'd need to parse the cron expression
-      // This is a simplified implementation - just return null for now
-      return null;
-    }
-    default:
-      return null;
-  }
 }
 
 /**
@@ -208,13 +133,15 @@ export async function updateSchedule(
 
   if (needsRecalc) {
     // Merge with existing values for calculation
-    const mergedInput: UpdateScheduleInput = {
+    const mergedInput = {
       frequency: input.frequency ?? existing.frequency,
       hour: input.hour ?? existing.hour ?? undefined,
       minute: input.minute ?? existing.minute ?? undefined,
       dayOfWeek: input.dayOfWeek ?? existing.dayOfWeek ?? undefined,
       dayOfMonth: input.dayOfMonth ?? existing.dayOfMonth ?? undefined,
       startDate: input.startDate ?? existing.startDate,
+      cronExpression: input.cronExpression ?? existing.cronExpression,
+      timezone: input.timezone ?? existing.timezone,
     };
     updateData.nextRunAt = calculateNextRunAt(mergedInput);
   }
@@ -274,7 +201,7 @@ export async function resumeSchedule(
   const schedule = await getSchedule(scheduleId, orgId);
 
   // Recalculate next run time
-  const scheduleInput: UpdateScheduleInput = {
+  const scheduleInput = {
     frequency: schedule.frequency,
     hour: schedule.hour ?? undefined,
     minute: schedule.minute ?? undefined,

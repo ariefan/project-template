@@ -6,5 +6,6 @@ export * from "./file-upload-trigger";
 export * from "./file-uploader";
 export * from "./image-crop-dialog";
 export * from "./image-uploader";
+export * from "./avatar-uploader";
 export * from "./types";
 export * from "./utils";

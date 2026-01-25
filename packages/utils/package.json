@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/luxon": "^3.7.1",
     "@types/node": "^22.13.14",
     "@workspace/typescript-config": "workspace:*",
     "typescript": "^5.9.3",
@@ -17,5 +18,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "cron-parser": "^5.5.0",
+    "luxon": "^3.7.2"
   }
 }
