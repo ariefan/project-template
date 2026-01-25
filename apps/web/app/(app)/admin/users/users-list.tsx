@@ -188,8 +188,8 @@ export function UsersList({
 
   if (!showPageHeader) {
     return (
-      <div className="space-y-6">
-        <Tabs defaultValue="members">
+      <div className="flex h-full flex-col bg-background">
+        <Tabs className="flex h-full flex-col" defaultValue="members">
           <TabsList>
             <TabsTrigger value="members">
               Members ({members.length})
@@ -245,81 +245,87 @@ export function UsersList({
   }
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-6 border-none py-6">
-      <PageHeader
-        actions={
-          isOwnerOrAdmin && (
-            <Button onClick={() => setInviteDialogOpen(true)} size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Invite User
-            </Button>
-          )
-        }
-        description="Manage members, roles, and invitations"
-        title="Organization Users"
-      />
+    <div className="flex h-full flex-col overflow-hidden bg-background">
+      <div className="border-b px-6 py-4">
+        <PageHeader
+          actions={
+            isOwnerOrAdmin && (
+              <Button onClick={() => setInviteDialogOpen(true)} size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Invite User
+              </Button>
+            )
+          }
+          description="Manage members, roles, and invitations"
+          title="Organization Users"
+        />
+      </div>
 
-      <Tabs defaultValue="members">
-        <TabsList>
-          <TabsTrigger value="members">Members ({members.length})</TabsTrigger>
-          <TabsTrigger value="invitations">
-            Pending ({pendingInvitations.length})
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent className="mt-6" value="members">
-          <DataTable
-            columns={columns}
-            data={filteredMembers}
-            emptyMessage={
-              searchQuery
-                ? "No members match your search."
-                : "No members found in this organization."
-            }
-            getRowId={(row) => row.id}
-            loading={!isMounted || membersLoading}
-            onSearchChange={setSearchQuery}
-            search={searchQuery}
-            toolbarLeft={<SearchInput placeholder="Search members..." />}
-          />
-        </TabsContent>
-        <TabsContent className="mt-6" value="invitations">
-          <DataTable
-            columns={invitationsColumns}
-            data={pendingInvitations}
-            emptyMessage="No pending invitations."
-            getRowId={(row) => row.id}
-            loading={!isMounted || invitationsLoading}
-          />
-        </TabsContent>
-      </Tabs>
+      <div className="flex-1 overflow-auto px-6 py-4">
+        <Tabs className="flex h-full flex-col" defaultValue="members">
+          <TabsList>
+            <TabsTrigger value="members">
+              Members ({members.length})
+            </TabsTrigger>
+            <TabsTrigger value="invitations">
+              Pending ({pendingInvitations.length})
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent className="mt-6" value="members">
+            <DataTable
+              columns={columns}
+              data={filteredMembers}
+              emptyMessage={
+                searchQuery
+                  ? "No members match your search."
+                  : "No members found in this organization."
+              }
+              getRowId={(row) => row.id}
+              loading={!isMounted || membersLoading}
+              onSearchChange={setSearchQuery}
+              search={searchQuery}
+              toolbarLeft={<SearchInput placeholder="Search members..." />}
+            />
+          </TabsContent>
+          <TabsContent className="mt-6" value="invitations">
+            <DataTable
+              columns={invitationsColumns}
+              data={pendingInvitations}
+              emptyMessage="No pending invitations."
+              getRowId={(row) => row.id}
+              loading={!isMounted || invitationsLoading}
+            />
+          </TabsContent>
+        </Tabs>
 
-      <InviteMemberDialog
-        error={inviteError}
-        isPending={inviteMutation.isPending}
-        onInvite={handleInvite}
-        onOpenChange={setInviteDialogOpen}
-        onRoleChange={setInviteRole}
-        onValueChange={setInviteEmail}
-        open={inviteDialogOpen}
-        role={inviteRole}
-        value={inviteEmail}
-      />
+        <InviteMemberDialog
+          error={inviteError}
+          isPending={inviteMutation.isPending}
+          onInvite={handleInvite}
+          onOpenChange={setInviteDialogOpen}
+          onRoleChange={setInviteRole}
+          onValueChange={setInviteEmail}
+          open={inviteDialogOpen}
+          role={inviteRole}
+          value={inviteEmail}
+        />
 
-      <RemoveMemberAlertDialog
-        isPending={removeMutation.isPending}
-        onConfirm={handleRemoveConfirm}
-        onOpenChange={(open) => !open && setRemoveTarget(null)}
-        open={Boolean(removeTarget)}
-        targetName={removeTarget?.user.name || removeTarget?.user.email}
-      />
+        <RemoveMemberAlertDialog
+          isPending={removeMutation.isPending}
+          onConfirm={handleRemoveConfirm}
+          onOpenChange={(open) => !open && setRemoveTarget(null)}
+          open={Boolean(removeTarget)}
+          targetName={removeTarget?.user.name || removeTarget?.user.email}
+        />
 
-      <CancelInvitationAlertDialog
-        isPending={cancelInvitationMutation.isPending}
-        onConfirm={handleCancelInvitation}
-        onOpenChange={(open) => !open && setCancelTarget(null)}
-        open={Boolean(cancelTarget)}
-        targetEmail={cancelTarget?.email}
-      />
+        <CancelInvitationAlertDialog
+          isPending={cancelInvitationMutation.isPending}
+          onConfirm={handleCancelInvitation}
+          onOpenChange={(open) => !open && setCancelTarget(null)}
+          open={Boolean(cancelTarget)}
+          targetEmail={cancelTarget?.email}
+        />
+      </div>
     </div>
   );
 }
