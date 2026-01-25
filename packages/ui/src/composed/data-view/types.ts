@@ -74,6 +74,8 @@ export interface ColumnDef<T = unknown> {
   id: string;
   /** Header label */
   header: string;
+  /** Optional tooltip to show next to the header */
+  headerTooltip?: string;
   /** Accessor key or function to get the value */
   accessorKey?: keyof T;
   accessorFn?: (row: T) => unknown;

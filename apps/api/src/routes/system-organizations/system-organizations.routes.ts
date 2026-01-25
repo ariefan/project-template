@@ -4,7 +4,17 @@ import type {
   SystemOrganizationResponse,
   UpdateSystemOrganizationRequest,
 } from "@workspace/contracts";
-import { count, db, desc, eq, like, or, organizations } from "@workspace/db";
+import {
+  count,
+  db,
+  desc,
+  eq,
+  like,
+  members,
+  or,
+  organizations,
+  users,
+} from "@workspace/db";
 import type { FastifyPluginAsync } from "fastify";
 
 // biome-ignore lint/suspicious/useAwait: fastify plugin
@@ -38,12 +48,34 @@ export const systemOrganizationsRoutes: FastifyPluginAsync = async (
 
     const total = totalResult?.count ?? 0;
 
-    const orgs = await db.query.organizations.findMany({
-      where,
-      limit,
-      offset,
-      orderBy: [desc(organizations.createdAt)],
-    });
+    const memberCountSubquery = db
+      .select({
+        organizationId: members.organizationId,
+        count: count().as("count"),
+      })
+      .from(members)
+      .groupBy(members.organizationId)
+      .as("member_counts");
+
+    const orgs = await db
+      .select({
+        id: organizations.id,
+        name: organizations.name,
+        slug: organizations.slug,
+        logo: organizations.logo,
+        createdAt: organizations.createdAt,
+        metadata: organizations.metadata,
+        memberCount: memberCountSubquery.count,
+      })
+      .from(organizations)
+      .leftJoin(
+        memberCountSubquery,
+        eq(organizations.id, memberCountSubquery.organizationId)
+      )
+      .where(where)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(organizations.createdAt));
 
     const mappedOrgs = orgs.map((org) => ({
       id: org.id,
@@ -52,6 +84,7 @@ export const systemOrganizationsRoutes: FastifyPluginAsync = async (
       logo: org.logo,
       createdAt: org.createdAt.toISOString(),
       metadata: org.metadata ? JSON.stringify(org.metadata) : null,
+      memberCount: Number(org.memberCount) || 0,
     }));
 
     return {
@@ -70,6 +103,57 @@ export const systemOrganizationsRoutes: FastifyPluginAsync = async (
           next: null,
         },
       },
+      meta: {
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  });
+
+  fastify.get<{
+    Params: { id: string };
+    Reply: {
+      data: Array<{
+        id: string;
+        role: string;
+        createdAt: string;
+        user: {
+          id: string;
+          name: string;
+          email: string;
+          image: string | null;
+        };
+      }>;
+      meta: {
+        requestId: string;
+        timestamp: string;
+      };
+    };
+  }>("/:id/members", {}, async (request, _reply) => {
+    const { id } = request.params;
+
+    const orgMembers = await db
+      .select({
+        id: members.id,
+        role: members.role,
+        createdAt: members.createdAt,
+        user: {
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          image: users.image,
+        },
+      })
+      .from(members)
+      .innerJoin(users, eq(members.userId, users.id))
+      .where(eq(members.organizationId, id))
+      .orderBy(desc(members.createdAt));
+
+    return {
+      data: orgMembers.map((m) => ({
+        ...m,
+        createdAt: m.createdAt.toISOString(),
+      })),
       meta: {
         requestId: request.id,
         timestamp: new Date().toISOString(),

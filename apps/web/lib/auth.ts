@@ -124,6 +124,7 @@ export const {
   organization,
   useActiveOrganization,
   useListOrganizations,
+  useActiveMember,
 } = authClient;
 
 /**

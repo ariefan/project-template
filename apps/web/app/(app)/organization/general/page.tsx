@@ -1,15 +1,36 @@
 "use client";
 
 import type { SystemOrganization } from "@workspace/contracts";
-import { Loader2 } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 import { OrganizationDangerZone } from "@/app/(app)/settings/organization";
 import {
   OrganizationForm,
   type OrganizationFormValues,
-} from "@/components/organization-form";
+} from "@/components/organizations/organization-form";
+import { SectionSkeleton } from "@/components/organizations/skeletons";
 import { authClient, useActiveOrganization } from "@/lib/auth";
+import { env } from "@/lib/env";
+
+const KNOWN_METADATA_KEYS = ["website", "supportEmail", "description"];
+
+function getMergedMetadata(
+  data: OrganizationFormValues,
+  currentMetadata: Record<string, unknown> | null | undefined
+): Record<string, unknown> {
+  const existingExtraMetadata: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(currentMetadata || {})) {
+    if (!KNOWN_METADATA_KEYS.includes(key)) {
+      existingExtraMetadata[key] = value;
+    }
+  }
+
+  return {
+    ...existingExtraMetadata,
+    website: data.website || undefined,
+    supportEmail: data.supportEmail || undefined,
+    description: data.description || undefined,
+  };
+}
 
 export default function OrganizationGeneralPage() {
   const {
@@ -17,28 +38,58 @@ export default function OrganizationGeneralPage() {
     isPending: isOrgLoading,
     refetch,
   } = useActiveOrganization();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleUpdate = async (data: OrganizationFormValues) => {
-    setIsSubmitting(true);
+  if (isOrgLoading || !activeOrg) {
+    return (
+      <div className="space-y-6">
+        <SectionSkeleton />
+        <SkeletonCard />
+      </div>
+    );
+  }
+
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_API_URL}/v1/orgs/${activeOrg.id}/files`,
+      {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const result = await response.json();
+    return `${env.NEXT_PUBLIC_API_URL}/v1/orgs/${activeOrg.id}/files/${result.data.id}/download`;
+  };
+
+  const handleUpdate = async (
+    data: OrganizationFormValues,
+    logoFile?: File
+  ) => {
+    const toastId = toast.loading("Updating organization...");
+
     try {
-      let parsedMetadata = {};
-      if (data.metadata) {
-        try {
-          parsedMetadata = JSON.parse(data.metadata);
-        } catch {
-          // Should be caught by form validation, but safe fallback
-          parsedMetadata = {};
-        }
+      let logoUrl = activeOrg.logo;
+      if (logoFile) {
+        logoUrl = await uploadFile(logoFile);
       }
 
+      const finalMetadata = getMergedMetadata(data, activeOrg.metadata);
+
       const { error } = await authClient.organization.update({
-        organizationId: activeOrg?.id ?? "",
+        organizationId: activeOrg.id,
         data: {
           name: data.name,
           slug: data.slug,
-          logo: data.logo,
-          metadata: parsedMetadata,
+          logo: logoUrl ?? undefined,
+          metadata: finalMetadata,
         },
       });
 
@@ -47,53 +98,34 @@ export default function OrganizationGeneralPage() {
       }
 
       await refetch();
-      toast.success("Organization updated successfully");
-      // biome-ignore lint/suspicious/noExplicitAny: error handling
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update organization");
-    } finally {
-      setIsSubmitting(false);
+      toast.success("Organization updated successfully", { id: toastId });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      toast.error(message, { id: toastId });
+      throw error;
     }
   };
 
-  const renderContent = () => {
-    if (isOrgLoading) {
-      return (
-        <div className="flex h-[50vh] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      );
-    }
+  return (
+    <div className="space-y-6">
+      <OrganizationForm onSubmit={handleUpdate} organization={activeOrg} />
 
-    if (!activeOrg) {
-      return (
-        <div className="flex h-[50vh] items-center justify-center text-muted-foreground">
-          Please select an organization.
-        </div>
-      );
-    }
+      <OrganizationDangerZone
+        organization={activeOrg as unknown as SystemOrganization}
+      />
+    </div>
+  );
+}
 
-    return (
-      <div className="space-y-6">
-        <OrganizationForm
-          initialValues={{
-            name: activeOrg.name,
-            slug: activeOrg.slug,
-            logo: activeOrg.logo || "",
-            metadata: JSON.stringify(activeOrg.metadata || {}, null, 2),
-          }}
-          isLoading={isSubmitting}
-          onSubmit={handleUpdate}
-        />
-
-        <div className="pt-6">
-          <OrganizationDangerZone
-            organization={activeOrg as unknown as SystemOrganization}
-          />
-        </div>
+function SkeletonCard() {
+  return (
+    <div className="rounded-lg border bg-card p-6 shadow-sm">
+      <div className="space-y-4">
+        <div className="h-6 w-1/4 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="h-10 w-full animate-pulse rounded bg-muted" />
       </div>
-    );
-  };
-
-  return renderContent();
+    </div>
+  );
 }

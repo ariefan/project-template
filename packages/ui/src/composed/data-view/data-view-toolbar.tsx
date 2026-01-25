@@ -276,7 +276,7 @@ export function SearchInput({
         className="h-8 w-full pr-8 pl-8 text-sm sm:w-64"
         onChange={handleChange}
         placeholder={placeholder ?? config.searchPlaceholder ?? "Search..."}
-        type="search"
+        type="text"
         value={localSearch}
       />
       {localSearch && (

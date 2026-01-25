@@ -20,19 +20,21 @@ import {
   SearchInput,
 } from "@workspace/ui/composed/data-view";
 import { format } from "date-fns";
-import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { Edit, MoreHorizontal, Trash, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { listSystemOrganizations } from "@/actions/system-organizations";
 import { DeleteOrganizationDialog } from "./delete-organization-dialog";
 import { EditOrganizationDialog } from "./edit-organization-dialog";
+import { OrganizationMembersDialog } from "./organization-members-dialog";
 
-export function SystemOrganizationsList() {
+export function OrganizationsList() {
   const [isMounted, setIsMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [targetOrg, setTargetOrg] = useState<SystemOrganization | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [membersDialogOpen, setMembersDialogOpen] = useState(false);
   const limit = 20;
 
   useEffect(() => setIsMounted(true), []);
@@ -68,6 +70,16 @@ export function SystemOrganizationsList() {
         ),
       },
       {
+        id: "memberCount",
+        accessorKey: "memberCount",
+        header: "Members",
+        cell: ({ row }) => (
+          <span className="font-mono text-muted-foreground">
+            {row.memberCount ?? 0}
+          </span>
+        ),
+      },
+      {
         id: "createdAt",
         accessorKey: "createdAt",
         header: "Created",
@@ -80,6 +92,7 @@ export function SystemOrganizationsList() {
       {
         id: "actions",
         header: "",
+        sortable: false,
         cell: ({ row }) => {
           return (
             <div className="flex justify-end">
@@ -99,6 +112,15 @@ export function SystemOrganizationsList() {
                   >
                     <Edit className="mr-2 size-4" />
                     Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setTargetOrg(row);
+                      setMembersDialogOpen(true);
+                    }}
+                  >
+                    <Users className="mr-2 size-4" />
+                    View Members
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
@@ -149,6 +171,12 @@ export function SystemOrganizationsList() {
       <DeleteOrganizationDialog
         onOpenChange={setDeleteDialogOpen}
         open={deleteDialogOpen}
+        organization={targetOrg}
+      />
+
+      <OrganizationMembersDialog
+        onOpenChange={setMembersDialogOpen}
+        open={membersDialogOpen}
         organization={targetOrg}
       />
     </>

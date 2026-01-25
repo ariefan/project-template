@@ -35,8 +35,11 @@ model SystemOrganization {
    * Metadata (JSON string or object)
    */
   metadata: string | null;
-  
-  // We can add _count later if needed, keeps it simple for now matching the existing action
+
+  /**
+   * Total number of members in the organization
+   */
+  memberCount?: int32;
 }
 
 /**

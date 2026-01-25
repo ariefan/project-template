@@ -4339,6 +4339,10 @@ export type SystemOrganization = {
      * Metadata (JSON string or object)
      */
     metadata: string | null;
+    /**
+     * Total number of members in the organization
+     */
+    memberCount?: number;
 };
 
 /**

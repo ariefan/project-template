@@ -49,7 +49,7 @@ export function ImpersonationBanner() {
   const userName = session?.user?.name || session?.user?.email || "this user";
 
   return (
-    <div className="sticky top-0 z-50 flex h-12 w-full items-center justify-between border-amber-500/20 border-b bg-amber-50 px-4 text-amber-900 shadow-sm dark:bg-amber-950/50 dark:text-amber-200">
+    <div className="sticky top-0 z-50 flex h-12 w-full items-center justify-between border-amber-500/20 border-b bg-amber-50 px-4 text-amber-900 shadow-sm dark:bg-amber-950 dark:text-amber-200">
       <div className="flex items-center gap-2 font-medium text-sm">
         <div className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-amber-500 text-white">
           <Eye className="size-3.5" />

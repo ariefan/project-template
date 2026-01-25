@@ -2100,7 +2100,8 @@ export const zSystemOrganization = z.object({
     metadata: z.union([
         z.string(),
         z.null()
-    ])
+    ]),
+    memberCount: z.optional(z.int())
 });
 
 /**

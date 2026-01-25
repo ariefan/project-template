@@ -1,5 +1,5 @@
-import { UsersList } from "@/app/(app)/admin/users/users-list";
+import { MemberManagement } from "@/components/organizations/member-management";
 
 export default function OrganizationMembersPage() {
-  return <UsersList showPageHeader={false} />;
+  return <MemberManagement showPageHeader={false} />;
 }

@@ -2,8 +2,14 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { Checkbox } from "@workspace/ui/components/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Info } from "lucide-react";
 import * as React from "react";
 import { DataViewActionMenu } from "./action-menu";
 import { ContentPlaceholder } from "./content-placeholder";
@@ -261,10 +267,36 @@ export function DataViewTable<T>({
                   type="button"
                 >
                   {column.header}
+                  {column.headerTooltip && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="ml-1 size-3.5 text-muted-foreground/70" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-64 font-normal normal-case tracking-normal">
+                          {column.headerTooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   {getSortIcon(column.id)}
                 </button>
               ) : (
-                column.header
+                <div className="flex items-center">
+                  {column.header}
+                  {column.headerTooltip && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="ml-1 size-3.5 cursor-help text-muted-foreground/70" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-64 font-normal normal-case tracking-normal">
+                          {column.headerTooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               )}
             </TableHead>
           ))}

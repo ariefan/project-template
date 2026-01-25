@@ -133,13 +133,13 @@ const navAdmin = [
     icon: CalendarClock,
   },
   {
-    title: "System Users",
-    url: "/admin/system/users",
+    title: "Users",
+    url: "/admin/users",
     icon: UserCog,
   },
   {
-    title: "System Orgs",
-    url: "/admin/system/organizations",
+    title: "Organizations",
+    url: "/admin/organizations",
     icon: Building2,
   },
   {
@@ -158,7 +158,7 @@ const navAdmin = [
     icon: Package,
   },
   {
-    title: "System Backups",
+    title: "Backups",
     url: "/admin/backups",
     icon: DatabaseBackup,
   },

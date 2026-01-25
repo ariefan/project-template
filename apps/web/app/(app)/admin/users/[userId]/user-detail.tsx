@@ -11,7 +11,6 @@ import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card";
@@ -228,9 +227,11 @@ export function UserDetail({ userId }: UserDetailProps) {
               <CardTitle className="text-xl">
                 {user?.name || "Unknown User"}
               </CardTitle>
-              <CardDescription>{user?.email}</CardDescription>
+              <CardTitle className="font-normal text-muted-foreground text-sm">
+                {user?.email}
+              </CardTitle>
               {member && (
-                <p className="mt-1 text-muted-foreground text-sm">
+                <p className="mt-1 text-muted-foreground text-xs">
                   Member since{" "}
                   {format(new Date(member.createdAt), "MMMM d, yyyy")}
                 </p>
@@ -256,7 +257,7 @@ export function UserDetail({ userId }: UserDetailProps) {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm">Organization Role</p>
+              <p className="text-muted-foreground text-xs">Organization Role</p>
               <div className="mt-1 flex items-center gap-2">
                 <Badge variant={getRoleBadgeVariant(userOrgRole)}>
                   {userOrgRole}

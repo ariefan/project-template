@@ -43,6 +43,7 @@ import authorizationPlugin from "./plugins/authorization";
 import rateLimitPlugin from "./plugins/rate-limit";
 import securityHeadersPlugin from "./plugins/security-headers";
 import { systemOrganizationsRoutes } from "./routes/system-organizations/system-organizations.routes";
+import { systemUsersRoutes } from "./routes/system-users/system-users.routes";
 
 export interface AppConfig {
   auth: Auth;
@@ -515,6 +516,9 @@ async function registerModules(app: import("fastify").FastifyInstance) {
   await app.register(adminJobsRoutes, { prefix: "/v1" });
   await app.register(systemOrganizationsRoutes, {
     prefix: "/v1/system-organizations",
+  });
+  await app.register(systemUsersRoutes, {
+    prefix: "/v1/system-users",
   });
 
   // Dynamic import or static if at top

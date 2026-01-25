@@ -11415,6 +11415,10 @@ components:
           type: string
           nullable: true
           description: Metadata (JSON string or object)
+        memberCount:
+          type: integer
+          format: int32
+          description: Total number of members in the organization
       description: System organization model
     SystemOrganizationListResponse:
       type: object
