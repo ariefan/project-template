@@ -1,6 +1,16 @@
 "use client";
 
+import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
 import {
   Field,
   FieldDescription,
@@ -9,11 +19,17 @@ import {
   FieldSeparator,
 } from "@workspace/ui/components/field";
 import { Input } from "@workspace/ui/components/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip";
 import { cn } from "@workspace/ui/lib/utils";
-import { CheckCircle2, Mail } from "lucide-react";
+import { CheckCircle2, Mail, Terminal } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
 import { authClient } from "@/lib/auth";
@@ -24,7 +40,22 @@ interface LoginFormProps extends React.ComponentProps<"form"> {
 
 type LoginMode = "password" | "magic-link";
 
+const ROLE_DESCRIPTIONS: Record<string, string> = {
+  super_admin: "Full platform access (God Mode)",
+  support: "Read-only access to all tenants",
+  user: "Authenticated User (Base Role)",
+  owner: "Organization Owner (Billing & Settings)",
+  admin: "Organization Admin (Team Management)",
+  member: "Standard Member (Read/Write)",
+  viewer: "Read-only Member",
+  editor: "Can publish & manage content",
+  moderator: "Can manage comments & community",
+  contributor: "Can draft content (Review required)",
+};
+
 export function LoginForm({ className, ...props }: LoginFormProps) {
+  // ... existing code ...
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? "/dashboard";
@@ -35,6 +66,28 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [demoAccounts, setDemoAccounts] = useState<
+    Array<{ email: string; roles: string[] }>
+  >([]);
+
+  // Fetch demo accounts in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      // Import env dynamically to avoid issues in non-browser context if needed,
+      // but here we are in a component so static import is fine.
+      // However, to keep it clean and avoid global import side-effects:
+      import("@/lib/env").then(({ env }) => {
+        fetch(`${env.NEXT_PUBLIC_API_URL}/v1/developer/demo-accounts`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.users) {
+              setDemoAccounts(data.users);
+            }
+          })
+          .catch((err) => console.error("Failed to fetch demo accounts:", err));
+      });
+    }
+  }, []);
 
   function isEmail(value: string): boolean {
     return value.includes("@");
@@ -290,35 +343,165 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
           </FieldDescription>
         </Field>
 
-        <div className="mt-2 text-center text-muted-foreground text-xs">
-          <p className="mb-2 font-medium uppercase tracking-wider">
-            Demo Accounts
-          </p>
-          <div className="grid gap-2">
-            {[
-              { email: "admin@example.com", label: "Owner" },
-              { email: "user@example.com", label: "Member" },
-              { email: "viewer@example.com", label: "Viewer" },
-              { email: "onboarding@example.com", label: "No Org" },
-            ].map((creds) => (
-              <Button
-                className="h-8 w-full justify-between font-normal"
-                key={creds.email}
-                onClick={() => {
-                  setIdentifier(creds.email);
-                  setPassword("password123");
-                  setLoginMode("password");
-                }}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                <code className="bg-muted px-1 py-0.5">{creds.email}</code>
-                <span className="text-muted-foreground">{creds.label}</span>
-              </Button>
-            ))}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-4 flex justify-center">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  className="gap-2 text-muted-foreground text-xs"
+                  size="sm"
+                  variant="ghost"
+                >
+                  <Terminal className="h-4 w-4" />
+                  Developer Demo Accounts
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Developer Demo Accounts</DialogTitle>
+                  <DialogDescription>
+                    Select an account to auto-fill credentials for testing.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="flex flex-col gap-2">
+                    <p className="font-semibold text-foreground text-xs uppercase tracking-wider">
+                      Tenant Scope (Org)
+                    </p>
+                    {demoAccounts
+                      ?.filter(
+                        (u) =>
+                          !u.roles?.some((r) =>
+                            ["super_admin", "support"].includes(r)
+                          )
+                      )
+                      .map((item) => (
+                        <DialogClose asChild key={item.email}>
+                          <Button
+                            className="h-auto flex-col items-start px-3 py-2 text-left"
+                            onClick={() => {
+                              setIdentifier(item.email);
+                              setPassword("password123");
+                              setLoginMode("password");
+                              // Small timeout to allow state update before focus
+                              setTimeout(() => {
+                                const submitBtn = document.querySelector(
+                                  'button[type="submit"]'
+                                ) as HTMLButtonElement;
+                                submitBtn?.focus();
+                              }, 0);
+                            }}
+                            variant="outline"
+                          >
+                            <div className="flex w-full items-center justify-between">
+                              <span className="font-semibold text-xs capitalize">
+                                {item.email.split("@")[0]?.replace("_", " ")}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {item.email}
+                              </span>
+                            </div>
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {item.roles
+                                // UX Best Practice: Hide "user" role entirely as it serves as the base role/noise.
+                                .filter((role) => role !== "user")
+                                .map((role) => (
+                                  <TooltipProvider key={role}>
+                                    <Tooltip delayDuration={300}>
+                                      <TooltipTrigger asChild>
+                                        <Badge
+                                          className="h-5 cursor-help px-1.5 font-mono font-normal text-[10px] hover:bg-secondary/80"
+                                          variant="secondary"
+                                        >
+                                          {role}
+                                        </Badge>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          {ROLE_DESCRIPTIONS[
+                                            role as keyof typeof ROLE_DESCRIPTIONS
+                                          ] || role}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ))}
+                            </div>
+                          </Button>
+                        </DialogClose>
+                      ))}
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <p className="font-semibold text-foreground text-xs uppercase tracking-wider">
+                      System Scope (Global)
+                    </p>
+                    {demoAccounts
+                      ?.filter((u) =>
+                        u.roles?.some((r) =>
+                          ["super_admin", "support"].includes(r)
+                        )
+                      )
+                      .map((item) => (
+                        <DialogClose asChild key={item.email}>
+                          <Button
+                            className="h-auto flex-col items-start px-3 py-2 text-left"
+                            onClick={() => {
+                              setIdentifier(item.email);
+                              setPassword("password123");
+                              setLoginMode("password");
+                              setTimeout(() => {
+                                const submitBtn = document.querySelector(
+                                  'button[type="submit"]'
+                                ) as HTMLButtonElement;
+                                submitBtn?.focus();
+                              }, 0);
+                            }}
+                            variant="outline"
+                          >
+                            <div className="flex w-full items-center justify-between">
+                              <span className="font-semibold text-xs capitalize">
+                                {item.email.split("@")[0]?.replace("_", " ")}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                {item.email}
+                              </span>
+                            </div>
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {item.roles
+                                // UX Best Practice: Hide "user" role entirely as it serves as the base role/noise.
+                                .filter((role) => role !== "user")
+                                .map((role) => (
+                                  <TooltipProvider key={role}>
+                                    <Tooltip delayDuration={300}>
+                                      <TooltipTrigger asChild>
+                                        <Badge
+                                          className="h-5 cursor-help px-1.5 font-mono font-normal text-[10px] hover:bg-secondary/80"
+                                          variant="secondary"
+                                        >
+                                          {role}
+                                        </Badge>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          {ROLE_DESCRIPTIONS[
+                                            role as keyof typeof ROLE_DESCRIPTIONS
+                                          ] || role}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ))}
+                            </div>
+                          </Button>
+                        </DialogClose>
+                      ))}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
-        </div>
+        )}
       </FieldGroup>
     </form>
   );

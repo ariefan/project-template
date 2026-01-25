@@ -63,11 +63,13 @@ export type NewRole = typeof roles.$inferInsert;
  */
 export const SystemRoles = {
   // Global roles (no tenant)
-  SUPER_USER: "super_user",
-  APP_ADMIN: "app_admin",
+  SUPER_ADMIN: "super_admin",
+  SUPPORT: "support",
   USER: "user",
+} as const;
 
-  // Tenant roles
+export const TenantRoles = {
+  // Tenant roles (Standard)
   OWNER: "owner",
   ADMIN: "admin",
   MEMBER: "member",

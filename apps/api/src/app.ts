@@ -26,7 +26,7 @@ import { developerRoutes } from "./modules/developer";
 import { examplePostsModule } from "./modules/example-posts";
 import { filesModule, filesService } from "./modules/files";
 import { healthRoutes } from "./modules/health";
-import { jobsModule, jobTypesRoutes } from "./modules/jobs";
+import { adminJobsRoutes, jobsModule, jobTypesRoutes } from "./modules/jobs";
 import { legalDocumentsModule } from "./modules/legal-documents";
 import { migrationRoutes } from "./modules/migration";
 import { notificationsModule } from "./modules/notifications";
@@ -416,10 +416,10 @@ async function setupQueues(app: import("fastify").FastifyInstance) {
     await jobQueue.start();
 
     // Schedule recurring maintenance jobs
-    await jobQueue.schedule("system:subscription-monitor", "0 * * * *");
+    await jobQueue.schedule("subscriptions:monitor", "0 * * * *");
 
     // Schedule storage cleanup
-    await jobQueue.schedule("system:storage-cleanup", "0 * * * *");
+    await jobQueue.schedule("storage:cleanup", "0 * * * *");
 
     // Initialize and start the scheduled job worker
     // This polls for due schedules and automatically creates jobs
@@ -512,6 +512,7 @@ async function registerModules(app: import("fastify").FastifyInstance) {
   await app.register(subscriptionsModule, { prefix: "/v1" });
   await app.register(legalDocumentsModule, { prefix: "/v1" });
   await app.register(jobTypesRoutes, { prefix: "/v1" });
+  await app.register(adminJobsRoutes, { prefix: "/v1" });
   await app.register(systemOrganizationsRoutes, {
     prefix: "/v1/system-organizations",
   });

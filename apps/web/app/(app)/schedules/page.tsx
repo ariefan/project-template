@@ -13,11 +13,15 @@ import {
 } from "@workspace/ui/composed/data-view";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/layouts/page-header";
+import { useActiveOrganization } from "@/lib/auth";
 import { ScheduleFormDialog } from "./components/schedule-form-dialog";
 import { schedulesTableColumns } from "./schedules.config";
 import { useSchedulesTable } from "./use-schedules-table";
 
 export default function SchedulesPage() {
+  const activeOrg = useActiveOrganization();
+  const isGlobal = !activeOrg.data?.id;
+
   const {
     orgId,
     isLoading,
@@ -31,7 +35,7 @@ export default function SchedulesPage() {
     editingSchedule,
     handleCreateNew,
     handleDialogChange,
-  } = useSchedulesTable();
+  } = useSchedulesTable(isGlobal);
 
   function renderContent() {
     if (isLoading) {
@@ -42,7 +46,7 @@ export default function SchedulesPage() {
       );
     }
 
-    if (!orgId) {
+    if (!(isGlobal || orgId)) {
       return (
         <div className="py-8 text-center text-muted-foreground">
           Please select an organization

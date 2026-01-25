@@ -1,0 +1,190 @@
+
+> project-template@0.0.1 check C:\dev\project-template
+> turbo typecheck && biome check --write
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/db:typecheck: cache hit, replaying logs 3fa7c77d2c5b8c17
+@workspace/db:typecheck: 
+@workspace/db:typecheck: > @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit
+@workspace/db:typecheck: 
+@workspace/utils:typecheck: cache hit, replaying logs 5dab66d51059e6ab
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/cache:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/cache:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/ui:typecheck: cache hit, replaying logs 54030b42ba15c278
+@workspace/ui-mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit[6;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/metrics:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/auth:typecheck: cache hit, replaying logs 60252edabd93a2b0
+@workspace/auth:typecheck: 
+@workspace/auth:typecheck: > @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit
+@workspace/auth:typecheck: 
+@workspace/test-utils:typecheck: cache hit, replaying logs 22edeed9633865b6
+@workspace/notifications:typecheck: cache hit, replaying logs 9002f589c9cce0a5
+@workspace/authorization:typecheck: cache hit, replaying logs b718f085c81841ed
+@workspace/authorization:typecheck: 
+@workspace/authorization:typecheck: > @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit
+@workspace/authorization:typecheck: 
+@workspace/reports:typecheck: cache hit, replaying logs 191919dde225ad89
+@workspace/test-utils:typecheck: 
+@workspace/test-utils:typecheck: > @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit
+@workspace/test-utils:typecheck: 
+@workspace/feature-files:typecheck: cache hit, replaying logs f72ae1dca061ad57
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+@workspace/reports:typecheck: 
+@workspace/reports:typecheck: > @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit
+@workspace/reports:typecheck: 
+@workspace/notifications:typecheck: 
+@workspace/notifications:typecheck: > @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit
+@workspace/notifications:typecheck: 
+api:typecheck: cache miss, executing 34b6ecffb753833d
+@workspace/feature-files:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+web:typecheck: cache miss, executing 5ae8582d36f45d74
+mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: ]0;C:\WINDOWS\system32\cmd.exe[?25h
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 
+mobile:typecheck: [7;35H types do not work in monorepo works
+mobile:typecheck: [7;35Hspaces (see tsconfig.json for detail
+mobile:typecheck: [7;35Hls)'
+mobile:typecheck: [?9001l[?1004l
+drive:typecheck: cache hit, replaying logs 9bfd4eb6ade226c6
+drive:typecheck: 
+drive:typecheck: > drive@0.0.1 typecheck C:\dev\project-template\apps\drive
+drive:typecheck: > tsc --noEmit
+drive:typecheck: 
+api:typecheck: 
+api:typecheck: > api@0.0.1 typecheck C:\dev\project-template\apps\api
+api:typecheck: > tsc --noEmit
+api:typecheck: 
+web:typecheck: 
+web:typecheck: > web@0.0.1 typecheck C:\dev\project-template\apps\web
+web:typecheck: > tsc --noEmit
+web:typecheck: 
+
+ Tasks:    17 successful, 17 total
+Cached:    15 cached, 17 total
+  Time:    24.611s 
+
+apps\web\app\(app)\reports\history\hooks\use-report-history.ts:32:13 suppressions/unused ━━━━━━━━━━━
+
+  ! Suppression comment has no effect. Remove the suppression or make sure you are suppressing the correct rule.
+  
+    30 │             pageSize: request.pageSize,
+    31 │             type: "report",
+  > 32 │             // biome-ignore lint/suspicious/noExplicitAny: type conversion
+       │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    33 │             status: request.filters.find((f) => f.field === "status")
+    34 │               ?.value as any,
+  
+
+apps\api\src\modules\schedules\repositories\schedules.repository.ts:81:7 lint/suspicious/noImplicitAnyLet ━━━━━━━━━━
+
+  × This variable implicitly has the any type.
+  
+    79 │   }
+    80 │ 
+  > 81 │   let whereClause;
+       │       ^^^^^^^^^^^
+    82 │   if (conditions.length === 1) {
+    83 │     whereClause = conditions[0];
+  
+  i Variable declarations without type annotation and initialization implicitly have the any type. Declare a type or initialize the variable with some value.
+  
+
+apps\api\src\modules\schedules\repositories\schedules.repository.ts:81:7 lint/suspicious/noEvolvingTypes ━━━━━━━━━━
+
+  × The type of this variable may evolve implicitly to any type, including the any type.
+  
+    79 │   }
+    80 │ 
+  > 81 │   let whereClause;
+       │       ^^^^^^^^^^^
+    82 │   if (conditions.length === 1) {
+    83 │     whereClause = conditions[0];
+  
+  i Add an explicit type or initialization to avoid implicit type evolution.
+  
+
+apps\web\app\(app)\admin\users\users-list.tsx:88:17 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 16 detected (max: 15).
+  
+    86 │ }
+    87 │ 
+  > 88 │ export function UsersList({
+       │                 ^^^^^^^^^
+    89 │   showPageHeader = true,
+    90 │ }: {
+  
+  i Please refactor this function to reduce its complexity score from 16 to the max allowed complexity 15.
+  
+
+apps\web\app\(app)\organization\layout.tsx:66:68 lint/suspicious/noArrayIndexKey ━━━━━━━━━━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    64 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+    65 │               {Array.from({ length: 4 }).map((_, i) => (
+  > 66 │                 <Skeleton className="h-10 w-full" key={`skeleton-${i}`} />
+       │                                                                    ^
+    67 │               ))}
+    68 │             </div>
+  
+  i This is the source of the key value.
+  
+    63 │           <aside className="w-full flex-shrink-0 md:w-64">
+    64 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+  > 65 │               {Array.from({ length: 4 }).map((_, i) => (
+       │                                                  ^
+    66 │                 <Skeleton className="h-10 w-full" key={`skeleton-${i}`} />
+    67 │               ))}
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+apps\web\app\(app)\reports\history\hooks\use-report-history.ts:34:26 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    32 │             // biome-ignore lint/suspicious/noExplicitAny: type conversion
+    33 │             status: request.filters.find((f) => f.field === "status")
+  > 34 │               ?.value as any,
+       │                          ^^^
+    35 │           },
+    36 │         });
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+Checked 831 files in 2s. No fixes applied.
+Found 5 errors.
+Found 1 warning.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while applying fixes.
+  
+
+ ELIFECYCLE  Command failed with exit code 1.

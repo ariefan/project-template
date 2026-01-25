@@ -42,8 +42,7 @@ import {
   SearchInput,
 } from "@workspace/ui/composed/data-view";
 import { format } from "date-fns";
-import { Ban, Eye, Unlock, UserPlus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Ban, Unlock, UserPlus, UserRoundSearch } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { authClient, useSession } from "@/lib/auth";
 
@@ -61,9 +60,9 @@ interface SystemUser {
 }
 
 export function SystemUsersList() {
-  const router = useRouter();
+  // const router = useRouter(); // Unused
   const queryClient = useQueryClient();
-  const { data: session, refetch: refetchSession } = useSession();
+  const { data: session } = useSession(); // Removed unused refetchSession
   const currentUserId = session?.user?.id;
 
   // UI State
@@ -189,12 +188,15 @@ export function SystemUsersList() {
       }
       return result;
     },
-    onSuccess: async () => {
-      await refetchSession();
-      router.refresh();
-      router.push("/dashboard");
+    onSuccess: () => {
+      // Force a hard reload to ensure all auth hooks and layout state are reset
+      window.location.href = "/dashboard";
     },
   });
+
+  // biome-ignore lint/suspicious/noExplicitAny: better-auth extension
+  const impersonatedBy = (session?.session as any)?.impersonatedBy;
+  const isImpersonating = Boolean(impersonatedBy);
 
   const columns = useMemo<ColumnDef<SystemUser>[]>(() => {
     const getInitials = (name: string | null, email: string) => {
@@ -279,13 +281,17 @@ export function SystemUsersList() {
             <div className="flex items-center justify-end gap-1">
               {canManage && !user.banned && (
                 <Button
-                  disabled={impersonateMutation.isPending}
+                  disabled={impersonateMutation.isPending || isImpersonating}
                   onClick={() => impersonateMutation.mutate(user.id)}
                   size="icon"
-                  title="Impersonate user"
+                  title={
+                    isImpersonating
+                      ? "Stop current impersonation first"
+                      : "Impersonate user"
+                  }
                   variant="ghost"
                 >
-                  <Eye className="size-4" />
+                  <UserRoundSearch className="size-4" />
                 </Button>
               )}
               {canManage && !user.banned && (
@@ -313,7 +319,7 @@ export function SystemUsersList() {
         },
       },
     ];
-  }, [currentUserId, impersonateMutation]);
+  }, [currentUserId, impersonateMutation, isImpersonating]);
 
   return (
     <>

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { seedDatabaseHandler } from "./handlers";
+import { getDemoAccountsHandler, seedDatabaseHandler } from "./handlers";
 
 export function developerRoutes(app: FastifyInstance) {
   app.post(
@@ -16,4 +16,6 @@ export function developerRoutes(app: FastifyInstance) {
     },
     seedDatabaseHandler
   );
+
+  app.get("/developer/demo-accounts", getDemoAccountsHandler);
 }

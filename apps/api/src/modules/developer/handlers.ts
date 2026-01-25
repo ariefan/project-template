@@ -52,3 +52,86 @@ export async function seedDatabaseHandler(
     });
   }
 }
+
+export async function getDemoAccountsHandler(
+  req: FastifyRequest,
+  reply: FastifyReply
+) {
+  // 1. Environment Safety Check
+  if (env.NODE_ENV !== "development") {
+    return reply.status(403).send({
+      message: "Demo accounts are only available in development environment",
+    });
+  }
+
+  try {
+    const { db, eq, users, userRoleAssignments, roles, accounts, SystemRoles } =
+      await import("@workspace/db");
+
+    // 1. Fetch all users who have credential accounts (password login)
+    const credentialAccounts = await db
+      .select({ userId: accounts.userId })
+      .from(accounts)
+      .where(eq(accounts.providerId, "credential"));
+
+    const credentialUserIds = credentialAccounts.map((a) => a.userId);
+
+    if (credentialUserIds.length === 0) {
+      return { users: [] };
+    }
+
+    // 2. Fetch users details
+
+    // InArray check might be large if many users, but for demo it's fine.
+    // Alternatively fetch all and filter in JS if needed, but strict is better.
+    // Drizzle doesn't export `inArray` from @workspace/db by default unless we check index.ts
+    // index.ts exports `inArray`.
+    // Re-importing inArray to be safe if destructuring above failed or add it to destructuring
+    const { inArray } = await import("@workspace/db"); // ensuring import
+
+    const demoUsers = await db
+      .select({
+        id: users.id,
+        email: users.email,
+      })
+      .from(users)
+      .where(inArray(users.id, credentialUserIds));
+
+    // 3. Fetch assignments for these users
+    const assignments = await db
+      .select({
+        userId: userRoleAssignments.userId,
+        roleName: roles.name,
+      })
+      .from(userRoleAssignments)
+      .leftJoin(roles, eq(userRoleAssignments.roleId, roles.id))
+      .where(inArray(userRoleAssignments.userId, credentialUserIds));
+
+    // 4. Group by user
+    const results = demoUsers.map((user) => {
+      const userRoles = assignments
+        .filter((a) => a.userId === user.id)
+        .map((a) => a.roleName)
+        .filter((r): r is string => r !== null);
+
+      // Best Practice: Explicitly include "user" role for everyone in the UI
+      // so it matches the implicit backend permissions.
+      const allRoles = [...new Set([...userRoles, SystemRoles.USER])];
+
+      return {
+        id: user.id,
+        email: user.email,
+        roles: allRoles,
+      };
+    });
+
+    return {
+      users: results,
+    };
+  } catch (error) {
+    req.log.error({ err: error }, "Failed to fetch demo accounts");
+    return reply.status(500).send({
+      message: "Failed to fetch demo accounts",
+    });
+  }
+}

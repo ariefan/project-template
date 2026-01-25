@@ -1,5 +1,6 @@
 "use client";
 
+import { SystemRoles } from "@workspace/db/schema";
 import {
   Sidebar,
   SidebarContent,
@@ -8,11 +9,10 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar";
 import {
-  Bell,
-  BellRing,
-  Briefcase,
+  Activity,
   Building2,
   CalendarClock,
+  Clock,
   Code,
   CreditCard,
   Database,
@@ -22,29 +22,28 @@ import {
   FolderOpen,
   Gavel,
   Home,
-  Key,
   Megaphone,
   Package,
-  Settings,
-  Shield,
   UserCog,
-  Users,
   Webhook,
 } from "lucide-react";
-import type * as React from "react";
-import { UnreadAnnouncementsBadge } from "@/app/(app)/announcements/unread-badge";
+import * as React from "react";
 import { NavMain } from "@/components/layouts/nav-main";
 import { NavUser } from "@/components/layouts/nav-user";
 import { OrgSwitcher } from "@/components/layouts/org-switcher";
+import { useActiveOrganization, useSession } from "@/lib/auth";
 import { AppVersion } from "./app-version";
 
 // Core application features
-const navApplication = [
+const navGeneral = [
   {
     title: "Dashboard",
     url: "/dashboard",
     icon: Home,
   },
+];
+
+const navApplication = [
   {
     title: "Posts",
     url: "/posts",
@@ -65,35 +64,19 @@ const navApplication = [
 // System integration features
 const navSystem = [
   {
-    title: "Jobs",
-    url: "/jobs",
-    icon: Briefcase,
-  },
-  {
-    title: "Schedules",
-    url: "/schedules",
-    icon: CalendarClock,
-  },
-  {
     title: "Webhooks",
     url: "/webhooks",
     icon: Webhook,
   },
   {
-    title: "Notifications",
-    url: "/notifications",
-    icon: Bell,
-  },
-  {
-    title: "Announcements",
-    url: "/announcements",
-    icon: BellRing,
-    badge: UnreadAnnouncementsBadge,
-  },
-  {
     title: "Reports",
     url: "/reports/templates",
     icon: FileSpreadsheet,
+  },
+  {
+    title: "Report History",
+    url: "/reports/history",
+    icon: Clock,
   },
 ];
 
@@ -137,32 +120,18 @@ const navDeveloper = [
   },
 ];
 
-// Organization Management
-const navOrganization = [
-  {
-    title: "General",
-    url: "/organization/general",
-    icon: Settings,
-  },
-  {
-    title: "Members",
-    url: "/organization/members",
-    icon: Users,
-  },
-  {
-    title: "Roles",
-    url: "/organization/roles",
-    icon: Shield,
-  },
-  {
-    title: "SSO",
-    url: "/organization/sso",
-    icon: Key,
-  },
-];
-
 // Administration and settings
 const navAdmin = [
+  {
+    title: "Background Jobs",
+    url: "/jobs",
+    icon: Activity,
+  },
+  {
+    title: "Scheduler",
+    url: "/schedules",
+    icon: CalendarClock,
+  },
   {
     title: "System Users",
     url: "/admin/system/users",
@@ -196,17 +165,61 @@ const navAdmin = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const activeOrg = useActiveOrganization();
+  const { data: session } = useSession();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // biome-ignore lint/suspicious/noExplicitAny: better-auth extension
+  const isImpersonating = Boolean((session?.session as any)?.impersonatedBy);
+  const isSystemAdmin =
+    (session?.user?.role === SystemRoles.SUPER_ADMIN ||
+      session?.user?.role === SystemRoles.SUPPORT) &&
+    !isImpersonating;
+
+  if (!mounted) {
+    return (
+      <Sidebar collapsible="icon" {...props}>
+        <SidebarHeader>
+          <div className="h-12 w-full animate-pulse rounded-lg bg-sidebar-accent/50" />
+        </SidebarHeader>
+        <SidebarContent>
+          <div className="space-y-4 p-4">
+            <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent/50" />
+            <div className="h-8 w-full animate-pulse rounded-lg bg-sidebar-accent/50" />
+          </div>
+        </SidebarContent>
+        <SidebarRail />
+      </Sidebar>
+    );
+  }
+
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar
+      className={isImpersonating ? "!top-12 !h-[calc(100svh-48px)]" : ""}
+      collapsible="icon"
+      {...props}
+    >
       <SidebarHeader>
         <OrgSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navApplication} label="Application" />
-        <NavMain items={navOrganization} label="Organization" />
-        <NavMain items={navSystem} label="System" />
-        <NavMain items={navDeveloper} label="Developer" />
-        <NavMain items={navAdmin} label="System Admin" />
+        <NavMain items={navGeneral} label="General" />
+        {activeOrg.data && (
+          <>
+            <NavMain items={navApplication} label="Application" />
+            <NavMain items={navSystem} label="System" />
+          </>
+        )}
+        {isSystemAdmin && (
+          <>
+            <NavMain items={navAdmin} label="System Admin" />
+            <NavMain items={navDeveloper} label="Developer" />
+          </>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

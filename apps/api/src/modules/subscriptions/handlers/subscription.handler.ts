@@ -11,7 +11,7 @@ export async function subscriptionMaintenanceHandler(
   const { type } = context;
 
   try {
-    if (type === "system:subscription-monitor") {
+    if (type === "subscriptions:monitor") {
       await subscriptionJobsService.runSubscriptionMonitor();
       return { output: { success: true } };
     }
@@ -38,7 +38,7 @@ export async function subscriptionMaintenanceHandler(
  */
 export function registerSubscriptionHandlers() {
   jobHandlerRegistry.register({
-    type: "system:subscription-monitor",
+    type: "subscriptions:monitor",
     handler: subscriptionMaintenanceHandler,
     concurrency: 1,
   });

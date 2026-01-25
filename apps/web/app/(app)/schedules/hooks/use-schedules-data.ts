@@ -9,7 +9,6 @@ import type {
 import {
   scheduledJobsCreate,
   scheduledJobsDelete,
-  scheduledJobsList,
   scheduledJobsPause,
   scheduledJobsResume,
   scheduledJobsRunNow,
@@ -49,41 +48,41 @@ function buildQueryParams(request: ServerSideRequest) {
   };
 }
 
-export function useSchedulesData() {
+export function useSchedulesData(isGlobal = false) {
   const { data: orgData } = useActiveOrganization();
-  const orgId = orgData?.id ?? "";
+  const orgId = isGlobal ? "global" : (orgData?.id ?? "");
+
+  const getSchedulesUrl = isGlobal
+    ? "/v1/admin/system/schedules"
+    : `/v1/orgs/${orgId}/schedules`;
 
   const fetchSchedules = useCallback(
     async (
       request: ServerSideRequest
     ): Promise<ServerSideResponse<ScheduledJob>> => {
-      if (!orgId) {
+      if (!(isGlobal || orgId)) {
         return { data: [], total: 0 };
       }
 
       try {
         const queryParams = buildQueryParams(request);
 
-        const response = await scheduledJobsList({
-          client: apiClient,
-          path: { orgId },
+        const response = await apiClient.get({
+          url: getSchedulesUrl,
           query: queryParams,
         });
 
-        if (response.error) {
-          console.error("Failed to fetch schedules:", response.error);
+        if (!response.data) {
           return { data: [], total: 0 };
         }
 
-        const { data } = response;
-        if (!data) {
-          console.error("No data in response:", response);
-          return { data: [], total: 0 };
-        }
+        const data = response.data as {
+          data?: ScheduledJob[];
+          pagination?: { totalCount: number };
+        };
 
-        const schedules = (data as { data?: ScheduledJob[] })?.data ?? [];
-        const pagination = (data as { pagination?: { totalCount: number } })
-          ?.pagination;
+        const schedules = data.data ?? [];
+        const pagination = data.pagination;
 
         return {
           data: schedules,
@@ -94,22 +93,19 @@ export function useSchedulesData() {
         return { data: [], total: 0 };
       }
     },
-    [orgId]
+    [orgId, isGlobal, getSchedulesUrl]
   );
 
-  return { fetchSchedules, orgId };
+  return { fetchSchedules, orgId, isGlobal };
 }
 
-export function useScheduleMutations() {
+export function useScheduleMutations(isGlobal = false) {
   const queryClient = useQueryClient();
-  const { orgId } = useSchedulesData();
+  const { orgId } = useSchedulesData(isGlobal);
 
   const invalidateSchedules = () => {
     queryClient.invalidateQueries({
-      predicate: (query) => {
-        const key = query.queryKey[0] as { _id?: string } | undefined;
-        return key?._id === "scheduledJobsList";
-      },
+      queryKey: ["scheduledJobs", orgId],
     });
   };
 

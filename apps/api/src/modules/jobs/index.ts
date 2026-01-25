@@ -26,7 +26,8 @@ export {
   type JobQueue,
   type JobQueueConfig,
 } from "./queue/job-queue";
-// Export jobTypesRoutes separately (registered at /v1, not /v1/orgs)
+export { adminJobsRoutes } from "./routes/admin-jobs.routes";
+// Export routes
 export { jobTypesRoutes } from "./routes/job-types.routes";
 // Re-export service for use by other modules
 export * as jobsService from "./services/jobs.service";

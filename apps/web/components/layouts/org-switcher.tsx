@@ -14,7 +14,15 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@workspace/ui/components/sidebar";
-import { Building2, Check, ChevronsUpDown, Loader2, Plus } from "lucide-react";
+import {
+  Building2,
+  Check,
+  ChevronsUpDown,
+  Loader2,
+  Plus,
+  Settings,
+  Shield,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,6 +30,7 @@ import {
   authClient,
   useActiveOrganization,
   useListOrganizations,
+  useSession,
 } from "@/lib/auth";
 
 interface Organization {
@@ -34,9 +43,14 @@ interface Organization {
 
 export function OrgSwitcher() {
   const { isMobile } = useSidebar();
+  const { data: session } = useSession();
   const { data: orgsData, isPending: orgsLoading } = useListOrganizations();
   const { data: activeOrgData, isPending: activeLoading } =
     useActiveOrganization();
+
+  // biome-ignore lint/suspicious/noExplicitAny: better-auth extension
+  const isImpersonating = Boolean((session?.session as any)?.impersonatedBy);
+  const isLoading = orgsLoading || activeLoading;
 
   const [isSwitching, setIsSwitching] = useState(false);
   const hasAutoSelected = useRef(false);
@@ -93,6 +107,23 @@ export function OrgSwitcher() {
     }
   }, [orgsLoading, activeLoading, activeOrg, firstOrgId]);
 
+  // Clear stale active organization if user is not a member (e.g. Super Admin login after Tenant User logout)
+  useEffect(() => {
+    if (isLoading || !activeOrg) {
+      return;
+    }
+
+    const isActiveOrgValid = organizations.some(
+      (org) => org.id === activeOrg.id
+    );
+    if (!isActiveOrgValid && organizations.length === 0) {
+      // If we have an active org but it's not in our list (and list is empty), it's stale.
+      // Explicitly clear it to trigger Global Admin view.
+      // @ts-expect-error - Better Auth organization.setActive exists at runtime
+      authClient.organization.setActive({ organizationId: null });
+    }
+  }, [isLoading, activeOrg, organizations]);
+
   async function handleSwitchOrg(orgId: string) {
     if (orgId === activeOrg?.id || isSwitching) {
       return;
@@ -107,8 +138,6 @@ export function OrgSwitcher() {
       setIsSwitching(false);
     }
   }
-
-  const isLoading = orgsLoading || activeLoading;
 
   // Show loading state only during initial load
   if (isLoading && !activeOrg && organizations.length === 0) {
@@ -127,6 +156,29 @@ export function OrgSwitcher() {
               </SidebarMenuButton>
             </DropdownMenuTrigger>
           </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
+
+  // Global Admin Mode (No Organizations)
+  if (!activeOrg && organizations.length === 0) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <Shield className="size-4" />
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">Platform Console</span>
+              <span className="truncate text-muted-foreground text-xs">
+                {isImpersonating
+                  ? "Impersonating User"
+                  : "Global Administration"}
+              </span>
+            </div>
+          </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
     );
@@ -162,7 +214,9 @@ export function OrgSwitcher() {
                   {displayOrg?.name ?? "Select Organization"}
                 </span>
                 <span className="truncate text-muted-foreground text-xs">
-                  {displayOrg?.slug ?? "No organization selected"}
+                  {isImpersonating
+                    ? "Impersonating User"
+                    : (displayOrg?.slug ?? "No organization selected")}
                 </span>
               </div>
               {isSwitching ? (
@@ -214,6 +268,16 @@ export function OrgSwitcher() {
               ))
             )}
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="gap-2 p-2">
+              <Link href="/organization/general">
+                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Settings className="size-4" />
+                </div>
+                <span className="font-medium text-muted-foreground">
+                  Organization Settings
+                </span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild className="gap-2 p-2">
               <Link href="/organizations/new">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">

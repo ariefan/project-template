@@ -183,7 +183,7 @@ async function handleTestJob(context: JobContext): Promise<JobResult> {
  */
 export function registerTestHandler(): void {
   jobHandlerRegistry.register({
-    type: "dev:test-pokeapi",
+    type: "dev:pokeapi-test",
     handler: handleTestJob,
     concurrency: 5,
     retryLimit: 2,

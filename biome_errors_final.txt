@@ -1,0 +1,113 @@
+apps\web\app\(app)\reports\history\hooks\use-report-history.ts:32:13 suppressions/unused ━━━━━━━━━━━
+
+  ! Suppression comment has no effect. Remove the suppression or make sure you are suppressing the correct rule.
+  
+    30 │             pageSize: request.pageSize,
+    31 │             type: "report",
+  > 32 │             // biome-ignore lint/suspicious/noExplicitAny: type conversion
+       │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    33 │             status: request.filters.find((f) => f.field === "status")
+    34 │               ?.value as any,
+  
+
+apps\api\src\modules\schedules\repositories\schedules.repository.ts:81:19 lint/complexity/noUselessUndefinedInitialization  FIXABLE  ━━━━━━━━━━
+
+  × It's not necessary to initialize whereClause to undefined.
+  
+    79 │   }
+    80 │ 
+  > 81 │   let whereClause = undefined;
+       │                   ^^^^^^^^^^^
+    82 │   if (conditions.length === 1) {
+    83 │     whereClause = conditions[0];
+  
+  i A variable that is declared and not initialized to any value automatically gets the value of undefined.
+  
+  i Safe fix: Remove undefined initialization.
+  
+    81 │ ··let·whereClause·=·undefined;
+       │                   ----------- 
+
+apps\web\app\(app)\admin\users\users-list.tsx:88:17 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 16 detected (max: 15).
+  
+    86 │ }
+    87 │ 
+  > 88 │ export function UsersList({
+       │                 ^^^^^^^^^
+    89 │   showPageHeader = true,
+    90 │ }: {
+  
+  i Please refactor this function to reduce its complexity score from 16 to the max allowed complexity 15.
+  
+
+apps\web\app\(app)\organization\layout.tsx:66:68 lint/suspicious/noArrayIndexKey ━━━━━━━━━━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    64 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+    65 │               {Array.from({ length: 4 }).map((_, i) => (
+  > 66 │                 <Skeleton className="h-10 w-full" key={`skeleton-${i}`} />
+       │                                                                    ^
+    67 │               ))}
+    68 │             </div>
+  
+  i This is the source of the key value.
+  
+    63 │           <aside className="w-full flex-shrink-0 md:w-64">
+    64 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+  > 65 │               {Array.from({ length: 4 }).map((_, i) => (
+       │                                                  ^
+    66 │                 <Skeleton className="h-10 w-full" key={`skeleton-${i}`} />
+    67 │               ))}
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+apps\web\app\(app)\reports\history\hooks\use-report-history.ts:34:26 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    32 │             // biome-ignore lint/suspicious/noExplicitAny: type conversion
+    33 │             status: request.filters.find((f) => f.field === "status")
+  > 34 │               ?.value as any,
+       │                          ^^^
+    35 │           },
+    36 │         });
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\components\layouts\impersonation-banner.tsx:7:8 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━
+
+  × This import is unused.
+  
+    5 │ import { Spinner } from "@workspace/ui/components/spinner";
+    6 │ import { Eye, LogOut } from "lucide-react";
+  > 7 │ import { useRouter } from "next/navigation";
+      │        ^^^^^^^^^^^^^
+    8 │ import * as React from "react";
+    9 │ import { authClient, useSession } from "@/lib/auth";
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Safe fix: Remove the unused imports.
+  
+     5  5 │   import { Spinner } from "@workspace/ui/components/spinner";
+     6  6 │   import { Eye, LogOut } from "lucide-react";
+     7    │ - import·{·useRouter·}·from·"next/navigation";
+     8  7 │   import * as React from "react";
+     9  8 │   import { authClient, useSession } from "@/lib/auth";
+  
+
+Checked 831 files in 715ms. No fixes applied.
+Found 5 errors.
+Found 1 warning.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

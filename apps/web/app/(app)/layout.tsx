@@ -1,3 +1,4 @@
+import { SystemRoles } from "@workspace/db/schema";
 import {
   SidebarInset,
   SidebarProvider,
@@ -10,6 +11,7 @@ import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { AppHeader } from "@/components/layouts/header/app-header";
 import { ImpersonationBanner } from "@/components/layouts/impersonation-banner";
 import { getOrganizations, getSession } from "@/lib/auth.server";
+// ... existing imports ...
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   // Check authentication - redirect to login if not authenticated
@@ -20,7 +22,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   }
 
   const orgs = await getOrganizations();
-  if (!orgs?.data?.length) {
+  const isSystemUser =
+    session.data.user.role === SystemRoles.SUPER_ADMIN ||
+    session.data.user.role === SystemRoles.SUPPORT;
+
+  if (!(orgs?.data?.length || isSystemUser)) {
     redirect("/onboarding");
   }
 
@@ -28,16 +34,18 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar />
-      <SidebarInset>
-        <AppHeader />
-        <div className="px-4">
-          <ImpersonationBanner />
-          <AnnouncementBanner />
-        </div>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex min-h-svh flex-col">
+      <ImpersonationBanner />
+      <SidebarProvider className="min-h-0 flex-1" defaultOpen={defaultOpen}>
+        <AppSidebar />
+        <SidebarInset>
+          <AppHeader />
+          <div className="px-4">
+            <AnnouncementBanner />
+          </div>
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }

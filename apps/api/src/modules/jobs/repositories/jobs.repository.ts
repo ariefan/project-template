@@ -72,7 +72,7 @@ export async function getJobByIdInternal(
  * List jobs with pagination and filtering
  */
 export async function listJobs(
-  orgId: string,
+  orgId: string | null | undefined,
   options: ListJobsOptions = {}
 ): Promise<ListJobsResult> {
   const {
@@ -87,7 +87,12 @@ export async function listJobs(
   } = options;
 
   // Build where conditions
-  const conditions = [eq(jobs.orgId, orgId)];
+  // biome-ignore lint/suspicious/noExplicitAny: complex SQL conditions
+  const conditions: any[] = [];
+
+  if (orgId) {
+    conditions.push(eq(jobs.orgId, orgId));
+  }
 
   if (status) {
     conditions.push(eq(jobs.status, status));

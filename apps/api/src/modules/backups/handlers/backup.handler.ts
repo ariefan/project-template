@@ -150,7 +150,7 @@ async function handleBackupCleanup(context: JobContext): Promise<JobResult> {
  */
 export function registerBackupHandlers() {
   jobHandlerRegistry.register({
-    type: "backup:org-create",
+    type: "backups:create",
     handler: handleOrgBackupCreate,
     concurrency: 2,
     retryLimit: 3,
@@ -161,7 +161,7 @@ export function registerBackupHandlers() {
   });
 
   jobHandlerRegistry.register({
-    type: "system:backup-cleanup",
+    type: "backups:cleanup",
     handler: handleBackupCleanup,
     concurrency: 1,
     retryLimit: 3,

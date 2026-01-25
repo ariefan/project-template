@@ -180,8 +180,14 @@ async function performAuthorizationCheck(
     deps.db
   );
 
-  // GOD MODE: Super User Bypass
-  if (userRoles.includes(SystemRoles.SUPER_USER)) {
+  // Best Practice: Every authenticated user implicitly has the "User" role
+  // This ensures members/admins also inherit base platform permissions
+  if (!userRoles.includes(SystemRoles.USER)) {
+    userRoles.push(SystemRoles.USER);
+  }
+
+  // GOD MODE: Super Admin Bypass
+  if (userRoles.includes(SystemRoles.SUPER_ADMIN)) {
     // deps.log.debug(
     //   { userId: params.userId, orgId: params.orgId },
     //   "Super User bypass granted"

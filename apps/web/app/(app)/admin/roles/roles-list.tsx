@@ -42,7 +42,11 @@ import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { useActiveOrganization } from "@/lib/auth";
 
-export function RolesList() {
+export function RolesList({
+  showPageHeader = true,
+}: {
+  showPageHeader?: boolean;
+} = {}) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: orgData } = useActiveOrganization();
@@ -126,6 +130,41 @@ export function RolesList() {
           ))}
         </TableBody>
       </Table>
+    );
+  }
+
+  if (!showPageHeader) {
+    return (
+      <div className="space-y-6">
+        {renderContent()}
+
+        <AlertDialog
+          onOpenChange={(open) => !open && setDeleteTarget(null)}
+          open={Boolean(deleteTarget)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Role</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete the role "{deleteTarget?.name}"?
+                This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deleteMutation.isPending}
+                onClick={handleDeleteConfirm}
+              >
+                {deleteMutation.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     );
   }
 

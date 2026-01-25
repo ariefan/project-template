@@ -5,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { OrganizationDangerZone } from "@/app/(app)/settings/organization";
-import { PageHeader } from "@/components/layouts/page-header";
 import {
   OrganizationForm,
   type OrganizationFormValues,
@@ -75,12 +74,7 @@ export default function OrganizationGeneralPage() {
     }
 
     return (
-      <>
-        <PageHeader
-          description="Manage your organization's profile and preferences."
-          title="General Settings"
-        />
-
+      <div className="space-y-6">
         <OrganizationForm
           initialValues={{
             name: activeOrg.name,
@@ -97,13 +91,9 @@ export default function OrganizationGeneralPage() {
             organization={activeOrg as unknown as SystemOrganization}
           />
         </div>
-      </>
+      </div>
     );
   };
 
-  return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
-      {renderContent()}
-    </div>
-  );
+  return renderContent();
 }

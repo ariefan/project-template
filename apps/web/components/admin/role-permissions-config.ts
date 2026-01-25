@@ -1,8 +1,8 @@
-import type { Resource } from "@workspace/authorization";
+import type { Resource } from "@workspace/authorization/types";
 import {
   RESOURCES as AUTH_RESOURCES,
   RESOURCE_LABELS,
-} from "@workspace/authorization";
+} from "@workspace/authorization/types";
 import type {
   PermissionAction,
   PermissionCondition,

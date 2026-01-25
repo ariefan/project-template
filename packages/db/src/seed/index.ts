@@ -17,7 +17,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "../schema";
 import { DEFAULT_APPLICATION_ID } from "../schema/applications";
-import { SystemRoles } from "../schema/roles";
+import { SystemRoles, TenantRoles } from "../schema/roles";
 import { getLocale, getRandomContent, type LocaleData } from "./locales";
 
 // ─────────────────────────────────────────────────────────────
@@ -52,32 +52,74 @@ const ADMIN_PORTAL_APP_ID = "app_admin_portal";
 
 const DEMO_USERS = [
   {
+    id: "user_owner",
+    name: "Owner User",
+    email: "owner@example.com",
+    username: "owner",
+    role: SystemRoles.USER,
+  },
+  {
     id: "user_admin",
     name: "Admin User",
     email: "admin@example.com",
     username: "admin",
-    role: "admin",
+    role: SystemRoles.USER,
   },
   {
     id: "user_member",
     name: "Member User",
     email: "user@example.com",
     username: "member",
-    role: "member",
+    role: SystemRoles.USER,
   },
   {
     id: "user_viewer",
     name: "Viewer User",
     email: "viewer@example.com",
     username: "viewer",
-    role: "viewer",
+    role: SystemRoles.USER,
   },
   {
     id: "user_onboarding",
     name: "Onboarding User",
     email: "onboarding@example.com",
     username: "onboarding",
-    role: "member", // Role doesn't matter much if no assignments, but member is safe default
+    role: SystemRoles.USER,
+  },
+  {
+    id: "user_super_admin",
+    name: "Super Admin",
+    email: "super_admin@example.com",
+    username: "super_admin",
+    role: SystemRoles.SUPER_ADMIN,
+  },
+  {
+    id: "user_support",
+    name: "Support Agent",
+    email: "support@example.com",
+    username: "support",
+    role: SystemRoles.SUPPORT,
+  },
+  {
+    id: "user_editor",
+    name: "Editor User",
+    email: "editor@example.com",
+    username: "editor",
+    role: SystemRoles.USER,
+  },
+  {
+    id: "user_moderator",
+    name: "Moderator User",
+    email: "moderator@example.com",
+    username: "moderator",
+    role: SystemRoles.USER,
+  },
+  {
+    id: "user_contributor",
+    name: "Contributor User",
+    email: "contributor@example.com",
+    username: "contributor",
+    role: SystemRoles.USER,
   },
 ] as const;
 
@@ -192,11 +234,19 @@ async function seedOrganizations(ctx: SeedContext) {
   await db
     .insert(schema.members)
     .values([
+      // Acme org
+      {
+        id: generateId("mem"),
+        organizationId: "org_acme",
+        userId: "user_owner",
+        role: "owner",
+        createdAt: now,
+      },
       {
         id: generateId("mem"),
         organizationId: "org_acme",
         userId: "user_admin",
-        role: "owner",
+        role: "admin",
         createdAt: now,
       },
       {
@@ -215,8 +265,45 @@ async function seedOrganizations(ctx: SeedContext) {
       },
       {
         id: generateId("mem"),
+        organizationId: "org_acme",
+        userId: "user_editor",
+        role: "member",
+        createdAt: now,
+      },
+      {
+        id: generateId("mem"),
+        organizationId: "org_acme",
+        userId: "user_moderator",
+        role: "member",
+        createdAt: now,
+      },
+      {
+        id: generateId("mem"),
+        organizationId: "org_acme",
+        userId: "user_contributor",
+        role: "member",
+        createdAt: now,
+      },
+      // Demo org
+      {
+        id: generateId("mem"),
+        organizationId: "org_demo",
+        userId: "user_owner",
+        role: "owner",
+        createdAt: now,
+      },
+      {
+        id: generateId("mem"),
         organizationId: "org_demo",
         userId: "user_member",
+        role: "owner",
+        createdAt: now,
+      },
+      // StartUp org
+      {
+        id: generateId("mem"),
+        organizationId: "org_startup",
+        userId: "user_owner",
         role: "owner",
         createdAt: now,
       },
@@ -237,9 +324,11 @@ async function seedOrganizations(ctx: SeedContext) {
     ])
     .onConflictDoNothing();
 
-  console.log("   ✓ Acme: admin (owner), user (member), viewer (viewer)");
-  console.log("   ✓ Demo: user (owner)");
-  console.log("   ✓ StartUp: admin (owner), user (member)");
+  console.log(
+    "   ✓ Acme: owner, admin, user, viewer, editor, moderator, contributor"
+  );
+  console.log("   ✓ Demo: owner, user");
+  console.log("   ✓ StartUp: owner, admin, user");
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -253,35 +342,31 @@ async function seedRoles(ctx: SeedContext, onlyGlobal = false) {
 
   const globalRoles = [
     {
-      name: SystemRoles.SUPER_USER,
-      description: "Super user with full access",
+      name: SystemRoles.SUPER_ADMIN,
+      description: "Super admin with full platform access",
     },
-    { name: SystemRoles.APP_ADMIN, description: "Application administrator" },
+    {
+      name: SystemRoles.SUPPORT,
+      description: "Support agent with read-only platform access",
+    },
     { name: SystemRoles.USER, description: "Regular authenticated user" },
   ];
 
   const tenantRoles = [
     {
-      name: SystemRoles.OWNER,
+      name: TenantRoles.OWNER,
       description: "Organization owner with full control",
     },
-    { name: SystemRoles.ADMIN, description: "Organization administrator" },
-    { name: SystemRoles.MEMBER, description: "Regular organization member" },
+    { name: TenantRoles.ADMIN, description: "Organization administrator" },
+    { name: TenantRoles.MEMBER, description: "Regular organization member" },
     {
-      name: SystemRoles.VIEWER,
+      name: TenantRoles.VIEWER,
       description: "Read-only access to organization",
     },
-  ];
-
-  const adminPortalRoles = [
-    {
-      name: "support_agent",
-      description: "Support agent with read-only access to users and reports",
-    },
-    {
-      name: "content_moderator",
-      description: "Can manage content across organizations",
-    },
+    // Custom Content Roles (Tenant Level - Dynamic Examples)
+    { name: "editor", description: "Can publish and manage content" },
+    { name: "moderator", description: "Can manage comments and community" },
+    { name: "contributor", description: "Can draft content" },
   ];
 
   for (const role of globalRoles) {
@@ -317,22 +402,6 @@ async function seedRoles(ctx: SeedContext, onlyGlobal = false) {
           })
           .onConflictDoNothing();
       }
-    }
-
-    for (const role of adminPortalRoles) {
-      await db
-        .insert(schema.roles)
-        .values({
-          id: generateId("role"),
-          applicationId: ADMIN_PORTAL_APP_ID,
-          tenantId: null, // Global roles in Admin Portal
-          name: role.name,
-          description: role.description,
-          isSystemRole: true,
-          createdAt: now,
-          updatedAt: now,
-        })
-        .onConflictDoNothing();
     }
   }
 
@@ -377,51 +446,66 @@ async function seedUserRoleAssignments(ctx: SeedContext) {
   const assignments = [
     // Global
     {
-      userId: "user_admin",
-      roleName: SystemRoles.SUPER_USER,
+      userId: "user_super_admin",
+      roleName: SystemRoles.SUPER_ADMIN,
+      tenantId: null,
+    },
+    {
+      userId: "user_support",
+      roleName: SystemRoles.SUPPORT,
       tenantId: null,
     },
     // Acme org
-    { userId: "user_admin", roleName: SystemRoles.OWNER, tenantId: "org_acme" },
+    { userId: "user_owner", roleName: TenantRoles.OWNER, tenantId: "org_acme" },
+    { userId: "user_admin", roleName: TenantRoles.ADMIN, tenantId: "org_acme" },
     {
       userId: "user_member",
-      roleName: SystemRoles.MEMBER,
+      roleName: TenantRoles.MEMBER,
       tenantId: "org_acme",
     },
     {
       userId: "user_viewer",
-      roleName: SystemRoles.VIEWER,
+      roleName: TenantRoles.VIEWER,
+      tenantId: "org_acme",
+    },
+    // Custom Roles (Acme)
+    {
+      userId: "user_editor",
+      roleName: "editor",
+      tenantId: "org_acme",
+    },
+    {
+      userId: "user_moderator",
+      roleName: "moderator",
+      tenantId: "org_acme",
+    },
+    {
+      userId: "user_contributor",
+      roleName: "contributor",
       tenantId: "org_acme",
     },
     // Demo org
     {
-      userId: "user_member",
-      roleName: SystemRoles.OWNER,
+      userId: "user_owner",
+      roleName: TenantRoles.OWNER,
       tenantId: "org_demo",
     },
     // StartUp org
     {
-      userId: "user_admin",
-      roleName: SystemRoles.OWNER,
+      userId: "user_owner",
+      roleName: TenantRoles.OWNER,
       tenantId: "org_startup",
     },
     {
       userId: "user_member",
-      roleName: SystemRoles.MEMBER,
+      roleName: TenantRoles.MEMBER,
       tenantId: "org_startup",
     },
-    // Admin Portal Assignments
+    // Onboarding User - No explicit roles (Inherits User status implicitly)
     {
-      userId: "user_admin",
-      roleName: "support_agent",
+      userId: "user_onboarding",
+      roleName: null, // No explicit role
       tenantId: null,
-      appId: ADMIN_PORTAL_APP_ID,
-    },
-    {
-      userId: "user_member",
-      roleName: "content_moderator",
-      tenantId: null,
-      appId: ADMIN_PORTAL_APP_ID,
     },
   ];
 
@@ -429,6 +513,11 @@ async function seedUserRoleAssignments(ctx: SeedContext) {
   for (const assignment of assignments) {
     // biome-ignore lint/suspicious/noExplicitAny: convenient access to appId
     const appId = (assignment as any).appId ?? DEFAULT_APPLICATION_ID;
+
+    if (!assignment.roleName) {
+      continue;
+    }
+
     const roleId = await findRoleId(
       assignment.roleName,
       assignment.tenantId ?? null,
@@ -455,8 +544,6 @@ async function seedUserRoleAssignments(ctx: SeedContext) {
   }
 
   console.log(`   ✓ Created ${created} user role assignments`);
-  console.log("     - Acme: admin (owner), member (member), viewer (viewer)");
-  console.log("     - Demo: member (owner)");
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -515,10 +602,10 @@ async function seedCasbinPolicies(ctx: SeedContext) {
   for (const org of DEMO_ORGS) {
     for (const resource of resources) {
       for (const action of actions) {
-        // SUPER_USER: explicit god mode (pure implementation)
+        // SUPER_ADMIN: explicit god mode
         policies.push({
           ptype: "p",
-          v0: SystemRoles.SUPER_USER,
+          v0: SystemRoles.SUPER_ADMIN,
           v1: DEFAULT_APPLICATION_ID,
           v2: org.id,
           v3: resource,
@@ -530,7 +617,7 @@ async function seedCasbinPolicies(ctx: SeedContext) {
         // Owner can do everything
         policies.push({
           ptype: "p",
-          v0: SystemRoles.OWNER,
+          v0: TenantRoles.OWNER,
           v1: DEFAULT_APPLICATION_ID,
           v2: org.id,
           v3: resource,
@@ -543,7 +630,7 @@ async function seedCasbinPolicies(ctx: SeedContext) {
         if (!(resource === "organizations" && action === "delete")) {
           policies.push({
             ptype: "p",
-            v0: SystemRoles.ADMIN,
+            v0: TenantRoles.ADMIN,
             v1: DEFAULT_APPLICATION_ID,
             v2: org.id,
             v3: resource,
@@ -553,11 +640,11 @@ async function seedCasbinPolicies(ctx: SeedContext) {
           });
         }
 
-        // Member can read and create
+        // Member can read and create (standard)
         if (action === "read" || action === "create") {
           policies.push({
             ptype: "p",
-            v0: SystemRoles.MEMBER,
+            v0: TenantRoles.MEMBER,
             v1: DEFAULT_APPLICATION_ID,
             v2: org.id,
             v3: resource,
@@ -567,14 +654,14 @@ async function seedCasbinPolicies(ctx: SeedContext) {
           });
         }
 
-        // Member can update/delete own resources (owner condition)
+        // Member: owner-based update/delete
         if (
           (action === "update" || action === "delete") &&
           memberOwnerResources.has(resource)
         ) {
           policies.push({
             ptype: "p",
-            v0: SystemRoles.MEMBER,
+            v0: TenantRoles.MEMBER,
             v1: DEFAULT_APPLICATION_ID,
             v2: org.id,
             v3: resource,
@@ -588,7 +675,56 @@ async function seedCasbinPolicies(ctx: SeedContext) {
         if (action === "read") {
           policies.push({
             ptype: "p",
-            v0: SystemRoles.VIEWER,
+            v0: TenantRoles.VIEWER,
+            v1: DEFAULT_APPLICATION_ID,
+            v2: org.id,
+            v3: resource,
+            v4: action,
+            v5: "allow",
+            v6: "",
+          });
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // Custom Role Policies
+        // ─────────────────────────────────────────────────────────────
+
+        // EDITOR: Can read, create, update, delete content (Posts, Comments)
+        if (["posts", "comments"].includes(resource)) {
+          policies.push({
+            ptype: "p",
+            v0: "editor",
+            v1: DEFAULT_APPLICATION_ID,
+            v2: org.id,
+            v3: resource,
+            v4: action,
+            v5: "allow",
+            v6: "",
+          });
+        }
+
+        // CONTRIBUTOR: Can read and create content, but not delete/update others'
+        if (
+          ["posts", "comments"].includes(resource) &&
+          (action === "read" || action === "create")
+        ) {
+          policies.push({
+            ptype: "p",
+            v0: "contributor",
+            v1: DEFAULT_APPLICATION_ID,
+            v2: org.id,
+            v3: resource,
+            v4: action,
+            v5: "allow",
+            v6: "",
+          });
+        }
+
+        // MODERATOR: Can manage comments and reports
+        if (["comments", "reports"].includes(resource) && action === "manage") {
+          policies.push({
+            ptype: "p",
+            v0: "moderator",
             v1: DEFAULT_APPLICATION_ID,
             v2: org.id,
             v3: resource,
@@ -601,40 +737,38 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     }
   }
 
-  // Admin Portal Policies
-  // Support Agent: Read-only access to users and reports
+  // Global Support Policies
+  // Support: Read-only access to users, reports, organizations across all tenants (effectively)
+  // Note: Detailed implementation usually handles global checks, but here we seed policies per org for demo completeness
+  // or add a global wildcard policy if the enforcer supports it.
+  // For now, let's just add strict Global Policy for the seed.
+
   const supportResources = ["users", "reports", "organizations"];
-  for (const org of DEMO_ORGS) {
-    for (const resource of supportResources) {
-      policies.push({
-        ptype: "p",
-        v0: "support_agent",
-        v1: ADMIN_PORTAL_APP_ID,
-        v2: org.id,
-        v3: resource,
-        v4: "read",
-        v5: "allow",
-        v6: "",
-      });
-    }
+  for (const resource of supportResources) {
+    policies.push({
+      ptype: "p",
+      v0: SystemRoles.SUPPORT,
+      v1: DEFAULT_APPLICATION_ID,
+      v2: "*", // Global access
+      v3: resource,
+      v4: "read",
+      v5: "allow",
+      v6: "",
+    });
   }
 
-  // Content Moderator: Manage posts and comments
-  const modResources = ["posts", "comments"];
-  for (const org of DEMO_ORGS) {
-    for (const resource of modResources) {
-      policies.push({
-        ptype: "p",
-        v0: "content_moderator",
-        v1: ADMIN_PORTAL_APP_ID,
-        v2: org.id,
-        v3: resource,
-        v4: "manage",
-        v5: "allow",
-        v6: "",
-      });
-    }
-  }
+  // Global User Policies
+  // User: Can create organizations (Platform level action)
+  policies.push({
+    ptype: "p",
+    v0: SystemRoles.USER,
+    v1: DEFAULT_APPLICATION_ID,
+    v2: "*", // Global context
+    v3: "organizations",
+    v4: "create",
+    v5: "allow",
+    v6: "",
+  });
 
   // Insert policies
   for (const policy of policies) {

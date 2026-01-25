@@ -1,0 +1,301 @@
+apps\api\src\modules\jobs\repositories\jobs.repository.ts:90:21 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    89 │   // Build where conditions
+  > 90 │   const conditions: any[] = [];
+       │                     ^^^
+    91 │ 
+    92 │   if (orgId) {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\api\src\modules\schedules\repositories\schedules.repository.ts:54:21 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    53 │   // Build conditions
+  > 54 │   const conditions: any[] = [];
+       │                     ^^^
+    55 │ 
+    56 │   if (orgId) {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\api\src\modules\schedules\repositories\schedules.repository.ts:82:9 lint/style/noNestedTernary ━━━━━━━━━━
+
+  × Do not nest ternary expressions.
+  
+    80 │   const whereClause =
+    81 │     conditions.length > 0
+  > 82 │       ? conditions.length > 1
+       │         ^^^^^^^^^^^^^^^^^^^^^
+  > 83 │         ? and(...conditions)
+  > 84 │         : conditions[0]
+       │         ^^^^^^^^^^^^^^^
+    85 │       : undefined;
+    86 │ 
+  
+  i Nesting ternary expressions can make code more difficult to understand.
+  
+  i Convert nested ternary expression into if-else statements or separate the conditions to make the logic easier to understand.
+  
+
+apps\web\app\(app)\admin\system\users\system-users-list.tsx:46:8 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━
+
+  × This import is unused.
+  
+    44 │ import { format } from "date-fns";
+    45 │ import { Ban, Unlock, UserPlus, UserRoundSearch } from "lucide-react";
+  > 46 │ import { useRouter } from "next/navigation";
+       │        ^^^^^^^^^^^^^
+    47 │ import { useEffect, useMemo, useState } from "react";
+    48 │ import { authClient, useSession } from "@/lib/auth";
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Safe fix: Remove the unused imports.
+  
+     44  44 │   import { format } from "date-fns";
+     45  45 │   import { Ban, Unlock, UserPlus, UserRoundSearch } from "lucide-react";
+     46     │ - import·{·useRouter·}·from·"next/navigation";
+     47  46 │   import { useEffect, useMemo, useState } from "react";
+     48  47 │   import { authClient, useSession } from "@/lib/auth";
+  
+
+apps\web\app\(app)\admin\users\users-list.tsx:89:17 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 16 detected (max: 15).
+  
+    87 │ }
+    88 │ 
+  > 89 │ export function UsersList({
+       │                 ^^^^^^^^^
+    90 │   showPageHeader = true,
+    91 │ }: {
+  
+  i Please refactor this function to reduce its complexity score from 16 to the max allowed complexity 15.
+  
+
+apps\web\app\(app)\admin\users\users-list.tsx:28:3 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━
+
+  × Several of these imports are unused.
+  
+    26 │   DialogHeader,
+    27 │   DialogTitle,
+  > 28 │   DialogTrigger,
+       │   ^^^^^^^^^^^^^
+    29 │ } from "@workspace/ui/components/dialog";
+    30 │ import { Field, FieldLabel } from "@workspace/ui/components/field";
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Safe fix: Remove the unused imports.
+  
+     26  26 │     DialogHeader,
+     27  27 │     DialogTitle,
+     28     │ - ··DialogTrigger,
+     29  28 │   } from "@workspace/ui/components/dialog";
+     30  29 │   import { Field, FieldLabel } from "@workspace/ui/components/field";
+  
+
+apps\web\app\(app)\admin\users\users-list.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    509 509 │           actions={
+    510 510 │             isOwnerOrAdmin && (
+    511     │ - ············<Button
+    512     │ - ··············onClick={()·=>·setInviteDialogOpen(true)}
+    513     │ - ··············size="sm"
+    514     │ - ············>
+        511 │ + ············<Button·onClick={()·=>·setInviteDialogOpen(true)}·size="sm">
+    515 512 │                 <Plus className="mr-2 h-4 w-4" />
+    516 513 │                 Invite User
+  
+
+apps\web\app\(app)\organization\layout.tsx:66:56 lint/suspicious/noArrayIndexKey ━━━━━━━━━━━━━━━━━━━
+
+  × Avoid using the index of an array as key property in an element.
+  
+    64 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+    65 │               {Array.from({ length: 4 }).map((_, i) => (
+  > 66 │                 <Skeleton className="h-10 w-full" key={i} />
+       │                                                        ^
+    67 │               ))}
+    68 │             </div>
+  
+  i This is the source of the key value.
+  
+    63 │           <aside className="w-full flex-shrink-0 md:w-64">
+    64 │             <div className="flex space-x-2 overflow-x-auto pb-2 md:flex-col md:space-x-0 md:space-y-1 md:overflow-visible md:pb-0">
+  > 65 │               {Array.from({ length: 4 }).map((_, i) => (
+       │                                                  ^
+    66 │                 <Skeleton className="h-10 w-full" key={i} />
+    67 │               ))}
+  
+  i The order of the items may change, and this also affects performances and component state.
+  
+  i Check the React documentation. 
+  
+
+apps\web\app\(app)\reports\history\hooks\use-report-history.ts:33:26 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    31 │             type: "report",
+    32 │             status: request.filters.find((f) => f.field === "status")
+  > 33 │               ?.value as any,
+       │                          ^^^
+    34 │           },
+    35 │         });
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\reports\history\page.tsx:50:35 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    48 │       minWidth: 200,
+    49 │       cell: ({ value }) => {
+  > 50 │         const metadata = value as any;
+       │                                   ^^^
+    51 │         return (
+    52 │           <div className="flex items-center gap-2">
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\reports\history\page.tsx:78:35 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    76 │       width: 100,
+    77 │       cell: ({ value }) => {
+  > 78 │         const metadata = value as any;
+       │                                   ^^^
+    79 │         const fmt = metadata?.format || "csv";
+    80 │         return (
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\reports\history\page.tsx:40:17 lint/correctness/noUnusedVariables ━━━━━━━━━━━━━━━
+
+  × This variable orgData is unused.
+  
+    39 │ export default function ReportHistoryPage() {
+  > 40 │   const { data: orgData, isPending: orgLoading } = useActiveOrganization();
+       │                 ^^^^^^^
+    41 │   const { fetchHistory, orgId } = useReportHistory();
+    42 │ 
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+
+apps\web\components\layouts\app-sidebar.tsx:176:56 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    174 │   }, []);
+    175 │ 
+  > 176 │   const isImpersonating = Boolean((session?.session as any)?.impersonatedBy);
+        │                                                        ^^^
+    177 │   const isSystemAdmin =
+    178 │     (session?.user?.role === SystemRoles.SUPER_ADMIN ||
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\components\layouts\impersonation-banner.tsx:40:16 lint/suspicious/useAwait ━━━━━━━━━━━━━━━━
+
+  × This async function lacks an await expression.
+  
+    38 │       return result;
+    39 │     },
+  > 40 │     onSuccess: async () => {
+       │                ^^^^^^^^^^^^^
+  > 41 │       // Force a hard redirect to the dashboard to restore the admin's context
+  > 42 │       window.location.href = "/dashboard";
+  > 43 │     },
+       │     ^
+    44 │   });
+    45 │ 
+  
+  i Remove this async modifier, or add an await expression in the function.
+  
+    38 │       return result;
+    39 │     },
+  > 40 │     onSuccess: async () => {
+       │                ^^^^^^^^^^^^^
+  > 41 │       // Force a hard redirect to the dashboard to restore the admin's context
+  > 42 │       window.location.href = "/dashboard";
+  > 43 │     },
+       │     ^
+    44 │   });
+    45 │ 
+  
+  i Async functions without await expressions may not need to be declared async.
+  
+
+apps\web\components\layouts\impersonation-banner.tsx:16:9 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━
+
+  × This variable router is unused.
+  
+    14 │  */
+    15 │ export function ImpersonationBanner() {
+  > 16 │   const router = useRouter();
+       │         ^^^^^^
+    17 │   const { data: session, refetch } = useSession();
+    18 │   const [mounted, setMounted] = React.useState(false); // Added mounted state
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend router with an underscore.
+  
+    14 14 │    */
+    15 15 │   export function ImpersonationBanner() {
+    16    │ - ··const·router·=·useRouter();
+       16 │ + ··const·_router·=·useRouter();
+    17 17 │     const { data: session, refetch } = useSession();
+    18 18 │     const [mounted, setMounted] = React.useState(false); // Added mounted state
+  
+
+apps\web\components\layouts\impersonation-banner.tsx:17:26 lint/correctness/noUnusedVariables ━━━━━━━━━━
+
+  × This variable refetch is unused.
+  
+    15 │ export function ImpersonationBanner() {
+    16 │   const router = useRouter();
+  > 17 │   const { data: session, refetch } = useSession();
+       │                          ^^^^^^^
+    18 │   const [mounted, setMounted] = React.useState(false); // Added mounted state
+    19 │ 
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+
+apps\web\components\layouts\org-switcher.tsx:51:56 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    49 │     useActiveOrganization();
+    50 │ 
+  > 51 │   const isImpersonating = Boolean((session?.session as any)?.impersonatedBy);
+       │                                                        ^^^
+    52 │   const isLoading = orgsLoading || activeLoading;
+    53 │ 
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+Checked 831 files in 682ms. No fixes applied.
+Found 17 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

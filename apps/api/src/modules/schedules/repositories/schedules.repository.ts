@@ -34,7 +34,7 @@ export interface ListSchedulesResult {
  * List scheduled jobs for an organization with filtering and pagination
  */
 export async function listSchedules(
-  orgId: string,
+  orgId: string | null | undefined,
   params: ListSchedulesParams = {}
 ): Promise<ListSchedulesResult> {
   const {
@@ -51,7 +51,12 @@ export async function listSchedules(
   const offset = (page - 1) * pageSize;
 
   // Build conditions
-  const conditions = [eq(scheduledJobs.organizationId, orgId)];
+  // biome-ignore lint/suspicious/noExplicitAny: complex SQL conditions
+  const conditions: any[] = [];
+
+  if (orgId) {
+    conditions.push(eq(scheduledJobs.organizationId, orgId));
+  }
 
   if (jobType) {
     conditions.push(eq(scheduledJobs.jobType, jobType));
@@ -73,8 +78,13 @@ export async function listSchedules(
     conditions.push(sql`${scheduledJobs.name} ILIKE ${`%${search}%`}`);
   }
 
-  const whereClause =
-    conditions.length > 1 ? and(...conditions) : conditions[0];
+  // biome-ignore lint/suspicious/noExplicitAny: complex SQL conditions
+  let whereClause: any;
+  if (conditions.length === 1) {
+    whereClause = conditions[0];
+  } else if (conditions.length > 1) {
+    whereClause = and(...conditions);
+  }
 
   // Get total count
   const result = await db

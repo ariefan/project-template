@@ -97,7 +97,7 @@ export function getJob(orgId: string, jobId: string): Promise<JobRow | null> {
  * List jobs with pagination and filtering
  */
 export function listJobs(
-  orgId: string,
+  orgId: string | null | undefined,
   options: ListJobsInput = {}
 ): Promise<jobsRepository.ListJobsResult> {
   // Cap page size at 100

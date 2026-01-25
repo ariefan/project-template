@@ -2,7 +2,7 @@ import { filesService } from "../../files";
 import { jobHandlerRegistry } from "./registry";
 import type { JobContext, JobResult } from "./types";
 
-const JOB_TYPE = "system:storage-cleanup";
+const JOB_TYPE = "storage:cleanup";
 
 /**
  * Handler for cleaning up expired file uploads
@@ -49,5 +49,8 @@ export function registerStorageCleanupHandler() {
     handler: storageCleanupHandler,
     concurrency: 1, // Run one at a time to avoid race conditions
     retryLimit: 3,
+    // UI metadata
+    label: "Storage Cleanup",
+    description: "Remove expired temporary files and uploads",
   });
 }

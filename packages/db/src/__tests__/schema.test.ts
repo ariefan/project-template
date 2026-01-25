@@ -16,6 +16,7 @@ import {
   roles,
   SystemRoles,
   sessions,
+  TenantRoles,
   userActiveContext,
   userRoleAssignments,
   users,
@@ -128,16 +129,18 @@ describe("@workspace/db schema", () => {
 
   describe("SystemRoles constants", () => {
     it("should define global roles", () => {
-      expect(SystemRoles.SUPER_USER).toBe("super_user");
-      expect(SystemRoles.APP_ADMIN).toBe("app_admin");
+      expect(SystemRoles.SUPER_ADMIN).toBe("super_admin");
+      expect(SystemRoles.SUPPORT).toBe("support");
       expect(SystemRoles.USER).toBe("user");
     });
+  });
 
+  describe("TenantRoles constants", () => {
     it("should define tenant roles", () => {
-      expect(SystemRoles.OWNER).toBe("owner");
-      expect(SystemRoles.ADMIN).toBe("admin");
-      expect(SystemRoles.MEMBER).toBe("member");
-      expect(SystemRoles.VIEWER).toBe("viewer");
+      expect(TenantRoles.OWNER).toBe("owner");
+      expect(TenantRoles.ADMIN).toBe("admin");
+      expect(TenantRoles.MEMBER).toBe("member");
+      expect(TenantRoles.VIEWER).toBe("viewer");
     });
   });
 

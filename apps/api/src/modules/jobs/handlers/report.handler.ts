@@ -233,7 +233,7 @@ async function handleReportJob(context: JobContext): Promise<JobResult> {
  */
 export function registerReportHandler(): void {
   jobHandlerRegistry.register({
-    type: "report:generate",
+    type: "reports:generate",
     handler: handleReportJob,
     concurrency: 3,
     retryLimit: 3,

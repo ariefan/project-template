@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
+import { useActiveOrganization } from "@/lib/auth";
 import {
   JobCategoryFilter,
   useJobCategoryFromUrl,
@@ -81,8 +82,15 @@ const formatLabels: Record<string, string> = {
 
 function JobsContent() {
   const { category, setCategory } = useJobCategoryFromUrl();
-  const { jobs, totalCount, fetchJobs, isLoading, orgId } =
-    useUnifiedJobsData(category);
+
+  // Use organization context to determine if we are in global mode
+  const activeOrg = useActiveOrganization();
+  const isGlobal = !activeOrg.data?.id;
+
+  const { jobs, totalCount, fetchJobs, isLoading, orgId } = useUnifiedJobsData(
+    category,
+    isGlobal
+  );
   const { cancelJob, retryJob } = useJobMutations();
 
   const columns: ColumnDef<UnifiedJob>[] = [
@@ -289,7 +297,7 @@ function JobsContent() {
       );
     }
 
-    if (!orgId) {
+    if (!(isGlobal || orgId)) {
       return (
         <div className="py-8 text-center text-muted-foreground">
           Please select an organization

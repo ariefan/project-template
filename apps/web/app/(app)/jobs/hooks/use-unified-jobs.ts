@@ -192,29 +192,36 @@ const MODE_THRESHOLD = 500;
  * - If total <= threshold: fetches all data for client-side filtering
  * - If total > threshold: uses server-side pagination via onFetchData
  */
-export function useUnifiedJobsData(categoryFilter: JobCategory = "all") {
+export function useUnifiedJobsData(
+  categoryFilter: JobCategory = "all",
+  isGlobal = false
+) {
   const { data: orgData, isPending: orgLoading } = useActiveOrganization();
-  const orgId = orgData?.id ?? "";
+  const orgId = isGlobal ? "global" : (orgData?.id ?? "");
 
   // Map category filter to type filter
   const typeFilter = categoryFilter === "report" ? "report" : undefined;
+
+  // Endpoint mapping
+  const getJobsUrl = isGlobal
+    ? "/v1/admin/system/jobs"
+    : `/v1/orgs/${orgId}/jobs`;
 
   // Step 1: Fetch count to determine mode
   const countQuery = useQuery({
     queryKey: ["jobsList", orgId, "count", typeFilter],
     queryFn: async () => {
-      const response = await jobsList({
-        client: apiClient,
-        path: { orgId },
+      const response = await apiClient.get({
+        url: getJobsUrl,
         query: { page: 1, pageSize: 1, type: typeFilter },
       });
-      if (response.error) {
+      if (!response.data) {
         return 0;
       }
       const data = response.data as { pagination?: { totalCount: number } };
       return data.pagination?.totalCount ?? 0;
     },
-    enabled: Boolean(orgId),
+    enabled: isGlobal || Boolean(orgId),
   });
 
   const totalCount = countQuery.data ?? 0;
@@ -224,21 +231,20 @@ export function useUnifiedJobsData(categoryFilter: JobCategory = "all") {
   const dataQuery = useQuery({
     queryKey: ["jobsList", orgId, "all", typeFilter],
     queryFn: async () => {
-      const response = await jobsList({
-        client: apiClient,
-        path: { orgId },
+      const response = await apiClient.get({
+        url: getJobsUrl,
         query: {
           page: 1,
           pageSize: Math.max(totalCount, 100),
           type: typeFilter,
         },
       });
-      if (response.error) {
+      if (!response.data) {
         throw new Error("Failed to fetch jobs");
       }
       return (response.data as { data?: Job[] })?.data ?? [];
     },
-    enabled: Boolean(orgId) && !useServerMode,
+    enabled: (isGlobal || Boolean(orgId)) && !useServerMode,
   });
 
   // Transform jobs for client mode
@@ -249,23 +255,34 @@ export function useUnifiedJobsData(categoryFilter: JobCategory = "all") {
     async (
       request: ServerSideRequest
     ): Promise<ServerSideResponse<UnifiedJob>> => {
-      if (!orgId) {
+      if (!(isGlobal || orgId)) {
         return { data: [], total: 0 };
       }
 
       try {
-        const result = await fetchJobs(orgId, request, typeFilter);
-        return { data: result.data, total: result.totalCount };
+        const response = await apiClient.get({
+          url: getJobsUrl,
+          query: buildJobsQuery(request, typeFilter),
+        });
+        const responseData = response.data as {
+          data?: Job[];
+          pagination?: { totalCount: number };
+        };
+        const data = responseData.data ?? [];
+        return {
+          data: data.map(transformJob),
+          total: responseData.pagination?.totalCount ?? data.length,
+        };
       } catch (error) {
         console.error("Failed to fetch jobs:", error);
         return { data: [], total: 0 };
       }
     },
-    [orgId, typeFilter]
+    [getJobsUrl, orgId, typeFilter, isGlobal]
   );
 
   const isLoading =
-    orgLoading ||
+    (!isGlobal && orgLoading) ||
     countQuery.isLoading ||
     (!useServerMode && dataQuery.isLoading);
 

@@ -126,7 +126,7 @@ function calculateNextRunAt(
  * List scheduled jobs for an organization
  */
 export function listSchedules(
-  orgId: string,
+  orgId: string | null | undefined,
   params: schedulesRepo.ListSchedulesParams = {}
 ) {
   return schedulesRepo.listSchedules(orgId, params);

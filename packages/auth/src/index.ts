@@ -17,6 +17,7 @@ import {
   twoFactor,
   username,
 } from "better-auth/plugins";
+import { createAccessControl } from "better-auth/plugins/access";
 import { organization } from "better-auth/plugins/organization";
 import { asc, eq } from "drizzle-orm";
 import { type AuthConfig, getCookieDomain } from "./config";
@@ -49,6 +50,44 @@ export {
  * });
  * ```
  */
+// Define access control for admin plugin
+const statement = {
+  user: [
+    "create",
+    "list",
+    "set-role",
+    "ban",
+    "impersonate",
+    "delete",
+    "set-password",
+    "get",
+    "update",
+  ],
+  session: ["list", "revoke", "delete"],
+} as const;
+
+const accessControl = createAccessControl(statement);
+
+const adminAc = accessControl.newRole({
+  user: [
+    "create",
+    "list",
+    "set-role",
+    "ban",
+    "impersonate",
+    "delete",
+    "set-password",
+    "get",
+    "update",
+  ],
+  session: ["list", "revoke", "delete"],
+});
+
+const userAc = accessControl.newRole({
+  user: [],
+  session: [],
+});
+
 export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
   const {
     db,
@@ -237,8 +276,14 @@ export function createAuth(config: AuthConfig): ReturnType<typeof betterAuth> {
 
       // Admin - User/organization administration
       admin({
+        roles: {
+          user: userAc,
+          admin: adminAc,
+          super_admin: adminAc,
+          support: adminAc,
+        },
         defaultRole: "user",
-        adminRoles: ["admin"],
+        adminRoles: ["admin", "super_admin", "support"],
         impersonationSessionDuration: 3600, // 1 hour
       }),
 

@@ -18,13 +18,26 @@ export const DELIVERY_LABELS: Record<string, string> = {
 };
 
 export const JOB_TYPE_LABELS: Record<string, string> = {
-  report: "Report",
-  export: "Export",
-  import: "Import",
+  "reports:generate": "Report Generation",
+  "storage:cleanup": "Storage Cleanup",
+  "backups:create": "Organization Backup",
+  "backups:cleanup": "Backup Cleanup",
+  "dev:pokeapi-test": "Test Job (PokéAPI)",
+  "subscriptions:monitor": "Subscription Monitor",
 };
 
 export function getJobTypeLabel(jobType: string): string {
-  return JOB_TYPE_LABELS[jobType] ?? jobType;
+  if (JOB_TYPE_LABELS[jobType]) {
+    return JOB_TYPE_LABELS[jobType];
+  }
+
+  // Fallback: convert "namespace:resource-action" to "Resource Action"
+  const parts = jobType.split(":");
+  const label = (parts.length > 1 ? parts[1] : parts[0]) || jobType;
+  return label
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 export const schedulesTableColumns: ColumnDef<ScheduledJob>[] = [
@@ -54,9 +67,12 @@ export const schedulesTableColumns: ColumnDef<ScheduledJob>[] = [
     filterable: true,
     filterType: "select",
     filterOptions: [
-      { value: "report", label: "Report" },
-      { value: "export", label: "Export" },
-      { value: "import", label: "Import" },
+      { value: "reports:generate", label: "Report Generation" },
+      { value: "storage:cleanup", label: "Storage Cleanup" },
+      { value: "backups:create", label: "Organization Backup" },
+      { value: "backups:cleanup", label: "Backup Cleanup" },
+      { value: "subscriptions:monitor", label: "Subscription Monitor" },
+      { value: "dev:pokeapi-test", label: "Test Job" },
     ],
     width: 120,
     cell: ({ value }: { value: unknown }) => (
