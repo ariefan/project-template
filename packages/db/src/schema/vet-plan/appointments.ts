@@ -190,25 +190,28 @@ export const consultations = pgTable(
 // RELATIONS
 // ============================================================================
 
-export const appointmentsRelations = relations(appointments, ({ one }) => ({
-  clinic: one(clinics, {
-    fields: [appointments.clinicId],
-    references: [clinics.id],
-  }),
-  veterinarian: one(veterinarians, {
-    fields: [appointments.veterinarianId],
-    references: [veterinarians.id],
-  }),
-  patient: one(patients, {
-    fields: [appointments.animalId],
-    references: [patients.id],
-  }),
-  client: one(clients, {
-    fields: [appointments.ownerId],
-    references: [clients.id],
-  }),
-  consultation: one(consultations),
-}));
+export const appointmentsRelations = relations(
+  appointments,
+  ({ one, many }) => ({
+    clinic: one(clinics, {
+      fields: [appointments.clinicId],
+      references: [clinics.id],
+    }),
+    veterinarian: one(veterinarians, {
+      fields: [appointments.veterinarianId],
+      references: [veterinarians.id],
+    }),
+    patient: one(patients, {
+      fields: [appointments.animalId],
+      references: [patients.id],
+    }),
+    client: one(clients, {
+      fields: [appointments.ownerId],
+      references: [clients.id],
+    }),
+    consultation: one(consultations),
+  })
+);
 
 export const consultationsRelations = relations(consultations, ({ one }) => ({
   appointment: one(appointments, {

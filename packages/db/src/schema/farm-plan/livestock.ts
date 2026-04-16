@@ -1,4 +1,3 @@
-// @ts-nocheck - Self-referencing table (sireId/damId) causes circular type inference
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
@@ -101,12 +100,12 @@ export const livestock = pgTable(
     photo: json("photo").$type<string[] | null>(),
 
     // Parentage - now with proper foreign keys
-    // biome-ignore lint/suspicious/noExplicitAny: Self-referencing table requires type assertion
-    sireId: uuid("sire_id").references(() => (livestock as any).id, {
+    // biome-ignore lint/suspicious/noExplicitAny: self-referencing table requires any
+    sireId: uuid("sire_id").references((): any => livestock.id, {
       onDelete: "set null",
     }),
-    // biome-ignore lint/suspicious/noExplicitAny: Self-referencing table requires type assertion
-    damId: uuid("dam_id").references(() => (livestock as any).id, {
+    // biome-ignore lint/suspicious/noExplicitAny: self-referencing table requires any
+    damId: uuid("dam_id").references((): any => livestock.id, {
       onDelete: "set null",
     }),
 
