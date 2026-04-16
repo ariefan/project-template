@@ -1,5 +1,6 @@
 import { passkey } from "@better-auth/passkey";
 import { sso } from "@better-auth/sso";
+import { asc, eq } from "@workspace/db";
 import { members } from "@workspace/db/schema";
 import bcrypt from "bcrypt";
 import { betterAuth } from "better-auth";
@@ -19,7 +20,6 @@ import {
 } from "better-auth/plugins";
 import { createAccessControl } from "better-auth/plugins/access";
 import { organization } from "better-auth/plugins/organization";
-import { asc, eq } from "@workspace/db";
 import { type AuthConfig, getCookieDomain } from "./config";
 
 export type { AuthConfig, OIDCClient, SocialProviders } from "./config";
