@@ -45,7 +45,16 @@
       "mobile>react-dom": "19.1.0",
       "@workspace/ui-mobile>react": "19.1.0",
       "@workspace/ui-mobile>react-dom": "19.1.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "core-js",
+      "core-js-pure",
+      "es5-ext",
+      "esbuild",
+      "lefthook",
+      "sharp"
+    ]
   },
   "engines": {
     "node": ">=20"
