@@ -27,7 +27,13 @@ export function requirePermission(
     }
 
     // Get organization ID from route params
-    const orgId = (request.params as Record<string, string>)[orgIdParam];
+    let orgId = (request.params as Record<string, string>)[orgIdParam];
+
+    // Enable system-level permission checks where orgId is not in params
+    if (!orgId && orgIdParam === "system") {
+      orgId = "system";
+    }
+
     if (!orgId) {
       throw new Error(`Organization ID parameter "${orgIdParam}" not found`);
     }
@@ -39,6 +45,14 @@ export function requirePermission(
     }
 
     const userId = currentUser.id;
+
+    // Special handling for System Admin creating global resources (e.g. announcements with "system" orgId)
+    // "super_admin" has implicit full access
+    // biome-ignore lint/suspicious/noExplicitAny: user role is available on runtime object
+    if ((currentUser as any).role === "super_admin" && orgId === "system") {
+      return;
+    }
+
     const allowed = await request.server.authorize(
       userId,
       orgId,

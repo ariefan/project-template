@@ -1,0 +1,384 @@
+
+> web@0.0.1 lint C:\dev\project-template\apps\web
+> biome lint .
+
+app\(app)\admin\announcements\announcement-form.tsx:84:17 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 19 detected (max: 15).
+  
+    82 │ }
+    83 │ 
+  > 84 │ export function AnnouncementForm({
+       │                 ^^^^^^^^^^^^^^^^
+    85 │   announcement,
+    86 │   mode,
+  
+  i Please refactor this function to reduce its complexity score from 19 to the max allowed complexity 15.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:166:53 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 26 detected (max: 15).
+  
+    164 │   });
+    165 │ 
+  > 166 │   const onSubmit = (values: AnnouncementFormValues) => {
+        │                                                     ^^^
+    167 │     // Determine the effective target organization ID
+    168 │     let targetOrgId: string | null = activeOrganization?.id ?? null;
+  
+  i Please refactor this function to reduce its complexity score from 26 to the max allowed complexity 15.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:370:52 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    368 │                                 >
+    369 │                                   {field.value
+  > 370 │                                     ? (orgsData as any)?.data?.find(
+        │                                                    ^^^
+    371 │                                         (org: any) => org.id === field.value
+    372 │                                       )?.name
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:371:47 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    369 │                                   {field.value
+    370 │                                     ? (orgsData as any)?.data?.find(
+  > 371 │                                         (org: any) => org.id === field.value
+        │                                               ^^^
+    372 │                                       )?.name
+    373 │                                     : "Select organization"}
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:384:51 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    382 │                                   <CommandEmpty>No organization found.</CommandEmpty>
+    383 │                                   <CommandGroup>
+  > 384 │                                     {(orgsData as any)?.data?.map((org: any) => (
+        │                                                   ^^^
+    385 │                                       <CommandItem
+    386 │                                         value={org.name} // Command uses value for search text
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:384:73 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    382 │                                   <CommandEmpty>No organization found.</CommandEmpty>
+    383 │                                   <CommandGroup>
+  > 384 │                                     {(orgsData as any)?.data?.map((org: any) => (
+        │                                                                         ^^^
+    385 │                                       <CommandItem
+    386 │                                         value={org.name} // Command uses value for search text
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:70:23 lint/correctness/noUnusedFunctionParameters  FIXABLE  ━━━━━━━━━━
+
+  × This parameter is unused.
+  
+    68 │   isActive: z.boolean(),
+    69 │   targetOrgId: z.string().optional(),
+  > 70 │ }).superRefine((data, ctx) => {
+       │                       ^^^
+    71 │   if (data.scope === "organization" && !data.targetOrgId) {
+    72 │     // Note: We'll handle the "auto-fill from active context" logic in the component
+  
+  i Unused parameters might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: If this is intentional, prepend ctx with an underscore.
+  
+     68  68 │     isActive: z.boolean(),
+     69  69 │     targetOrgId: z.string().optional(),
+     70     │ - }).superRefine((data,·ctx)·=>·{
+         70 │ + }).superRefine((data,·_ctx)·=>·{
+     71  71 │     if (data.scope === "organization" && !data.targetOrgId) {
+     72  72 │       // Note: We'll handle the "auto-fill from active context" logic in the component
+  
+
+app\(app)\settings\profile.tsx:70:10 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━
+
+  × This variable isImageDialogOpen is unused.
+  
+    68 │   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+    69 │   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  > 70 │   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+       │          ^^^^^^^^^^^^^^^^^
+    71 │   const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+    72 │   const [otpValue, setOtpValue] = useState("");
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend isImageDialogOpen with an underscore.
+  
+     68  68 │     const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+     69  69 │     const [isUploadingImage, setIsUploadingImage] = useState(false);
+     70     │ - ··const·[isImageDialogOpen,·setIsImageDialogOpen]·=·useState(false);
+         70 │ + ··const·[_isImageDialogOpen,·setIsImageDialogOpen]·=·useState(false);
+     71  71 │     const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+     72  72 │     const [otpValue, setOtpValue] = useState("");
+  
+
+components\admin\role-form.tsx:148:50 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    146 │             </CardTitle>
+    147 │             {isGlobal && (
+  > 148 │               <Badge variant="default" className="h-5 bg-primary/90 text-[10px] font-mono tracking-wider px-1.5 uppercase">Platform</Badge>
+        │                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    149 │             )}
+    150 │           </div>
+  
+  i Safe fix: Sort the classes.
+  
+    146 146 │               </CardTitle>
+    147 147 │               {isGlobal && (
+    148     │ - ··············<Badge·variant="default"·className="h-5·bg-primary/90·text-[10px]·font-mono·tracking-wider·px-1.5·uppercase">Platform</Badge>
+        148 │ + ··············<Badge·variant="default"·className="h-5·bg-primary/90·px-1.5·font-mono·text-[10px]·uppercase·tracking-wider">Platform</Badge>
+    149 149 │               )}
+    150 150 │             </div>
+  
+
+components\admin\role-form.tsx:163:3 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    162 │ function RoleFormBanners({ isGlobal }: { isGlobal: boolean }) {
+  > 163 │   if (!isGlobal) return null;
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    164 │   return (
+    165 │     <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-start gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    163 │ ··if·(!isGlobal)·{·return·null;·}
+        │                  ++            ++
+
+components\admin\role-form.tsx:165:20 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    163 │   if (!isGlobal) return null;
+    164 │   return (
+  > 165 │     <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-start gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    166 │       <div className="rounded-full bg-primary p-1.5 shadow-sm">
+    167 │         <Shield className="h-4 w-4 text-primary-foreground" />
+  
+  i Safe fix: Sort the classes.
+  
+    163 163 │     if (!isGlobal) return null;
+    164 164 │     return (
+    165     │ - ····<div·className="mb-6·rounded-lg·border·border-primary/20·bg-primary/5·p-4·flex·items-start·gap-4·animate-in·fade-in·slide-in-from-top-2·duration-500">
+        165 │ + ····<div·className="fade-in·slide-in-from-top-2·mb-6·flex·animate-in·items-start·gap-4·rounded-lg·border·border-primary/20·bg-primary/5·p-4·duration-500">
+    166 166 │         <div className="rounded-full bg-primary p-1.5 shadow-sm">
+    167 167 │           <Shield className="h-4 w-4 text-primary-foreground" />
+  
+
+components\admin\role-form.tsx:171:22 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    169 │       <div className="text-sm">
+    170 │         <p className="font-semibold text-primary">System-Wide Impact</p>
+  > 171 │         <p className="text-muted-foreground mt-0.5">
+        │                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    172 │           Changes to this role will affect every organization on the platform. Verify all permissions carefully.
+    173 │         </p>
+  
+  i Safe fix: Sort the classes.
+  
+    169 169 │         <div className="text-sm">
+    170 170 │           <p className="font-semibold text-primary">System-Wide Impact</p>
+    171     │ - ········<p·className="text-muted-foreground·mt-0.5">
+        171 │ + ········<p·className="mt-0.5·text-muted-foreground">
+    172 172 │             Changes to this role will affect every organization on the platform. Verify all permissions carefully.
+    173 173 │           </p>
+  
+
+components\admin\role-form.tsx:181:20 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    179 │ function FormError({ error }: { error: string }) {
+    180 │   return (
+  > 181 │     <div className="rounded-md bg-destructive/10 p-4 text-destructive text-sm border border-destructive/20 flex items-center gap-2">
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    182 │       <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+    183 │       {error}
+  
+  i Safe fix: Sort the classes.
+  
+    179 179 │   function FormError({ error }: { error: string }) {
+    180 180 │     return (
+    181     │ - ····<div·className="rounded-md·bg-destructive/10·p-4·text-destructive·text-sm·border·border-destructive/20·flex·items-center·gap-2">
+        181 │ + ····<div·className="flex·items-center·gap-2·rounded-md·border·border-destructive/20·bg-destructive/10·p-4·text-destructive·text-sm">
+    182 182 │         <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+    183 183 │         {error}
+  
+
+components\admin\role-form.tsx:182:23 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    180 │   return (
+    181 │     <div className="rounded-md bg-destructive/10 p-4 text-destructive text-sm border border-destructive/20 flex items-center gap-2">
+  > 182 │       <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+        │                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    183 │       {error}
+    184 │     </div>
+  
+  i Safe fix: Sort the classes.
+  
+    180 180 │     return (
+    181 181 │       <div className="rounded-md bg-destructive/10 p-4 text-destructive text-sm border border-destructive/20 flex items-center gap-2">
+    182     │ - ······<span·className="h-2·w-2·rounded-full·bg-destructive·animate-pulse"·/>
+        182 │ + ······<span·className="h-2·w-2·animate-pulse·rounded-full·bg-destructive"·/>
+    183 183 │         {error}
+    184 184 │       </div>
+  
+
+components\admin\role-form.tsx:223:28 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    221 │           <Field className="sm:col-span-1">
+    222 │             <FieldLabel>Target Scope</FieldLabel>
+  > 223 │             <div className="h-10 rounded-md bg-muted/30 border border-border px-3 flex items-center gap-2 text-sm text-muted-foreground">
+        │                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    224 │               <Globe className="h-3.5 w-3.5" />
+    225 │               All Applications & Tenants
+  
+  i Safe fix: Sort the classes.
+  
+    221 221 │             <Field className="sm:col-span-1">
+    222 222 │               <FieldLabel>Target Scope</FieldLabel>
+    223     │ - ············<div·className="h-10·rounded-md·bg-muted/30·border·border-border·px-3·flex·items-center·gap-2·text-sm·text-muted-foreground">
+        223 │ + ············<div·className="flex·h-10·items-center·gap-2·rounded-md·border·border-border·bg-muted/30·px-3·text-muted-foreground·text-sm">
+    224 224 │                 <Globe className="h-3.5 w-3.5" />
+    225 225 │                 All Applications & Tenants
+  
+
+components\admin\role-form.tsx:237:21 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    235 │           id="description"
+    236 │           rows={3}
+  > 237 │           className="bg-background/50 focus:bg-background resize-none"
+        │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    238 │           onChange={(e) => setDescription(e.target.value)}
+    239 │           placeholder="What exactly can a user with this role do?"
+  
+  i Safe fix: Sort the classes.
+  
+    235 235 │             id="description"
+    236 236 │             rows={3}
+    237     │ - ··········className="bg-background/50·focus:bg-background·resize-none"
+        237 │ + ··········className="resize-none·bg-background/50·focus:bg-background"
+    238 238 │             onChange={(e) => setDescription(e.target.value)}
+    239 239 │             placeholder="What exactly can a user with this role do?"
+  
+
+components\admin\role-form.tsx:248:3 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    247 │ function SystemRoleWarning({ isSystemRole }: { isSystemRole: boolean }) {
+  > 248 │   if (!isSystemRole) return null;
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    249 │   return (
+    250 │     <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted-foreground flex items-center gap-3">
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    248 │ ··if·(!isSystemRole)·{·return·null;·}
+        │                      ++            ++
+
+components\admin\role-form.tsx:250:20 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    248 │   if (!isSystemRole) return null;
+    249 │   return (
+  > 250 │     <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm text-muted-foreground flex items-center gap-3">
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    251 │       <Shield className="h-4 w-4 shrink-0" />
+    252 │       This is a immutable system role. You can view its settings but not modify them.
+  
+  i Safe fix: Sort the classes.
+  
+    248 248 │     if (!isSystemRole) return null;
+    249 249 │     return (
+    250     │ - ····<div·className="rounded-lg·border·border-border·bg-muted/20·p-4·text-sm·text-muted-foreground·flex·items-center·gap-3">
+        250 │ + ····<div·className="flex·items-center·gap-3·rounded-lg·border·border-border·bg-muted/20·p-4·text-muted-foreground·text-sm">
+    251 251 │         <Shield className="h-4 w-4 shrink-0" />
+    252 252 │         This is a immutable system role. You can view its settings but not modify them.
+  
+
+components\admin\role-form.tsx:264:20 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    262 │ }) {
+    263 │   return (
+  > 264 │     <div className="flex items-center gap-4 pt-4 border-t">
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    265 │       <Button
+    266 │         disabled={isLoading}
+  
+  i Safe fix: Sort the classes.
+  
+    262 262 │   }) {
+    263 263 │     return (
+    264     │ - ····<div·className="flex·items-center·gap-4·pt-4·border-t">
+        264 │ + ····<div·className="flex·items-center·gap-4·border-t·pt-4">
+    265 265 │         <Button
+    266 266 │           disabled={isLoading}
+  
+
+components\admin\role-form.tsx:269:35 lint/nursery/useSortedClasses  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  × These CSS classes should be sorted.
+  
+    267 │         type="submit"
+    268 │         size="lg"
+  > 269 │         className={cn(isGlobal && "px-8 shadow-md hover:shadow-lg transition-all")}
+        │                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    270 │       >
+    271 │         {isLoading && (
+  
+  i Safe fix: Sort the classes.
+  
+    267 267 │           type="submit"
+    268 268 │           size="lg"
+    269     │ - ········className={cn(isGlobal·&&·"px-8·shadow-md·hover:shadow-lg·transition-all")}
+        269 │ + ········className={cn(isGlobal·&&·"px-8·shadow-md·transition-all·hover:shadow-lg")}
+    270 270 │         >
+    271 271 │           {isLoading && (
+  
+
+Checked 215 files in 144ms. No fixes applied.
+Found 20 errors.
+lint ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+C:\dev\project-template\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  web@0.0.1 lint: `biome lint .`
+Exit status 1

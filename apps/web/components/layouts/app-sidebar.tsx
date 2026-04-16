@@ -21,9 +21,11 @@ import {
   FileText,
   FolderOpen,
   Gavel,
+  History,
   Home,
   Megaphone,
   Package,
+  Shield,
   UserCog,
   Webhook,
 } from "lucide-react";
@@ -138,6 +140,11 @@ const navAdmin = [
     icon: UserCog,
   },
   {
+    title: "Roles",
+    url: "/admin/roles",
+    icon: Shield,
+  },
+  {
     title: "Organizations",
     url: "/admin/organizations",
     icon: Building2,
@@ -161,6 +168,11 @@ const navAdmin = [
     title: "Backups",
     url: "/admin/backups",
     icon: DatabaseBackup,
+  },
+  {
+    title: "Audit Trail",
+    url: "/admin/audit-trail",
+    icon: History,
   },
 ];
 

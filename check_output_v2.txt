@@ -1,0 +1,417 @@
+
+> project-template@0.0.1 check C:\dev\project-template
+> turbo typecheck && biome check --write
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/ui-mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui:typecheck: cache hit, replaying logs f87d011f124aa825
+@workspace/ui:typecheck: 
+@workspace/ui:typecheck: > @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit
+@workspace/ui:typecheck: 
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/db:typecheck: cache hit, replaying logs 092e402d7eb8559f
+@workspace/db:typecheck: 
+@workspace/db:typecheck: > @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit
+@workspace/db:typecheck: 
+@workspace/utils:typecheck: cache hit, replaying logs d08a50456b4647a9
+@workspace/utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+@workspace/authorization:typecheck: cache miss, executing 677889f583335cce
+mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: ]0;C:\WINDOWS\system32\cmd.exe[?25h
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 
+mobile:typecheck: [7;35H types do not work in monorepo works
+mobile:typecheck: [7;35Hspaces (see tsconfig.json for detail
+mobile:typecheck: [7;35Hls)'
+mobile:typecheck: [?9001l[?1004l
+@workspace/metrics:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/auth:typecheck: cache hit, replaying logs e8d4c67e36492212
+@workspace/auth:typecheck: 
+@workspace/auth:typecheck: > @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit
+@workspace/auth:typecheck: 
+@workspace/test-utils:typecheck: cache hit, replaying logs a217abc9a8953c25
+@workspace/test-utils:typecheck: 
+@workspace/test-utils:typecheck: > @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit
+@workspace/test-utils:typecheck: 
+@workspace/notifications:typecheck: cache hit, replaying logs 3883475e62180932
+@workspace/notifications:typecheck: 
+@workspace/notifications:typecheck: > @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit
+@workspace/notifications:typecheck: 
+@workspace/cache:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/cache:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/feature-files:typecheck: cache hit, replaying logs a8a7e163a1f22f90
+@workspace/feature-files:typecheck: 
+@workspace/feature-files:typecheck: > @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit
+@workspace/feature-files:typecheck: 
+@workspace/reports:typecheck: cache hit, replaying logs 3b6274f0b6d032cf
+@workspace/reports:typecheck: 
+@workspace/reports:typecheck: > @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit
+@workspace/reports:typecheck: 
+drive:typecheck: cache hit, replaying logs f627c374c4cd7f49
+drive:typecheck: 
+drive:typecheck: > drive@0.0.1 typecheck C:\dev\project-template\apps\drive
+drive:typecheck: > tsc --noEmit
+drive:typecheck: 
+@workspace/authorization:typecheck: 
+@workspace/authorization:typecheck: > @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit
+@workspace/authorization:typecheck: 
+web:typecheck: cache miss, executing 76353c68595c7a55
+api:typecheck: cache miss, executing 5c1c57f6f251820c
+api:typecheck: 
+api:typecheck: > api@0.0.1 typecheck C:\dev\project-template\apps\api
+api:typecheck: > tsc --noEmit
+api:typecheck: 
+web:typecheck: 
+web:typecheck: > web@0.0.1 typecheck C:\dev\project-template\apps\web
+web:typecheck: > tsc --noEmit
+web:typecheck: 
+
+ Tasks:    17 successful, 17 total
+Cached:    14 cached, 17 total
+  Time:    19.928s 
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:86:17 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 19 detected (max: 15).
+  
+    84 │ }
+    85 │ 
+  > 86 │ export function AnnouncementForm({
+       │                 ^^^^^^^^^^^^^^^^
+    87 │   announcement,
+    88 │   mode,
+  
+  i Please refactor this function to reduce its complexity score from 19 to the max allowed complexity 15.
+  
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:168:53 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 26 detected (max: 15).
+  
+    166 │   });
+    167 │ 
+  > 168 │   const onSubmit = (values: AnnouncementFormValues) => {
+        │                                                     ^^^
+    169 │     // Determine the effective target organization ID
+    170 │     let targetOrgId: string | null = activeOrganization?.id ?? null;
+  
+  i Please refactor this function to reduce its complexity score from 26 to the max allowed complexity 15.
+  
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:375:52 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    373 │                                 >
+    374 │                                   {field.value
+  > 375 │                                     ? (orgsData as any)?.data?.find(
+        │                                                    ^^^
+    376 │                                         (org: any) => org.id === field.value
+    377 │                                       )?.name
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:376:47 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    374 │                                   {field.value
+    375 │                                     ? (orgsData as any)?.data?.find(
+  > 376 │                                         (org: any) => org.id === field.value
+        │                                               ^^^
+    377 │                                       )?.name
+    378 │                                     : "Select organization"}
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:391:51 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    389 │                                   </CommandEmpty>
+    390 │                                   <CommandGroup>
+  > 391 │                                     {(orgsData as any)?.data?.map(
+        │                                                   ^^^
+    392 │                                       (org: any) => (
+    393 │                                         <CommandItem
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:392:45 lint/suspicious/noExplicitAny ━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    390 │                                   <CommandGroup>
+    391 │                                     {(orgsData as any)?.data?.map(
+  > 392 │                                       (org: any) => (
+        │                                             ^^^
+    393 │                                         <CommandItem
+    394 │                                           key={org.id} // Command uses value for search text
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:72:23 lint/correctness/noUnusedFunctionParameters  FIXABLE  ━━━━━━━━━━
+
+  × This parameter is unused.
+  
+    70 │     targetOrgId: z.string().optional(),
+    71 │   })
+  > 72 │   .superRefine((data, ctx) => {
+       │                       ^^^
+    73 │     if (data.scope === "organization" && !data.targetOrgId) {
+    74 │       // Note: We'll handle the "auto-fill from active context" logic in the component
+  
+  i Unused parameters might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: If this is intentional, prepend ctx with an underscore.
+  
+     70  70 │       targetOrgId: z.string().optional(),
+     71  71 │     })
+     72     │ - ··.superRefine((data,·ctx)·=>·{
+         72 │ + ··.superRefine((data,·_ctx)·=>·{
+     73  73 │       if (data.scope === "organization" && !data.targetOrgId) {
+     74  74 │         // Note: We'll handle the "auto-fill from active context" logic in the component
+  
+
+apps\web\app\(app)\admin\audit-trail\page.tsx:40:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    38 │       });
+    39 │ 
+  > 40 │       if (response.error) throw new Error((response.error as any).message);
+       │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    41 │       return response.data as { data: any[]; pagination: { total: number } };
+    42 │     },
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    40 │ ······if·(response.error)·{·throw·new·Error((response.error·as·any).message);·}
+       │                           ++                                                 ++
+
+apps\web\app\(app)\admin\audit-trail\page.tsx:40:62 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    38 │       });
+    39 │ 
+  > 40 │       if (response.error) throw new Error((response.error as any).message);
+       │                                                              ^^^
+    41 │       return response.data as { data: any[]; pagination: { total: number } };
+    42 │     },
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\admin\audit-trail\page.tsx:41:39 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    40 │       if (response.error) throw new Error((response.error as any).message);
+  > 41 │       return response.data as { data: any[]; pagination: { total: number } };
+       │                                       ^^^
+    42 │     },
+    43 │   });
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\admin\audit-trail\page.tsx:50:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    48 │         url: "/v1/audit-logs/verify",
+    49 │       });
+  > 50 │       if (response.error) throw new Error((response.error as any).message);
+       │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    51 │       return response.data as { status: string; verifiedAt: string };
+    52 │     },
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    50 │ ······if·(response.error)·{·throw·new·Error((response.error·as·any).message);·}
+       │                           ++                                                 ++
+
+apps\web\app\(app)\admin\audit-trail\page.tsx:50:62 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    48 │         url: "/v1/audit-logs/verify",
+    49 │       });
+  > 50 │       if (response.error) throw new Error((response.error as any).message);
+       │                                                              ^^^
+    51 │       return response.data as { status: string; verifiedAt: string };
+    52 │     },
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+apps\web\app\(app)\settings\profile.tsx:69:10 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━
+
+  × This variable isImageDialogOpen is unused.
+  
+    67 │   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+    68 │   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  > 69 │   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+       │          ^^^^^^^^^^^^^^^^^
+    70 │   const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+    71 │   const [otpValue, setOtpValue] = useState("");
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend isImageDialogOpen with an underscore.
+  
+     67  67 │     const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+     68  68 │     const [isUploadingImage, setIsUploadingImage] = useState(false);
+     69     │ - ··const·[isImageDialogOpen,·setIsImageDialogOpen]·=·useState(false);
+         69 │ + ··const·[_isImageDialogOpen,·setIsImageDialogOpen]·=·useState(false);
+     70  70 │     const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+     71  71 │     const [otpValue, setOtpValue] = useState("");
+  
+
+apps\web\components\admin\audit-trail-table.tsx:123:43 lint/style/noNestedTernary ━━━━━━━━━━━━━━━━━━
+
+  × Do not nest ternary expressions.
+  
+    121 │     <Badge
+    122 │       className="px-2 py-0 font-medium capitalize"
+  > 123 │       variant={isDenial ? "destructive" : isGrant ? "default" : "secondary"}
+        │                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    124 │     >
+    125 │       {eventType.split(".").pop()}
+  
+  i Nesting ternary expressions can make code more difficult to understand.
+  
+  i Convert nested ternary expression into if-else statements or separate the conditions to make the logic easier to understand.
+  
+
+apps\web\components\admin\audit-trail-table.tsx:131:3 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    130 │ function ActorAvatar({ actor }: { actor: AuditLog["actor"] }) {
+  > 131 │   if (actor.type === "system")
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 132 │     return <Globe className="h-4 w-4 text-blue-500" />;
+        │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    133 │   if (actor.type === "service")
+    134 │     return <Fingerprint className="h-4 w-4 text-purple-500" />;
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    129 129 │   
+    130 130 │   function ActorAvatar({ actor }: { actor: AuditLog["actor"] }) {
+    131     │ - ··if·(actor.type·===·"system")
+    132     │ - ····return·<Globe·className="h-4·w-4·text-blue-500"·/>;
+        131 │ + ··if·(actor.type·===·"system")·{
+        132 │ + ····return·<Globe·className="h-4·w-4·text-blue-500"·/>;
+        133 │ + ··}
+    133 134 │     if (actor.type === "service")
+    134 135 │       return <Fingerprint className="h-4 w-4 text-purple-500" />;
+  
+
+apps\web\components\admin\audit-trail-table.tsx:133:3 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    131 │   if (actor.type === "system")
+    132 │     return <Globe className="h-4 w-4 text-blue-500" />;
+  > 133 │   if (actor.type === "service")
+        │   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 134 │     return <Fingerprint className="h-4 w-4 text-purple-500" />;
+        │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    135 │   return <User className="h-4 w-4 text-muted-foreground" />;
+    136 │ }
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    131 131 │     if (actor.type === "system")
+    132 132 │       return <Globe className="h-4 w-4 text-blue-500" />;
+    133     │ - ··if·(actor.type·===·"service")
+    134     │ - ····return·<Fingerprint·className="h-4·w-4·text-purple-500"·/>;
+        133 │ + ··if·(actor.type·===·"service")·{
+        134 │ + ····return·<Fingerprint·className="h-4·w-4·text-purple-500"·/>;
+        135 │ + ··}
+    135 136 │     return <User className="h-4 w-4 text-muted-foreground" />;
+    136 137 │   }
+  
+
+packages\authorization\src\audit\service.ts:291:11 lint/suspicious/noEvolvingTypes ━━━━━━━━━━━━━━━━━
+
+  × The type of this variable may evolve implicitly to any type, including the any type.
+  
+    289 │   ) {
+    290 │     const { and, eq, gte, lte, like } = await import("@workspace/db");
+  > 291 │     const conditions = [];
+        │           ^^^^^^^^^^
+    292 │ 
+    293 │     if (orgId) {
+  
+  i Add an explicit type or initialization to avoid implicit type evolution.
+  
+
+packages\authorization\src\audit\service.ts:242:23 lint/correctness/noUnusedVariables ━━━━━━━━━━━━━━
+
+  × This variable isNull is unused.
+  
+    240 │    */
+    241 │   async verifyHashChainIntegrity(orgId?: string): Promise<boolean> {
+  > 242 │     const { desc, eq, isNull } = await import("@workspace/db");
+        │                       ^^^^^^
+    243 │ 
+    244 │     // Get the most recent log entry to start verification
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+
+packages\db\src\seed\index.ts:446:7 lint/style/useBlockStatements  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Block statements are preferred in this position.
+  
+    444 │         .limit(1);
+    445 │ 
+  > 446 │       if (tenantRole[0]) return tenantRole[0].id;
+        │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    447 │     }
+    448 │ 
+  
+  i Unsafe fix: Wrap the statement with a `JsBlockStatement`
+  
+    446 │ ······if·(tenantRole[0])·{·return·tenantRole[0].id;·}
+        │                          ++                        ++
+
+Skipped 7 suggested fixes.
+If you wish to apply the suggested (unsafe) fixes, use the command biome check --write --unsafe
+
+Checked 849 files in 899ms. No fixes applied.
+Found 19 errors.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while applying fixes.
+  
+
+ ELIFECYCLE  Command failed with exit code 1.

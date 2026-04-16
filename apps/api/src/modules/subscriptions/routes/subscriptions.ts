@@ -8,7 +8,7 @@ import type {
 import type { FastifyInstance } from "fastify";
 import { handleError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
-import { requireAuth } from "../../auth/middleware";
+import { requirePermission } from "../../auth/authorization-middleware";
 import * as couponsService from "../services/coupons.service";
 import type { CreateSubscriptionInput } from "../services/subscriptions.service";
 import * as subscriptionsService from "../services/subscriptions.service";
@@ -49,7 +49,7 @@ export function subscriptionsRoutes(app: FastifyInstance) {
     Querystring: { applicationId?: string };
   }>(
     "/orgs/:orgId/subscriptions/current",
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission("subscriptions", "read")] },
     async (request, reply): Promise<SubscriptionResponse | ErrorResponse> => {
       try {
         const { orgId } = request.params;
@@ -88,7 +88,7 @@ export function subscriptionsRoutes(app: FastifyInstance) {
     Body: CreateSubscriptionRequest;
   }>(
     "/orgs/:orgId/subscriptions",
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission("subscriptions", "manage")] },
     async (request, reply): Promise<SubscriptionResponse | ErrorResponse> => {
       try {
         const { orgId } = request.params;
@@ -127,7 +127,7 @@ export function subscriptionsRoutes(app: FastifyInstance) {
     Body: UpdateSubscriptionRequest;
   }>(
     "/orgs/:orgId/subscriptions/:subscriptionId",
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission("subscriptions", "manage")] },
     async (request, reply): Promise<SubscriptionResponse | ErrorResponse> => {
       try {
         const { subscriptionId } = request.params;
@@ -167,7 +167,7 @@ export function subscriptionsRoutes(app: FastifyInstance) {
     Body: { immediate?: boolean };
   }>(
     "/orgs/:orgId/subscriptions/:subscriptionId/cancel",
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission("subscriptions", "manage")] },
     async (request, reply): Promise<SubscriptionResponse | ErrorResponse> => {
       try {
         const { subscriptionId } = request.params;
@@ -204,7 +204,7 @@ export function subscriptionsRoutes(app: FastifyInstance) {
   // Resume subscription
   app.post<{ Params: { orgId: string; subscriptionId: string } }>(
     "/orgs/:orgId/subscriptions/:subscriptionId/resume",
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission("subscriptions", "manage")] },
     async (request, reply): Promise<SubscriptionResponse | ErrorResponse> => {
       try {
         const { subscriptionId } = request.params;
@@ -241,7 +241,7 @@ export function subscriptionsRoutes(app: FastifyInstance) {
     Body: { couponCode: string };
   }>(
     "/orgs/:orgId/subscriptions/:subscriptionId/coupon",
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission("subscriptions", "manage")] },
     async (request, reply): Promise<SubscriptionResponse | ErrorResponse> => {
       try {
         const { subscriptionId } = request.params;
@@ -281,7 +281,7 @@ export function subscriptionsRoutes(app: FastifyInstance) {
     Body: ValidateCouponRequest;
   }>(
     "/orgs/:orgId/subscriptions/validate-coupon",
-    { preHandler: [requireAuth] },
+    { preHandler: [requirePermission("subscriptions", "manage")] },
     async (request, reply): Promise<never> => {
       try {
         const body = request.body;

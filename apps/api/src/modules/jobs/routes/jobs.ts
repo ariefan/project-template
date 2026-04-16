@@ -11,6 +11,7 @@ import type { FastifyInstance } from "fastify";
 import { handleError } from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
 import { requireAuth } from "../../auth/middleware";
+import { jobHandlerRegistry } from "../handlers/registry";
 import { formatJobResponse } from "../lib/formatters";
 import * as jobsService from "../services/jobs.service";
 
@@ -119,6 +120,29 @@ export function jobsRoutes(app: FastifyInstance) {
               requestId: request.id,
             },
           };
+        }
+
+        // Validate job type permissions
+        const handlerConfig = jobHandlerRegistry.get(type);
+        const user = request.user;
+        const isSystemAdmin = user?.role === "admin" || user?.role === "system";
+
+        if (handlerConfig) {
+          const isSystemJob =
+            handlerConfig.category === "system" ||
+            handlerConfig.category === "maintenance" ||
+            handlerConfig.hidden;
+
+          if (isSystemJob && !isSystemAdmin) {
+            reply.status(403);
+            return {
+              error: {
+                code: "forbidden",
+                message: `You do not have permission to run job type: ${type}`,
+                requestId: request.id,
+              },
+            };
+          }
         }
 
         const job = await jobsService.createAndEnqueueJob({

@@ -1,0 +1,114 @@
+
+> project-template@0.0.1 check C:\dev\project-template
+> turbo typecheck && biome check --write
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/metrics:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/cache:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/cache:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/db:typecheck: cache hit, replaying logs 58cb3f43e327dde6
+@workspace/db:typecheck: 
+@workspace/db:typecheck: > @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit
+@workspace/db:typecheck: 
+@workspace/utils:typecheck: cache hit, replaying logs d08a50456b4647a9
+@workspace/utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/ui-mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui:typecheck: cache hit, replaying logs f87d011f124aa825
+@workspace/ui:typecheck: 
+@workspace/ui:typecheck: > @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit
+@workspace/ui:typecheck: 
+@workspace/test-utils:typecheck: cache hit, replaying logs 1b3a9c7b5972f850
+@workspace/test-utils:typecheck: 
+@workspace/test-utils:typecheck: > @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit
+@workspace/test-utils:typecheck: 
+@workspace/notifications:typecheck: cache hit, replaying logs 01a3cee1c1aee993
+@workspace/notifications:typecheck: 
+@workspace/notifications:typecheck: > @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit
+@workspace/notifications:typecheck: 
+@workspace/auth:typecheck: cache hit, replaying logs d949f2620a586f83
+@workspace/auth:typecheck: 
+@workspace/auth:typecheck: > @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit
+@workspace/auth:typecheck: 
+@workspace/reports:typecheck: cache hit, replaying logs 877ee92779af1dff
+@workspace/reports:typecheck: 
+@workspace/reports:typecheck: > @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit
+@workspace/reports:typecheck: 
+@workspace/authorization:typecheck: cache hit, replaying logs 057a9863e3ee365f
+@workspace/authorization:typecheck: 
+@workspace/authorization:typecheck: > @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit
+@workspace/authorization:typecheck: 
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: ]0;C:\WINDOWS\system32\cmd.exe[?25h
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 
+mobile:typecheck: [7;35H types do not work in monorepo works
+mobile:typecheck: [7;35Hspaces (see tsconfig.json for detail
+mobile:typecheck: [7;35Hls)'
+mobile:typecheck: [?9001l[?1004l
+@workspace/feature-files:typecheck: cache hit, replaying logs a8a7e163a1f22f90
+@workspace/feature-files:typecheck: 
+@workspace/feature-files:typecheck: > @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit
+@workspace/feature-files:typecheck: 
+api:typecheck: cache hit, replaying logs 6d857737ef90a88f
+api:typecheck: 
+api:typecheck: > api@0.0.1 typecheck C:\dev\project-template\apps\api
+api:typecheck: > tsc --noEmit
+api:typecheck: 
+drive:typecheck: cache hit, replaying logs 6a31207db3420fec
+drive:typecheck: 
+drive:typecheck: > drive@0.0.1 typecheck C:\dev\project-template\apps\drive
+drive:typecheck: > tsc --noEmit
+drive:typecheck: 
+web:typecheck: cache miss, executing f71a41d733afa90c
+web:typecheck: 
+web:typecheck: > web@0.0.1 typecheck C:\dev\project-template\apps\web
+web:typecheck: > tsc --noEmit
+web:typecheck: 
+
+ Tasks:    17 successful, 17 total
+Cached:    16 cached, 17 total
+  Time:    16.155s 
+
+apps\web\app\(app)\admin\announcements\announcement-form.tsx:50:17 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 20 detected (max: 15).
+  
+    48 │ }
+    49 │ 
+  > 50 │ export function AnnouncementForm({
+       │                 ^^^^^^^^^^^^^^^^
+    51 │   announcement,
+    52 │   mode,
+  
+  i Please refactor this function to reduce its complexity score from 20 to the max allowed complexity 15.
+  
+
+Checked 851 files in 923ms. No fixes applied.
+Found 1 error.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while applying fixes.
+  
+
+ ELIFECYCLE  Command failed with exit code 1.

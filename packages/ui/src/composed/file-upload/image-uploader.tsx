@@ -359,6 +359,40 @@ function DefaultUploadView({
     initialUrls,
   } = props;
 
+  const renderAddTrigger = (
+    <DropzonePrimitive
+      className="flex size-full items-center justify-center rounded-lg border-2 border-muted-foreground/25 border-dashed hover:border-primary/50 hover:bg-muted/50"
+      compact={true}
+      onClick={() => {
+        controller.fileInputRef.current?.click();
+      }}
+      onDragLeave={controller.handleDragLeave}
+      onDragOver={controller.handleDragOver}
+      onDrop={controller.handleDrop}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          controller.fileInputRef.current?.click();
+        }
+      }}
+    >
+      <Plus className="h-6 w-6 text-muted-foreground" />
+      <span className="sr-only">Add more images</span>
+      <input
+        accept={
+          props.accept
+            ? Object.values(props.accept).flat().join(",")
+            : "image/*"
+        }
+        className="hidden"
+        multiple={props.maxFiles !== 1}
+        onChange={(e) => controller.handleFileSelect(e.target.files)}
+        ref={controller.fileInputRef}
+        type="file"
+      />
+    </DropzonePrimitive>
+  );
+
   return (
     <div className="space-y-1">
       {/* Crop queue indicator */}
@@ -368,39 +402,6 @@ function DefaultUploadView({
           totalInQueue={controller.totalInQueue}
         />
       )}
-
-      {/* Add more files button */}
-      <DropzonePrimitive
-        className="py-2"
-        compact={true}
-        onClick={() => {
-          controller.fileInputRef.current?.click();
-        }}
-        onDragLeave={controller.handleDragLeave}
-        onDragOver={controller.handleDragOver}
-        onDrop={controller.handleDrop}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            controller.fileInputRef.current?.click();
-          }
-        }}
-      >
-        <Plus className="mr-2 h-4 w-4" />
-        Add more images
-        <input
-          accept={
-            props.accept
-              ? Object.values(props.accept).flat().join(",")
-              : "image/*"
-          }
-          className="hidden"
-          multiple={props.maxFiles !== 1}
-          onChange={(e) => controller.handleFileSelect(e.target.files)}
-          ref={controller.fileInputRef}
-          type="file"
-        />
-      </DropzonePrimitive>
 
       {/* Images list (Unified) */}
       {controller.hasAnyFiles &&
@@ -452,7 +453,12 @@ function DefaultUploadView({
                 controller.setPreviewOpen(true);
               }}
               showCompressionDetails={showCompressionDetails}
-            />
+            >
+              {(props.maxFiles === undefined ||
+                controller.combinedItems.length + controller.totalInQueue <
+                  props.maxFiles) &&
+                renderAddTrigger}
+            </ImageGridList>
           </div>
         )}
 
@@ -470,7 +476,7 @@ function DefaultUploadView({
         onConfirm &&
         controller.compressedFiles.length > 0 && (
           <Button
-            className="w-full"
+            className="mt-4 w-full"
             disabled={isUploading || controller.isCompressing}
             onClick={() => onConfirm(controller.compressedFiles)}
           >

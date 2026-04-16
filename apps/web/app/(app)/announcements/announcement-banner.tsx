@@ -61,7 +61,7 @@ export function AnnouncementBanner() {
   const { data } = useQuery({
     ...announcementsListOptions({
       client: apiClient,
-      path: { orgId: activeOrganization?.id ?? "" },
+      path: { orgId: activeOrganization?.id ?? "system" },
       query: {
         page: 1,
         pageSize: 10,
@@ -71,7 +71,7 @@ export function AnnouncementBanner() {
         includeInactive: true,
       },
     }),
-    enabled: !!activeOrganization?.id,
+    enabled: true,
   });
 
   const dismissMutation = useMutation({
@@ -153,7 +153,7 @@ export function AnnouncementBanner() {
                 onClick={() => {
                   dismissMutation.mutate({
                     path: {
-                      orgId: activeOrganization?.id ?? "",
+                      orgId: activeOrganization?.id ?? "system",
                       announcementId: announcement.id,
                     },
                   });

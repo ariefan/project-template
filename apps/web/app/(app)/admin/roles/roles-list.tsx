@@ -170,19 +170,27 @@ export function RolesList({
 
   return (
     <>
-      <Card>
-        <CardHeader>
+      <Card className="border-border/60 bg-card/50">
+        <CardHeader className="pb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Shield className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="rounded-lg bg-muted p-2.5">
+                <Shield className="h-6 w-6 text-muted-foreground" />
+              </div>
               <div>
-                <CardTitle>Roles</CardTitle>
-                <CardDescription>
-                  Manage organization roles and their permissions
+                <CardTitle className="font-semibold text-xl">
+                  Organization Roles
+                </CardTitle>
+                <CardDescription className="text-sm">
+                  Permissions for{" "}
+                  <span className="font-medium text-foreground">
+                    {orgData?.name ?? "this organization"}
+                  </span>
+                  .
                 </CardDescription>
               </div>
             </div>
-            <Button asChild>
+            <Button asChild className="h-9" variant="outline">
               <Link href="/admin/roles/new">
                 <Plus className="mr-2 h-4 w-4" />
                 New Role
@@ -192,10 +200,13 @@ export function RolesList({
         </CardHeader>
         <CardContent>
           {/* Navigation tabs between tenant and global roles */}
-          <Tabs className="mb-4" defaultValue="tenant">
-            <TabsList>
-              <TabsTrigger value="tenant">Tenant Roles</TabsTrigger>
+          <Tabs className="mb-6" defaultValue="tenant">
+            <TabsList className="h-10 p-1">
+              <TabsTrigger className="px-4" value="tenant">
+                Tenant Roles
+              </TabsTrigger>
               <TabsTrigger
+                className="px-4"
                 onClick={() => router.push("/admin/roles/global")}
                 value="global"
               >
@@ -246,39 +257,63 @@ interface RoleRowProps {
 
 function RoleRow({ role, onDelete, deletePending }: RoleRowProps) {
   return (
-    <TableRow>
-      <TableCell className="font-medium">{role.name}</TableCell>
-      <TableCell className="max-w-[200px] truncate text-muted-foreground">
+    <TableRow className="group transition-colors hover:bg-muted/30">
+      <TableCell>
+        <div className="flex flex-col gap-0.5">
+          <span className="font-medium text-foreground">{role.name}</span>
+          <span className="font-mono text-[10px] text-muted-foreground uppercase">
+            ID: {role.id.slice(0, 8)}
+          </span>
+        </div>
+      </TableCell>
+      <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
         {role.description ?? "-"}
       </TableCell>
       <TableCell>
-        <div className="flex gap-1">
-          <Badge variant={role.isSystemRole ? "secondary" : "outline"}>
+        <div className="flex gap-1.5">
+          <Badge
+            className="px-1.5 py-0 font-medium text-[11px]"
+            variant={role.isSystemRole ? "secondary" : "outline"}
+          >
             {role.isSystemRole ? "System" : "Custom"}
           </Badge>
-          <Badge variant={role.isGlobalRole ? "default" : "outline"}>
-            {role.isGlobalRole ? "Global" : "Tenant"}
-          </Badge>
+          {role.isGlobalRole && (
+            <Badge
+              className="bg-primary/80 px-1.5 py-0 font-medium text-[11px]"
+              variant="default"
+            >
+              Global
+            </Badge>
+          )}
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline">
-          {role.permissions.length} permission
-          {role.permissions.length !== 1 ? "s" : ""}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+          <span className="font-medium text-muted-foreground text-sm">
+            {role.permissions.length} rule
+            {role.permissions.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </TableCell>
-      <TableCell className="text-muted-foreground">
+      <TableCell className="text-muted-foreground text-sm">
         {format(new Date(role.createdAt), "MMM d, yyyy")}
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          <Button asChild size="icon" variant="ghost">
+        <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            asChild
+            className="h-8 w-8 hover:bg-accent"
+            size="icon"
+            variant="ghost"
+          >
             <Link href={`/admin/roles/${role.id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
           {!role.isSystemRole && (
             <Button
+              className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
               disabled={deletePending}
               onClick={onDelete}
               size="icon"

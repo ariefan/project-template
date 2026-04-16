@@ -1,3 +1,4 @@
+import { JobInputSchemas, JobType } from "@workspace/contracts/jobs";
 import type { FileRow } from "@workspace/db/schema";
 import { jobHandlerRegistry } from "../../jobs/handlers/registry";
 import type { JobContext, JobResult } from "../../jobs/handlers/types";
@@ -150,20 +151,25 @@ async function handleBackupCleanup(context: JobContext): Promise<JobResult> {
  */
 export function registerBackupHandlers() {
   jobHandlerRegistry.register({
-    type: "backups:create",
+    type: JobType.BACKUPS_CREATE,
     handler: handleOrgBackupCreate,
+    validationSchema: JobInputSchemas[JobType.BACKUPS_CREATE],
     concurrency: 2,
     retryLimit: 3,
     expireInSeconds: 3600,
     label: "Organization Backup",
     description: "Create a backup of organization data",
+    category: "user",
     exampleConfig: { organizationId: "org_xxx" },
   });
 
   jobHandlerRegistry.register({
-    type: "backups:cleanup",
+    type: JobType.BACKUPS_CLEANUP,
     handler: handleBackupCleanup,
+    validationSchema: JobInputSchemas[JobType.BACKUPS_CLEANUP],
     concurrency: 1,
     retryLimit: 3,
+    category: "maintenance",
+    hidden: true,
   });
 }

@@ -71,6 +71,7 @@ export function StorageTester() {
   const [isAutoUpload, setIsAutoUpload] = useState(true);
   const [showCompressionOptions, setShowCompressionOptions] = useState(true);
   const [enableCropping, setEnableCropping] = useState(true);
+  const [layout, setLayout] = useState<"grid" | "carousel">("grid");
   const [autoImageUpload, _setAutoImageUpload] = useState(true);
   const [fileUploaderKey, setFileUploaderKey] = useState(0);
   const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
@@ -470,12 +471,33 @@ const uploadFile = async (file: File, onProgress: (p: number) => void) => {
                         onCheckedChange={setShowCompressionOptions}
                       />{" "}
                       <span className="text-sm">Compression UI</span>
+                      <div className="ml-2 flex items-center rounded-lg border p-1">
+                        <Button
+                          className="h-6 rounded-sm px-2 text-xs"
+                          onClick={() => setLayout("grid")}
+                          size="sm"
+                          variant={layout === "grid" ? "secondary" : "ghost"}
+                        >
+                          Grid
+                        </Button>
+                        <Button
+                          className="h-6 rounded-sm px-2 text-xs"
+                          onClick={() => setLayout("carousel")}
+                          size="sm"
+                          variant={
+                            layout === "carousel" ? "secondary" : "ghost"
+                          }
+                        >
+                          Carousel
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   <ImageUploader
                     autoUpload={autoImageUpload}
                     enableCropping={enableCropping}
                     isUploading={isUploadingCompressed}
+                    layout={layout}
                     onConfirm={handleCompressedUpload}
                     ref={imageUploaderRef}
                     showCompressionOptions={showCompressionOptions}

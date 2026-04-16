@@ -17,6 +17,7 @@ export interface ImageGridListProps {
   onDownload: (file: CompressedFileWithPreview) => void;
   onView: (url: string, name: string, type: string) => void;
   showCompressionDetails: boolean;
+  children?: React.ReactNode;
 }
 
 export function ImageGridList({
@@ -26,6 +27,7 @@ export function ImageGridList({
   onDownload,
   onView,
   showCompressionDetails,
+  children,
 }: ImageGridListProps) {
   const renderItem = (item: CombinedItem) => (
     <ImageUploaderItem
@@ -43,6 +45,7 @@ export function ImageGridList({
     return (
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
         {items.map((item) => renderItem(item))}
+        {children && <div className="aspect-square">{children}</div>}
       </div>
     );
   }
@@ -58,6 +61,11 @@ export function ImageGridList({
             {renderItem(item)}
           </CarouselItem>
         ))}
+        {children && (
+          <CarouselItem className="basis-full pl-2 md:pl-4">
+            <div className="aspect-square">{children}</div>
+          </CarouselItem>
+        )}
       </CarouselContent>
       <CarouselPrevious className="left-2 bg-background/80 hover:bg-background" />
       <CarouselNext className="right-2 bg-background/80 hover:bg-background" />

@@ -8,6 +8,10 @@ export enum JobType {
   STORAGE_CLEANUP = "storage:cleanup",
   POKEAPI_TEST = "dev:pokeapi-test",
   ANNOUNCEMENT_PROCESS = "announcements:process",
+  BACKUPS_CREATE = "backups:create",
+  BACKUPS_CLEANUP = "backups:cleanup",
+  SYSTEM_BACKUP_CREATE = "system:backup-create",
+  SUBSCRIPTIONS_MONITOR = "subscriptions:monitor",
 }
 
 /**
@@ -33,6 +37,19 @@ export const JobInputSchemas = {
     announcementId: z.string(),
     action: z.enum(["notify", "index", "archive"]).optional(),
   }),
+  [JobType.BACKUPS_CREATE]: z.object({
+    organizationId: z.string(),
+    includeFiles: z.boolean().optional(),
+    encrypt: z.boolean().optional(),
+    password: z.string().optional(),
+  }),
+  [JobType.BACKUPS_CLEANUP]: z.object({}),
+  [JobType.SYSTEM_BACKUP_CREATE]: z.object({
+    includeFiles: z.boolean().optional(),
+    encrypt: z.boolean().optional(),
+    password: z.string().optional(),
+  }),
+  [JobType.SUBSCRIPTIONS_MONITOR]: z.object({}),
 } as const;
 
 export type JobInputType<T extends JobType> = z.infer<(typeof JobInputSchemas)[T]>;

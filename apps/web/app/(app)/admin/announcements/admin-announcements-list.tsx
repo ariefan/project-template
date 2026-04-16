@@ -35,7 +35,7 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { PageHeader } from "@/components/layouts/page-header";
 import { apiClient } from "@/lib/api-client";
-import { useActiveOrganization } from "@/lib/auth";
+import { useActiveOrganization, useSession } from "@/lib/auth";
 
 const PRIORITY_CONFIG = {
   info: {
@@ -78,10 +78,15 @@ export function AdminAnnouncementsList() {
     });
   }, [queryClient]);
 
+  const { data: session } = useSession();
+  const isSystemAdmin = session?.user?.role === "super_admin";
+
+  const targetOrgId = activeOrganization?.id ?? (isSystemAdmin ? "system" : "");
+
   const { data } = useQuery({
     ...announcementsListOptions({
       client: apiClient,
-      path: { orgId: activeOrganization?.id ?? "" },
+      path: { orgId: targetOrgId },
       query: {
         page: 1,
         pageSize: 100,
@@ -90,7 +95,7 @@ export function AdminAnnouncementsList() {
         includeExpired: true,
       },
     }),
-    enabled: !!activeOrganization?.id,
+    enabled: !!targetOrgId,
   });
 
   const deleteMutation = useMutation({
@@ -254,7 +259,7 @@ export function AdminAnnouncementsList() {
       onAction: async (row) => {
         await deleteMutation.mutateAsync({
           path: {
-            orgId: activeOrganization?.id ?? "",
+            orgId: targetOrgId,
             announcementId: row.id,
           },
         });
@@ -276,7 +281,7 @@ export function AdminAnnouncementsList() {
           rows.map((row) =>
             deleteMutation.mutateAsync({
               path: {
-                orgId: activeOrganization?.id ?? "",
+                orgId: targetOrgId,
                 announcementId: row.id,
               },
             })

@@ -1,4 +1,4 @@
-import type { Database } from "@workspace/db";
+import type { Database, SQL } from "@workspace/db";
 import {
   AuthorizationAuditEventType,
   type AuthorizationLog,
@@ -238,13 +238,17 @@ export class AuthorizationAuditService {
    * Verify hash chain integrity for a given organization
    * Returns true if the hash chain is intact, false if tampered
    */
-  async verifyHashChainIntegrity(orgId: string): Promise<boolean> {
-    const { eq, asc } = await import("@workspace/db");
-    const logs = await this.db
-      .select()
-      .from(authorizationLogs)
-      .where(eq(authorizationLogs.orgId, orgId))
-      .orderBy(asc(authorizationLogs.id));
+  async verifyHashChainIntegrity(orgId?: string): Promise<boolean> {
+    const { desc, eq } = await import("@workspace/db");
+
+    // Get the most recent log entry to start verification
+    const query = this.db.select().from(authorizationLogs);
+
+    if (orgId) {
+      query.where(eq(authorizationLogs.orgId, orgId));
+    }
+
+    const logs = await query.orderBy(desc(authorizationLogs.timestamp));
 
     let previousHash: string | null = null;
 
@@ -280,11 +284,15 @@ export class AuthorizationAuditService {
    * Build filter conditions for audit log queries
    */
   private async buildFilterConditions(
-    orgId: string,
+    orgId?: string,
     filters?: AuditLogFilters
   ) {
     const { and, eq, gte, lte, like } = await import("@workspace/db");
-    const conditions = [eq(authorizationLogs.orgId, orgId)];
+    const conditions: SQL[] = [];
+
+    if (orgId) {
+      conditions.push(eq(authorizationLogs.orgId, orgId));
+    }
 
     if (filters?.eventType) {
       conditions.push(eq(authorizationLogs.eventType, filters.eventType));
@@ -319,7 +327,7 @@ export class AuthorizationAuditService {
    * Query audit logs with pagination and filters
    */
   async queryLogs(
-    orgId: string,
+    orgId?: string,
     options: {
       page?: number;
       pageSize?: number;
@@ -388,7 +396,7 @@ export class AuthorizationAuditService {
   /**
    * Count audit logs with optional filters
    */
-  async countLogs(orgId: string, filters?: AuditLogFilters): Promise<number> {
+  async countLogs(orgId?: string, filters?: AuditLogFilters): Promise<number> {
     const { count } = await import("@workspace/db");
     const whereCondition = await this.buildFilterConditions(orgId, filters);
 

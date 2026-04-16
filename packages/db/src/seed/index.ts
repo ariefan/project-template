@@ -350,9 +350,7 @@ async function seedRoles(ctx: SeedContext, onlyGlobal = false) {
       description: "Support agent with read-only platform access",
     },
     { name: SystemRoles.USER, description: "Regular authenticated user" },
-  ];
-
-  const tenantRoles = [
+    // Standard Tenant Roles (Global Templates)
     {
       name: TenantRoles.OWNER,
       description: "Organization owner with full control",
@@ -363,6 +361,9 @@ async function seedRoles(ctx: SeedContext, onlyGlobal = false) {
       name: TenantRoles.VIEWER,
       description: "Read-only access to organization",
     },
+  ];
+
+  const tenantRoles = [
     // Custom Content Roles (Tenant Level - Dynamic Examples)
     { name: "editor", description: "Can publish and manage content" },
     { name: "moderator", description: "Can manage comments and community" },
@@ -396,7 +397,7 @@ async function seedRoles(ctx: SeedContext, onlyGlobal = false) {
             tenantId: org.id,
             name: role.name,
             description: role.description,
-            isSystemRole: true,
+            isSystemRole: false, // Custom roles are not system roles
             createdAt: now,
             updatedAt: now,
           })
@@ -405,9 +406,11 @@ async function seedRoles(ctx: SeedContext, onlyGlobal = false) {
     }
   }
 
-  console.log("   ✓ Global roles: super_user, app_admin, user");
+  console.log(
+    "   ✓ Global roles: super_user, app_admin, user, owner, admin, member, viewer"
+  );
   if (!onlyGlobal) {
-    console.log("   ✓ Tenant roles: owner, admin, member, viewer (per org)");
+    console.log("   ✓ Tenant roles: editor, moderator, contributor (per org)");
   }
 }
 
@@ -420,26 +423,45 @@ async function seedUserRoleAssignments(ctx: SeedContext) {
 
   console.log("\n👤 Creating user role assignments...");
 
-  // Helper to find role ID by name and tenant
+  // Helper to find role ID by name and tenant (with global fallback)
   async function findRoleId(
     roleName: string,
     tenantId: string | null,
     appId: string = DEFAULT_APPLICATION_ID
   ): Promise<string | null> {
-    const result = await db
+    // 1. Try to find specific tenant role first
+    if (tenantId) {
+      const tenantRole = await db
+        .select({ id: schema.roles.id })
+        .from(schema.roles)
+        .where(
+          and(
+            eq(schema.roles.name, roleName),
+            eq(schema.roles.applicationId, appId),
+            eq(schema.roles.tenantId, tenantId)
+          )
+        )
+        .limit(1);
+
+      if (tenantRole[0]) {
+        return tenantRole[0].id;
+      }
+    }
+
+    // 2. Fallback to global role
+    const globalRole = await db
       .select({ id: schema.roles.id })
       .from(schema.roles)
       .where(
         and(
           eq(schema.roles.name, roleName),
           eq(schema.roles.applicationId, appId),
-          tenantId
-            ? eq(schema.roles.tenantId, tenantId)
-            : sql`${schema.roles.tenantId} IS NULL`
+          sql`${schema.roles.tenantId} IS NULL`
         )
       )
       .limit(1);
-    return result[0]?.id ?? null;
+
+    return globalRole[0]?.id ?? null;
   }
 
   // Define user-role assignments per org
@@ -574,7 +596,10 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     "webhooks",
     "notifications",
     "audit-logs",
+    "audit-logs",
     "jobs",
+    "backups",
+    "subscriptions",
   ];
   const actions = ["read", "create", "update", "delete", "manage"];
 
@@ -584,6 +609,14 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     "comments",
     "reports",
     "announcements",
+  ]);
+
+  // Resources restricted to Admins/Owners only (No Member/Viewer access)
+  const adminOnlyResources = new Set([
+    "backups",
+    "subscriptions",
+    "webhooks",
+    "audit-logs",
   ]);
 
   // Policy rules (ptype="p"): role -> app -> tenant -> resource -> action -> effect -> condition
@@ -638,6 +671,11 @@ async function seedCasbinPolicies(ctx: SeedContext) {
             v5: "allow",
             v6: "",
           });
+        }
+
+        // Skip Member/Viewer policies for admin-only resources
+        if (adminOnlyResources.has(resource)) {
+          continue;
         }
 
         // Member can read and create (standard)
@@ -769,6 +807,21 @@ async function seedCasbinPolicies(ctx: SeedContext) {
     v5: "allow",
     v6: "",
   });
+
+  // Global Super Admin Policies (Platform Management)
+  const globalAdminResources = ["plans", "developer"];
+  for (const resource of globalAdminResources) {
+    policies.push({
+      ptype: "p",
+      v0: SystemRoles.SUPER_ADMIN,
+      v1: DEFAULT_APPLICATION_ID,
+      v2: "*", // Global context
+      v3: resource,
+      v4: "manage",
+      v5: "allow",
+      v6: "",
+    });
+  }
 
   // Insert policies
   for (const policy of policies) {

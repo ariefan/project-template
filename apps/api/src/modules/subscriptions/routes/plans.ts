@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { createMeta } from "../../../lib/response";
 import { requireAuth } from "../../auth/middleware";
 import type {
@@ -8,10 +8,32 @@ import type {
 import * as plansService from "../services/plans.service";
 
 export function plansRoutes(app: FastifyInstance) {
+  // Middleware to require super admin
+  const requireSuperAdmin = async (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ) => {
+    await requireAuth(request, reply);
+    if (reply.sent) {
+      return;
+    }
+
+    // biome-ignore lint/suspicious/noExplicitAny: user role is available at runtime
+    if ((request.user as any)?.role !== "super_admin") {
+      reply.status(403).send({
+        error: {
+          code: "forbidden",
+          message: "Requires Super Admin privileges",
+          requestId: request.id,
+        },
+      });
+    }
+  };
+
   // List plans
   app.get(
     "/admin/plans",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireSuperAdmin] },
     async (request, reply) => {
       const {
         page,
@@ -56,7 +78,7 @@ export function plansRoutes(app: FastifyInstance) {
   // Get plan
   app.get<{ Params: { planId: string } }>(
     "/admin/plans/:planId",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireSuperAdmin] },
     async (request, reply) => {
       const plan = await plansService.getPlan(request.params.planId);
       return reply.send({ data: plan, meta: createMeta(request.id) });
@@ -66,7 +88,7 @@ export function plansRoutes(app: FastifyInstance) {
   // Create plan
   app.post(
     "/admin/plans",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireSuperAdmin] },
     async (request, reply) => {
       const plan = await plansService.createPlan(
         request.body as CreatePlanInput
@@ -80,7 +102,7 @@ export function plansRoutes(app: FastifyInstance) {
   // Update plan
   app.patch<{ Params: { planId: string } }>(
     "/admin/plans/:planId",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireSuperAdmin] },
     async (request, reply) => {
       const plan = await plansService.updatePlan(
         request.params.planId,
@@ -93,7 +115,7 @@ export function plansRoutes(app: FastifyInstance) {
   // Delete plan
   app.delete<{ Params: { planId: string } }>(
     "/admin/plans/:planId",
-    { preHandler: [requireAuth] },
+    { preHandler: [requireSuperAdmin] },
     async (request, reply) => {
       const result = await plansService.deletePlan(request.params.planId);
       return reply.send({ data: result, meta: createMeta(request.id) });

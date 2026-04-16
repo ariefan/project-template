@@ -35,15 +35,17 @@ import {
 } from "@workspace/ui/components/table";
 import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs";
 import { format } from "date-fns";
-import { Edit, Globe, Loader2, Plus, Trash2 } from "lucide-react";
+import { Edit, Globe, Loader2, Plus, Shield, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { apiClient } from "@/lib/api-client";
+import { useActiveOrganization } from "@/lib/auth";
 
 export function GlobalRolesList() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { data: activeOrg } = useActiveOrganization();
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
     name: string;
@@ -112,7 +114,7 @@ export function GlobalRolesList() {
         </TableHeader>
         <TableBody>
           {roles.map((role) => (
-            <GlobalRoleRow
+            <RoleRow
               deletePending={deleteMutation.isPending}
               key={role.id}
               onDelete={() => setDeleteTarget({ id: role.id, name: role.name })}
@@ -126,39 +128,74 @@ export function GlobalRolesList() {
 
   return (
     <>
-      <Card>
-        <CardHeader>
+      <Card className="border-primary/20 shadow-lg">
+        <CardHeader className="bg-primary/5 pb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Globe className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-primary p-3 shadow-inner">
+                <Globe className="h-7 w-7 text-primary-foreground" />
+              </div>
               <div>
-                <CardTitle>Global Roles</CardTitle>
-                <CardDescription>
-                  Manage app-wide roles that apply across all organizations
+                <div className="flex items-center gap-2">
+                  <CardTitle className="font-bold text-2xl tracking-tight">
+                    Platform Roles
+                  </CardTitle>
+                  <Badge
+                    className="bg-primary font-mono text-[10px] tracking-widest hover:bg-primary"
+                    variant="default"
+                  >
+                    GLOBAL
+                  </Badge>
+                </div>
+                <CardDescription className="mt-1 text-base text-muted-foreground/80">
+                  System-wide authority management. Changes here ripple across
+                  every organization.
                 </CardDescription>
               </div>
             </div>
-            <Button asChild>
+            <Button
+              asChild
+              className="shadow-md transition-all hover:scale-[1.02]"
+              size="lg"
+            >
               <Link href="/admin/roles/global/new">
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="mr-2 h-5 w-5" />
                 New Global Role
               </Link>
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {/* Navigation tabs between tenant and global roles */}
-          <Tabs className="mb-4" defaultValue="global">
-            <TabsList>
-              <TabsTrigger
-                onClick={() => router.push("/admin/roles")}
-                value="tenant"
-              >
-                Tenant Roles
-              </TabsTrigger>
-              <TabsTrigger value="global">Global Roles</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <CardContent className="pt-6">
+          {/* Advanced Platform Banner */}
+          <div className="mb-8 flex items-start gap-4 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+            <Shield className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+            <div className="text-amber-700 text-sm dark:text-amber-400">
+              <span className="font-semibold">Security Note:</span> Global roles
+              apply to all applications. These are high-stakes permissions that
+              bypass organization-level isolation.
+            </div>
+          </div>
+
+          {/* Navigation tabs */}
+          {activeOrg?.id && (
+            <Tabs className="mb-8" defaultValue="global">
+              <TabsList className="bg-muted/50 p-1">
+                <TabsTrigger
+                  className="px-6"
+                  onClick={() => router.push("/admin/roles")}
+                  value="tenant"
+                >
+                  Tenant Roles
+                </TabsTrigger>
+                <TabsTrigger
+                  className="px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  value="global"
+                >
+                  Global Roles
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
 
           {renderContent()}
         </CardContent>
@@ -195,45 +232,71 @@ export function GlobalRolesList() {
   );
 }
 
-interface GlobalRoleRowProps {
+interface RoleRowProps {
   role: Role;
   onDelete: () => void;
   deletePending: boolean;
 }
 
-function GlobalRoleRow({ role, onDelete, deletePending }: GlobalRoleRowProps) {
+function RoleRow({ role, onDelete, deletePending }: RoleRowProps) {
   return (
-    <TableRow>
-      <TableCell className="font-medium">{role.name}</TableCell>
-      <TableCell className="max-w-[200px] truncate text-muted-foreground">
-        {role.description ?? "-"}
+    <TableRow className="group hover:bg-muted/50">
+      <TableCell>
+        <div className="flex flex-col gap-0.5">
+          <span className="font-semibold text-foreground">{role.name}</span>
+          <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-tight">
+            ID: {role.id.slice(0, 8)}...
+          </span>
+        </div>
+      </TableCell>
+      <TableCell className="max-w-[300px] truncate text-muted-foreground/90 text-sm">
+        {role.description ?? "No description provided."}
       </TableCell>
       <TableCell>
-        <div className="flex gap-1">
-          <Badge variant={role.isSystemRole ? "secondary" : "outline"}>
-            {role.isSystemRole ? "System" : "Custom"}
+        <div className="flex items-center gap-2">
+          {role.isSystemRole && (
+            <Badge
+              className="border-none bg-secondary/50 px-2 py-0 font-medium text-secondary-foreground"
+              variant="secondary"
+            >
+              System
+            </Badge>
+          )}
+          <Badge
+            className="border-primary/20 bg-primary/5 px-2 py-0 font-medium text-primary"
+            variant="outline"
+          >
+            Global
           </Badge>
-          <Badge variant="default">Global</Badge>
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline">
-          {role.permissions.length} permission
-          {role.permissions.length !== 1 ? "s" : ""}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+          <span className="font-medium text-sm">
+            {role.permissions.length} Rule
+            {role.permissions.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </TableCell>
-      <TableCell className="text-muted-foreground">
+      <TableCell className="text-muted-foreground text-sm">
         {format(new Date(role.createdAt), "MMM d, yyyy")}
       </TableCell>
       <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          <Button asChild size="icon" variant="ghost">
+        <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            asChild
+            className="h-8 w-8 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+            size="icon"
+            variant="ghost"
+          >
             <Link href={`/admin/roles/global/${role.id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
           {!role.isSystemRole && (
             <Button
+              className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
               disabled={deletePending}
               onClick={onDelete}
               size="icon"

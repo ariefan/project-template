@@ -144,6 +144,7 @@ export {
   like,
   lte,
   or,
+  type SQL,
   sql,
 } from "drizzle-orm";
 

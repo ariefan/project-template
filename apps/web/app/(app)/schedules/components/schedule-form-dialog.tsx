@@ -1,10 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type {
-  JobDeliveryMethod,
-  ScheduledJob,
-  ScheduleFrequency,
+import {
+  type JobDeliveryMethod,
+  JobType,
+  type ScheduledJob,
+  type ScheduleFrequency,
 } from "@workspace/contracts";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -91,7 +92,7 @@ export function ScheduleFormDialog({
 }: ScheduleFormDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [jobType, setJobType] = useState("report");
+  const [jobType, setJobType] = useState<string>(JobType.REPORTS_GENERATE);
   const [jobConfig, setJobConfig] = useState<Record<string, unknown>>({});
   const [frequency, setFrequency] = useState<ScheduleFrequency>("daily");
   const [deliveryMethod, setDeliveryMethod] =

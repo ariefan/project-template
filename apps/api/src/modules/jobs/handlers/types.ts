@@ -69,6 +69,10 @@ export interface JobHandlerConfig {
   label?: string;
   /** Description of what this job does */
   description?: string;
+  /** Category for filtering (default: 'user') */
+  category?: "user" | "system" | "maintenance";
+  /** Whether to hide from standard user UI */
+  hidden?: boolean;
   /** Schema description for the config/input object */
   configSchema?: string;
   /** Example configuration for the frontend */

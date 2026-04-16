@@ -8,6 +8,7 @@
 import type { JobTypesListResponse } from "@workspace/contracts";
 import type { FastifyInstance } from "fastify";
 import { createMeta } from "../../../lib/response";
+import { attachSession } from "../../auth/middleware";
 import { jobHandlerRegistry } from "../handlers/registry";
 
 /**
@@ -19,22 +20,39 @@ export function jobTypesRoutes(app: FastifyInstance) {
    * GET /job-types - List available job types
    *
    * Returns metadata about all registered job handlers.
-   * No authentication required - this is discovery information.
+   * Filters based on user role: non-admins see only 'user' category.
    */
-  app.get("/job-types", (request): JobTypesListResponse => {
-    const handlers = jobHandlerRegistry.getAll();
+  app.get(
+    "/job-types",
+    { preHandler: [attachSession] },
+    (request): JobTypesListResponse => {
+      const handlers = jobHandlerRegistry.getAll();
+      const user = request.user;
+      const isSystemAdmin = user?.role === "admin" || user?.role === "system";
 
-    const jobTypes = handlers.map((h) => ({
-      type: h.type,
-      label: h.label ?? h.type,
-      description: h.description ?? "",
-      configSchema: h.configSchema,
-      exampleConfig: h.exampleConfig,
-    }));
+      const filteredHandlers = handlers.filter((h) => {
+        // System admins see everything
+        if (isSystemAdmin) {
+          return true;
+        }
 
-    return {
-      data: jobTypes,
-      meta: createMeta(request.id),
-    };
-  });
+        // Standard users see only 'user' category and non-hidden jobs
+        const isUserJob = !h.category || h.category === "user";
+        return isUserJob && !h.hidden;
+      });
+
+      const jobTypes = filteredHandlers.map((h) => ({
+        type: h.type,
+        label: h.label ?? h.type,
+        description: h.description ?? "",
+        configSchema: h.configSchema,
+        exampleConfig: h.exampleConfig,
+      }));
+
+      return {
+        data: jobTypes,
+        meta: createMeta(request.id),
+      };
+    }
+  );
 }

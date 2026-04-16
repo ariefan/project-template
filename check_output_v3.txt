@@ -1,0 +1,78 @@
+
+> project-template@0.0.1 check C:\dev\project-template
+> turbo typecheck && biome check --write
+
+• turbo 2.7.2
+• Packages in scope: @workspace/auth, @workspace/authorization, @workspace/cache, @workspace/contracts, @workspace/db, @workspace/feature-files, @workspace/metrics, @workspace/notifications, @workspace/realtime, @workspace/reports, @workspace/storage, @workspace/test-utils, @workspace/typescript-config, @workspace/ui, @workspace/ui-mobile, @workspace/utils, api, drive, mobile, web
+• Running typecheck in 20 packages
+• Remote caching disabled
+@workspace/ui:typecheck: cache hit, replaying logs f87d011f124aa825
+@workspace/metrics:typecheck: cache hit, replaying logs a9c14b004976a2c1
+@workspace/ui:typecheck: 
+@workspace/ui:typecheck: > @workspace/ui@0.0.0 typecheck C:\dev\project-template\packages\ui
+@workspace/ui:typecheck: > tsc --noEmit
+@workspace/ui:typecheck: 
+@workspace/metrics:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/metrics@0.0.0 typecheck C:\dev\project-template\packages\metrics
+@workspace/metrics:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/db:typecheck: cache hit, replaying logs b2ab41bc53268eea
+@workspace/db:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/db@0.0.0 typecheck C:\dev\project-template\packages\db
+@workspace/db:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/ui-mobile:typecheck: cache hit, replaying logs 2b2d21dd031096b9
+@workspace/ui-mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/ui-mobile@0.0.0 typecheck C:\dev\project-template\packages\ui-mobile
+@workspace/ui-mobile:typecheck: > tsc --noEmit --skipLibCheck[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/storage:typecheck: cache hit, replaying logs cd766ebbde89a488
+@workspace/storage:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/storage@0.0.0 typecheck C:\dev\project-template\packages\storage
+@workspace/storage:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/cache:typecheck: cache hit, replaying logs 06310e43152a38d3
+@workspace/cache:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/cache@0.0.0 typecheck C:\dev\project-template\packages\cache
+@workspace/cache:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/utils:typecheck: cache hit, replaying logs d08a50456b4647a9
+@workspace/utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/utils@0.0.0 typecheck C:\dev\project-template\packages\utils
+@workspace/utils:typecheck: > tsc --noEmit[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/authorization:typecheck: cache miss, executing 540888d6238f0651
+@workspace/notifications:typecheck: cache miss, executing d2f09667d739d2b2
+@workspace/test-utils:typecheck: cache hit, replaying logs c6def86129e7d9db
+@workspace/auth:typecheck: cache miss, executing 3f097522723f5b64
+mobile:typecheck: cache hit, replaying logs 60f890197ae343ec
+mobile:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> mobile@0.0.1 typecheck C:\dev\project-template\apps\mobile
+mobile:typecheck: > echo 'Typecheck skipped - NativeWind v4 types do not work in monorepo workspaces (see tsconfig.json for details)'
+mobile:typecheck: ]0;C:\WINDOWS\system32\cmd.exe[?25h
+mobile:typecheck: 'Typecheck skipped - NativeWind v4 
+mobile:typecheck: [7;35H types do not work in monorepo works
+mobile:typecheck: [7;35Hspaces (see tsconfig.json for detail
+mobile:typecheck: [7;35Hls)'
+mobile:typecheck: [?9001l[?1004l
+@workspace/reports:typecheck: cache hit, replaying logs 3030acdb5ac630da
+@workspace/feature-files:typecheck: cache hit, replaying logs a8a7e163a1f22f90
+@workspace/test-utils:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/test-utils@0.0.0 typecheck C:\dev\project-template\packages\test-utils
+@workspace/test-utils:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/feature-files:typecheck: 
+@workspace/feature-files:typecheck: > @workspace/feature-files@0.0.0 typecheck C:\dev\project-template\packages\feature-files
+@workspace/feature-files:typecheck: > tsc --noEmit
+@workspace/feature-files:typecheck: 
+@workspace/reports:typecheck: [?9001h[?1004h[?25l[2J[m[2;1H> @workspace/reports@0.0.0 typecheck C:\dev\project-template\packages\reports
+@workspace/reports:typecheck: > tsc --noEmit[7;1H]0;C:\WINDOWS\system32\cmd.exe[?25h[?9001l[?1004l
+@workspace/auth:typecheck: 
+@workspace/auth:typecheck: > @workspace/auth@0.0.0 typecheck C:\dev\project-template\packages\auth
+@workspace/auth:typecheck: > tsc --noEmit
+@workspace/auth:typecheck: 
+@workspace/authorization:typecheck: 
+@workspace/authorization:typecheck: > @workspace/authorization@0.0.0 typecheck C:\dev\project-template\packages\authorization
+@workspace/authorization:typecheck: > tsc --noEmit
+@workspace/authorization:typecheck: 
+@workspace/notifications:typecheck: 
+@workspace/notifications:typecheck: > @workspace/notifications@0.0.0 typecheck C:\dev\project-template\packages\notifications
+@workspace/notifications:typecheck: > tsc --noEmit
+@workspace/notifications:typecheck: 
+@workspace/authorization:typecheck: src/audit/service.ts(291,30): error TS2307: Cannot find module 'drizzle-orm' or its corresponding type declarations.
+@workspace/authorization:typecheck:  ELIFECYCLE  Command failed with exit code 2.
+@workspace/authorization:typecheck: ERROR: command finished with error: command (C:\dev\project-template\packages\authorization) C:\Program Files\nodejs\pnpm.CMD run typecheck exited (2)
+@workspace/authorization#typecheck: command (C:\dev\project-template\packages\authorization) C:\Program Files\nodejs\pnpm.CMD run typecheck exited (2)
+
+ Tasks:    11 successful, 14 total
+Cached:    11 cached, 14 total
+  Time:    4.99s 
+Failed:    @workspace/authorization#typecheck
+
+ ERROR  run failed: command  exited (2)
+ ELIFECYCLE  Command failed with exit code 2.

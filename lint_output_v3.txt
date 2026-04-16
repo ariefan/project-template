@@ -1,0 +1,144 @@
+
+> web@0.0.1 lint C:\dev\project-template\apps\web
+> biome lint .
+
+app\(app)\admin\announcements\announcement-form.tsx:84:17 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 19 detected (max: 15).
+  
+    82 │ }
+    83 │ 
+  > 84 │ export function AnnouncementForm({
+       │                 ^^^^^^^^^^^^^^^^
+    85 │   announcement,
+    86 │   mode,
+  
+  i Please refactor this function to reduce its complexity score from 19 to the max allowed complexity 15.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:166:53 lint/complexity/noExcessiveCognitiveComplexity ━━━━━━━━━━
+
+  × Excessive complexity of 26 detected (max: 15).
+  
+    164 │   });
+    165 │ 
+  > 166 │   const onSubmit = (values: AnnouncementFormValues) => {
+        │                                                     ^^^
+    167 │     // Determine the effective target organization ID
+    168 │     let targetOrgId: string | null = activeOrganization?.id ?? null;
+  
+  i Please refactor this function to reduce its complexity score from 26 to the max allowed complexity 15.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:370:52 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    368 │                                 >
+    369 │                                   {field.value
+  > 370 │                                     ? (orgsData as any)?.data?.find(
+        │                                                    ^^^
+    371 │                                         (org: any) => org.id === field.value
+    372 │                                       )?.name
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:371:47 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    369 │                                   {field.value
+    370 │                                     ? (orgsData as any)?.data?.find(
+  > 371 │                                         (org: any) => org.id === field.value
+        │                                               ^^^
+    372 │                                       )?.name
+    373 │                                     : "Select organization"}
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:384:51 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    382 │                                   <CommandEmpty>No organization found.</CommandEmpty>
+    383 │                                   <CommandGroup>
+  > 384 │                                     {(orgsData as any)?.data?.map((org: any) => (
+        │                                                   ^^^
+    385 │                                       <CommandItem
+    386 │                                         value={org.name} // Command uses value for search text
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:384:73 lint/suspicious/noExplicitAny ━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    382 │                                   <CommandEmpty>No organization found.</CommandEmpty>
+    383 │                                   <CommandGroup>
+  > 384 │                                     {(orgsData as any)?.data?.map((org: any) => (
+        │                                                                         ^^^
+    385 │                                       <CommandItem
+    386 │                                         value={org.name} // Command uses value for search text
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+app\(app)\admin\announcements\announcement-form.tsx:70:23 lint/correctness/noUnusedFunctionParameters  FIXABLE  ━━━━━━━━━━
+
+  × This parameter is unused.
+  
+    68 │   isActive: z.boolean(),
+    69 │   targetOrgId: z.string().optional(),
+  > 70 │ }).superRefine((data, ctx) => {
+       │                       ^^^
+    71 │   if (data.scope === "organization" && !data.targetOrgId) {
+    72 │     // Note: We'll handle the "auto-fill from active context" logic in the component
+  
+  i Unused parameters might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: If this is intentional, prepend ctx with an underscore.
+  
+     68  68 │     isActive: z.boolean(),
+     69  69 │     targetOrgId: z.string().optional(),
+     70     │ - }).superRefine((data,·ctx)·=>·{
+         70 │ + }).superRefine((data,·_ctx)·=>·{
+     71  71 │     if (data.scope === "organization" && !data.targetOrgId) {
+     72  72 │       // Note: We'll handle the "auto-fill from active context" logic in the component
+  
+
+app\(app)\settings\profile.tsx:70:10 lint/correctness/noUnusedVariables  FIXABLE  ━━━━━━━━━━━━━━━━━━
+
+  × This variable isImageDialogOpen is unused.
+  
+    68 │   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+    69 │   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  > 70 │   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+       │          ^^^^^^^^^^^^^^^^^
+    71 │   const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+    72 │   const [otpValue, setOtpValue] = useState("");
+  
+  i Unused variables are often the result of typos, incomplete refactors, or other sources of bugs.
+  
+  i Unsafe fix: If this is intentional, prepend isImageDialogOpen with an underscore.
+  
+     68  68 │     const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+     69  69 │     const [isUploadingImage, setIsUploadingImage] = useState(false);
+     70     │ - ··const·[isImageDialogOpen,·setIsImageDialogOpen]·=·useState(false);
+         70 │ + ··const·[_isImageDialogOpen,·setIsImageDialogOpen]·=·useState(false);
+     71  71 │     const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+     72  72 │     const [otpValue, setOtpValue] = useState("");
+  
+
+Checked 215 files in 153ms. No fixes applied.
+Found 8 errors.
+lint ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+C:\dev\project-template\apps\web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  web@0.0.1 lint: `biome lint .`
+Exit status 1

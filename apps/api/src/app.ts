@@ -7,6 +7,7 @@ import multipart from "@fastify/multipart";
 import scalarApiReference from "@scalar/fastify-api-reference";
 import type { Auth } from "@workspace/auth";
 import type { Authorization } from "@workspace/authorization";
+import { JobType } from "@workspace/contracts/jobs";
 import type { Database } from "@workspace/db";
 import { createNotificationSystem } from "@workspace/notifications";
 import { createStorageProvider } from "@workspace/storage";
@@ -20,6 +21,7 @@ import {
   authorizationModule,
   contextRoutes,
   globalRoleRoutes,
+  platformAuditLogRoutes,
 } from "./modules/authorization";
 import { backupsModule } from "./modules/backups";
 import { developerRoutes } from "./modules/developer";
@@ -49,6 +51,7 @@ export interface AppConfig {
   auth: Auth;
   enforcer: Authorization;
   db: Database;
+  auditService: import("@workspace/authorization").AuthorizationAuditService;
 }
 
 const require = createRequire(import.meta.url);
@@ -220,6 +223,8 @@ async function registerCorePlugins(
   await app.register(authorizationPlugin, {
     enforcer: config.enforcer,
     db: config.db,
+    auditService: config.auditService,
+    logPermissionDenials: true,
   });
 
   // Idempotency (for POST/PATCH operations)
@@ -425,10 +430,10 @@ async function setupQueues(app: import("fastify").FastifyInstance) {
     await jobQueue.start();
 
     // Schedule recurring maintenance jobs
-    await jobQueue.schedule("subscriptions:monitor", "0 * * * *");
+    await jobQueue.schedule(JobType.SUBSCRIPTIONS_MONITOR, "0 * * * *");
 
     // Schedule storage cleanup
-    await jobQueue.schedule("storage:cleanup", "0 * * * *");
+    await jobQueue.schedule(JobType.STORAGE_CLEANUP, "0 * * * *");
 
     // Initialize and start the scheduled job worker
     // This polls for due schedules and automatically creates jobs
@@ -518,6 +523,7 @@ async function registerModules(app: import("fastify").FastifyInstance) {
   await app.register(reportsModule, { prefix: "/v1/orgs" });
   await app.register(schedulesModule, { prefix: "/v1/orgs" });
   await app.register(backupsModule, { prefix: "/v1/orgs" });
+  await app.register(platformAuditLogRoutes, { prefix: "/v1" });
   await app.register(subscriptionsModule, { prefix: "/v1" });
   await app.register(legalDocumentsModule, { prefix: "/v1" });
   await app.register(jobTypesRoutes, { prefix: "/v1" });

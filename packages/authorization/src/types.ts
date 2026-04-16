@@ -32,6 +32,11 @@ export const RESOURCES = {
   NOTIFICATIONS: "notifications",
   AUDIT_LOGS: "audit-logs",
   JOBS: "jobs",
+  // Modules
+  BACKUPS: "backups",
+  SUBSCRIPTIONS: "subscriptions",
+  PLANS: "plans",
+  DEVELOPER: "developer",
 } as const;
 
 export type Resource = (typeof RESOURCES)[keyof typeof RESOURCES];
@@ -56,6 +61,10 @@ export const RESOURCE_LABELS: Record<Resource, string> = {
   notifications: "Notifications",
   "audit-logs": "Audit Logs",
   jobs: "Jobs",
+  backups: "Backups",
+  subscriptions: "Subscriptions",
+  plans: "Plans",
+  developer: "Developer Tools",
 };
 
 /**

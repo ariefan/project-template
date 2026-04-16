@@ -91,10 +91,10 @@ export function AnnouncementsList() {
   const { data, isLoading } = useQuery({
     ...announcementsListOptions({
       client: apiClient,
-      path: { orgId: activeOrganization?.id ?? "" },
+      path: { orgId: activeOrganization?.id ?? "system" },
       query: queryParams,
     }),
-    enabled: !!activeOrganization?.id,
+    enabled: true,
   });
 
   const markReadMutation = useMutation({
@@ -157,7 +157,7 @@ export function AnnouncementsList() {
       onAction: (row) => {
         markReadMutation.mutate({
           path: {
-            orgId: activeOrganization?.id ?? "",
+            orgId: activeOrganization?.id ?? "system",
             announcementId: row.id,
           },
         });
@@ -171,7 +171,7 @@ export function AnnouncementsList() {
       onAction: (row) => {
         acknowledgeMutation.mutate({
           path: {
-            orgId: activeOrganization?.id ?? "",
+            orgId: activeOrganization?.id ?? "system",
             announcementId: row.id,
           },
         });
@@ -186,7 +186,7 @@ export function AnnouncementsList() {
       onAction: (row) => {
         dismissMutation.mutate({
           path: {
-            orgId: activeOrganization?.id ?? "",
+            orgId: activeOrganization?.id ?? "system",
             announcementId: row.id,
           },
         });

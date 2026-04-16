@@ -63,7 +63,7 @@ interface ExportRequest {
   eventTypes?: string[];
 }
 
-export function auditLogRoutes(app: FastifyInstance) {
+export function orgAuditLogRoutes(app: FastifyInstance) {
   // GET /:orgId/audit-logs - List audit logs with pagination and filters
   app.get<{
     Params: { orgId: string };
@@ -284,6 +284,121 @@ export function auditLogRoutes(app: FastifyInstance) {
             downloadUrl: `data:${contentType};base64,${Buffer.from(content).toString("base64")}`,
             eventCount: logs.length,
             expiresAt: expiresAt.toISOString(),
+          },
+          meta: createMeta(request.id),
+        };
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const { statusCode, response } = handleError(err, request.id);
+        reply.status(statusCode);
+        return response as ErrorResponse;
+      }
+    }
+  );
+}
+
+export function platformAuditLogRoutes(app: FastifyInstance) {
+  // GET /audit-logs - Global list for platform admins
+  app.get<{
+    Querystring: AuditLogListQuery;
+  }>(
+    "/audit-logs",
+    { preHandler: [requirePermission("settings", "manage", "system")] },
+    async (request, reply) => {
+      try {
+        const {
+          page,
+          pageSize,
+          eventType,
+          actorId,
+          resourceType,
+          timestampAfter,
+          timestampBefore,
+          ipAddress,
+        } = request.query;
+
+        const auditService = request.server.auditService;
+        if (!auditService) {
+          reply.status(503);
+          return {
+            error: {
+              code: "serviceUnavailable",
+              message: "Audit service is not available",
+              requestId: request.id,
+            },
+            meta: createMeta(request.id),
+          } as ErrorResponse;
+        }
+
+        const result = await auditService.queryLogs(undefined, {
+          page,
+          pageSize,
+          filters: {
+            eventType,
+            actorId,
+            resourceType,
+            timestampAfter: timestampAfter
+              ? new Date(timestampAfter)
+              : undefined,
+            timestampBefore: timestampBefore
+              ? new Date(timestampBefore)
+              : undefined,
+            ipAddress,
+          },
+        });
+
+        return {
+          data: result.data.map(mapToAuditLog),
+          pagination: result.pagination,
+          meta: createMeta(request.id),
+        };
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const { statusCode, response } = handleError(err, request.id);
+        reply.status(statusCode);
+        return response as ErrorResponse;
+      }
+    }
+  );
+
+  // POST /audit-logs/verify - Verify integrity of the entire audit chain
+  app.post(
+    "/audit-logs/verify",
+    { preHandler: [requirePermission("settings", "manage", "system")] },
+    async (request, reply) => {
+      try {
+        const auditService = request.server.auditService;
+        if (!auditService) {
+          reply.status(503);
+          return {
+            error: {
+              code: "serviceUnavailable",
+              message: "Audit service is not available",
+              requestId: request.id,
+            },
+            meta: createMeta(request.id),
+          } as ErrorResponse;
+        }
+
+        const isValid = await auditService.verifyHashChainIntegrity();
+
+        if (!isValid) {
+          reply.status(409); // Conflict/Corrupted
+          return {
+            error: {
+              code: "integrityCompromised",
+              message:
+                "Audit trail integrity check failed! Potential tampering detected.",
+              requestId: request.id,
+            },
+            meta: createMeta(request.id),
+          };
+        }
+
+        return {
+          data: {
+            status: "valid",
+            verifiedAt: new Date().toISOString(),
           },
           meta: createMeta(request.id),
         };

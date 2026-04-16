@@ -251,6 +251,7 @@ export function registerReportHandler(): void {
     // UI metadata
     label: "Report Generation",
     description: "Generate a report from a template with data",
+    category: "user",
     configSchema:
       '{ templateId: string, format?: "xlsx"|"csv"|"pdf", parameters?: Record<string,unknown> }',
     exampleConfig: { templateId: "tpl_example", format: "xlsx" },

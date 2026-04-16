@@ -53,5 +53,7 @@ export function registerStorageCleanupHandler() {
     // UI metadata
     label: "Storage Cleanup",
     description: "Remove expired temporary files and uploads",
+    category: "system",
+    hidden: true,
   });
 }

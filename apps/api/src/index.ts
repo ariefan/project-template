@@ -7,7 +7,10 @@ import {
   createConsoleEmailService,
   createConsoleSmsService,
 } from "@workspace/auth";
-import { createAuthorization } from "@workspace/authorization";
+import {
+  AuthorizationAuditService,
+  createAuthorization,
+} from "@workspace/authorization";
 import { closeDefaultDb, getDefaultDb, initDefaultDb } from "@workspace/db";
 import { buildApp } from "./app";
 import { env } from "./env";
@@ -56,7 +59,10 @@ async function start() {
   // Create authorization enforcer with injected database
   const enforcer = await createAuthorization(db);
 
-  const app = await buildApp({ auth, enforcer, db });
+  // Create audit service with injected database
+  const auditService = new AuthorizationAuditService(db);
+
+  const app = await buildApp({ auth, enforcer, db, auditService });
 
   // Graceful shutdown
   const shutdown = async (signal: string) => {

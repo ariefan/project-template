@@ -4,7 +4,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 
 // Use better-auth's exported types for session/user
 type AuthSession = Session;
-type AuthUser = User;
+type AuthUser = User & { role?: string };
 
 // Extend Fastify request to include session data
 declare module "fastify" {

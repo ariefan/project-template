@@ -194,6 +194,7 @@ export function registerTestHandler(): void {
     // UI metadata
     label: "Test Job (PokéAPI)",
     description: "Fetch data from PokéAPI for testing the job queue system",
+    category: "maintenance",
     configSchema:
       '{ pages?: number, pageSize?: number, source?: "pokemon"|"ability"|"move"|"type"|"berry", failAtPage?: number }',
     exampleConfig: { pages: 3, pageSize: 20, source: "pokemon" },

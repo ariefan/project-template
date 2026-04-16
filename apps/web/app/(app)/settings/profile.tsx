@@ -16,7 +16,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@workspace/ui/components/dialog";
 import { Input } from "@workspace/ui/components/input";
 import {
@@ -26,12 +25,11 @@ import {
 } from "@workspace/ui/components/input-otp";
 import { Label } from "@workspace/ui/components/label";
 import {
+  AvatarUploader,
   type CompressedFileWithPreview,
-  ImageUploader,
 } from "@workspace/ui/composed/file-upload";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import {
-  Camera,
   Check,
   Loader2,
   MailCheck,
@@ -68,7 +66,7 @@ export function ProfileTab() {
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [_isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
   const [otpValue, setOtpValue] = useState("");
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -263,61 +261,29 @@ export function ProfileTab() {
       <CardContent>
         <div className="flex flex-col gap-10 md:flex-row">
           {/* Avatar Section */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="group relative">
-              <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-background bg-muted shadow-xl ring-1 ring-muted transition-transform duration-300 group-hover:scale-[1.02]">
-                {image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  // biome-ignore lint/performance/noImgElement: User uploaded avatar
-                  <img
-                    alt={name}
-                    className="h-full w-full object-cover"
-                    height={128}
-                    src={image}
-                    width={128}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/30 font-bold text-4xl text-primary/40">
-                    {name?.charAt(0).toUpperCase() || (
-                      <UserIcon className="h-12 w-12" />
-                    )}
-                  </div>
-                )}
-              </div>
 
-              <Dialog
-                onOpenChange={setIsImageDialogOpen}
-                open={isImageDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    className="absolute right-0 bottom-0 h-9 w-9 rounded-full border-2 border-background p-0 shadow-lg"
-                    size="icon"
-                    variant="secondary"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Update Profile Picture</DialogTitle>
-                    <DialogDescription>
-                      Upload, crop, and compress your profile picture
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <ImageUploader
-                      defaultOptions={{
-                        maxSizeMB: 0.5,
-                        maxWidthOrHeight: 400,
-                      }}
-                      isUploading={isUploadingImage}
-                      onConfirm={uploadAvatar}
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+          <div className="flex flex-col items-center gap-4">
+            <AvatarUploader
+              avatarClassName="size-32"
+              defaultOptions={{
+                maxSizeMB: 0.5,
+                maxWidthOrHeight: 400,
+              }}
+              fallback={
+                <div className="flex h-full w-full items-center justify-center bg-muted font-bold text-4xl text-muted-foreground">
+                  {name?.charAt(0).toUpperCase() || (
+                    <UserIcon className="h-12 w-12" />
+                  )}
+                </div>
+              }
+              initials={name?.charAt(0).toUpperCase()}
+              initialUrls={image ? [{ id: "current", url: image }] : []}
+              isUploading={isUploadingImage}
+              onConfirm={uploadAvatar}
+              onRemoveUrl={() => handleRemoveImage()}
+              showConfirmButton={false}
+              variant="badge"
+            />
 
             {image && (
               <Button

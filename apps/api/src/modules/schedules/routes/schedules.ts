@@ -23,6 +23,7 @@ import {
   requireOwnershipOrPermission,
   requirePermission,
 } from "../../auth/authorization-middleware";
+import { jobHandlerRegistry } from "../../jobs/handlers/registry";
 import * as jobsService from "../../jobs/services/jobs.service";
 import * as schedulesService from "../services/schedules.service";
 
@@ -129,6 +130,30 @@ export function schedulesRoutes(app: FastifyInstance) {
     }
   );
 
+  // Helper to validate job type permissions
+  function validateJobTypePermissions(
+    jobType: string,
+    user: import("@workspace/auth").User & { role?: string }
+  ): { allowed: boolean; error?: string } {
+    const handlerConfig = jobHandlerRegistry.get(jobType);
+    const isSystemAdmin = user?.role === "admin" || user?.role === "system";
+
+    if (handlerConfig) {
+      const isSystemJob =
+        handlerConfig.category === "system" ||
+        handlerConfig.category === "maintenance" ||
+        handlerConfig.hidden;
+
+      if (isSystemJob && !isSystemAdmin) {
+        return {
+          allowed: false,
+          error: `You do not have permission to schedule job type: ${jobType}`,
+        };
+      }
+    }
+    return { allowed: true };
+  }
+
   /**
    * POST /:orgId/schedules - Create a scheduled job
    */
@@ -149,6 +174,24 @@ export function schedulesRoutes(app: FastifyInstance) {
 
         // Validate request body
         const validatedBody = zCreateScheduledJobRequest.parse(request.body);
+
+        // Validate job type permissions
+        if (request.user) {
+          const { allowed, error } = validateJobTypePermissions(
+            validatedBody.jobType,
+            request.user
+          );
+          if (!allowed) {
+            reply.status(403);
+            return {
+              error: {
+                code: "forbidden",
+                message: error || "Permission denied",
+                requestId: request.id,
+              },
+            };
+          }
+        }
 
         // Create schedule
         const schedule = await schedulesService.createSchedule(orgId, userId, {
@@ -226,6 +269,24 @@ export function schedulesRoutes(app: FastifyInstance) {
 
         // Validate request body
         const validatedBody = zUpdateScheduledJobRequest.parse(request.body);
+
+        // Validate job type permissions
+        if (validatedBody.jobType && request.user) {
+          const { allowed, error } = validateJobTypePermissions(
+            validatedBody.jobType,
+            request.user
+          );
+          if (!allowed) {
+            reply.status(403);
+            return {
+              error: {
+                code: "forbidden",
+                message: error || "Permission denied",
+                requestId: request.id,
+              },
+            };
+          }
+        }
 
         const updateData: Parameters<
           typeof schedulesService.updateSchedule

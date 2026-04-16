@@ -1,3 +1,4 @@
+import { JobInputSchemas, JobType } from "@workspace/contracts/jobs";
 import { jobHandlerRegistry } from "../../jobs/handlers/registry";
 import type { JobContext, JobResult } from "../../jobs/handlers/types";
 import * as subscriptionJobsService from "../services/subscription-jobs.service";
@@ -11,7 +12,7 @@ export async function subscriptionMaintenanceHandler(
   const { type } = context;
 
   try {
-    if (type === "subscriptions:monitor") {
+    if (type === JobType.SUBSCRIPTIONS_MONITOR) {
       await subscriptionJobsService.runSubscriptionMonitor();
       return { output: { success: true } };
     }
@@ -38,8 +39,13 @@ export async function subscriptionMaintenanceHandler(
  */
 export function registerSubscriptionHandlers() {
   jobHandlerRegistry.register({
-    type: "subscriptions:monitor",
+    type: JobType.SUBSCRIPTIONS_MONITOR,
     handler: subscriptionMaintenanceHandler,
+    validationSchema: JobInputSchemas[JobType.SUBSCRIPTIONS_MONITOR],
     concurrency: 1,
+    label: "Subscription Monitor",
+    description: "Monitor and process subscription renewals and expirations",
+    category: "maintenance",
+    hidden: true,
   });
 }

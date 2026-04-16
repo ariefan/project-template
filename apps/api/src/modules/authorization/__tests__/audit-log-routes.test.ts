@@ -52,7 +52,9 @@ vi.mock("../../auth/authorization-middleware", () => ({
 }));
 
 // Import modules after mocking
-const { auditLogRoutes } = await import("../audit-log-routes");
+const { orgAuditLogRoutes, platformAuditLogRoutes } = await import(
+  "../audit-log-routes"
+);
 const { default: authorizationPlugin } = await import(
   "../../../plugins/authorization"
 );
@@ -125,7 +127,8 @@ describe("Audit Log Routes", () => {
     // Register routes under /authorization prefix
     await app.register(
       async (instance) => {
-        auditLogRoutes(instance);
+        orgAuditLogRoutes(instance);
+        platformAuditLogRoutes(instance);
         await Promise.resolve();
       },
       { prefix: "/authorization" }
@@ -458,7 +461,7 @@ describe("Audit Log Routes", () => {
 
       await appWithoutService.register(
         async (instance) => {
-          auditLogRoutes(instance);
+          orgAuditLogRoutes(instance);
           await Promise.resolve();
         },
         { prefix: "/authorization" }

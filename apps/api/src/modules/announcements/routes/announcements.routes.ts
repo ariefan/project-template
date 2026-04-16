@@ -15,7 +15,11 @@ import {
   zUpdateAnnouncementRequest,
 } from "@workspace/contracts/zod";
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { handleError, ValidationError } from "../../../lib/errors";
+import {
+  ForbiddenError,
+  handleError,
+  ValidationError,
+} from "../../../lib/errors";
 import { createMeta } from "../../../lib/response";
 import {
   requireOwnershipOrPermission,
@@ -211,6 +215,16 @@ export function announcementsRoutes(app: FastifyInstance) {
 
         const validatedBody = zCreateAnnouncementRequest.parse(request.body);
 
+        // Security Check: Only system admins can create system-wide announcements
+        if (
+          validatedBody.scope === "system" &&
+          request.user?.role !== "super_admin"
+        ) {
+          throw new ForbiddenError(
+            "Only system admins can create system-wide announcements"
+          );
+        }
+
         const announcement = await announcementsService.createAnnouncement({
           orgId: validatedBody.orgId ?? orgId,
           title: validatedBody.title,
@@ -273,6 +287,17 @@ export function announcementsRoutes(app: FastifyInstance) {
         const { orgId, announcementId } = request.params;
 
         const validatedBody = zUpdateAnnouncementRequest.parse(request.body);
+
+        // Security Check: Only system admins can update announcements to or from system scope
+        // Note: Changing scope is rare, but if attempted, must be secure.
+        if (
+          validatedBody.scope === "system" &&
+          request.user?.role !== "super_admin"
+        ) {
+          throw new ForbiddenError(
+            "Only system admins can manage system-wide announcements"
+          );
+        }
 
         const announcement = await announcementsService.updateAnnouncement(
           announcementId,

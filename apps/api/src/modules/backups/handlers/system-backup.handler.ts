@@ -1,3 +1,4 @@
+import { JobInputSchemas, JobType } from "@workspace/contracts/jobs";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { jobHandlerRegistry } from "../../jobs/handlers/registry";
 import type { JobContext, JobResult } from "../../jobs/handlers/types";
@@ -65,7 +66,7 @@ export async function handleCreateSystemBackup(
     // 2. Enqueue the background job
     await createAndEnqueueJob({
       orgId: "system",
-      type: "system:backup-create",
+      type: JobType.SYSTEM_BACKUP_CREATE,
       createdBy: userId,
       input: {
         backupId,
@@ -484,11 +485,14 @@ async function handleSystemBackupCreate(
  */
 export function registerSystemBackupHandlers() {
   jobHandlerRegistry.register({
-    type: "system:backup-create",
+    type: JobType.SYSTEM_BACKUP_CREATE,
     handler: handleSystemBackupCreate,
+    validationSchema: JobInputSchemas[JobType.SYSTEM_BACKUP_CREATE],
     concurrency: 1,
     retryLimit: 1,
     label: "System Backup",
     description: "Create a full system backup (pg_dump)",
+    category: "system",
+    hidden: true,
   });
 }

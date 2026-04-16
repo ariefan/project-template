@@ -62,5 +62,7 @@ export function registerAnnouncementHandler(): void {
     label: "Process Announcement",
     description:
       "Automated processing for new announcements (notifications, indexing)",
+    category: "maintenance",
+    hidden: true,
   });
 }

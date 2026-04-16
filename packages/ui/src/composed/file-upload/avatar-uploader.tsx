@@ -17,6 +17,8 @@ export interface AvatarUploaderProps
   extends Omit<ImageUploaderProps, "layout" | "maxFiles" | "circularCrop"> {
   fallback?: React.ReactNode;
   initials?: string;
+  variant?: "overlay" | "badge";
+  avatarClassName?: string;
 }
 
 function AvatarStateDisplay({
@@ -27,6 +29,7 @@ function AvatarStateDisplay({
   fallback,
   controller,
   onDelete,
+  variant,
 }: {
   hasImage: boolean;
   isCompressing: boolean;
@@ -35,6 +38,7 @@ function AvatarStateDisplay({
   fallback: React.ReactNode;
   controller: Controller;
   onDelete: () => void;
+  variant?: "overlay" | "badge";
 }) {
   if (isCompressing) {
     return (
@@ -61,27 +65,30 @@ function AvatarStateDisplay({
           </AvatarFallback>
         </Avatar>
 
+        {/* Overlay: Render for 'overlay' variant OR 'badge' variant (on hover) */}
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
           <div className="flex gap-2">
             <Button
-              className="size-8 rounded-full"
+              className="size-8 cursor-pointer rounded-full bg-background/80 text-foreground transition-all hover:scale-110 hover:bg-background"
               onClick={(e) => {
                 e.stopPropagation();
                 controller.fileInputRef.current?.click();
               }}
               size="icon"
+              title="Change image"
               type="button"
               variant="secondary"
             >
               <Camera className="size-4" />
             </Button>
             <Button
-              className="size-8 rounded-full"
+              className="size-8 cursor-pointer rounded-full transition-all hover:scale-110"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
               }}
               size="icon"
+              title="Remove image"
               type="button"
               variant="destructive"
             >
@@ -89,6 +96,23 @@ function AvatarStateDisplay({
             </Button>
           </div>
         </div>
+
+        {/* Badge: Render only for 'badge' variant */}
+        {variant === "badge" && (
+          <Button
+            className="absolute right-0 bottom-0 size-8 rounded-full border-2 border-background shadow-sm transition-all hover:scale-110"
+            onClick={(e) => {
+              e.stopPropagation();
+              controller.fileInputRef.current?.click();
+            }}
+            size="icon"
+            title="Change image"
+            type="button"
+            variant="secondary"
+          >
+            <Camera className="size-4" />
+          </Button>
+        )}
       </div>
     );
   }
@@ -123,6 +147,8 @@ export const AvatarUploader = React.forwardRef<
     onRemoveUrl,
     fallback = <User className="size-full p-2 text-muted-foreground" />,
     initials,
+    variant = "overlay",
+    avatarClassName,
     ...restProps
   } = props;
 
@@ -166,7 +192,9 @@ export const AvatarUploader = React.forwardRef<
           "relative flex size-32 cursor-pointer items-center justify-center rounded-full border-2 border-muted-foreground/25 border-dashed bg-muted/20 transition-all hover:bg-muted/50",
           (controller.isDragging || controller.isCompressing) &&
             "border-primary bg-primary/10",
-          hasImage && "border-solid p-0 hover:scale-105"
+          hasImage &&
+            "cursor-default border-solid p-0 opacity-100 hover:scale-105",
+          avatarClassName
         )}
         disabled={hasImage || controller.isCompressing}
         onClick={() => {
@@ -186,6 +214,7 @@ export const AvatarUploader = React.forwardRef<
           initials={initials}
           isCompressing={controller.isCompressing}
           onDelete={handleDelete}
+          variant={variant}
         />
 
         <input
